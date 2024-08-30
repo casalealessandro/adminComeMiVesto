@@ -1,0 +1,57 @@
+<app-anagrafica-wrapper
+  [caption]="'Elenco Utenti'"
+  [subTitle]="subtitle"
+  [tip]="'Gestisci il profilo utente, resetta la password,sospendi....'"
+  [addButtonShow]="true"
+   (emittEventButton)="createNewuser()"
+>
+  
+ 
+  <ul class="list-group form-list">
+    <li *ngFor="let user of users" class="form-list-item list-group-item d-flex justify-content-between align-items-center"
+    (dblclick)="editUser(user)"
+    >
+      <div class="profile-info">
+        <span class="img-thumbnail profileImage">
+            <img [src]=" user.photoURL || 'https://ionicframework.com/docs/img/demos/avatar.svg'" [alt]="user.name" class="">
+        </span>
+        {{ user.displayName || user.name }} {{user.email}}
+      </div>
+      
+      <div class="dropdown">
+        <button class="btn icon-button" >
+          <span class="mdi mdi-dots-vertical"></span>
+          
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <li>
+                <button class="btn icon-button" (click)="editUser(user)">
+                    <span class="mdi mdi-pencil-outline"></span>      
+                    Modifica
+                </button>
+            </li>
+            <li>
+                <button class="btn icon-button" (click)="deleteUser(user)">
+                    <span class="mdi mdi-close del"></span> 
+                    Elimina
+                </button>
+            </li>
+            <li>
+                <button class="btn icon-button" (click)="disableUser(user.uid)">
+                    <span class="mdi mdi-lock-off-outline"></span>
+                    Disabilita
+                </button>
+            </li>
+            <li>
+                <button  class="btn icon-button" (click)="sendPasswordReset(user)">
+                    <span class="mdi mdi-lock-reset"></span>
+                    Invia Password
+                </button>
+            </li>
+            
+          </ul>
+  
+      </div>
+    </li>
+  </ul>
+</app-anagrafica-wrapper>

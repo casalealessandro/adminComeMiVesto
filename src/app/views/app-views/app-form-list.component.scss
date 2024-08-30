@@ -1,0 +1,6 @@
+.form-list-item{
+    &:hover{
+        background-color: var(--bg-grey);
+        cursor: pointer;
+    }
+}

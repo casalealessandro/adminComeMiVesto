@@ -1,0 +1,85 @@
+
+
+.caption-container{
+
+  display: flex;
+  width: 100%;
+  position: relative;
+  flex-direction: row;
+  align-content: center;
+  justify-content:space-between;
+  align-items: center;
+  height:var(--height_caption) ;
+  
+
+  .item-wrap{
+    flex: 1 0 auto;
+    margin:2px 5px ;
+   
+    
+    &.wrap-item-logo-caption{
+      
+      img{
+        height: 25px;
+        
+      }
+    }
+    &.wrap-item-mButton{
+      flex-grow: 0;
+      
+    }
+    &.wrap-item-breadcrumb{
+      flex-grow: 0;
+
+      .breadcrumb{
+        margin-bottom: 0;
+      }
+      
+    }
+
+    &.wrap-item-title{
+      text-align: start;
+    }
+    &.last-item-wrap{
+      text-align: end;
+      min-width: 150px;
+    }
+
+    .page-title{
+      margin-bottom: 0;
+      font-size: 1.3rem;
+      text-align: left;
+      font-weight: 500;
+    }
+  }
+
+}
+
+::ng-deep .vertical h2 {
+  margin-left: 10%;
+  width: 50%;
+  text-align: center;
+}
+
+::ng-deep .vertical-text {
+  writing-mode: vertical-lr;
+  text-orientation: upright;
+
+  width: 0px;
+  font-size: 24px;
+  word-break: break-all;
+  white-space: pre-wrap;
+  color: rgb(11, 11, 11);
+  font-weight: 900;
+  font-family: 'Montserrat';
+
+}
+
+
+.currentModule {
+  font-size: 12px;
+  margin: 0;
+  color: white !important;
+  font-family: 'Montserrat';
+
+}

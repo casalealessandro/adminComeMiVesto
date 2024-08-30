@@ -1,0 +1,61 @@
+<div id="cWrap" class="content-wrap">
+    <div class="anagrafica-wrap">
+        <app-caption [caption]="caption" [showBreadcrumb]="false" [addButtonShow]="addButtonShow" [help]="helpDoc"
+            [breadcrumbNavigation]="breadcrumbNavigation" [isClosable]="false"
+            (emettiChiusura)="onCrocettaClick($event)" (emitAddEvent)="onAddClick($event)" [isFooter]="false">
+        </app-caption>
+
+
+        <div class="anagrafica-container">
+
+            <div class="anagrafica-row">
+                <!--Tab funzionale-->
+
+                <!-- <app-toolbar 
+                    
+                    #toolbarTab 
+                    
+                    [textColor]="'#023957'" 
+                    [height]="27"
+                    class="nav-tab nav-tabs" 
+                    [bootstrapClass]="" 
+                    [buttonCustomUp]="itemTabs"
+                    position="horizontal" 
+                    [isDx]="false"
+                    (risposta)="buttonToolbarLeft($event)" 
+                    >
+                </app-toolbar> -->
+
+
+
+
+                <div class="col-lg-12 wrapForm">
+
+                    <div class="text">
+                        <h2 *ngIf="subTitle"><span class="mdi mdi-database"></span>{{subTitle}}</h2>
+
+                    </div>
+                    <div  *ngIf="tip" class="alert alert-primary d-flex align-items-centeralert-dismissible fade show" role="alert" >
+                        <span class="mdi mdi-lightbulb-alert-outline me-2"></span>
+                        {{tip}}
+                       <!--  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> -->
+                    </div>
+
+                    <ng-content id='ng-content'>
+
+
+                    </ng-content>
+
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <app-caption [showBreadcrumb]="false" [isClosable]="false" (emettiChiusura)="onCrocettaClick($event)"
+            [isFooter]="true">
+        </app-caption>
+    </div>
+
+</div>

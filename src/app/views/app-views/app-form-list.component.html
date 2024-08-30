@@ -1,0 +1,36 @@
+<app-anagrafica-wrapper
+  [caption]="'Lista dei Form'"
+  [addButtonShow]="true"
+ (emittEventButton)="createNewForm()"
+>
+  <div class="text">
+    <h2><span class="mdi mdi-database "></span> Elenco form</h2>
+
+  </div>
+  <div class="alert alert-primary d-flex align-items-center" role="alert" role="alert">
+    <span class="mdi mdi-lightbulb-alert-outline me-2"></span>
+    Elenco delle Form create nell'app 
+  </div>
+ 
+  <ul class="list-group form-list">
+    <li *ngFor="let form of forms" class="form-list-item list-group-item d-flex justify-content-between align-items-center"
+    (dblclick)="editForm(form)"
+    >
+      <div class="">
+        <span class="mdi mdi-view-list-outline mr-3"></span>
+        {{ form.nameForm }}
+      </div>
+      
+      <div>
+        <button class="btn icon-button" (click)="editForm(form)">
+          <span class="mdi mdi-pencil-outline"></span>
+          
+        </button>
+        <button class="btn icon-button" (click)="deleteForm(form.nameForm)">
+          <span class="mdi mdi-close del"></span>
+          
+        </button>
+      </div>
+    </li>
+  </ul>
+</app-anagrafica-wrapper>

@@ -1,0 +1,135 @@
+::ng-deep .isPopUp {
+    position: absolute;
+    bottom: 0px;
+}
+
+::ng-deep.content-wrap {
+    position: relative;
+    overflow-y: auto;
+    width: var(--width_container);
+    margin: 5px auto;
+
+    .anagrafica-wrap {
+
+
+        margin-top: .3rem;
+
+        .anagrafica-container {
+            box-shadow: 0 3px 5px #0000000b;
+            margin-top: .88rem;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: .6rem;
+
+
+            .anagrafica-row {
+                position: relative;
+                padding: 1.25rem;
+                
+                /*****Toolbar Left *****/
+
+                .wrapanaToolbar {
+
+                    position: absolute;
+
+                    left: 0;
+                    top: 0;
+                    padding: 0;
+                    width: 55px;
+                    z-index: 2;
+                    box-shadow: 2px 0 20px rgb(69 65 78 / 7%);
+                    border-top: 1px solid rgba(0, 0, 0, .150);
+
+                    &.closed {
+
+                        width: 0;
+                        visibility: hidden;
+                    }
+
+                    &.open {
+                        width: 177px;
+                        display: block;
+                        visibility: visible;
+                        height: 100%;
+
+                    }
+
+                    .nica-toolbar {
+                        -moz-transition: ease 0.35s;
+                        -o-transition: ease 0.35s;
+                        -webkit-transition: ease 0.3s;
+                        transition: ease 0.35s;
+
+
+                        .toolbar-shadow {
+                            box-shadow: 2px 0 20px rgb(69 65 78 / 7%) !important;
+                            padding-right: 0;
+                        }
+
+                        .sidebar-sticky-top {
+                            padding: 0px 6px;
+                        }
+
+                        .item-nav {
+
+                            display: block;
+                            height: 35px;
+                            border-bottom: 1px solid rgba(253, 253, 253, 0.531);
+                            width: 100%;
+                            padding: 0;
+
+                            .item-content {
+
+                                i {
+                                    font-size: 25px !important;
+                                    width: 28px !important;
+                                    height: 28px !important;
+                                    line-height: 28px !important;
+                                    color: #fff !important;
+                                    font-weight: 300 !important;
+
+                                }
+                            }
+                        }
+
+                        .sidebar-sticky-bottom {
+                            .item-nav {
+                                height: 26px;
+                            }
+                        }
+
+                        .sub-item-nav {
+                            ::before {
+                                content: "\FA14";
+                                display: block;
+                                font-family: "Material Design Icons";
+                                color: #fff;
+                                width: 5px;
+
+                            }
+                        }
+
+
+                        p {
+
+                            font-size: 12px;
+                        }
+
+
+
+                    }
+                }
+
+                .wrapForm{
+                    border:1px solid #e2e8f099;
+                    border-radius: 0.6rem;
+                    padding: 1.25rem;
+                }   
+
+
+            }
+        }
+    }
+}
+
+/****************Personalizzazioni****************/

@@ -1,0 +1,223 @@
+:root {
+    --dark-color: #323A45;
+    --color-fff: #FFFFFF;
+    --color-100: #F0F0F0;
+    --color-200: #023957 ;
+    --color-300: #E0E0E0;
+    --color-400: #BDBDBD;
+    --color-500: #555353;
+    --color-600: #464545;
+    --color-700: #363535;
+    --color-800: #252525;
+    --color-900: #181818;
+    --color-000: #000000;
+    --border-color: #F0F0F0;
+    --card-color: #ffffff;
+    --body-color: #f4f7f6;
+    --white-color: #ffffff;
+    --sidebar-color: #fcfcfc;
+    --hc-font-color: #555555;
+    --hc-bg-color: #f0f0f0;
+    --primary-color: #0d6efd;
+    --secondary-color: #ffd55d;
+    --chart-color1: #2794eb;
+    --chart-color2: #17b3c1;
+    --chart-color3: #64868e;
+    --chart-color4: #47d6b6;
+    --chart-color5: #4362D0;
+    --sidebar-img: url(https://alui.thememakker.com/html/assets/images/sidebar-bg/sidebar-1.jpg)
+}
+
+.sidebar {
+
+    -moz-transition: ease 0.3s;
+    -o-transition: ease 0.3s;
+    -webkit-transition: ease 0.3s;
+    transition: ease 0.3s;
+    left:0;
+    background: #c8ced6;
+    color: #023957;
+    height: 100%;
+    width: 240px;
+    overflow-y: auto;
+    -webkit-box-flex: 0;
+    -ms-flex-positive: 0;
+    flex-grow: 0;
+    z-index: 9;
+    -webkit-box-ordinal-group: 2;
+    -ms-flex-order: 1;
+    order: 1;
+    height: 90vh;
+    /* overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none; */
+    position: absolute;
+   
+}
+
+.sidebar h6,  .sidebar .h6 {
+    font-size: 1rem;
+    color: #023957;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+ .sidebar::-webkit-scrollbar {
+    width: 5px
+}
+
+ .sidebar .menu-list {
+    list-style: none;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,0.7) !important
+}
+
+ .sidebar .menu-list.grid {
+    width: 200px
+}
+
+ .sidebar .menu-list.grid li {
+    flex: 1 1 auto !important;
+    border-bottom: 1px solid rgba(255,255,255,0.7)
+}
+
+ .sidebar .menu-list.grid li .m-link {
+    -moz-transition: ease 0.2s;
+    -o-transition: ease 0.2s;
+    -webkit-transition: ease 0.2s;
+    transition: ease 0.2s;
+    opacity: 1;
+
+    color: #023957;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 5px;
+    width: 98px;
+    height: 98px;
+    text-decoration:none;
+}
+
+ .sidebar .menu-list.grid li .m-link:hover,.sidebar .menu-list.grid li .m-link.active {
+    background-color: #95c6ef;
+    color: #191818;
+    box-shadow: 0 0 12px rgba(25,24,24,0.2);
+    transform: scale(1.1)
+}
+
+ .sidebar .menu-list.grid li .m-link .icon {
+    width: auto;
+    font-size: 35px;
+    
+}
+.sidebar .img-thumbnail{
+    width: 80px;
+    height: 80px;
+}
+ .sidebar .menu-list.grid li .m-link span {
+    font-size: 11px;
+    text-align: center;
+    width: fit-content;
+}
+
+ .sidebar .menu-list.grid li .m-link.active {
+    /*color: #ffd55d*/
+}
+
+ .sidebar .menu-list.grid li .m-link.active:hover {
+    color: #191818
+}
+
+ .sidebar .menu-list.grid li:nth-child(2), .sidebar .menu-list.grid li:nth-child(4), .sidebar .menu-list.grid li:nth-child(6) {
+    border-left: 1px solid rgba(255,255,255,0.7)
+}
+
+ .sidebar .menu-list.grid li:nth-child(8) {
+    border-left: 1px solid rgba(255,255,255,0.7);
+    border-bottom: 0
+}
+
+ .sidebar .menu-list.grid li:nth-child(7) {
+    border-bottom: 0
+}
+
+ .sidebar .text-muted {
+    color: #023957  !important;
+    font-weight: 400;
+    
+}
+
+.sidebar .item-disable{
+    cursor: pointer;
+    pointer-events: none;
+    opacity: 0.5;
+    background: #fff;
+}
+
+
+
+ 
+
+.sidebar.sidebar-mini {
+    /* text-align: center;
+    overflow: visible;
+    padding: 16px 0 !important;
+    width: 70px;
+    z-index: 99; */
+    left: -1000px;
+}
+ .sidebar.sidebar-img-bg.sidebar-mini::after {
+    width: 60px;
+    opacity: 0.1
+}
+
+ .sidebar.gradient {
+    background: linear-gradient(145deg, #484c7f, #7394b9)
+}
+
+ .sidebar.gradient.sidebar-mini .menu-list .sub-menu {
+    background: var(--primary-gradient)
+}
+
+ .sidebar.open {
+    left: 0
+}
+
+ .sidebar.open.sidebar-img-bg {
+    background-color: #0d6efd !important;
+}
+
+ .sidebar.open.sidebar-img-bg::after {
+    left: 0
+}
+
+@media only screen and (max-width: 1279px) {
+     .sidebar {
+        position:fixed;
+        z-index: 1021;
+        left: -400px
+    }
+
+     .sidebar.sidebar-img-bg {
+        background-color: #0d6efd !important;
+    }
+
+     .sidebar.sidebar-img-bg::after {
+        left: -400px
+    }
+}
+
+.text-secondary {
+    color: #ffd55d !important;
+}
+
+/*
+#immagineProfiloSideMenu:hover{
+    background-color: var(--primary);
+    cursor: pointer;
+    border: transparent;
+
+}
+*/
+/*filter: invert(81%) sepia(85%) saturate(394%) hue-rotate(331deg) brightness(98%) contrast(89%);*/

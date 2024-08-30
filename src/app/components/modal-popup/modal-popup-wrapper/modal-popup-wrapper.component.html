@@ -1,0 +1,15 @@
+<div class="row">
+
+        <div *ngFor="let item of popups let i = index">
+                
+                <app-modal-popup-content
+                    [infoPopUp]="item"
+                    [index]="i"
+                    [componentName]="item.componentName"
+                    [classePopup]="classe"
+                >
+
+                </app-modal-popup-content>
+        </div>
+
+</div>

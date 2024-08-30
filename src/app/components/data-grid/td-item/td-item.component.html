@@ -1,0 +1,31 @@
+
+<span 
+    *ngIf="!showBooleanFlag && !isMockDataLoading; else skeletonTemplate"
+    class="contet-data" [ngStyle]="styleData"
+    [ngClass]="{'summary-item':showSummaryText}"
+    (click)="clickTd($event)"
+    [innerHTML]="highlightMatches(staticData)"
+>
+</span>
+
+<ng-template #skeletonTemplate>
+
+    <span class="contet-data loadingSkeleton" [ngStyle]= "styleData"
+    [ngClass]="{'summary-item':showSummaryText}"> </span>
+
+</ng-template> 
+
+
+<!-- <dx-check-box
+    *ngIf="showBooleanFlag"
+    #checkbox
+    [(value)]="staticData"
+    (onValueChanged)="onValueChangeCheckBox($event)"
+    
+    
+>
+</dx-check-box>
+ -->
+
+
+

@@ -1,0 +1,528 @@
+.-data-grid-wrapper {
+    background: #fff;
+    font-family: "Helvetica Neue", "Segoe UI", helvetica, verdana, sans-serif;
+    margin: 0;
+}
+
+.scroll-bottom {
+
+   /*  overflow-y: scroll !important; */
+}
+
+.-data-grid {
+    
+    background-color: var(--bianco);
+    table-layout: fixed;
+    width: 100%;
+
+    -webkit-box-shadow: 0px 5px 12px -12px rgba(0, 0, 0, 0.29);
+    -moz-box-shadow: 0px 5px 12px -12px rgba(0, 0, 0, 0.29);
+    box-shadow: 0px 5px 12px -12px rgba(0, 0, 0, 0.29);
+    /*  table-layout: fixed; */
+    border-collapse: collapse;
+    border-spacing: 0;
+
+}
+
+.-data-grid tbody {
+    position: relative;
+    width: 100%;
+    overflow-x: hidden;
+    border-top: 1px solid #e8eaeb;
+
+}
+
+.-data-grid thead {
+    width: 100%;
+    border-top: 1px solid #e8eaeb;
+}
+
+.-data-grid thead tr {
+    border-bottom: 1px solid #e8eaeb;
+    border: none;
+    width: 100%;
+}
+
+.-data-grid thead th {
+    border-left: 1px solid #e8eaeb;
+    border-right: 1px solid #e8eaeb;
+    padding: 0 5px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.-data-grid thead th span {
+    color: var(--blueSoft);
+    font-weight: 400;
+
+    padding: 0 5px
+}
+
+.-data-grid thead th .editor,
+.-data-grid thead th .editor .texteditor-input {
+    border: none;
+    height: 27px;
+    line-height: 27px;
+}
+
+.no-border {
+    border: none !important;
+
+}
+
+.-data-grid thead th .search-icon {
+    padding-left: 3px;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    margin-left: -2px;
+    margin-top: -2px;
+    height: 100%;
+    overflow: visible;
+}
+
+.-data-grid thead th .search-icon i {
+    padding: 5px 3px 3px;
+    color: #7ab8eb;
+    font-size: 14px;
+
+}
+
+.-data-grid thead th .search-icon i::before {
+
+    font: 14px/1 DXIcons;
+    content: "\f027";
+    font-weight: 300;
+}
+
+.border-top {
+    border-top: 1px solid #e8eaeb;
+}
+
+.-data-grid thead tr.no-events {
+    pointer-events: none !important;
+}
+
+.-data-grid tr {
+    height: 27px;
+    box-sizing: content-box;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* .-data-grid tbody tr.alternate:nth-child(odd){
+    background: #fafafa;
+} */
+
+.-data-grid tbody tr.alternate {
+    background: #fafafa;
+}
+
+
+
+/* .-data-grid tbody tr.alternate:nth-child(even) {
+    background: #fff;
+} */
+
+
+
+.-data-grid tbody tr.state-hover {
+    /* background: var(--secondary)!important; */
+    background-color: #edf0f2 !important;
+    cursor: pointer;
+}
+
+.detail--data-grid tr.state-hover-detail{
+    background-color: #edf0f2 !important;
+    cursor: pointer;
+}
+
+.-data-grid tbody tr.select-have-detail{
+    background: var(--secondary)!important;
+}
+
+.-data-grid tr.row-no-data {
+    pointer-events: none !important;
+}
+
+.-data-grid tr.row-no-data td {
+    border-left: 0px solid #e8eaeb;
+    border-right: 0px solid #e8eaeb;
+    border-bottom: 0px solid #e8eaeb;
+}
+
+
+
+.-data-grid tr.selected-row {
+    background: var(--secondary) !important;
+}
+
+.-data-grid tr.group-row {
+    color: var(--primary);
+    background-color: #fafafa;
+    pointer-events: none;
+    font-weight: 600;
+
+}
+
+::ng-deep.-data-grid tr.group-row td .contet-data {
+    font-weight: 600 !important;
+
+    padding-left: 10px;
+}
+::ng-deep.-data-grid tr.group-row td .contet-data::before {
+    content: '-';
+    display: inline-block;
+}
+ 
+
+.-data-grid.grid-line tr td {
+    border-left: 1px solid #e8eaeb;
+    border-right: 1px solid #e8eaeb;
+    border-bottom: 1px solid #e8eaeb;
+}
+
+
+
+.-data-grid.grid-line tr.empty-row{
+    pointer-events: none;
+}
+.-data-grid.grid-line tr.empty-row td {
+    border-left: 1px solid #e8eaeb;
+    border-right: 1px solid #e8eaeb;
+    border-bottom: 1px solid #e8eaeb;
+}
+
+.-data-grid tr td {
+    vertical-align: top;
+    text-align: left;
+    padding: 1px 4px;
+    height: 27px;
+    width: 30px;
+    border: solid 1px #e8eaeb;
+    border-spacing: 0;
+    /* line-height: 26px; */
+}
+.-data-grid tr td .button-icon{
+    text-align: center;
+    display: block;
+    width: fit-content;
+    margin: auto;
+}
+
+
+.-data-grid tr td .button-icon .button-in-cell{
+    background: transparent;
+    border: none;
+    color: var(--blueSoft);
+    display: block;
+    box-sizing: content-box;
+    padding: 0;
+}
+
+
+
+.-data-grid tr td .button-icon .button-in-cell i{
+    font-size: 13px;
+    color: var(--blueDevextreme);
+}
+
+.-data-grid tr td .button-icon .button-in-cell span{
+    font-size: 13px;
+    
+}
+
+.-data-grid tr td .button-icon .button-in-cell.blueButton {
+    background-color: var(--blueSoft);
+    color: white!important;
+    font-size: 12px;
+    padding: 3px;
+    border-radius: 2px;
+    border-width: 1px;
+    border-style: solid;
+    line-height: 1;
+}
+
+.-data-grid tr td .button-icon .button-in-cell.blueButton span{
+    font-size: 13px;
+    margin-left: 2px;
+    color: white!important;
+}
+
+.-data-grid tr td .button-icon .button-in-cell.blueButton i{
+    font-size: 13px;
+    margin-right: 1px;
+    color: white!important;
+}
+
+.selection-icon {
+    text-align: center;
+    color: #7ab8eb;
+    
+    height: 14px;
+    background-position: 0 0;
+    background-size: 14px 14px;
+    padding: 0;
+    font-size: 14px;
+    text-align: center;
+    line-height: 14px;
+    margin: 0 1px;
+}
+
+.-data-grid tr td.font-weight-bold {
+    font-weight: bold;
+
+}
+
+.no-event-hover {
+    background: transparent !important;
+
+    cursor: auto;
+    /*pointer-events: none!important;*/
+}
+
+
+
+/******GRIGLIA DETTAGLIO***/
+
+.detail--data-grid  tr:hover{
+    background-color: #edf0f2 !important;
+    cursor: pointer;
+}
+
+/******EDITOR TABELLA******/
+
+::ng-deep.-data-grid .editor {
+    position: relative;
+    padding: 0 !important;
+
+}
+
+
+::ng-deep.-data-grid td.editor-cell {
+    max-width: 0 !important;
+    padding: 0 !important;
+    vertical-align: middle;
+    /*border: 1px solid #045072!important;*/
+}
+
+
+
+::ng-deep.-data-grid .editable-row-operations .link-editor {
+    text-decoration: none;
+    background-position: 0 0;
+    padding: 0;
+    text-align: center;
+    margin: 0 2px;
+    vertical-align: middle;
+}
+
+::ng-deep.-data-grid td.editor-cell .editor-content.state-active {
+
+    border-width: 2px;
+
+}
+
+
+
+::ng-deep.-data-grid .input-container .texteditor-input {
+    height: 27px;
+    line-height: 27px;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 100%;
+    outline: 0;
+    border: 0;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/*********CHECKBOX**********/
+
+/* Create a custom checkbox */
+::ng-deep.editor-content-checkbox-table {
+
+    display: flex;
+    position: relative;
+
+    margin-bottom: 4px !important;
+}
+
+::ng-deep.editor-content-checkbox-table *,
+::ng-deep.editor-content-checkbox-table ::after,
+::ng-deep.editor-content-checkbox-table ::before {
+    box-sizing: border-box;
+}
+
+::ng-deep.editor-content-checkbox-table .checkbox-input {
+    margin: 0;
+    width: 0;
+    height: 0;
+    display: inline;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+::ng-deep.editor-content-checkbox-table .checkbox-input:before {
+    content: ' ';
+    display: inline-block;
+    position: relative;
+    background-position: 0 0;
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 16px;
+    height: 16px;
+    border-radius: 0;
+    border: 1px solid #e8eaeb;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+::ng-deep.editor-content-checkbox-table .checkbox-input:hover::before {
+    border: 1px solid var(--blueDevextreme);
+}
+
+::ng-deep.editor-content-checkbox-table .checkbox-input:focus:active:before {
+    border: 1px solid var(--blueDevextreme);
+}
+
+::ng-deep.editor-content-checkbox-table .checkbox-input:checked:before {
+    content: "\f12c";
+
+    font: 10px/10px 'Material Design Icons';
+    display: block;
+    height: 16px;
+    width: 16px;
+    border: 1px solid var(--blueDevextreme);
+    color: var(--blueDevextreme);
+    background-color: #fff;
+    text-align: center;
+    line-height: 16px;
+
+}
+
+
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:enabled:active:before,
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:enabled:active:before {
+    box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset;
+    background-color: #f0f0f0;
+}
+
+
+
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:checked:enabled:active:before,
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:checked:enabled:active:before {
+    background-color: #0a7ffb;
+    color: rgba(0, 0, 0, 0.275);
+}
+
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:focus:before {
+    box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset, 0 0 0 3.3px rgba(65, 159, 255, 0.55), 0 0 0 5px rgba(65, 159, 255, 0.3);
+}
+
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:focus:active:before,
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:focus:active:before {
+    box-shadow: 0 0 0.04em, 0 0.06em 0.16em -0.03em transparent inset, 0 0 0 0.07em rgba(0, 0, 0, 0.1) inset, 0 0 0 3.3px rgba(65, 159, 255, 0.55), 0 0 0 5px rgba(65, 159, 255, 0.3);
+}
+
+::ng-deep.editor-content-checkbox [type=checkbox].checkbox-input:disabled:before {
+    opacity: 0.5;
+}
+
+
+
+
+
+/*** Fine checkbox  ***/
+
+
+/**Toolbar**/
+
+.-data-grid-toolbar {
+    margin-bottom: 5px;
+    margin-top: 3px;
+    padding: 2px 0;
+}
+
+
+::ng-deep.-data-grid-toolbar .-toolbar{
+    padding: 2px;
+    z-index: auto;
+   
+}
+
+::ng-deep.-data-grid-toolbar .sidebar-sticky-bottom .item-nav .item-button {
+    border-radius: 2px;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #fff;
+    border-color: #cacfd1;
+  
+    color: #333; 
+  }
+
+.-data-grid-toolbar .-toolbar-items-container .-toolbar .nav-horizontal {
+
+    height: 27px;
+
+}
+
+.-data-grid-toolbar-bottom {
+    margin-bottom: 0;
+    margin-top: 0px;
+    padding: 0;
+}
+
+.-data-grid-toolbar-bottom .-toolbar-items-container .-toolbar .nav-horizontal {
+
+    height: 27px;
+
+}
+
+
+::ng-deep.-data-grid-toolbar-bottom .sidebar-sticky-bottom .item-nav .item-button {
+
+    background-color: transparent;
+    color: var(--primary);
+    border: none;
+}
+
+::ng-deep.-data-grid-toolbar-bottom .sidebar-sticky-bottom .item-nav .item-button *:hover {
+    font-weight: bold;
+}
+
+
+::ng-deep.-data-grid-toolbar-bottom .sidebar-sticky-bottom .item-nav .item-button .button-content span{
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+
+
+/* ::ng-deep.dx-overlay-wrapper{
+    z-index: 500 !important;
+  }
+ */
+  
+ ::ng-deep.error-row{
+ 
+    border: 2px solid #ff0c0c !important;
+   /*  background: #ff0c0c!important; */
+}
+
+::ng-deep.tableFooter{
+    border-top: 1px solid #e8eaeb;
+    border-bottom: 1px solid #e8eaeb;
+}
+
+
+::ng-deep.tableFooter tr td{
+    border: none!important;
+    
+}
+

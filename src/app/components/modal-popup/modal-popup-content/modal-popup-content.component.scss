@@ -1,0 +1,138 @@
+::ng-deep.popup {
+  z-index: 500;
+  pointer-events: auto;
+  background-color: rgba(255, 255, 255, .8);
+
+  .modal-dialog {
+
+    max-width: 90%;
+    border: 1px solid var(--primary);
+    background: #fff;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+    border-radius: 4px;
+    pointer-events: auto;
+    width: fit-content;
+   
+    .caption-container {
+      &.modal{
+          
+          border: 1px solid var(--border_color);
+        
+      }
+    }
+    .modal-content {
+      border: none;
+      box-sizing: border-box;
+      background: transparent;
+
+      .formEdit {
+        background: var(--bg-grey);
+      }
+
+      
+
+
+
+    }
+
+
+
+  }
+}
+
+::ng-deep.position-bottom {
+  .modal-dialog {
+    z-index: 501;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    position: fixed;
+    max-width: 96%;
+    background: transparent;
+  }
+
+  /* Per l' apertura popup */
+
+}
+
+.fade-in-fwd {
+  -webkit-animation: fade-in-fwd 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+  animation: fade-in-fwd 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+}
+
+@-webkit-keyframes fade-in-fwd {
+  0% {
+    -webkit-transform: translateZ(-80px);
+    transform: translateZ(-80px);
+    opacity: 0;
+  }
+
+  100% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-fwd {
+  0% {
+    -webkit-transform: translateZ(-80px);
+    transform: translateZ(-80px);
+    opacity: 0;
+  }
+
+  100% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    opacity: 1;
+  }
+}
+
+
+
+/* Per la chisura popup */
+.fade-out-bck {
+  -webkit-animation: fade-out-bck 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+  animation: fade-out-bck 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+
+@keyframes fade-out-bck {
+  0% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateZ(-80px);
+    transform: translateZ(-80px);
+    opacity: 0;
+  }
+}
+
+/**Slide**/
+.slide-center {
+  -webkit-animation: slide-center-fw 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) none;
+  animation: slide-center-fw 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) none;
+}
+
+
+
+@keyframes slide-center-fw {
+  0% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  100% {
+    -webkit-transform: translateZ(160px);
+    transform: translateZ(160px);
+  }
+}
+
+
+::ng-deep.modal-content .modal-data-grid-wrapper {
+  margin: auto;
+}

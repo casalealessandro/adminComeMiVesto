@@ -1,0 +1,102 @@
+import { Component, Input, OnInit, Output, EventEmitter, ViewChild, AfterViewInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+
+import { Subscription } from 'rxjs';
+import { ToolbarComponent } from '../toolbar/toolbar.component';
+import { CaptionComponent } from '../../components/caption/caption.component';
+import { CommonModule } from '@angular/common';
+
+
+
+@Component({
+  selector: 'app-anagrafica-wrapper',
+  standalone:true,
+  imports:[CaptionComponent,CommonModule],
+  templateUrl: './anagrafica-wrapper.component.html',
+  styleUrls: ['./anagrafica-wrapper.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+})
+export class AnagraficaWrapperComponent {
+
+  @ViewChild('toolbarTab', { static: true })  toolbarTab!: ToolbarComponent;
+
+  @Input() caption:string=''
+  @Input() subTitle:string=''
+  @Input() tip:string=''
+  @Input() addButtonShow:boolean=false
+  @Input() helpDoc:string=''
+  @Input() breadcrumbNavigation:any=[];
+
+  @Output() emittChiusura: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emittEventButton: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emitToolbarLeft: EventEmitter<any> = new EventEmitter<any>();
+
+
+
+ 
+
+  public timeInterval: any = 0;
+
+  heightWrap!: number;
+  itemTabs: any = [];
+  showItemsTabs:boolean=false
+  private tabSubscription: Subscription | undefined;
+  
+  constructor() {}
+
+
+  ngAfterViewInit(){
+    this.getWindowHeight()
+    
+  }
+
+
+
+
+  getWindowHeight() {
+
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.clientHeight;
+  
+    // Altezza massima tra l'altezza della finestra e l'altezza del documento
+
+    const heightWin  = Math.max(windowHeight, documentHeight);
+
+    let  headerHeight, footerHeight ,menuHeight;
+    headerHeight = document.getElementById('header')!.offsetHeight ;
+    footerHeight = document.getElementById('footer')!.offsetHeight;
+    setTimeout(() => {
+      menuHeight = document.getElementById('horizontalMenucontainer')!.offsetHeight 
+ 
+      if(menuHeight == 0){
+        menuHeight = 60.5
+      }
+     
+     
+      this.heightWrap = heightWin - headerHeight - footerHeight - menuHeight ;   
+      this.heightWrap = this.heightWrap  - 13;
+     }, 300);
+   
+    
+  }
+  
+
+ 
+  onCrocettaClick(evt:any) {
+
+    this.emittChiusura.emit(evt);
+
+  }
+
+
+
+  buttonToolbarLeft(event: any) {
+
+    this.emitToolbarLeft.emit(event)
+
+  }
+
+  onAddClick(event:any){
+    this.emittEventButton.emit(event)
+  }
+}

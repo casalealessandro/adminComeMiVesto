@@ -1,0 +1,30 @@
+<div [ngStyle]="{'display': isPanelVisible ? 'block' : 'none', 'z-index': zIndexModalDialog }" class="modal popup"
+    [ngClass]="{'position-bottom':position == 'bottom'}" [ngClass]="classFade" tabindex="-1" [id]="idPopUp"
+    role="dialog" aria-hidden="true">
+
+    <div [id]="idPopUp" class="modal-dialog formEditPopup "
+        [ngStyle]="{'max-width':popUpWidth ? popUpWidth : '','width': popUpWidth ? popUpWidth : '' }">
+
+        <app-caption 
+            *ngIf="showCaptionHeader" 
+            [caption]="titlePopUp" 
+            [isClosable]="isClosablePopUp"
+            [cssClass]="'modal'"
+            (emettiChiusura)="emettiChiusura($event)" 
+            [help]="''">
+        </app-caption>
+
+
+        <div #containerComponent class="modal-content">
+
+
+
+
+        </div>
+
+        <app-caption *ngIf="showCaptionFooter" [isFooter]="showCaptionFooter" (emettiChiusura)="emettiChiusura($event)">
+        </app-caption>
+
+
+    </div>
+</div>

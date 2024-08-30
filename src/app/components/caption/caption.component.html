@@ -1,0 +1,63 @@
+
+
+    <div class="caption-container" [ngClass]="cssClass">
+               
+       <!--  <div class="item-wrap wrap-item-breadcrumb">
+            <ol class="breadcrumb " *ngIf="showBreadcrumb">
+
+                <li class="breadcrumb-item" *ngFor="let ustep of breadcrumbNavigation; index as i; last as isLast"
+                    (mouseenter)="showDropdownMenu($event,'navbarDropdown'+i)"
+                    (mouseleave)="hideDropdownMenu($event,'navbarDropdown'+i)">
+
+                    <a (click)="onBreadCrumbClick($event,ustep,i)"  >
+                        <span>{{ustep['title']}}</span>
+                        <span *ngIf="i > 0" class="mdi mdi-close close-icon"
+                            (click)="onBreadCrumbRemoveClick($event,ustep,i)">
+                        </span>
+                    </a>
+
+                   
+
+
+
+                </li>
+            </ol>
+        </div>     -->
+
+        <!--  TITOLO  -->
+        <div class="item-wrap wrap-item-title" >
+            <h2  class="page-title" >{{caption}}</h2>
+        </div>
+
+        <div class="item-wrap last-item-wrap ">
+            <div class="">
+                <!-- [4] => solo ingrandimento -->
+                <button class="btn ana-button"  *ngIf="addButtonShow" (click)="onClickAddButton($event)">
+                    <i class="mdi mdi-pencil-outline"></i>
+                    Aggiungi
+
+                </button>
+                
+      
+                <button class="icon-button"  *ngIf="isClosable" (click)="onClickCrocetta($event)">
+                    <i class="mdi mdi-window-close"></i>
+                 
+                </button>
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+    </div>
+
+  
+
+

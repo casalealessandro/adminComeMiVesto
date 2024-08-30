@@ -1,0 +1,68 @@
+$textColor: #fff;
+$footerHeight: var(--height_footer);
+$padding: 5px;
+
+
+
+
+
+.footer {
+    background-color: var(--primary);
+    width: 100%;
+    padding: $padding;
+    min-height: $footerHeight;
+
+    .content {
+        max-width: var(--width_container);
+        margin: 0 auto;
+        color: $textColor;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-content: center;
+        justify-content: space-between;
+        align-items: center;
+    
+        .indent {}
+    
+        .text {
+    
+            color: #fff;
+            width: 100%;
+            padding-left: 40px;
+    
+            h2 {
+                font-weight: 400;
+                margin: 0;
+                text-align: left;
+                font-size: 10px;
+                color: #fff;
+            }
+    
+            p {
+                margin: 0 0 0 2px;
+                font-size: 12px;
+    
+                a {
+                    color: white;
+                }
+            }
+        }
+    
+        .sx-logo {
+    
+            margin-top: 1px;
+    
+            width: fit-content;
+            height: 40px;
+            display: block;
+        }
+    
+        .dx-logo {
+            width: fit-content;
+            margin-top: 10px;
+            height: 25px;
+            display: block;
+        }
+    }
+}

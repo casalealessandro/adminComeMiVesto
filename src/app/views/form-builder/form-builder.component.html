@@ -1,0 +1,94 @@
+<app-anagrafica-wrapper 
+[caption]="formTitle">
+  <div class="text border-bottom">
+    <h2><span class="mdi mdi-chevron-right"></span>{{formTitle}} {{formName}}</h2>
+
+  </div>
+
+  <div class="row  mt-3 mb-3 ">
+    <label class="col-sm-2 col-form-label font-medium" for="formName">Form Name <span
+        class="badge bg-secondary">Richiesto</span></label>
+    <div class="col-sm-10">
+      <input id="formName" type="text" class="form-control" [(ngModel)]="formName" placeholder="">
+    </div>
+
+
+  </div>
+
+  <div class="text pt-3 mt-3">
+    <h3><span class="mdi mdi-chevron-right"></span>Anteprima form</h3>
+  </div>
+
+  <div class="content-formbuilder form-view ">
+
+
+    <!-- Aggiungi Elemento -->
+    <ul class="list-group elements">
+      <li *ngFor="let element of elements, index as i "
+        class="list-group-item d-flex justify-content-between align-items-center" (click)="onAdd($event,i)">
+        <span class="iconE" [ngClass]="elementIcons[element.type]"></span>
+        {{ element.label }}
+
+        <div>
+          <button class="btn icon-button ms-2" (click)="onAdd($event,i)">
+            <span class="mdi mdi-plus-circle-outline"></span>
+          </button>
+
+        </div>
+
+      </li>
+
+    </ul>
+    <div class="form-view ">
+      <div class="row">
+
+        <div class="element" *ngFor="let element of formElements, index as iEl "
+          (click)="openPropertiesModal(element,iEl)">
+          <div class="form-element mb-3">
+            <span>{{ element.label }}</span>
+
+            <!-- <ng-container [ngSwitch]="element.type">
+              <input [id]="element.label" *ngSwitchCase="'textBox'" [attr.type]="element.typeInput || 'text'"
+                class="form-control no-evt" [(ngModel)]="element.value">
+              <textarea [id]="element.label" *ngSwitchCase="'textarea'" class="form-control no-evt"
+                [(ngModel)]="element.value"></textarea>
+              <select [id]="element.label" *ngSwitchCase="'selectBox'" class="form-control no-evt"
+                [(ngModel)]="element.value">
+              
+              </select> 
+
+            </ng-container>-->
+          </div>
+
+
+          <button class="icon-button ms-2 removeEl" (click)="onRemove(iEl)">
+
+            <span class="mdi mdi-close"></span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Salva il form -->
+
+  <div class="formbuilder-button gap-3 mt-1">
+
+    <button class="ana-button btn" (click)="returnPrev()">
+      <span class="mdi mdi-keyboard-return"></span>
+      Indietro
+    </button>
+    <button class="ana-button btn" (click)="saveForm(formName)">
+      <span class="mdi mdi-content-save-outline"></span>
+      Salva
+    </button>
+
+
+
+  </div>
+
+</app-anagrafica-wrapper>

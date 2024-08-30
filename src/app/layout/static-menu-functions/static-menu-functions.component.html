@@ -1,0 +1,48 @@
+<div class="sticky">
+    <div class="horizontal-main hor-menu clearfix d-flex">
+        <button class="nav-link button-menu-mobile nav-icon" id="togglemenu" (click)="hideShowMainMenu($event)">
+            <i class="icon-icona-header"></i>
+           
+        </button>
+        <h4 style="width:10%" class="sidebar-title mb-0 flex-grow-0 text-center align-self-center"><span>{{currentMainMenuActive.text}}</span></h4>
+        <div class="horizontal-mainwrapper  mx-5 w-100 clearfix p-0 "> <!--container è stato rimosso-->
+           
+            <nav class="horizontalMenu clearfix">
+                
+                <ul class="horizontalMenu-list">
+                    <!--ricorda classe css active -->
+                    <ng-template *ngFor="let item of subMenu" [ngIf]="item.visible">
+                        <li class="">
+                            <a class="sub-icon" >
+                                <i class="hor-icon  material-icons-outlined {{item.image}}"></i> {{item.key}}
+                                <i *ngIf="item.items.length>0" class="fa fa-angle-down horizontal-icon"></i>
+                            </a>
+                            <ul class="sub-menu" *ngIf="item.items.length>0">
+                                <ng-template *ngFor="let subItem of item.items" [ngIf]="subItem.visible">
+                                    <li>
+                                    
+                                        <a *ngIf="!subItem.disabled;else disabled" (click)="clickItemFunction(subItem)" href="javascript:void(0);"  >
+                                            <i class="mdi mdi-square-medium-outline material-icons-outlined"></i>
+                                            {{subItem.text}}
+                                         </a>
+                                         <ng-template #disabled>
+                                            <a  href="javascript:void(0);" style="pointer-events:none;opacity:0.6;" >
+                                                <i class="mdi mdi-square-medium-outline material-icons-outlined"></i>
+                                                {{subItem.text}}
+                                             </a>
+                                         </ng-template>
+                                     
+                                    </li>
+                                </ng-template>
+                                
+    
+                            </ul>
+                        </li>
+
+                    </ng-template>
+                    
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
