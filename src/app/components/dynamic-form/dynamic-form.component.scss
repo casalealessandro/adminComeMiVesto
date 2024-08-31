@@ -1,0 +1,50 @@
+.form-container{
+    max-height: 750px;
+    overflow-y: scroll;
+    padding: 1rem;
+    .col-form-label{
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start
+    }
+
+    .custom-checkbox{
+        margin-left: -.6rem;
+        margin-right: 0.5rem;
+    }
+   
+    .table{
+        thead{
+            td{
+                background-color: var(--bg-grey);
+                padding: 0.6rem 0.5rem;
+                
+            }
+        }
+
+        td{
+            input{
+                /* background: #e5e7eb;
+                padding: 0.6rem 0.5rem; */
+            }
+            .action-cell{
+                text-align: center;
+            }
+            .button-in-cell{
+                font-size: 1.4rem;
+                padding: 0;
+            }
+        }
+            
+    }
+}
+
+.form-footer{
+    border: 1px solid var(--border_color);
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: end;
+}

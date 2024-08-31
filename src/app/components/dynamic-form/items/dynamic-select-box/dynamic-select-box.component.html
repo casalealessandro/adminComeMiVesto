@@ -1,0 +1,13 @@
+<div>
+  
+  <select
+    [multiple]="selectOptions.multiple"
+    [value]="selectedValue"
+    
+    (ionChange)="onValueChange($event)"
+    [disabled]="disabled"> <!-- Disabilita la selectbox se necessario -->
+    <option *ngFor="let option of availableOptions" [value]="option[valueExp]" >
+      {{ option[displayExp] }}
+    </option>
+  </select>
+</div>
