@@ -15,6 +15,24 @@
                 <div *ngIf="name.invalid && name.touched" class="text-danger">*Nome obbligatorio</div>
             </div>
             <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Tipo di campo
+                    <span class="badge bg-secondary">Richiesto</span>
+                </label>
+                <div class="col-sm-9">
+                    <select #typeInput="ngModel" name="typeInput" required  [(ngModel)]="formField.typeInput" class="form-control" >
+                            <option value="">Seleziona</option>
+                            <option value="text">Testo</option>
+                            <option value="number">Numerico</option>
+                            <option value="email">Email</option>
+                            <option value="password">Password</option>
+                            <option value="url">Url</option>
+                    </select>
+                    
+                </div>
+
+                <div *ngIf="label.invalid && label.touched" class="text-danger">*Tipo obbligatoria</div>
+            </div>
+            <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Label
                     <span class="badge bg-secondary">Richiesto</span>
                 </label>
@@ -62,6 +80,18 @@
                         [(ngModel)]="formField.required">
                     <label class="form-check-label" for="required">
                         Campo Richiesto
+                    </label>
+                </div>
+
+            </div>
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Mostra func.bot</label>
+                <div class="col-sm-9 form-check">
+
+                    <input id="funcButton" type="checkbox" class="form-check-input custom-checkbox" name="funcButton"
+                        [(ngModel)]="formField.funcButton">
+                    <label class="form-check-label" for="required">
+                        Mostra un bottone funzionale nella form
                     </label>
                 </div>
 

@@ -14,6 +14,7 @@ export interface DynamicFormField {
     min: any;
     max: any;
     selectOptions?: SelectOptions;
+    funcButton?:boolean
 
 }
 
