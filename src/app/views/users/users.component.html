@@ -3,11 +3,11 @@
   [subTitle]="subtitle"
   [tip]="'Gestisci il profilo utente, resetta la password,sospendi....'"
   [addButtonShow]="true"
-   (emittEventButton)="createNewuser()"
+  (emittEventButton)="createNewuser()"
 >
   
  
-  <ul class="list-group form-list">
+  <ul class="list-group form-list" >
     <li *ngFor="let user of users" class="form-list-item list-group-item d-flex justify-content-between align-items-center"
     (dblclick)="editUser(user)"
     >
@@ -54,4 +54,6 @@
       </div>
     </li>
   </ul>
+
+  
 </app-anagrafica-wrapper>
