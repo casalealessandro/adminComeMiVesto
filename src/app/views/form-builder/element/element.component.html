@@ -19,13 +19,14 @@
                     <span class="badge bg-secondary">Richiesto</span>
                 </label>
                 <div class="col-sm-9">
-                    <select #typeInput="ngModel" name="typeInput" required  [(ngModel)]="formField.typeInput" class="form-control" >
+                    <select #typeInput="ngModel" name="typeInput" required  [(ngModel)]="formField.typeInput" class="form-control" [disabled]="showFileOption" >
                             <option value="">Seleziona</option>
                             <option value="text">Testo</option>
                             <option value="number">Numerico</option>
                             <option value="email">Email</option>
                             <option value="password">Password</option>
                             <option value="url">Url</option>
+                            <option value="file" [selected]="showFileOption">file</option>
                     </select>
                     
                 </div>
@@ -68,7 +69,7 @@
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Max Length</label>
                 <div class="col-sm-9">
-                    <input type="number" name="maxLength" class="form-control" [(ngModel)]="formField.maxLength">
+                    <input type="number" [disabled]="showFileOption" name="maxLength" class="form-control" [(ngModel)]="formField.maxLength">
                 </div>
 
             </div>
@@ -84,11 +85,11 @@
                 </div>
 
             </div>
-            <div class="row mt-3 mb-3">
+            <div class="row mt-3 mb-3" *ngIf="this.formField.type == 'textBox'">
                 <label class="col-sm-3 col-form-label font-medium">Mostra func.bot</label>
                 <div class="col-sm-9 form-check">
 
-                    <input id="funcButton" type="checkbox" class="form-check-input custom-checkbox" name="funcButton"
+                    <input  id="funcButton" type="checkbox" class="form-check-input custom-checkbox" name="funcButton"
                         [(ngModel)]="formField.funcButton">
                     <label class="form-check-label" for="required">
                         Mostra un bottone funzionale nella form
@@ -96,17 +97,17 @@
                 </div>
 
             </div>
-            <div class="row mt-3 mb-3">
+            <div class="row mt-3 mb-3"  *ngIf="this.formField.type == 'textBox' && formField.typeInput == 'number'">
                 <label class="col-sm-3 col-form-label font-medium" for="min">Min Value</label>
                 <div class="col-sm-9">
-                    <input id="min" type="number" class="form-control" name="min" [(ngModel)]="formField.min">
+                    <input [disabled]="showFileOption" id="min" type="number" class="form-control" name="min" [(ngModel)]="formField.min">
                 </div>
 
             </div>
-            <div class="row mt-3 mb-3">
+            <div class="row mt-3 mb-3"  *ngIf="this.formField.type == 'textBox' && formField.typeInput == 'number'">
                 <label class="col-sm-3 col-form-label font-medium">Max Value</label>
                 <div class="col-sm-9">
-                    <input type="number" class="form-control" name="max" [(ngModel)]="formField.max">
+                    <input [disabled]="showFileOption" type="number" class="form-control" name="max" [(ngModel)]="formField.max">
                 </div>
 
             </div>
