@@ -19,16 +19,18 @@
                     <span class="badge bg-secondary">Richiesto</span>
                 </label>
                 <div class="col-sm-9">
-                    <select #typeInput="ngModel" name="typeInput" required  [(ngModel)]="formField.typeInput" class="form-control" [disabled]="showFileOption" >
-                            <option value="">Seleziona</option>
-                            <option value="text">Testo</option>
-                            <option value="number">Numerico</option>
-                            <option value="email">Email</option>
-                            <option value="password">Password</option>
-                            <option value="url">Url</option>
-                            <option value="file" [selected]="showFileOption">file</option>
+                    <select #typeInput="ngModel" name="typeInput" required [(ngModel)]="formField.typeInput"
+                        class="form-control" [disabled]="showFileOption">
+                        <option value="">Seleziona</option>
+                        <option value="text">Testo</option>
+                        <option value="number">Numerico</option>
+                        <option value="email">Email</option>
+                        <option value="password">Password</option>
+                        <option value="url">Url</option>
+                        <option value="file" [selected]="showFileOption">file</option>
+                        <option value="boolean" [selected]="showCheckBoxOption">Boolean</option>
                     </select>
-                    
+
                 </div>
 
                 <div *ngIf="label.invalid && label.touched" class="text-danger">*Tipo obbligatoria</div>
@@ -69,7 +71,8 @@
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Max Length</label>
                 <div class="col-sm-9">
-                    <input type="number" [disabled]="showFileOption" name="maxLength" class="form-control" [(ngModel)]="formField.maxLength">
+                    <input type="number" [disabled]="showFileOption" name="maxLength" class="form-control"
+                        [(ngModel)]="formField.maxLength">
                 </div>
 
             </div>
@@ -89,7 +92,7 @@
                 <label class="col-sm-3 col-form-label font-medium">Mostra func.bot</label>
                 <div class="col-sm-9 form-check">
 
-                    <input  id="funcButton" type="checkbox" class="form-check-input custom-checkbox" name="funcButton"
+                    <input id="funcButton" type="checkbox" class="form-check-input custom-checkbox" name="funcButton"
                         [(ngModel)]="formField.funcButton">
                     <label class="form-check-label" for="required">
                         Mostra un bottone funzionale nella form
@@ -97,33 +100,68 @@
                 </div>
 
             </div>
-            <div class="row mt-3 mb-3"  *ngIf="this.formField.type == 'textBox' && formField.typeInput == 'number'">
+            <div class="row mt-3 mb-3" *ngIf="this.formField.type == 'textBox' && formField.typeInput == 'number'">
                 <label class="col-sm-3 col-form-label font-medium" for="min">Min Value</label>
-                <div class="col-sm-9">
-                    <input [disabled]="showFileOption" id="min" type="number" class="form-control" name="min" [(ngModel)]="formField.min">
+                <div class="col-sm-9 form-control">
+                    <input [disabled]="showFileOption" id="min" type="number" class="form-control" name="min"
+                        [(ngModel)]="formField.min">
                 </div>
 
             </div>
-            <div class="row mt-3 mb-3"  *ngIf="this.formField.type == 'textBox' && formField.typeInput == 'number'">
+            <div class="row mt-3 mb-3" *ngIf="this.formField.type == 'textBox' && formField.typeInput == 'number'">
                 <label class="col-sm-3 col-form-label font-medium">Max Value</label>
-                <div class="col-sm-9">
-                    <input [disabled]="showFileOption" type="number" class="form-control" name="max" [(ngModel)]="formField.max">
+                <div class="col-sm-9 form-control">
+                    <input [disabled]="showFileOption" type="number" class="form-control" name="max"
+                        [(ngModel)]="formField.max">
                 </div>
 
             </div>
 
-            <!--  <div class="row mt-3 mb-3">
-        <label class="col-sm-3 col-form-label font-medium">Validations</label>
-        <div *ngFor="let validation of formField.validation">
-          <input type="text" class="form-control" [(ngModel)]="validation.type" placeholder="Validation Type">
-          <input type="text" class="form-control" [(ngModel)]="validation.value" placeholder="Validation Value">
-        </div>
-        <button type="button" class="btn btn-secondary" (click)="addValidation(formField)">Add Validation</button>
-      </div> -->
+
 
         </div>
+        <div *ngIf="showCheckBoxOption && formField.checkBoxOptions" class="row mt-3 mb-3 ">
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">CheckBox con link</label>
+                <div class="col-sm-9 form-check">
+                    <input id="hrefLink" name="hrefLink" type="checkbox" class="form-check-input custom-checkbox"
+                        [(ngModel)]="formField.checkBoxOptions.haveLink">
+                    <label for="hrefLink" class="form-check-label">Abilita per inserire un link nella checkbox</label>
+                </div>
 
-        <div *ngIf="showSelectOption && formField.selectOptions" class="row mt-3 mb-3 selectbox-group">
+            </div>
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Link</label>
+                <div class="col-sm-9 ">
+                    <input 
+                    id="hrefLink"
+                    name="hrefLink"
+                    type="url"
+                    class="form-control"
+                    [(ngModel)]="formField.checkBoxOptions.hrefLink"
+                    #hrefLink="ngModel" 
+                    [required]="formField.checkBoxOptions.haveLink === true">
+                      
+                </div>
+                <div *ngIf="hrefLink.invalid && hrefLink.touched  && formField.checkBoxOptions.haveLink" class="text-danger">*link obbligatorio</div>     
+            </div>
+
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Testo del link</label>
+                <div class="col-sm-9 ">
+                    <input 
+                    id="hrefText" 
+                        name="hrefText" 
+                        type="text"
+                        class="form-control"
+                        [required]="formField.checkBoxOptions.haveLink === true"
+                        [(ngModel)]="formField.checkBoxOptions.hrefText"
+                        #hrefText="ngModel">
+                </div>
+                <div *ngIf="hrefText.invalid && hrefText.touched  && formField.checkBoxOptions.haveLink" class="text-danger">*Testo del link</div>
+            </div>
+        </div>
+        <div *ngIf="showSelectOption && formField.selectOptions" class="row mt-3 mb-3 ">
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Multiple</label>
                 <div class="col-sm-9 form-check">
@@ -133,6 +171,7 @@
                 </div>
 
             </div>
+
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Parent ID</label>
                 <div class="col-sm-9">
@@ -163,7 +202,7 @@
                 <div *ngIf="valueExp.invalid && valueExp.touched" class="text-danger">valueExp obbligatorio</div>
             </div>
             <div class="mt-3 mb-3">
-               
+
                 <table class="table table-sm "
                     *ngIf="formField.selectOptions.valueExp && formField.selectOptions.displayExp">
                     <thead>
@@ -178,15 +217,20 @@
                         <tr>
                             <td><input type="text" class="form-control" [name]="formField.selectOptions.valueExp"
                                     [(ngModel)]="newOption[formField.selectOptions.valueExp]"
-                                    placeholder="Nuovo Display"></td>
+                                    placeholder="Nuovo Display">
+                            </td>
                             <td><input type="text" class="form-control" [name]="formField.selectOptions.displayExp"
                                     [(ngModel)]="newOption[formField.selectOptions.displayExp]"
-                                    placeholder="Nuovo Value"></td>
+                                    placeholder="Nuovo Value">
+                            </td>
                             <td><input type="text" class="form-control" name="parentT" [(ngModel)]="newOption.parent"
                                     placeholder="Nuovo Parent"></td>
-                            <td class="action-cell"><button (click)="addOption()" class="icon-button btn button-in-cell"><span class="mdi mdi-content-save-outline"></span></button></td>
+                            <td class="action-cell"><button (click)="addOption()"
+                                    class="icon-button btn button-in-cell"><span
+                                        class="mdi mdi-content-save-outline"></span></button></td>
                         </tr>
-                        <tr *ngFor="let option of formField.selectOptions.options; let i = index" (click)="onOptionClick(option)">
+                        <tr *ngFor="let option of formField.selectOptions.options; let i = index"
+                            (click)="onOptionClick(option)">
                             <td>
 
                                 {{option[formField.selectOptions.valueExp]}}
@@ -215,7 +259,9 @@
 </div>
 <div class="modal-footer">
 
-    <button type="button" class="btn ana-button" (click)="closeProperties(elementForm)"><span class="mdi mdi-keyboard-return"></span>Chiudi</button>
-    <button type="button" class="btn ana-button" (click)="saveProperties(elementForm)"><span class="mdi mdi-content-save-outline"></span>Salva</button>
-    
+    <button type="button" class="btn ana-button" (click)="closeProperties(elementForm)"><span
+            class="mdi mdi-keyboard-return"></span>Chiudi</button>
+    <button type="button" class="btn ana-button" (click)="saveProperties(elementForm)"><span
+            class="mdi mdi-content-save-outline"></span>Salva</button>
+
 </div>

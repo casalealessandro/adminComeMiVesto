@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
-import { DynamicFormField, SelectOptions } from '../dynamic-form-field';
+import { CheckBoxOptions, DynamicFormField, SelectOptions } from '../dynamic-form-field';
 import { confirm } from '../../../widgets/ui-dialogs';
 import { DataGridComponent } from '../../../components/data-grid/data-grid.component';
 
@@ -20,7 +20,9 @@ export class ElementComponent {
   @Output() outPutProperties = new EventEmitter<any>();
   showSelectOption: boolean = false
   showFileOption: boolean = false
+  showCheckBoxOption: boolean = false
   selectOptions!: SelectOptions;
+  checkBoxOptions!:CheckBoxOptions;
   newOption: any = {}
   optionSelIndex: number = -1;
 
@@ -38,9 +40,33 @@ export class ElementComponent {
     const type = this.formField.type
 
     switch (type) {
+      case 'checkBox':
+        this.showCheckBoxOption = true;
+        this.formField.typeInput = 'boolean';
+
+        this.checkBoxOptions = {
+          haveLink: false,
+          hrefLink: undefined,
+          hrefText: ''
+        }
+
+        if (typeof this.formField.checkBoxOptions != 'undefined') {
+          let checkBoxOptions = this.formField.checkBoxOptions
+          this.checkBoxOptions = {
+            haveLink: checkBoxOptions.haveLink,
+            hrefLink: checkBoxOptions.hrefLink,
+            hrefText: checkBoxOptions.hrefText
+
+          }
+        }
+
+        this.formField.checkBoxOptions = this.checkBoxOptions
+        break;
       case 'fileBox':
+        
         this.showFileOption = true;
         this.formField.typeInput = 'file'
+
         break;
       case 'selectBox':
         this.showSelectOption = true;

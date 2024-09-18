@@ -23,7 +23,7 @@ export class FormBuilderComponent {
     { type: 'textBox', label: 'Text Box' },
     { type: 'selectBox', label: 'Select Box' },
     { type: 'radio', label: 'Radio Button' },
-    { type: 'checkbox', label: 'Checkbox' },
+    { type: 'checkBox', label: 'Checkbox' },
     { type: 'textArea', label: 'Textarea' },
     { type: 'fileBox', label: 'FileBox' },
   ];
@@ -32,7 +32,7 @@ export class FormBuilderComponent {
     textBox:"mdi mdi-signature-text",
     selectBox:"mdi mdi-form-select",
     radio:"mdi mdi-radiobox-marked",
-    checkbox:"mdi mdi-checkbox-marked-outline",
+    checkBox:"mdi mdi-checkbox-marked-outline",
     textArea:"mdi mdi-form-textarea",
     fileBox:"mdi mdi-file-document-outline"
   }
