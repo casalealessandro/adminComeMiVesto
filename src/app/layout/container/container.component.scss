@@ -1,10 +1,16 @@
-.horizontalMenucontainer{
-    margin: auto;
-    height: var(--height_menuFunzioni);
+.mi-container {
+    .verticalMenucontainer {
+        height: 100%;
+        position: absolute;
+        left: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        
+        padding-bottom: .75rem;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        box-sizing: border-box;
+        border: 1px solid var(--border_color) ;
+       
+    }
 }
-
-.container, .horizontalMenucontainer{
-    max-width: var(--width_container);
-   
-}
-

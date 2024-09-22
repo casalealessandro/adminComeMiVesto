@@ -3,17 +3,12 @@
     <ng-container >
         <app-header ></app-header>
     
-    
-       <!--  <app-static-menu *ngIf="idTipoUtente>0" (closeMainMenu)="closeMainMenu($event)"
-            (emittendItemMenu)="mainMenuClick($event)" [isClose]="isClose">
-        </app-static-menu> -->
-
-        <div  id="horizontalMenucontainer" class="horizontalMenucontainer">
-
-            <!-- <app-static-menu-functions *ngIf="showSubMenu" [currentMainMenuActive]="currentMainMenuActive"
-                [subMenu]="subMenu" (emittendItemFunctionMenu)="closeMainMenu($event)"></app-static-menu-functions> -->
-
+        <div class="verticalMenucontainer sidebar">
+            <app-menu></app-menu>
         </div>
+        
+
+        
     </ng-container>
     
 

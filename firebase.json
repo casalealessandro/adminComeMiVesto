@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/admin",
+    "public": "dist/admin/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -8,7 +8,7 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "/dashboard/**",
         "destination": "/index.html"
       }
     ]

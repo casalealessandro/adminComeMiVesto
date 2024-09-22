@@ -1,1 +1,16 @@
-<p>menu works!</p>
+<div class="d-flex flex-column flex-shrink-0 bg-body-tertiary" >
+
+    <a href="/" class="d-block p-3 link-body-emphasis text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
+      <svg class="bi pe-none" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
+      <span class="visually-hidden">Icon-only</span>
+    </a>
+    <ul class="nav nav-pills nav-flush flex-column mb-auto text-center" >
+      <li class="nav-item" *ngFor="let menuItem of allMenu;">
+        <a [href]="menuItem.path" class="nav-link" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Home" data-bs-original-title="Home">
+          <span [class]="menuItem.icon"></span>
+          <span class="text">{{menuItem.label}}</span>
+        </a>
+      </li>
+     
+    </ul>
+  </div>
