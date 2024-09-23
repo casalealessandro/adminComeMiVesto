@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site":"admincomemivesto",
     "public": "dist/admin/browser",
     "ignore": [
       "firebase.json",

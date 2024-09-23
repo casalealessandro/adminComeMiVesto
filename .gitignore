@@ -1,6 +1,6 @@
 node_modules
 functions
 firebase-api
-src/environments
+src/environments/*
 .angular
 .vscode
