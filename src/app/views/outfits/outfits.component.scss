@@ -1,0 +1,25 @@
+
+::ng-deep.outfit-title{
+    .contet-data{
+        font-weight: 500;
+    }
+    
+}
+
+::ng-deep.outfit-image{
+    .contet-data{
+        width: 2.7rem;
+        height: 2.7rem;
+        padding: 0.2rem;
+        .cell-img{
+            
+            -o-object-fit: cover;
+            object-fit: cover;
+            
+            width: 100%;
+            height: 100%;
+            
+            cursor: pointer;
+        }
+    }
+}

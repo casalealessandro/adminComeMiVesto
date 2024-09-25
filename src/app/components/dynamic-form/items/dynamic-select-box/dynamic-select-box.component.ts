@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule } from '@angular/forms';
 import { DynamicFormField } from '../../../../interface/dynamic-form-field';
 import { CommonModule } from '@angular/common';
 
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-dynamic-select-box',
   templateUrl: './dynamic-select-box.component.html',
   standalone:true,
-  imports:[CommonModule],
+  imports:[CommonModule,FormsModule],
   styleUrls: ['./dynamic-select-box.component.scss'],
 })
 export class DynamicSelectBoxComponent implements OnChanges {
@@ -45,10 +45,17 @@ export class DynamicSelectBoxComponent implements OnChanges {
       if (this.config.selectOptions.parent && this.parentValue) {
         this.availableOptions = this.availableOptions.filter((option:any) => option.parent === this.parentValue);
       }
+
+      console.log(this.selectOptions)
+
+      if(this.selectOptions.multiple){
+        this.multiple = this.selectOptions.multiple
+      }
+
       this.selectedValue = this.selectOptions.multiple ? this.values : this.value;
 
       this.formControlD?.setValue(this.selectedValue)
-      this.multiple = this.selectOptions.multiple || false;
+      //this.multiple = this.selectOptions.multiple || false;
     }
   }
 
@@ -70,7 +77,9 @@ export class DynamicSelectBoxComponent implements OnChanges {
   }
 
   onValueChange(event: any) {
-    this.selectedValue = event.detail.value;
-    this.valueChange.emit(this.selectedValue);
+
+   
+
+    this.valueChange.emit(this.selectedValue); 
   }
 }

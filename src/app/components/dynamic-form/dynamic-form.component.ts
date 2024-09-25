@@ -33,7 +33,7 @@ export class DynamicFormComponent {
   formShow: boolean = false
   fieldConfigs: any = [];
   templateService=inject(FormService)
-
+  inEdit:boolean=true
 
 
 
@@ -44,6 +44,7 @@ export class DynamicFormComponent {
     }
     if (typeof this.editData === 'undefined') {
       this.editData = {};
+      this.inEdit = false
     }
     this.templateService.getFormFields(this.service).subscribe(fields => {
       this.fields = fields;
@@ -60,6 +61,7 @@ export class DynamicFormComponent {
     const formGroup = new FormGroup({});
   
     this.fields.forEach(field => {
+
       let validators = this.getValidators(field);
       
       // Recupera il valore dall'editData o imposta null come valore predefinito
@@ -147,7 +149,8 @@ export class DynamicFormComponent {
       let eventT={
         name:'submitForm',
         formData:this.form.value,
-        form:this.form
+        form:this.form,
+        inEdit:this.inEdit
       }
       this.submitFormEvent.emit(eventT);
     } else {

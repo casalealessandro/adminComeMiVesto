@@ -3,6 +3,7 @@ import { DashboardComponent } from './views/dashboard/dashboard.component';
 import { AppFormListComponent } from './views/app-views/app-form-list.component';
 import { FormBuilderComponent } from './views/form-builder/form-builder.component';
 import { UsersComponent } from './views/users/users.component';
+import { OutfitsComponent } from './views/outfits/outfits.component';
 
 
 export const routes:Routes = [
@@ -11,6 +12,7 @@ export const routes:Routes = [
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     { path: 'form-list', component: AppFormListComponent },
      { path: 'form-builder/:id', component: FormBuilderComponent },
+     { path: 'outfit-list', component: OutfitsComponent },
   ];
   
 

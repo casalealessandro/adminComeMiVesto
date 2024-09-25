@@ -20,7 +20,7 @@
                 </label>
                 <div class="col-sm-9">
                     <select #typeInput="ngModel" name="typeInput" required [(ngModel)]="formField.typeInput"
-                        class="form-control" [disabled]="showFileOption">
+                        class="form-control" [disabled]="showFileOption || showSelectOption">
                         <option value="">Seleziona</option>
                         <option value="text">Testo</option>
                         <option value="number">Numerico</option>
@@ -29,6 +29,7 @@
                         <option value="url">Url</option>
                         <option value="file" [selected]="showFileOption">file</option>
                         <option value="boolean" [selected]="showCheckBoxOption">Boolean</option>
+                        <option value="selectBox" [selected]="showSelectOption">SelectBox</option>
                     </select>
 
                 </div>

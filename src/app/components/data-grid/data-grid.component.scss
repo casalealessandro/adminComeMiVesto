@@ -226,7 +226,7 @@
 
 .-data-grid tr td .button-icon .button-in-cell i{
     font-size: 13px;
-    color: var(--blueDevextreme);
+    color: var(--blueSoft);
 }
 
 .-data-grid tr td .button-icon .button-in-cell span{
@@ -310,15 +310,21 @@
 
 
 
-::ng-deep.-data-grid .editable-row-operations .link-editor {
-    text-decoration: none;
-    background-position: 0 0;
-    padding: 0;
-    text-align: center;
-    margin: 0 2px;
-    vertical-align: middle;
+.-data-grid {
+    .editable-row-operations{
+        text-align: center;
+        .link-editor {
+            text-decoration: none;
+            background-position: 0 0;
+            padding: 0;
+           
+            margin: 0 2px;
+            vertical-align: middle;
+        }
+    
+    }
 }
-
+    
 ::ng-deep.-data-grid td.editor-cell .editor-content.state-active {
 
     border-width: 2px;

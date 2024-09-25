@@ -14,17 +14,20 @@
               [attr.required]="field.required ? true : null"
               [id]="field.htmlId" 
               class="form-control" 
-          
+              [(ngModel)]="formValues[field.name]"  
               [placeholder]="field.placeholder"
               [maxlength]="field.maxlength!"
               [minlength]="field.minlength!"
               >
               <textarea  *ngIf="field.type === 'textArea'"
             [placeholder]="field.placeholder" rows="4"
+            class="form-control" 
               >
   
               </textarea>
-              <app-dynamic-select-box *ngIf="field.type === 'selectBox'" [config]="field"
+              
+              <app-dynamic-select-box
+               *ngIf="field.type === 'selectBox'" [config]="field"
               [parentValue]="formValues[field.selectOptions?.parent || '']" [value]="formValues[field.name]"
               [values]="field.selectOptions?.multiple ? formValues[field.name] : []"
               (valueChange)="onValueChange(field.name, $event)">

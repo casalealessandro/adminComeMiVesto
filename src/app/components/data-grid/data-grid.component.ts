@@ -32,7 +32,7 @@ export interface tasto {
   templateUrl: './data-grid.component.html',
   standalone:true,
   imports:[CommonModule,TdItemComponent,ToolbarComponent],
-  styleUrls: ['./data-grid.component.css']
+  styleUrls: ['./data-grid.component.scss']
 })
 
 
@@ -107,7 +107,7 @@ export class DataGridComponent{
 
   showT: boolean = false;
 
-  colsHeader: any[] = [];
+  colsHeader: ColData[] = [];
   colsGroup: any[] = [];
   colsRow: any[] = [];
   colsDetail: any[] = [];
@@ -259,14 +259,14 @@ export class DataGridComponent{
 
   }
 
-  ngAfterViewInit() {
-    this.focusRow(0);
+/*   ngAfterViewInit() {
+   
 
-  }
+  } */
 
 
 
-  async ngOnInit() {
+  async ngAfterViewInit() {
     this.tableWrapWidth = (this.tableWidth - 5)
     this.editorData = [{
       rowIndex: null,
@@ -293,7 +293,7 @@ export class DataGridComponent{
       }
     }
    
-   
+    this.focusRow(0);
   }
 
 
@@ -645,22 +645,15 @@ export class DataGridComponent{
         type: 'selection',
         id: 'selection',
         caption: '',
-        search: false,
         colWidth: this.cellSelectWidth,
-        class: null,
-        dataField: null,
-        colSpan: null,
-        captionAlign: null,
-        align: null,
-        format: null,
-        isEditable: false,
-        edit: false,
-        editorType: null,
-        customizedOption: null,
-        min: null,
-        max: null,
-        maxLength: null,
-
+        labelVisible: false,
+        colCaption: undefined,
+        allowFiltering: undefined,
+        dataField: '',
+        labelAlignment: undefined,
+        edit: undefined,
+        groupDataField: undefined,
+   
       })
     }
 
@@ -712,7 +705,7 @@ export class DataGridComponent{
 
 
 
-      h.data.forEach((resColH:any) => {
+      h.data.forEach((resColH:ColData) => {
 
         tabIndex++
         let customizedOption
@@ -729,9 +722,9 @@ export class DataGridComponent{
           return
         }
 
-        if (resColH.type == 'button' || resColH.type == 'simpleButton'  ) {
+        if (resColH.type == 'campoButton' ) {
           this.colsHeader.push({
-            type: 'button',
+            type: 'campoButton',
             search: false,
             id: resColH.dataField,
             caption: resColH.caption,
@@ -740,20 +733,24 @@ export class DataGridComponent{
             class: resColH.class,
             dataField: resColH.dataField,
             colSpan: resColH.colSpan,
-            captionAlign: resColH.labelAlignment,
-            align: resColH.colAlignment,
+            colAlignment: resColH.colAlignment,
             format: resColH.format,
             isEditable: false,
             edit: false,
             editorType: resColH.editorType,
             customizedOptions: customizedOption,
-            dataOptions: resColH,
+          
             validation: resColH.validation ? resColH.validation : [],
             min: resColH.min,
             max: resColH.max,
             maxLength: resColH.maxLength,
             tabIndex: tabIndex,
-            button: resColH.button
+            button: resColH.button,
+            labelAlignment: undefined,
+            groupDataField: undefined,
+            labelVisible: false,
+            colCaption: undefined,
+            allowFiltering: undefined
           })
           return
         }
@@ -859,7 +856,8 @@ export class DataGridComponent{
         } 
 
         this.colsHeader.push({
-          type: 'data',
+          type: resColH.type,
+          
           search: typeof this.showFilter != 'undefined' ? this.showFilter : resColH.allowFiltering,
           id: resColH.dataField,
           caption: colCaption,
@@ -868,21 +866,24 @@ export class DataGridComponent{
           class: resColH.class,
           dataField: resColH.dataField,
           colSpan: resColH.colSpan,
-          captionAlign: resColH.labelAlignment,
-          align: resColH.colAlignment,
+          colAlignment: resColH.colAlignment,
           format: resColH.format,
           isEditable: allowEditing,
-          edit: false,
           editorType: resColH.editorType,
           customizedOptions: customizedOption,
-          dataOptions: resColH,
           validation: resColH.validation ? resColH.validation : [],
           min: resColH.min,
           max: resColH.max,
           maxLength: resColH.maxLength,
           tabIndex: tabIndex,
-          showInSummary:showInSummary
-
+          showInSummary: showInSummary,
+          labelVisible: false,
+          colCaption: undefined,
+          allowFiltering: undefined,
+          labelAlignment: undefined,
+          edit: undefined,
+          groupDataField: undefined,
+    
         })
 
         this.valueSumm[resColH.dataField] = null;
@@ -898,26 +899,24 @@ export class DataGridComponent{
         style: 'background-color: #D6EEEE',
       })
 
-      this.colsHeader.unshift({
+      this.colsHeader.push({
         type: 'editorButtons',
         id: 'editorButtons',
         caption: '',
         search: false,
         colWidth: 30,
         class: null,
-        dataField: null,
-        colSpan: null,
-        captionAlign: null,
-        align: null,
-        format: null,
+
+
         isEditable: false,
         edit: false,
-        editorType: null,
-        customizedOption: null,
-        min: null,
-        max: null,
-        maxLength: null,
-
+        labelAlignment: undefined,
+        groupDataField: undefined,
+    
+        labelVisible: false,
+        colCaption: undefined,
+        allowFiltering: undefined,
+        dataField: ''
       })
       this.colsHeader.push({
         type: 'removeButtons',
@@ -926,19 +925,18 @@ export class DataGridComponent{
         search: false,
         colWidth: 50,
         class: null,
-        dataField: null,
-        colSpan: null,
-        captionAlign: null,
-        align: null,
-        format: null,
+
+
+
         isEditable: false,
         edit: false,
-        editorType: null,
-        customizedOption: null,
-        min: null,
-        max: null,
-        maxLength: null,
-
+        labelAlignment: undefined,
+        groupDataField: undefined,
+       
+        labelVisible: false,
+        colCaption: undefined,
+        allowFiltering: undefined,
+        dataField: ''
       })
 
     }
@@ -1031,20 +1029,14 @@ export class DataGridComponent{
       search: false,
       colWidth: '30',
       class: 'detailCol',
-      dataField: null,
-      colSpan: null,
-      captionAlign: null,
-      align: null,
-      format: null,
-      isEditable: false,
-      edit: false,
-      editorType: null,
-      customizedOption: null,
-      min: null,
-      max: null,
-      maxLength: null,
-      groupDataField: groupDataField
-
+      groupDataField: groupDataField,
+      labelAlignment: undefined,
+      edit: undefined,
+      
+      labelVisible: false,
+      colCaption: undefined,
+      allowFiltering: undefined,
+      dataField: ''
     })
 
     this.colsGroupCaption = []
@@ -1161,7 +1153,7 @@ export class DataGridComponent{
         return Number(ress.colWidth);
       }
     })
-
+    const data = ['icon','selection','editorButtons','removeButtons','detail','campoDesc','empty']
     // Calcola la larghezza totale delle celle già presenti
     const larghezzaCellePresenti = larghezzaCelleArray.reduce((acc: any, larghezza: any) => acc + larghezza, 0);
 
@@ -1180,8 +1172,12 @@ export class DataGridComponent{
       const larghezzeAggiornate = larghezzaCelleArray.map((larghezza: number) => larghezza * (1 + fattoreDiScala) /*sarà 1- se fattore di scala è negativo*/);
 
       // Ora puoi utilizzare le larghezzeAggiornate per impostare la larghezza delle celle nel tuo loop
+
+      
+      const columnsData = this.colsHeader.filter((res:any) => !data.some(res.type))
+
       for (let i = 0; i < larghezzeAggiornate.length; i++) {
-        if (cols[i].type == 'data') {
+        if (!columnsData.some(cols[i].type)) {
           cols[i].colWidth = larghezzeAggiornate[i].toFixed(3)
           cols[i].width = larghezzeAggiornate[i].toFixed(3)
 
@@ -1190,8 +1186,8 @@ export class DataGridComponent{
       }
 
     } else {
-
-      const colonneEscluse = cols.filter((col:any) => col.type != 'data' || typeof col.groupIndex != 'undefined');
+      
+      const colonneEscluse = cols.filter((col:any) => data.some(col.type) || typeof col.groupIndex != 'undefined');
 
       let larghezzaColonneEscluse: number = 0;
       colonneEscluse.forEach((colonnaEsclusa:any) => {
@@ -1211,9 +1207,9 @@ export class DataGridComponent{
       //const scala: number = larghezzaRimanente / (this.colsHeader.length - colonneEscluse.length);
 
       for (let i = 0; i < cols.length; i++) {
-        if (cols[i].type == 'data' && cols[i].colWidth != 'auto') {
+        if (cols[i].colWidth != 'auto') {
           cols[i].colWidth = cols[i].colWidth * scala;
-        } else if (this.colsHeader[i].type == 'data' && cols[i].colWidth == 'auto') {
+        } else if (cols[i].colWidth == 'auto') {
           cols[i].colWidth = larghezzaCelleArray[i] * scala;
         }
       }
@@ -1576,9 +1572,6 @@ export class DataGridComponent{
 
 
 
-
-
-
     /*
 
       $count=true   =>   Restituisce il conteggio di TUTTI gli elementi restituiti dalla richiesta
@@ -1912,11 +1905,7 @@ export class DataGridComponent{
 
     setTimeout(() => {
             
-      let cols = this.colsHeader.filter(r => {
-        if (r.type == 'data' && r.isEditable) {
-          return r
-        }
-      });
+      let cols = this.colsHeader.filter((r:ColData) =>  r.isEditable);
   
       if (this.editorsElement.length == cols.length) {
         this.editorsElement[0].htmlElement.focus();
@@ -2656,30 +2645,16 @@ export class DataGridComponent{
     this.selectRow(event, i, colRow)
   }
 
-  tdClick(event: any, colInfo: { type: any; }, tdIndex: any, rowIndex: any) {
-
+  tdClick(event: any, colInfo:ColData, tdIndex: any, rowIndex: any) {
+    event.stopPropagation()
     if (this.modeEdit != 'cell') {
       return
     }
     const colType = colInfo.type
     switch (colType) {
 
-      case 'data':
-        /* if (this.isEditable) {
-
-          let prevIndex = rowIndex - 1
-
-          if (prevIndex >= 0 && this.rowSelected[prevIndex]) {
-            this.closeEditorData(prevIndex);
-          }
-
-          if (colInfo.isEditable && !this.editorCellByRow[rowIndex][colInfo.dataField]) {
-            this.startEditor(event, rowIndex)
-            this.rowSelected[rowIndex] = true
-            event.stopPropagation();
-            event.preventDefault();
-          }
-        } */
+      case 'campoButton':
+       this.buttonClick(event,colInfo.button,colInfo,rowIndex)
         break;
 
       default:
@@ -3246,7 +3221,7 @@ export class DataGridComponent{
   }
 
   // Funzione per calcolare la somma di una colonna specifica
-  calcolaSomma(cols: { dataField: any; showInSummary: any; }): number {
+  calcolaSomma(cols:ColData): number {
     
     
     if(!cols.dataField){
@@ -3312,8 +3287,8 @@ export class DataGridComponent{
 
     setTimeout(
       async () => {
-
-        const columnsData = this.colsHeader.filter(res => res.type == 'data')
+        const data = ['icon','selection','editorButtons','removeButtons','detail','campoDesc','empty']
+        const columnsData = this.colsHeader.filter((res:any) => !data.some(res.type))
 
         let myqueryStrigOdata: (string | null | undefined)[] = []
 
@@ -3330,7 +3305,7 @@ export class DataGridComponent{
         */
 
         columnsData.forEach(columnData => {
-          let type = columnData.dataOptions.dataType;
+          let type = columnData.customizedOptions.dataType;
           let searchType = this.searchType;
           if (typeof type != 'undefined') {
             if (this.builderOdataSearchString(columnData.dataField, type, searchType)) {

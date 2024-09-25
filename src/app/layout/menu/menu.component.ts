@@ -24,6 +24,7 @@ export class MenuComponent {
     this.allMenu = [
       { path: 'dashboard', label: 'Dashboard', icon:'mdi mdi-view-dashboard-outline' },
       { path: 'utenti', label:'Utenti Registrati',icon:'mdi mdi-account-multiple-outline' },
+      { path: 'outfit-list', label:'Lista outfit ',icon:'mdi mdi-wardrobe-outline' },
       { path: 'form-list', label:'Gestione form e viste',icon:'mdi mdi-cog-outline' },
     ]
 

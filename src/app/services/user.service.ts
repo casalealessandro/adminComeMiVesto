@@ -151,6 +151,44 @@ export class UserService {
    
   }
 
+  async deleteUsersFirebase(uid: string): Promise<boolean> {
+    const api = `${this.apiFire}/users/delete/${uid}`
+    let data={
+      uid:uid
+    }
+     
+
+    try {
+      let call = this.httpClient.delete(api)
+      const result = await lastValueFrom(call);
+      if(result){
+        let query: any = this.firestore.collection('users').ref;
+
+        // Applica questa condizione alla query
+        
+        query = query.where('uid','==', uid);
+
+        try {
+          const querySnapshot = await query.get();
+          // Elimina tutti i documenti che corrispondono alla query
+          const deletePromises = querySnapshot.docs.map((doc: any) => doc.ref.delete());
+          await Promise.all(deletePromises);
+          this.getUsers()
+          return true
+        } catch (error) {
+          console.error('Error deleting documents:', error);
+          return false
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error(`Errore nell'eliminazione dell\'utente:`, error);
+      return false;
+    }
+   
+  }
+
   async RecuperaPassword(user: string) {
     const EndPoint = environment.BASE_API_URL + "Account/RecuperaPassword?username=" + user;
     const HeaderOdata = this.httpOptions;

@@ -39,8 +39,12 @@ ngOnInit(){
 }
 
 
-deleteUser(arg0: any) {
-  throw new Error('Method not implemented.');
+async deleteUser(uid: any) {
+  console.log('deleteUser-->',this.users)
+  let respo = await this.userService.deleteUsersFirebase(uid)
+  if(respo){
+
+  }
 }
  
 

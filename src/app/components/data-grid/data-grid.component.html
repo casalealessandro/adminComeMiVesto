@@ -1,8 +1,8 @@
 <!--{'width.px':tableWidth ,'height.px':tableHeightWrapper}-->
 
 <div class="-data-grid-wrapper " [ngStyle]="{'width.px':tableWrapWidth}">
-   <div class="-data-grid-toolbar" *ngIf="showToolbarTop" >
-      
+   <div class="-data-grid-toolbar" *ngIf="showToolbarTop">
+
       <!-- <app-toolbar 
          [background]="'#fff'"
          [textColor]="'#303e67'" 
@@ -20,16 +20,10 @@
          >
       </app-toolbar> -->
    </div>
-  
 
-   <table 
-      #tableRef 
-      [id]="idTable" 
-      class="-data-grid  grid-line" 
-      
-      [ngStyle]="tableStyle"
-      (keydown)="handleKeyboardEvents($event)"
-   >
+
+   <table #tableRef [id]="idTable" class="-data-grid  grid-line" [ngStyle]="tableStyle"
+      (keydown)="handleKeyboardEvents($event)">
       <colgroup *ngIf="colsGroupShow">
          <col *ngFor="let colGroup of colsGroup" [span]="colGroup.span" [class]="colGroup.class">
       </colgroup>
@@ -42,34 +36,27 @@
          <tr>
 
 
-            <th scope="col" *ngFor="let colHeader of colsHeader" [align]="colHeader.captionAlign"
-               [width]="colHeader.colWidth" 
+            <th scope="col" *ngFor="let colHeader of colsHeader" [align]="colHeader.colAlignment"
+               [width]="colHeader.colWidth"
                [ngStyle]="{'width.px':colHeader.colWidth, 'min-width.px':colHeader.colWidth,'max-width.px':colHeader.colWidth}">
-               
-               <ng-template  [ngIf]="colHeader.type == 'selection' && isSelIconMultipleVisible" [ngIfElse]="normalCaption">
 
-                  <div *ngIf="isSelIconMultipleVisible" name="selRowMAll"
-                     title="seleziona tutte le righe" icon="" 
+               <ng-template [ngIf]="colHeader.type == 'selection' && isSelIconMultipleVisible"
+                  [ngIfElse]="normalCaption">
+
+                  <div *ngIf="isSelIconMultipleVisible" name="selRowMAll" title="seleziona tutte le righe" icon=""
                      class="editor-content-checkbox-table"
-                     style="display: inline-block;vertical-align: middle;line-height: 1em;margin-bottom: 0!important;text-align: center;"
-                     >
-                     <input 
-                     #checkBoxSelectAll
+                     style="display: inline-block;vertical-align: middle;line-height: 1em;margin-bottom: 0!important;text-align: center;">
+                     <input #checkBoxSelectAll type="checkbox" class="checkbox-input" [checked]="rowSelectedAll"
+                        (click)="clickToSelectAllRows()">
 
-                     type="checkbox" 
-                     class="checkbox-input" 
-                     [checked]="rowSelectedAll"
-                     (click)="clickToSelectAllRows()"
-                     >
 
-                      
                   </div>
 
                </ng-template>
                <ng-template #normalCaption>
                   <span [ngStyle]="{'width.px': colHeader.colWidth}"
-                  style="height: 27px;display: block;line-height: 27px;" [id]="colHeader.dataField"  >
-                  {{colHeader.caption}}
+                     style="height: 27px;display: block;line-height: 27px;" [id]="colHeader.dataField">
+                     {{colHeader.caption}}
                   </span>
                   <div class="editor   border-top ps-0 pe-1" *ngIf="colHeader.search"
                      [ngStyle]="{'width.px':colHeader.colWidth}">
@@ -90,17 +77,16 @@
                      </div>
                   </div>
                </ng-template>
-            
+
 
             </th>
 
          </tr>
       </thead>
       <tbody *ngIf="showNullData" [ngStyle]="bodyStyle" class="t-body">
-         <tr class="row-no-data" >
+         <tr class="row-no-data">
             <td [colSpan]="colsHeader.length" [width]="tableWidth"
-            [ngStyle]="{'width.px': tableWidth,'min-width.px':tableWidth,'max-width.px':tableWidth}"
-            >
+               [ngStyle]="{'width.px': tableWidth,'min-width.px':tableWidth,'max-width.px':tableWidth}">
                <p style="text-align: center;">{{textEmpty}}</p>
             </td>
 
@@ -108,153 +94,162 @@
 
 
       </tbody>
-      <tbody #tbody *ngIf="!showNullData" [ngStyle]="bodyStyle" class="scrollBarCustom" id="scrollBarCustom" (scroll)="onScroll($event)">
+      <tbody #tbody *ngIf="!showNullData" [ngStyle]="bodyStyle" class="scrollBarCustom" id="scrollBarCustom"
+         (scroll)="onScroll($event)">
          <ng-container *ngFor="let colRow of dataSource; let rowIndex = index">
-            <ng-container *ngIf="groupIndexCol && (rowIndex === 0 || colRow[groupIndexCol.dataField] !== dataSource[rowIndex - 1][groupIndexCol.dataField])">
+            <ng-container
+               *ngIf="groupIndexCol && (rowIndex === 0 || colRow[groupIndexCol.dataField] !== dataSource[rowIndex - 1][groupIndexCol.dataField])">
                <tr class="group-row">
-                 <!-- <td [width]="'60'" style="border-right: 0;">
+                  <!-- <td [width]="'60'" style="border-right: 0;">
 
                  </td> -->
-                 <td [colSpan]="groupIndexCol.colSpan" style="border-left: 0;">
-                  
-                  <app-td-item 
-                     [colProperty]="groupIndexCol"
-                     [rowIndex]="rowIndex" 
-                     [isMockDataLoading]="isMockDataLoadingFn(colRow)"
-                     [value]="colRow[groupIndexCol.dataField]">
-                  </app-td-item>
-               </td>
+                  <td [colSpan]="groupIndexCol.colSpan" style="border-left: 0;">
+
+                     <app-td-item [colProperty]="groupIndexCol" [rowIndex]="rowIndex"
+                        [isMockDataLoading]="isMockDataLoadingFn(colRow)" [value]="colRow[groupIndexCol.dataField]">
+                     </app-td-item>
+                  </td>
                </tr>
-             </ng-container>
-             <!--'alternate': alternateRowColor(rowIndex + 1,rowAlternate) 
+            </ng-container>
+            <!--'alternate': alternateRowColor(rowIndex + 1,rowAlternate) 
                 (dblclick)="selectRow($event,rowIndex,colRow)"
 
                 per il momento l'ho tolta da ngclass della riga selected-row || showDetailRow[rowIndex] 
             -->
-            <tr 
-            #riga 
-            (click)="selectRow($event,rowIndex,colRow)"
-            (mouseenter)="setStateHover($event,riga,rowIndex)"
-            (mouseleave)="leaveStateHover($event,riga,rowIndex)"
+            <tr #riga (click)="selectRow($event,rowIndex,colRow)" (mouseenter)="setStateHover($event,riga,rowIndex)"
+               (mouseleave)="leaveStateHover($event,riga,rowIndex)" [ngClass]="updateRowClasses(rowIndex)">
 
-            [ngClass]="updateRowClasses(rowIndex)"
-            
-            >
-            
                <!--[innerText]="renderHtmlColumn(colRow[col.dataField],col.format)"-->
-               <td *ngFor="let col of colsHeader; let i=index" 
-                  [id]="col.dataField +'_'+ rowIndex"
-                  [width]="col.colWidth"
-                  [class]="col.class"
-                  [colSpan]="col.colSpan" [align]="col.align" [title]="colRow[col.dataField] ? colRow[col.dataField] : '' "
+               <td *ngFor="let col of colsHeader; let i=index" [id]="col.dataField +'_'+ rowIndex"
+                  [width]="col.colWidth" [class]="col.class" [colSpan]="col.colSpan" [align]="'center'"
+                  [title]="colRow[col.dataField] ? colRow[col.dataField] : '' "
                   [ngStyle]="{'width.px':col.colWidth, 'min-width.px':col.colWidth,'max-width.px':col.colWidth}"
-                  
-                  (click)="tdClick($event,col,i,rowIndex)"
-
-                  >
-
-                  <ng-container *ngIf="col.type == 'editorButtons'">
-
-                     <div class="editable-row-operations">
-                        <ng-container >
-
-                           <a title="Modifica"  hint="Modifica" class="link-editor link-edit-icon dx-icon-edit" (click)="startEdit(rowIndex,$event)"></a>
-                             
-                           
-                        </ng-container>
-                        
-                     </div>
-                  </ng-container>
-                  
+                  (click)="tdClick($event,col,i,rowIndex)">
+                  <ng-container [ngSwitch]="col.type">
 
 
-                  <ng-container *ngIf="col.type == 'selection' && isSelIconMultipleVisible">
+                     <ng-container *ngSwitchCase="'editorButtons'">
+
+                        <div class="editable-row-operations">
+                           <ng-container>
+
+                              <a title="Modifica" hint="Modifica" class="link-editor link-edit-icon "
+                                 (click)="startEdit(rowIndex,$event)">
+                                 <span class="mdi mdi-pencil-outline"></span>
+                              </a>
 
 
-                     <!-- <div *ngIf="isSelIconVisible" [id]="'selection-' + colRow.dataField" name="selRow"
+                           </ng-container>
+
+                        </div>
+                     </ng-container>
+
+
+
+                     <ng-container *ngSwitchCase="'selection'">
+
+
+                        <!-- <div *ngIf="isSelIconVisible" [id]="'selection-' + colRow.dataField" name="selRow"
                         hint="importa dati" icon="" (click)="selectRow($event,rowIndex,colRow)" class="selection-icon">
                         <i class="glyphicon mdi mdi mdi-export"></i>
                      </div> -->
-                     <div *ngIf="isSelIconMultipleVisible" [id]="'selectionM-' + colRow.dataField" name="selRowM"
-                        hint="seleziona righe" icon="" 
-                        class="editor-content-checkbox-table"
-                        >
-                        <input 
-                        #checkBoxSelect
-
-                        type="checkbox" 
-                        class="checkbox-input" 
-                        [checked]="rowSelected[rowIndex]"
-                        (click)="clickToSelectRowMultiple($event,rowIndex,colRow)"
-                        >
-
-                         
-                     </div>
-
-                  </ng-container>
-                  <ng-container *ngIf="col.type == 'detail' && haveDetail">
-
-                     <div  title="espndi riga" [class]="'dx-datagrid-group-closed' " style="max-width: 30px; height: 15px;"
-                        (click)="collapse($event,colRow,rowIndex,col.groupDataField)">
-
-                     </div>
-
-                  </ng-container>
-
-                  <ng-container  *ngIf="col.type == 'button'" >
-                     <span 
-                        *ngIf="col.type == 'button'" 
-                        [id]="'span_'+rowIndex +'-'+ col.dataField" 
-                        class="button-icon"
-                        name="isButtonCell"
-                       >
-                       <button
-                        [id]="'button_'+rowIndex +'-'+ col.dataField" 
-                        [title]="col.button.hint" 
-                        class="button-in-cell"
-                        [ngClass]="col.button.class"
-                        [disabled]="col.button.disabled"
-                        (click)="buttonClick($event,col.button,col,rowIndex)"
-                       >
-                       <i [ngClass]="col.button.icon"></i>
-                        <span *ngIf="col.button.text">{{col.button.text}}</span>
-                       </button>
-                       
-                     </span>
-
-                  </ng-container>
+                        <div *ngIf="isSelIconMultipleVisible" [id]="'selectionM-' + colRow.dataField" name="selRowM"
+                           hint="seleziona righe" icon="" class="editor-content-checkbox-table">
+                           <input #checkBoxSelect type="checkbox" class="checkbox-input"
+                              [checked]="rowSelected[rowIndex]"
+                              (click)="clickToSelectRowMultiple($event,rowIndex,colRow)">
 
 
-                  <ng-container *ngIf="col.type == 'data'">
-                     <ng-template [ngIf]="editorCellByRow.length>0" [ngIfElse]="noEdit">
-                        <app-td-item *ngIf="!editorCellByRow[rowIndex][col.dataField] " 
+                        </div>
+
+                     </ng-container>
+                     <ng-container *ngSwitchCase="'detail'">
+
+                        <div *ngIf="haveDetail" title="espndi riga" [class]="'dx-datagrid-group-closed' "
+                           style="max-width: 30px; height: 15px;"
+                           (click)="collapse($event,colRow,rowIndex,col.groupDataField)">
+
+                        </div>
+
+                     </ng-container>
+
+                     <ng-container *ngSwitchCase="'campoButton'">
+                        <span *ngIf="col.type == 'campoButton'" [id]="'span_'+rowIndex +'-'+ col.dataField"
+                           class="button-icon" name="isButtonCell">
+                           <button [id]="'button_'+rowIndex +'-'+ col.dataField" [title]="col.button.hint"
+                              class="button-in-cell" [ngClass]="col.button.class" [disabled]="col.button.disabled"
+                              (click)="buttonClick($event,col.button,col,rowIndex)">
+                              <i [ngClass]="col.button.icon"></i>
+                              <span *ngIf="col.button.text">{{col.button.text}}</span>
+                           </button>
+
+                        </span>
+
+                     </ng-container>
+
+
+
+
+
+                     <ng-container *ngSwitchCase="'removeButtons'">
+
+                        <div class="editable-row-operations">
+                           <ng-container *ngIf="!editorData[rowIndex]?.edit  else saveTpl">
+
+                              <a title="Elimina" *ngIf="isEditableDeleteRow;" hint="Elimina"
+                                 class="link-editor link-save-icon fa fa-trash"
+                                 (click)="removeRowData(rowIndex,$event)">
+                                 <span class="mdi mdi-trash-can-outline"></span>
+                              </a>
+
+
+                           </ng-container>
+                           <ng-template #saveTpl>
+                              <a title="Salva" hint="Salva" class="link-editor link-save-icon dx-icon-save"
+                                 (click)="saveEditorData(rowIndex,$event)">
+
+                              </a>
+                              <a title="Cancella" hint="Cancella" class="link-editor link-cancel-icon dx-icon-revert "
+                                 (click)="closeEditorData(rowIndex,$event)">
+                              </a>
+                           </ng-template>
+
+                        </div>
+                     </ng-container>
+
+                     <ng-container *ngSwitchDefault>
+                        <ng-template [ngIf]="editorCellByRow.length>0" [ngIfElse]="noEdit">
+                           <app-td-item *ngIf="!editorCellByRow[rowIndex][col.dataField] "
+                              [isMockDataLoading]="isMockDataLoadingFn(colRow)" 
+                              [colProperty]="col"
+                              [colType]="col.type"
+                              [rowIndex]="rowIndex" 
+                              [value]="colRow[col.dataField]" 
+                              [searchText]="searchText">
+                           </app-td-item>
+                        </ng-template>
+                        <ng-template #noEdit>
+                           <app-td-item 
+                           [colProperty]="col" 
                            [isMockDataLoading]="isMockDataLoadingFn(colRow)"
-                           [colProperty]="col"
-                           [rowIndex]="rowIndex" 
+                           [searchText]="searchText" 
+                           [rowIndex]="rowIndex"
                            [value]="colRow[col.dataField]"
-                           [searchText]="searchText"
+                           [colType]="col.type"
                            >
-                        </app-td-item>
-                     </ng-template>
-                     <ng-template #noEdit>
-                        <app-td-item [colProperty]="col"
-                           [isMockDataLoading]="isMockDataLoadingFn(colRow)"
-                           [searchText]="searchText"
-                           [rowIndex]="rowIndex" 
-                           [value]="colRow[col.dataField]">
-                        </app-td-item>
-                     </ng-template>
+                           </app-td-item>
+                        </ng-template>
 
-                     <div class="editor ps-0 pe-1" [ngClass]="col.class" *ngIf="editorData[rowIndex]?.edit ">
- 
-                        <div class="editor-content" [ngStyle]="{'width.px':col.colWidth}" *ngIf="col.isEditable">
+                        <div class="editor ps-0 pe-1" [ngClass]="col.class" *ngIf="editorData[rowIndex]?.edit ">
 
-                           <!-- <app-editor-element 
+                           <div class="editor-content" [ngStyle]="{'width.px':col.colWidth}" *ngIf="col.isEditable">
+
+                              <!-- <app-editor-element 
                               style="width: 100%;"
                               #editor
                               [cssClass]="col.class" 
                               [id]="col.dataField" 
-                              [fieldData]="col.dataOptions"
+                              [fieldData]="col.customizedOption"
                               [dataSetValue]="editorData[rowIndex]['data'][col.dataField]"
                               [dataInput]="editorData[rowIndex]['data']" 
                               [formGroup]="getFormGroup(rowIndex)"
@@ -266,72 +261,40 @@
                               [dataJson]="dataJson">
                            </app-editor-element>
  -->
+                           </div>
+
+
                         </div>
-
-
-                     </div>
+                     </ng-container>
                   </ng-container>
-
-
-                  <ng-container *ngIf="col.type == 'removeButtons'">
-
-                     <div class="editable-row-operations">
-                        <ng-container *ngIf="!editorData[rowIndex]?.edit  else saveTpl">
-
-                           <a title="Elimina" *ngIf="isEditableDeleteRow;"  hint="Elimina" class="link-editor link-save-icon fa fa-trash"  (click)="removeRowData(rowIndex,$event)"></a>
-                              
-                           
-                        </ng-container>
-                        <ng-template #saveTpl>
-                           <a title="Salva" 
-                           hint="Salva"
-                           class="link-editor link-save-icon dx-icon-save" 
-                           (click)="saveEditorData(rowIndex,$event)"
-                           >
-                           
-                           </a>
-                           <a 
-                              title="Cancella"
-                              hint="Cancella" 
-                              class="link-editor link-cancel-icon dx-icon-revert " 
-                              (click)="closeEditorData(rowIndex,$event)">
-                           </a>
-                        </ng-template>
-                        
-                     </div>
-                  </ng-container>
-
-
 
                </td>
 
-               
+
 
 
             </tr>
 
-            
+
             <tr *ngIf="showDetailRow[rowIndex]" class="no-event-hover">
                <td [colSpan]="colsHeader.length" style="padding:0">
                   <div class="col-sm-offset-1 p-2">
                      <ng-container *ngFor="let colsCaption of colsGroupCaption">
                         <caption>{{colsCaption.caption}} </caption>
                      </ng-container>
-                     <table [width]="tableWidthDetail "  *ngIf="showNullDataDetail" class="detail--data-grid -data-grid grid-line">
+                     <table [width]="tableWidthDetail " *ngIf="showNullDataDetail"
+                        class="detail--data-grid -data-grid grid-line">
                         <tr class="row-no-data">
                            <td [colSpan]="colsDetail.length">
                               <p style="text-align: center;">Nessun dato da mostrare</p>
                            </td>
-               
+
                         </tr>
-               
-               
+
+
                      </table>
-                     <table 
-                        *ngIf="!showNullDataDetail" 
-                        class="detail--data-grid  grid-line"
-                        [width]="tableWidthDetail "
-                        >
+                     <table *ngIf="!showNullDataDetail" class="detail--data-grid  grid-line"
+                        [width]="tableWidthDetail ">
 
                         <thead>
 
@@ -347,32 +310,30 @@
                         </thead>
                         <!--,  'alternate': alternateRowColor(rowIndex + 1,rowAlternate)  -->
                         <tr *ngFor="let colRowDetail of colsRowDetail[rowIndex]; let i = index"
-                           (click)="selectRowDetail($event,i,colRowDetail,rowIndex)" 
+                           (click)="selectRowDetail($event,i,colRowDetail,rowIndex)"
                            [ngClass]="{ 'selected-row' : rowSelectedDetail[i],'state-hover-detail' : isSelectedSubRow(rowIndex, i)   }">
 
-                                                     
+
                            <td *ngFor="let cold of colsDetail; let i=index" [width]="cold.colWidth" [class]="cold.class"
-                              [colSpan]="cold.colSpan" [align]="cold.align"
+                              [colSpan]="cold.colSpan" [align]="cold.colAlignment"
                               [ngStyle]="{'width.px':cold.colWidth, 'min-width.px':cold.colWidth,'max-width.px':cold.colWidth}">
 
                               <ng-container *ngIf="cold.type == 'selection-detail'">
 
 
-                                 <div *ngIf="isSelIconDetailVisible" [id]="'selection-' + colRow.dataField" 
-                                    class="selection-icon"
-                                    name="selRow"
-                                    hint="importa dati" icon="" (click)="selectRow($event,i,colRow,rowIndex)">
+                                 <div *ngIf="isSelIconDetailVisible" [id]="'selection-' + colRow.dataField"
+                                    class="selection-icon" name="selRow" hint="importa dati" icon=""
+                                    (click)="selectRow($event,i,colRow,rowIndex)">
                                     <i class="glyphicon mdi mdi mdi-export"></i>
                                  </div>
-                                 
-            
+
+
                               </ng-container>
 
-                             
+
                               <ng-container *ngIf="cold.type == 'data-detail'">
-                                 <app-td-item 
-                                 [isMockDataLoading]="isMockDataLoadingFn(colRow)"
-                                 [colProperty]="cold" [rowIndex]="i" [value]="colRowDetail[cold.dataField]">
+                                 <app-td-item [isMockDataLoading]="isMockDataLoadingFn(colRow)" [colProperty]="cold"
+                                    [rowIndex]="i" [value]="colRowDetail[cold.dataField]">
                                  </app-td-item>
                               </ng-container>
                            </td>
@@ -384,46 +345,34 @@
             </tr>
          </ng-container>
          <ng-container *ngIf="showEmptyRow">
-               <tr class="empty-row" [ngStyle]="emptyRowStyleClass">
-                  <td *ngFor="let col of colsHeader; let i=index" 
-                  [id]="col.dataField"
-                  [width]="col.colWidth"
-                  [class]="col.class"
-                  [colSpan]="col.colSpan" 
-                  [align]="col.align" 
+            <tr class="empty-row" [ngStyle]="emptyRowStyleClass">
+               <td *ngFor="let col of colsHeader; let i=index" [id]="col.dataField" [width]="col.colWidth"
+                  [class]="col.class" [colSpan]="col.colSpan" [align]="col.colAlignment"
                   [ngStyle]="{'width.px':col.colWidth, 'min-width.px':col.colWidth,'max-width.px':col.colWidth}"
-                  
-                 
-                    
-                     [width]="col.colWidth"
-                     >
-                  </td>
-               </tr>
+                  [width]="col.colWidth">
+               </td>
+            </tr>
          </ng-container>
          <!--  *ngIf="tableHeightForEmptyRow>0"
             class="dx-row dx-freespace-row dx-column-lines no-events" role="presentation" [ngStyle]="{'height.px': tableHeightForEmptyRow, background: '#fff' }"<td *ngFor="let colE of colsHeader; let x=index" ></td>-->
       </tbody>
       <tfoot *ngIf="enableTfoot" class="tableFooter">
-         <tr >
-          
-           <td *ngFor="let colHeader of colsHeader">
-            <div class="sumWrap" [ngStyle]="{'width.px':colHeader.width}">
-               <app-td-item  
-               [isMockDataLoading]="isMockDataLoadingFn(colHeader)"
-               [colProperty]="colHeader"
-               [showSummaryText]="true" 
-               [value]="valueSumm[colHeader.dataField]"
-            >
-            </app-td-item>
-            </div>
-            
-           </td>
+         <tr>
+
+            <td *ngFor="let colHeader of colsHeader">
+               <div class="sumWrap" [ngStyle]="{'width.px':colHeader.width}">
+                  <app-td-item [isMockDataLoading]="isMockDataLoadingFn(colHeader)" [colProperty]="colHeader"
+                     [showSummaryText]="true" [value]="valueSumm[colHeader.dataField]">
+                  </app-td-item>
+               </div>
+
+            </td>
          </tr>
-       </tfoot>
+      </tfoot>
    </table>
 
-   
-   
+
+
 
 
 </div>

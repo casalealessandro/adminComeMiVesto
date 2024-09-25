@@ -1,4 +1,4 @@
-.contet-data{
+::ng-deep.contet-data{
     
     width: 100%;
     display: block;
@@ -8,7 +8,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+   .cell-img{
+        object-fit: cover;
+        height:5rem
+    }
+    
 }
+
 
 ::ng-deep.highlight {
     background-color:var(--blueDevextreme);

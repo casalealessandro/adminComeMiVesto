@@ -66,18 +66,24 @@ export interface Colonne {
   }[]
   
   export  interface ColData {
+    labelAlignment?: any;
+    edit: any;
+    groupDataField: any;
+
+    id?:any;
     labelVisible: boolean;
     colCaption: any;
-    allowFiltering: any;
+    allowFiltering?: any;
     dataField: string;    // Campo dati associato
-    type?: string;         // Tipo di campo, ad es. "button", "data", "campoDesc"
+    type?: 'campoHidden' | 'campo' |'campoNumber' | 'campoTesto' | 'campoDateTime' | 'campoData' | 'campoImg' | 'icon' | 'campoBoolean' | 'selection' | 'editorButtons' | 'campoButton' | 'removeButtons' | 'detail' | 'campoDesc' | 'empty';    // Tipo di campo, ad es. "button", "data", "campoDesc"
     caption?: string;      // Testo della colonna
+    isEditable?: boolean;      // è editabile la cella?
     colWidth?: number | string;  // Larghezza della colonna, può essere un numero o una stringa
     width?: number | string;     // Alternativa per la larghezza della colonna
-    class?: string;        // Classe CSS per la colonna
+    class?: string | null;        // Classe CSS per la colonna
     colSpan?: number;      // Numero di colonne su cui l'elemento si estende
-    labelAlignment?: string; // Allineamento della label
     colAlignment?: string;  // Allineamento della colonna
+    search?:boolean;        // possibile cercare nella cella si o no
     format?: string;       // Formato della colonna (es: numero, data)
     editorType?: string;   // Tipo di editor (es: "text", "number")
     dynamic?: DynamicOptions;  // Opzioni dinamiche per il campo
@@ -92,6 +98,8 @@ export interface Colonne {
     maxLength?: number;    // Lunghezza massima del campo
     colVisible?: boolean;  // Visibilità della colonna
     button?: any;          // Opzioni specifiche del pulsante
+    customizedOptions?:any;
+    tabIndex?:number;
   }
   
   interface DynamicOptions {

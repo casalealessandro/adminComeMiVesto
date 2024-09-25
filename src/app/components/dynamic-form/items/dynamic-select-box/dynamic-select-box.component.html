@@ -1,13 +1,24 @@
-<div>
-  
+<ng-container *ngIf="!this.selectOptions.multiple; else selectMultiple">
   <select
-    [multiple]="selectOptions.multiple"
-    [value]="selectedValue"
-    
-    (ionChange)="onValueChange($event)"
+    class="form-control" 
+    [(ngModel)]="selectedValue"  
+    (change)="onValueChange($event)"
     [disabled]="disabled"> <!-- Disabilita la selectbox se necessario -->
-    <option *ngFor="let option of availableOptions" [value]="option[valueExp]" >
+    <option *ngFor="let option of availableOptions" [value]="option[valueExp]">
       {{ option[displayExp] }}
     </option>
   </select>
-</div>
+</ng-container>
+
+<ng-template #selectMultiple>
+  <select
+   class="form-control" 
+    [multiple]="true"
+    [(ngModel)]="selectedValue"  
+    (change)="onValueChange($event)"
+    [disabled]="disabled"> <!-- Disabilita la selectbox se necessario -->
+    <option *ngFor="let option of availableOptions" [value]="option[valueExp]">
+      {{ option[displayExp] }}
+    </option>
+  </select>
+</ng-template>

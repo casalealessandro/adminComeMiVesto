@@ -69,6 +69,7 @@ export class ElementComponent {
 
         break;
       case 'selectBox':
+        this.formField.typeInput = 'selectBox'
         this.showSelectOption = true;
         this.selectOptions = {
           multiple: false,

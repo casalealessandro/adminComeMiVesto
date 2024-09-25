@@ -28,7 +28,7 @@
     --height_caption: 35px;
     --height_menuFunzioni: 60px;
     --header_height: 145px;
-    --max_height_containere: calc(var(--header_height) + var(--height_footer));
+    --height_combined: calc(var(--header_height) + var(--height_footer));
 
     /**Lagrghezza Globale degli elementi di layout***/
 
@@ -81,8 +81,9 @@ div {
     //height: calc(100vh - var(--header_height));
 }
 .ana-container{
-    height: calc(100% - var(--max_height_containere));
-    overflow-y: scroll;
+   position: relative;
+  /*  min-height: 800px; */
+   overflow-y: auto;
 }
 .icon-button {
     background: none;

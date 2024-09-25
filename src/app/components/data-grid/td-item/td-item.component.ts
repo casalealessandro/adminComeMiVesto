@@ -11,11 +11,12 @@ registerLocaleData(localeFit);
   templateUrl: './td-item.component.html',
   standalone:true,
   imports:[CommonModule],
-  styleUrls: ['./td-item.component.css']
+  styleUrls: ['./td-item.component.scss']
 })
 export class TdItemComponent  {
 
   @Input() colProperty: any;
+  @Input() colType: any;
   @Input() value: any;
   @Input() editorData: any;
   @Input() rowIndex: any;
@@ -38,9 +39,9 @@ export class TdItemComponent  {
   displayExpr: any;
  
 
-  ngOnInit() {
+  ngAfterViewInit() {
 
-    const colPropertyAlign =  !this.colProperty.align ? 'left' : this.colProperty.align
+    const colPropertyAlign =  !this.colProperty.colAlignment ? 'left' : this.colProperty.colAlignment
 
     this.styleData = {
       'text-align': colPropertyAlign,
@@ -151,6 +152,36 @@ export class TdItemComponent  {
 
   renderHtmlColumn(text: any, format: any) {
 
+    const type = this.colType
+    let result = text
+    switch (type) {
+      case 'campo':
+        result =this.defaultRender(text,format)
+        
+        break;
+      case 'campoDateTime':
+      case 'campoData':
+        result =this.dateRender(text,format)
+        
+        break;
+      case 'campoImg':
+        result = `<img src="${text}" class="cell-img" >`
+        break;
+      case 'campoButton':
+        const buttonInfo = this.colProperty['button'];
+        console.log('buttonInfo',buttonInfo);
+
+        result = `<button class="btn "><span class="${buttonInfo.icon}"></span></button>`;
+        
+        break;
+      default:
+        result =this.defaultRender(text,format)
+    }
+
+    return result
+  }
+
+  defaultRender(text:any,format:any):string{
 
     if(this.showSummaryText && text){
       this.summaryTextHtml += "<span style=\"padding-right:5px\">Tot: </span>"
@@ -258,6 +289,49 @@ export class TdItemComponent  {
 
     return text
   }
+  
+  dateRender(date:any,format="dd/MM/yyyy"){
+    
+    // Proviamo a gestire l'input come un tipo stringa o numero (timestamp)
+    let dateR: Date;
+
+    if (typeof date === 'string' || typeof date === 'number') {
+        // Se è una stringa, cerchiamo di riconoscerla come data
+        // Proviamo a usare una regex per i formati di stringa riconosciuti
+        const dateStringType1 = /(\d{4})([\/-])(\d{1,2})\2(\d{1,2})/; // yyyy-mm-dd o yyyy/mm/dd
+        const dateStringType2 = /(\d{1,2})([\/-])(\d{1,2})\2(\d{4})/; // dd-mm-yyyy o dd/mm/yyyy
+
+        if (typeof date == 'string' && dateStringType1.test(date)) {
+            // Formato yyyy-mm-dd o yyyy/mm/dd
+            dateR = new Date(date);
+        } else if (typeof date == 'string' && dateStringType2.test(date)) {
+            // Formato dd-mm-yyyy o dd/mm/yyyy, dobbiamo riorganizzare i pezzi
+            const parts = date.split(/[-\/]/);
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; // JavaScript usa mesi indicizzati da 0
+            const year = parseInt(parts[2], 10);
+            dateR = new Date(year, month, day);
+        } else {
+            // Tenta di costruire una data con il costruttore predefinito di JavaScript
+            dateR = new Date(date);
+        }
+    } else if (date instanceof Date) {
+        // Se è già un oggetto Date, lo usiamo direttamente
+        dateR = date;
+    } else {
+        // Se l'input non è riconosciuto, restituiamo un errore o null
+        return 'Invalid date format';
+    }
+
+    // Controlla se la data è valida
+    if (isNaN(dateR.getTime())) {
+        return 'Invalid date';
+    }
+
+    // Usiamo il metodo formatDate per formattare la data
+    return formatDate(dateR, format, 'en-US');
+  }
+  
   clickTd(event:any) {
     event.value = this.staticData
     this.emitClick.emit(event)

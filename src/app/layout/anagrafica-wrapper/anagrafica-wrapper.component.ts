@@ -64,16 +64,16 @@ export class AnagraficaWrapperComponent {
 
     let  headerHeight, footerHeight ,menuHeight;
     headerHeight = document.getElementById('header')!.offsetHeight ;
-    footerHeight = document.getElementById('footer')!.offsetHeight;
+    footerHeight = 200// document.getElementById('footer')!.offsetHeight;
     setTimeout(() => {
-      menuHeight = document.getElementById('horizontalMenucontainer')!.offsetHeight 
+      /* menuHeight = document.getElementById('horizontalMenucontainer')!.offsetHeight 
  
       if(menuHeight == 0){
         menuHeight = 60.5
-      }
+      } */
      
      
-      this.heightWrap = heightWin - headerHeight - footerHeight - menuHeight ;   
+      this.heightWrap = heightWin - headerHeight - footerHeight //- menuHeight ;   
       this.heightWrap = this.heightWrap  - 13;
      }, 300);
    
