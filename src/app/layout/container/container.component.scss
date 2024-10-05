@@ -1,16 +1,41 @@
 .mi-container {
-   
+    
+
     .verticalMenucontainer {
-   
+
         position: absolute;
         left: 0;
         overflow-x: hidden;
         overflow-y: auto;
-   
+
+        z-index: 1001;
         padding-left: 1.25rem;
         padding-right: 1.25rem;
         box-sizing: border-box;
-        border: 1px solid var(--border_color) ;
-       
+        border: 1px solid var(--border_color);
+
+        // Nascondi il menu su dispositivi con schermo più piccolo di 1024px (tablet e telefoni)
+        @media (max-width: 1024px) {
+            top: 0;
+            padding-left: 0;
+            border: none;
+
+            /* Mostra il menu quando isMenuOpen è true */
+            &.open {
+                display: block;
+                /* Adatta l'altezza del menu al contenuto */
+            }
+
+            display: none;
+        }
+    }
+}
+
+::ng-deep.menu-open {
+    .hamburger {
+
+        background: var(--bianco)!important;
+        color:var(--primary)!important;
+        
     }
 }

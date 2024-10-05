@@ -1,8 +1,15 @@
 <div id="cWrap" class="content-wrap">
-    <div class="anagrafica-wrap">
-        <app-caption [caption]="caption" [showBreadcrumb]="false" [addButtonShow]="addButtonShow" [help]="helpDoc"
+    <div class="anagrafica-wrap" [ngStyle]="{'height.px':anaHeight}">
+        <app-caption 
+            [caption]="caption" 
+            [showBreadcrumb]="false"
+            [addButtonShow]="addButtonShow"
+            [customToolbarButtons]="customToolbarButtons"
+            [help]="helpDoc"
             [breadcrumbNavigation]="breadcrumbNavigation" [isClosable]="false"
-            (emettiChiusura)="onCrocettaClick($event)" (emitAddEvent)="onAddClick($event)" [isFooter]="false">
+            (emettiChiusura)="onCrocettaClick($event)" 
+            (emitToolbarButtonClick)="onButtonToolbarClick($event)"
+            (emitAddEvent)="onAddClick($event)" [isFooter]="false">
         </app-caption>
 
 
@@ -40,7 +47,9 @@
                         {{tip}}
                        <!--  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> -->
                     </div>
-
+                    <ng-container *ngIf="showSpinner">
+                        <p>Carimento in corso...</p>
+                    </ng-container>
                     <ng-content id='ng-content'>
 
 

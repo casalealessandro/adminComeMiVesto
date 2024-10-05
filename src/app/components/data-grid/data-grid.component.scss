@@ -2,6 +2,11 @@
     background: #fff;
     font-family: "Helvetica Neue", "Segoe UI", helvetica, verdana, sans-serif;
     margin: 0;
+    @media (max-width: 1024px) {
+        width: auto!important;
+        max-width: unset!important;
+        min-width: unset!important;
+    }
 }
 
 .scroll-bottom {
@@ -49,6 +54,12 @@
     padding: 0 5px;
     white-space: nowrap;
     overflow: hidden;
+
+    @media (max-width: 1024px) {
+        width: auto!important;
+        max-width: unset!important;
+        min-width: unset!important;
+    }
 }
 
 .-data-grid thead th span {

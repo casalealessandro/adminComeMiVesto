@@ -3,6 +3,7 @@ import { Router, ActivatedRoute, NavigationExtras } from '@angular/router';
 
 import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
+import { ToolbarButton } from '../../interface/app.interface';
 
 
 
@@ -51,7 +52,8 @@ export class CaptionComponent {
   
  //Mostra i bottone aggiungi
  @Input() addButtonShow: boolean = false;
-  
+ //Buttoni aggiuntivi
+ @Input() customToolbarButtons!:ToolbarButton[]
  
   /** URL HELPER */
   @Input() help: string = "";
@@ -62,8 +64,8 @@ export class CaptionComponent {
   
   @Output() emitChiusura: EventEmitter<any> = new EventEmitter<any>();
   @Output() emitAddEvent: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitNavCustomClick: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitButtonToolbarClick: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emitToolbarButtonClick: EventEmitter<any> = new EventEmitter<any>();
+  
   
   @Output() emitBreadCrumbClick : EventEmitter<any> = new EventEmitter<any>();
   
@@ -79,8 +81,7 @@ export class CaptionComponent {
   
   
   onClickCrocetta(ev:any) {
-    
-   
+  
     this.emitChiusura.emit(ev);
     
   }
@@ -133,9 +134,9 @@ export class CaptionComponent {
 
   }
 
-  navigationClick(ev: any) {
+  toolbarButtonClick(ev: any) {
 
-    this.emitNavCustomClick.emit(ev)
+    this.emitToolbarButtonClick.emit(ev)
   }
   
 

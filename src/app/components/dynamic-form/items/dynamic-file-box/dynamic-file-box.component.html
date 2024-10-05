@@ -1,0 +1,14 @@
+<div #imageContainer class="image-container"  >
+  <!-- Loader che viene mostrato durante il caricamento dell'immagine -->
+  <span *ngIf="imageLoading">Caricamento..</span>
+  <div *ngIf="value">
+    <img  #imageElement [src]="value"  class="form-image img-thumbnail"  style="width: 200px; height: 200px;"/> 
+    
+  </div>
+  <input #fileInput type="file" (change)="onFileSelected($event)" hidden [(ngModel)]="value">
+  <button  type="button"  class="select-photo" (click)="chooseFile($event)">
+    
+    Seleziona foto
+  
+  </button>
+</div>

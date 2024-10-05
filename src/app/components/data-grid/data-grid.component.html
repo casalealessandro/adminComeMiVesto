@@ -1,6 +1,6 @@
 <!--{'width.px':tableWidth ,'height.px':tableHeightWrapper}-->
 
-<div class="-data-grid-wrapper " [ngStyle]="{'width.px':tableWrapWidth}">
+<div class="-data-grid-wrapper table-responsive-sm" [ngStyle]="{'width.px':tableWrapWidth}">
    <div class="-data-grid-toolbar" *ngIf="showToolbarTop">
 
       <!-- <app-toolbar 
@@ -22,7 +22,7 @@
    </div>
 
 
-   <table #tableRef [id]="idTable" class="-data-grid  grid-line" [ngStyle]="tableStyle"
+   <table #tableRef [id]="idTable" class="table -data-grid  grid-line" [ngStyle]="tableStyle"
       (keydown)="handleKeyboardEvents($event)">
       <colgroup *ngIf="colsGroupShow">
          <col *ngFor="let colGroup of colsGroup" [span]="colGroup.span" [class]="colGroup.class">
@@ -37,7 +37,7 @@
 
 
             <th scope="col" *ngFor="let colHeader of colsHeader" [align]="colHeader.colAlignment"
-               [width]="colHeader.colWidth"
+               
                [ngStyle]="{'width.px':colHeader.colWidth, 'min-width.px':colHeader.colWidth,'max-width.px':colHeader.colWidth}">
 
                <ng-template [ngIf]="colHeader.type == 'selection' && isSelIconMultipleVisible"
@@ -116,7 +116,7 @@
 
                 per il momento l'ho tolta da ngclass della riga selected-row || showDetailRow[rowIndex] 
             -->
-            <tr #riga (click)="selectRow($event,rowIndex,colRow)" (mouseenter)="setStateHover($event,riga,rowIndex)"
+            <tr #riga (dblclick)="dblRowClick($event,rowIndex,colRow)" (click)="selectRow($event,rowIndex,colRow)" (mouseenter)="setStateHover($event,riga,rowIndex)"
                (mouseleave)="leaveStateHover($event,riga,rowIndex)" [ngClass]="updateRowClasses(rowIndex)">
 
                <!--[innerText]="renderHtmlColumn(colRow[col.dataField],col.format)"-->

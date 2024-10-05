@@ -1,0 +1,27 @@
+.container-fluid{
+    .container-products{
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        min-height: 600px;
+        max-height: 600px;
+        overflow-y: auto;
+        font-size: 0.8rem;
+        .card-img-top{
+            max-height: 200px;
+            object-fit: scale-down;
+        }
+        .card-img-overlay{
+            background-color: rgba(224, 223, 223, 0.7);
+            height: fit-content;
+            font-size: 0.7rem;
+            width: 100%; 
+        }
+        .card-title{
+            font-size: 0.75rem;
+            white-space: nowrap;      /* Impedisce che il testo vada a capo */
+            overflow: hidden;         /* Nasconde il testo che supera i bordi */
+            text-overflow: ellipsis;  /* Aggiunge i puntini di sospensione */
+            
+        }
+    }
+}

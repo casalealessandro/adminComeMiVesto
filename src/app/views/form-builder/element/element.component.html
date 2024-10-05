@@ -20,7 +20,7 @@
                 </label>
                 <div class="col-sm-9">
                     <select #typeInput="ngModel" name="typeInput" required [(ngModel)]="formField.typeInput"
-                        class="form-control" [disabled]="showFileOption || showSelectOption">
+                        class="form-control" [disabled]="showFileOption || showSelectOption || showHiddenBox">
                         <option value="">Seleziona</option>
                         <option value="text">Testo</option>
                         <option value="number">Numerico</option>
@@ -30,6 +30,7 @@
                         <option value="file" [selected]="showFileOption">file</option>
                         <option value="boolean" [selected]="showCheckBoxOption">Boolean</option>
                         <option value="selectBox" [selected]="showSelectOption">SelectBox</option>
+                        <option value="hidden"   [selected]="showHiddenBox">Nascosto/Hidden</option>
                     </select>
 
                 </div>
@@ -121,6 +122,7 @@
 
 
         </div>
+        <!--CheckBox-->
         <div *ngIf="showCheckBoxOption && formField.checkBoxOptions" class="row mt-3 mb-3 ">
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">CheckBox con link</label>
@@ -162,6 +164,59 @@
                 <div *ngIf="hrefText.invalid && hrefText.touched  && formField.checkBoxOptions.haveLink" class="text-danger">*Testo del link</div>
             </div>
         </div>
+        <!--Fine CheckBox-->
+        <div *ngIf="showFileBoxOption && formField.fileBoxOptions" class="row mt-3 mb-3 ">
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Larghezza massima immagine</label>
+                <div class="col-sm-9">
+                    <input id="maxWidth" name="maxWidth" type="number" class="form-control" #maxWidth="ngModel" required [(ngModel)]="formField.fileBoxOptions.maxWidth">
+                   
+                </div>
+                <div *ngIf="maxWidth.invalid && maxWidth.touched" class="text-danger">maxWidth obbligatorio</div>    
+            </div>
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Altezza massima</label>
+                <div class="col-sm-9 ">
+                    <input
+                       id="maxheight"
+                       name="maxheight"
+                       type="number" 
+                       class="form-control" 
+                      
+                       
+                       [(ngModel)]="formField.fileBoxOptions.maxheight">
+                     
+                </div>
+                    
+            </div>
+
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Salva foto base64</label>
+                <div class="col-sm-9 form-check">
+                    <input id="multiple" name="multiple" type="checkbox" class="form-check-input custom-checkbox"
+                        [(ngModel)]="formField.fileBoxOptions.isbase64">
+                    <label for="multiple" class="form-check-label">Spunta per salvare il base64, se non lo fai lo devi gestire a mano!</label>
+                </div>
+
+            </div>
+
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Max size in MB</label>
+                <div class="col-sm-9 ">
+                    <input
+                       id="maxSize"
+                       name="maxSize"
+                       type="number" 
+                       class="form-control" 
+                      
+                       
+                       [(ngModel)]="formField.fileBoxOptions.maxSize">
+                     
+                </div>
+                    
+            </div>
+        </div>
+
         <div *ngIf="showSelectOption && formField.selectOptions" class="row mt-3 mb-3 ">
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Multiple</label>
@@ -202,10 +257,41 @@
 
                 <div *ngIf="valueExp.invalid && valueExp.touched" class="text-danger">valueExp obbligatorio</div>
             </div>
+<!--
+
+            api:selectOptions.api            
+-->
             <div class="mt-3 mb-3">
+                <div class="row mt-3 mb-3">
+                    <label class="col-sm-3 col-form-label font-medium">Remote dataSource</label>
+                    <div class="col-sm-9 form-check">
+                        <input id="remoted" name="remoted" type="checkbox" class="form-check-input custom-checkbox"
+                            [(ngModel)]="formField.selectOptions.remote">
+                        <label for="remoted" class="form-check-label">Remote dataSource</label>
+                    </div>
+    
+                </div>
+                
+            </div>
+
+            <div class="row mt-3 mb-3" >
+                <label class="col-sm-3 col-form-label font-medium">Api
+                    <span class="badge bg-secondary">Richiesto</span>
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" required #api="ngModel" class="form-control" name="api"
+                        [(ngModel)]="formField.selectOptions.api"
+                        [disabled]="!formField.selectOptions.remote === true"
+                        >
+                </div>
+
+                <div *ngIf="api.invalid && api.touched" class="text-danger">Api se remote obbligatorio</div>
+            </div>
+
+            <div class="mt-3 mb-3" >
 
                 <table class="table table-sm "
-                    *ngIf="formField.selectOptions.valueExp && formField.selectOptions.displayExp">
+                    *ngIf="!formField.selectOptions?.remote && formField.selectOptions?.valueExp && formField.selectOptions?.displayExp">
                     <thead>
                         <tr>
                             <td>{{formField.selectOptions.valueExp}}</td>
@@ -216,12 +302,12 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><input type="text" class="form-control" [name]="formField.selectOptions.valueExp"
-                                    [(ngModel)]="newOption[formField.selectOptions.valueExp]"
+                            <td><input type="text" class="form-control" [name]="formField.selectOptions!.valueExp"
+                                    [(ngModel)]="newOption[formField.selectOptions!.valueExp]"
                                     placeholder="Nuovo Display">
                             </td>
-                            <td><input type="text" class="form-control" [name]="formField.selectOptions.displayExp"
-                                    [(ngModel)]="newOption[formField.selectOptions.displayExp]"
+                            <td><input type="text" class="form-control" [name]="formField.selectOptions!.displayExp"
+                                    [(ngModel)]="newOption[formField.selectOptions!.displayExp]"
                                     placeholder="Nuovo Value">
                             </td>
                             <td><input type="text" class="form-control" name="parentT" [(ngModel)]="newOption.parent"
@@ -230,15 +316,15 @@
                                     class="icon-button btn button-in-cell"><span
                                         class="mdi mdi-content-save-outline"></span></button></td>
                         </tr>
-                        <tr *ngFor="let option of formField.selectOptions.options; let i = index"
+                        <tr *ngFor="let option of formField.selectOptions!.options; let i = index"
                             (click)="onOptionClick(option)">
                             <td>
 
-                                {{option[formField.selectOptions.valueExp]}}
+                                {{option[formField.selectOptions!.valueExp]}}
 
                             </td>
                             <td>
-                                {{option[formField.selectOptions.displayExp]}}
+                                {{option[formField.selectOptions!.displayExp]}}
 
                             </td>
                             <td>

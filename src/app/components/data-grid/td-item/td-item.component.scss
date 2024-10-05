@@ -1,31 +1,31 @@
-::ng-deep.contet-data{
-    
+::ng-deep.contet-data {
+
     width: 100%;
     display: block;
-    padding: 0 5px; 
+    padding: 0 5px;
     word-break: break-all;
     word-wrap: break-word;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 
-   .cell-img{
+    .cell-img {
         object-fit: cover;
-        height:5rem
+        height: 5rem
     }
-    
+
 }
 
 
 ::ng-deep.highlight {
-    background-color:var(--blueDevextreme);
+    background-color: var(--blueDevextreme);
     color: #fff;
 }
 
 .summary-item {
     color: #99a1a8;
     font-weight: 700;
-    text-align: right!important;
+    text-align: right !important;
 }
 
 
@@ -41,6 +41,16 @@
 
 @keyframes shine {
     to {
-      background-position-x: -150%;
+        background-position-x: -150%;
     }
-  }
+}
+
+
+    .tooltip-custom {
+        display: inline-block;
+        padding: 5px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 5px;
+        z-index: 1000;
+    }

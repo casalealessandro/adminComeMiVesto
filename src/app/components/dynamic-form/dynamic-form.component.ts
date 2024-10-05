@@ -7,11 +7,12 @@ import { FormService } from '../../services/form.service';
 import { alert } from '../../widgets/ui-dialogs';
 import { CommonModule } from '@angular/common';
 import { DynamicSelectBoxComponent } from './items/dynamic-select-box/dynamic-select-box.component';
+import { DynamicFileBoxComponent } from './items/dynamic-file-box/dynamic-file-box.component';
 
 @Component({
   selector: 'app-dynamic-form',
   standalone:true,
-  imports:[CommonModule,DynamicSelectBoxComponent,FormsModule,ReactiveFormsModule],
+  imports:[CommonModule,DynamicSelectBoxComponent,DynamicFileBoxComponent ,FormsModule,ReactiveFormsModule],
   templateUrl: './dynamic-form.component.html',
   styleUrls: ['./dynamic-form.component.scss'],
 
@@ -24,6 +25,7 @@ export class DynamicFormComponent {
 
   @Input() service: string | undefined;
   @Input() editData: any  | undefined;
+  @Input() idData: any  | undefined;
 
   @Output() submitFormEvent: EventEmitter<any> = new EventEmitter<any>(); //Emit all'esterno;
   form: FormGroup = new FormGroup({});
@@ -45,6 +47,10 @@ export class DynamicFormComponent {
     if (typeof this.editData === 'undefined') {
       this.editData = {};
       this.inEdit = false
+    }
+    //I dati che servono per fare un insert.
+    if(typeof this.idData != 'undefined'){
+      this.editData = this.idData
     }
     this.templateService.getFormFields(this.service).subscribe(fields => {
       this.fields = fields;

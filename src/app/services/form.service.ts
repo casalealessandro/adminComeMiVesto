@@ -1,7 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { map, Observable } from 'rxjs';
+import { lastValueFrom, map, Observable } from 'rxjs';
 import { DynamicFormField } from '../interface/dynamic-form-field';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ export class FormService {
 
   constructor() {}
   private firestore= inject(AngularFirestore);
+  private http= inject(HttpClient);
 
   getFormFields(nomeAnagrafica: string): Observable<DynamicFormField[]> {
     return this.firestore.collection('forms').doc(nomeAnagrafica).valueChanges()
@@ -46,4 +48,18 @@ export class FormService {
   deleteForm(formId: string): Promise<void> {
     return this.firestore.collection('forms').doc(formId).delete();
   }
+
+  async getData(api:string,queryString:string):Promise<any>{
+
+    const apiFire="https://us-central1-comemivesto-5e5f9.cloudfunctions.net/api/gen/"
+
+    let Query = !queryString ? '' : `${queryString}`
+
+    const completeApi = `${apiFire}${api}${Query}`
+    const call = this.http.get(completeApi)
+
+    return await lastValueFrom(call)
+  }
+
+  
 }

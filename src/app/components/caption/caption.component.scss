@@ -15,8 +15,8 @@
   .item-wrap{
     flex: 1 0 auto;
     margin:2px 5px ;
-   
     
+
     &.wrap-item-logo-caption{
       
       img{
@@ -51,6 +51,14 @@
       text-align: left;
       font-weight: 500;
     }
+
+    .btn-container{
+      .ana-button{
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+      }
+    }
+
   }
 
 }

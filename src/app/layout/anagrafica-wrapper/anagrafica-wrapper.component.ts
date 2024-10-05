@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { ToolbarComponent } from '../toolbar/toolbar.component';
 import { CaptionComponent } from '../../components/caption/caption.component';
 import { CommonModule } from '@angular/common';
+import { ToolbarButton } from '../../interface/app.interface';
 
 
 
@@ -21,11 +22,14 @@ export class AnagraficaWrapperComponent {
   @ViewChild('toolbarTab', { static: true })  toolbarTab!: ToolbarComponent;
 
   @Input() caption:string=''
+  @Input() anaHeight:number=800
   @Input() subTitle:string=''
   @Input() tip:string=''
   @Input() addButtonShow:boolean=false
   @Input() helpDoc:string=''
-  @Input() breadcrumbNavigation:any=[];
+  @Input() breadcrumbNavigation:any=[]; 
+  @Input() showSpinner:boolean= false; 
+  @Input() customToolbarButtons!:ToolbarButton[]; 
 
   @Output() emittChiusura: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittEventButton: EventEmitter<any> = new EventEmitter<any>();
@@ -97,6 +101,10 @@ export class AnagraficaWrapperComponent {
   }
 
   onAddClick(event:any){
+    this.emittEventButton.emit(event)
+  }
+
+  onButtonToolbarClick(event:any){
     this.emittEventButton.emit(event)
   }
 }

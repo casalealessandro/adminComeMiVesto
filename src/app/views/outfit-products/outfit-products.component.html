@@ -1,28 +1,26 @@
-
 <app-anagrafica-wrapper
   [caption]="'Elenco Outfit caricati dagli utenti'"
   [subTitle]="subtitle"
   [tip]="'Gestisci gli Outfit, modera,cancella,sospendi....'"
   [addButtonShow]="true"
-  [showSpinner]="showGrid"
+  [showSpinner]="!showGrid"
   [customToolbarButtons]="customToolbarButtons"
-  (emittEventButton)="eventToolbarOutfit($event)"
+  (emittEventButton)="eventToolbarProduct($event)"
 >
 
 <app-data-grid
     *ngIf="showGrid"        
-    [colonne]="colOutfitsGrid"
-    [idTable]="0002"
-    [dataSource]="outfits"
+    [colonne]="colProductsGrid"
+    [idTable]="000252"
+    [dataSource]="products"
     [remoteOperation]="false"
     [isEditable]="true"
     [isEditableEditRow]="true"
     [showToolbarBottom]="false"
     [showToolbarTop]="false"
     [isSearchable]="false"
-    (emittendStartEdit)="editOutfit($event)"
+    (emittendStartEdit)="editProduct($event)"
     (emittendGridEvent)="gridEvent($event)"
-    (emittendBttonCellClick)="approveOutfit($event)"
     
     >
 

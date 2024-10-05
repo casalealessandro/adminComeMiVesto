@@ -14,7 +14,19 @@
         justify-content: space-between;
         align-items: center;
         color: var(--link-nav);
-
+        
+        .hamburger{
+            display: none;
+            background: var(--primary);
+            color: var(--bianco);
+            z-index: 10002;
+            @media (max-width: 1024px) {
+                position: absolute;
+                display: block;
+                top: 0;
+                left: 0;
+            }
+        }
         .item-left,
         .item-right,
         .item-center {

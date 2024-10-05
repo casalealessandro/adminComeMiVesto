@@ -10,7 +10,7 @@
             [caption]="titlePopUp" 
             [isClosable]="isClosablePopUp"
             [cssClass]="'modal'"
-            (emettiChiusura)="emettiChiusura($event)" 
+            (emitChiusura)="emettiChiusura($event)" 
             [help]="''">
         </app-caption>
 
@@ -22,7 +22,7 @@
 
         </div>
 
-        <app-caption *ngIf="showCaptionFooter" [isFooter]="showCaptionFooter" (emettiChiusura)="emettiChiusura($event)">
+        <app-caption *ngIf="showCaptionFooter"  [isFooter]="showCaptionFooter" (emitChiusura)="emettiChiusura($event)">
         </app-caption>
 
 

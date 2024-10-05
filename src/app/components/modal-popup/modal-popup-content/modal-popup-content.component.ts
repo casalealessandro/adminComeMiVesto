@@ -273,12 +273,14 @@ export class NicaPopupContentComponent implements OnInit, AfterViewInit, OnChang
 
   emettiChiusura($event: any){
 
-    
+      
     if(!this.idPopUp){
       this.popUpService.destroyCurrentOpenPopUp(this.componentName);
     }else{
       this.popUpService.destroyCurrentOpenPopUpByGuid(this.idPopUp);
     }
+    let reeee ={guid:this.idPopUp,name:'stochiudendo'}
+    this.popUpService.setOutputComponent(reeee)
     
     this.popUpService.destroyOutputComponent();
 

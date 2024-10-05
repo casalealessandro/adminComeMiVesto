@@ -96,6 +96,7 @@ export class DataGridComponent{
   @Input() showFooterSummary: boolean = false;
 
   @Output() emittendSelectionRow: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emittendDblRowClick: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittendGridEvent: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittendStartEdit: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittendButtonExit: EventEmitter<any> = new EventEmitter<any>();
@@ -646,7 +647,7 @@ export class DataGridComponent{
         id: 'selection',
         caption: '',
         colWidth: this.cellSelectWidth,
-        labelVisible: false,
+        
         colCaption: undefined,
         allowFiltering: undefined,
         dataField: '',
@@ -748,7 +749,7 @@ export class DataGridComponent{
             button: resColH.button,
             labelAlignment: undefined,
             groupDataField: undefined,
-            labelVisible: false,
+            
             colCaption: undefined,
             allowFiltering: undefined
           })
@@ -758,7 +759,7 @@ export class DataGridComponent{
 
         let customizedOptionKey
 
-        resColH.labelVisible = false
+       
         if (typeof resColH.dynamic != 'undefined') {
           customizedOptionKey = 'dynamic';
           customizedOption = resColH.dynamic;
@@ -877,7 +878,7 @@ export class DataGridComponent{
           maxLength: resColH.maxLength,
           tabIndex: tabIndex,
           showInSummary: showInSummary,
-          labelVisible: false,
+          
           colCaption: undefined,
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -890,6 +891,7 @@ export class DataGridComponent{
       })
 
     })
+    console.log('colsHeader',this.colsHeader)
     if (this.isEditable && this.showEditorButtonsColls) {
       this.colsGroup.push({
         span: '0',
@@ -913,7 +915,7 @@ export class DataGridComponent{
         labelAlignment: undefined,
         groupDataField: undefined,
     
-        labelVisible: false,
+        
         colCaption: undefined,
         allowFiltering: undefined,
         dataField: ''
@@ -933,7 +935,7 @@ export class DataGridComponent{
         labelAlignment: undefined,
         groupDataField: undefined,
        
-        labelVisible: false,
+        
         colCaption: undefined,
         allowFiltering: undefined,
         dataField: ''
@@ -1033,7 +1035,7 @@ export class DataGridComponent{
       labelAlignment: undefined,
       edit: undefined,
       
-      labelVisible: false,
+      
       colCaption: undefined,
       allowFiltering: undefined,
       dataField: ''
@@ -1147,7 +1149,7 @@ export class DataGridComponent{
 
     const larghezzaCelleArray = cols.map((ress:any) => {
       if (ress.colWidth == 'auto') {
-        return ress.caption.length 
+        return ress.colCaption.length
       }
       if (ress.colWidth != null) {
         return Number(ress.colWidth);
@@ -2344,7 +2346,7 @@ export class DataGridComponent{
   }
 
   selectRow(event: any, index: any, row: any, selectRowIndex?:any) {
-
+    
     let prevIndex = index - 1
 
     this.selectionChange(event, prevIndex)
@@ -2445,6 +2447,35 @@ export class DataGridComponent{
 
     this.emittendSelectionRow.emit(eventSelectRow);
 
+  }
+  dblRowClick(event: any, index: any, row: any, selectRowIndex?:any) {
+    
+    let prevIndex = index - 1
+
+    //this.selectionChange(event, prevIndex)
+
+   
+
+    let eventDblClickRow = {
+      event: event,
+      rowData: row,
+      component:this,
+      dataSource: this.dataSource,
+      rowIndex: index,
+      name: 'onDblRowClick',
+      cancel:false
+    }
+
+    this.emittendDblRowClick.emit(eventDblClickRow);
+
+    
+
+    
+   
+   
+    
+
+    
   }
 
   selectRowDetail(event: any, index: number, row: any, selectRowIndex?:any) {
@@ -2646,7 +2677,7 @@ export class DataGridComponent{
   }
 
   tdClick(event: any, colInfo:ColData, tdIndex: any, rowIndex: any) {
-    event.stopPropagation()
+   
     if (this.modeEdit != 'cell') {
       return
     }
@@ -2654,6 +2685,7 @@ export class DataGridComponent{
     switch (colType) {
 
       case 'campoButton':
+        event.stopPropagation()
        this.buttonClick(event,colInfo.button,colInfo,rowIndex)
         break;
 

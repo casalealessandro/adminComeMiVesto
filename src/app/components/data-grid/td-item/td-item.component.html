@@ -1,11 +1,13 @@
 
 <span 
     *ngIf="!showBooleanFlag && !isMockDataLoading; else skeletonTemplate"
-    class="contet-data" [ngStyle]="styleData"
+    class="contet-data " [ngStyle]="styleData"
     [ngClass]="{'summary-item':showSummaryText}"
     (click)="clickTd($event)"
     [innerHTML]="highlightMatches(staticData)"
->
+    
+>   
+
 </span>
 
 <ng-template #skeletonTemplate>
@@ -15,17 +17,11 @@
 
 </ng-template> 
 
+<!-- Tooltip nascosto, viene mostrato al passaggio del mouse -->
+<div *ngIf="isTooltipVisible &&  this.colType == 'campoImg' " class="tooltip-custom" [ngStyle]="tooltipStyle" (mouseenter)="restShow()" (mouseleave)="hideTooltip()">
+    <img [src]="toolTipImg" alt="Immagine Tooltip" >
+</div>
 
-<!-- <dx-check-box
-    *ngIf="showBooleanFlag"
-    #checkbox
-    [(value)]="staticData"
-    (onValueChanged)="onValueChangeCheckBox($event)"
-    
-    
->
-</dx-check-box>
- -->
 
 
 

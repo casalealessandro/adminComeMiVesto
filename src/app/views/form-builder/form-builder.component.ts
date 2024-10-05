@@ -26,6 +26,7 @@ export class FormBuilderComponent {
     { type: 'checkBox', label: 'Checkbox' },
     { type: 'textArea', label: 'Textarea' },
     { type: 'fileBox', label: 'FileBox' },
+    { type: 'hiddenBox', label: 'Hidden box' }
   ];
 
  elementIcons:{ [key: string]: string }  = {
@@ -34,7 +35,8 @@ export class FormBuilderComponent {
     radio:"mdi mdi-radiobox-marked",
     checkBox:"mdi mdi-checkbox-marked-outline",
     textArea:"mdi mdi-form-textarea",
-    fileBox:"mdi mdi-file-document-outline"
+    fileBox:"mdi mdi-file-document-outline",
+    hiddenBox:"mdi mdi-file-hidden",
   }
 
   formElements: any[] = [];

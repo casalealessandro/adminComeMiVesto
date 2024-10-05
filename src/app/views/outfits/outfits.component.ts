@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { PopUpService } from '../../services/popup.service';
 import { outfit, OutfitsService } from '../../services/outfit.service';
 import { DataGridComponent } from '../../components/data-grid/data-grid.component';
-import { Colonne, UserProfile } from '../../interface/app.interface';
+import { Colonne, ToolbarButton, UserProfile } from '../../interface/app.interface';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { CommonModule } from '@angular/common';
 
@@ -24,7 +24,8 @@ import { CommonModule } from '@angular/common';
 export class OutfitsComponent {
 
   private outfitService=inject(OutfitsService)
-  showGrid:boolean = false
+  showGrid:boolean = false;
+  showSpinner:boolean=false;
   // Lista degli aoutfit creati e presenti su DB
   
   outfits = this.outfitService.resultsSignal();
@@ -45,7 +46,7 @@ export class OutfitsComponent {
           dataField: "title",
           colWidth: '200',
           caption: "Titolo",
-          labelVisible: false,
+        
           colCaption: 'Titolo',
           class:'outfit-title',
           edit: false,
@@ -60,7 +61,7 @@ export class OutfitsComponent {
           dataField: "imageUrl",
           colWidth: '68',
           class:'outfit-image',
-          labelVisible: false,
+        
           colCaption: 'Immagine',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -75,7 +76,7 @@ export class OutfitsComponent {
           dataField: "userId",
           colWidth: '120',
           caption: "utente",
-          labelVisible: false,
+        
           colCaption: 'Utente',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -90,7 +91,7 @@ export class OutfitsComponent {
           dataField: "userName",
           colWidth: '120',
           caption: "utente",
-          labelVisible: false,
+        
           colCaption: 'Utente',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -105,7 +106,7 @@ export class OutfitsComponent {
           dataField: "createdAt",
           colWidth: '110',
           caption: "Creazione",
-          labelVisible: false,
+        
           colCaption: 'Creazione',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -119,7 +120,7 @@ export class OutfitsComponent {
           allowEditing: true,
           dataField: "editedAt",
           colWidth: '110',
-          labelVisible: false,
+        
           colCaption: 'Ultima modifica',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -134,7 +135,7 @@ export class OutfitsComponent {
           dataField: "status",
           colWidth: '110',
           caption: "Stato",
-          labelVisible: false,
+        
           colCaption: 'Stato',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -149,7 +150,7 @@ export class OutfitsComponent {
           dataField: "",
           colWidth: '70',
           caption: "Stato",
-          labelVisible: false,
+        
           colCaption: 'Stato',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -170,6 +171,17 @@ export class OutfitsComponent {
       groupDataField: ''
     }
   ]
+  customToolbarButtons: ToolbarButton[] = [
+    {
+      id: 'toJSON',
+      name: 'toJSON',
+      text: 'Importa da Jsn',
+      disabled: false,
+      visible: true,
+      icon:'mdi mdi-database-import-outline',
+      widget: 'button'
+    }
+  ];
 
    async ngOnInit(){
         
@@ -185,7 +197,11 @@ export class OutfitsComponent {
 
   async loadOutfits(){
     this.showGrid = false
-    let newOutfits = await this.outfitService.getOutfits();
+    let newOutfits = await this.outfitService.getOutfits(undefined,[{
+    
+      field: 'createdAt',
+      by: 'desc'
+    }]);
     this.outfits =  newOutfits;
     // Usa Promise.all per risolvere tutte le Promises restituite da getUserInfo
       const outfitPromises = this.outfits.map(async (outfit) => {
@@ -205,8 +221,22 @@ export class OutfitsComponent {
     return userInfo[0];
   }
 
-  createNewOutfit() {
-    throw new Error('Method not implemented.');
+  async eventToolbarOutfit(evt:any) {
+    const name = evt.name || evt.id
+    switch (name) {
+      case 'toJSON':
+        this.showSpinner= true
+        let cc = await  this.outfitService.JsonOutfits()
+        if(cc){
+          this.showSpinner= false;
+          this.loadOutfits()
+        }
+        break;
+    
+      default:
+        break;
+    }
+    //throw new Error('Method not implemented.');
   }
 
   editOutfit(event: any) {
@@ -231,7 +261,8 @@ export class OutfitsComponent {
           let res;
           let dateEdit = new Date();
           if(resulOutputComponent.inEdit){
-            
+            const color = !formData.color ? [] : formData.color
+            formData.color = color
             formData.editedAt =  dateEdit.getTime()
             res = await this.outfitService.updateInCollection(this.selectedOutfit?.id,formData)
           }else{
@@ -272,8 +303,8 @@ export class OutfitsComponent {
     console.log('approveOutfit',event)
     if(event.name == "cambiaStato"){
       const rowData:outfit = event.rowData
-      if(rowData.status != "approvato")
-        rowData.status = 'approvato'
+      if(rowData.status != "approved")
+        rowData.status = 'approved'
         const   res = await this.outfitService.updateInCollection(rowData?.id,rowData);
         if(res){
           this.showGrid = false;

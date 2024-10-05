@@ -3,6 +3,7 @@ import { CommonModule, getLocaleNumberFormat, registerLocaleData } from '@angula
 import { formatCurrency, formatDate, formatNumber, formatPercent, } from '@angular/common';
 import localeFit from '@angular/common/locales/it'
 import { AnagraficaService } from '../../../services/anagrafica.service';
+import { alert } from '../../../widgets/ui-dialogs';
 
 
 registerLocaleData(localeFit);
@@ -37,6 +38,13 @@ export class TdItemComponent  {
   summaryTextHtml = ''
   anagraficaService=inject(AnagraficaService)
   displayExpr: any;
+  isTooltipVisible: boolean=false;
+  tooltipStyle!: {
+    position: string;
+    top: string; // 10px sotto il cursore
+    left: string;
+  };
+  toolTipImg: any;
  
 
   ngAfterViewInit() {
@@ -47,14 +55,16 @@ export class TdItemComponent  {
       'text-align': colPropertyAlign,
     }
 
-    if (this.colProperty.customizedOptions) {
+  /*  
+    lo commento perchè vorrei gerstire i tipi di campo se passati, preferisco così non devo scervellarmi se fare o meno dei controlli sul tipo di valore che mi arriva.
+  if (this.colProperty.customizedOptions) {
       const customizedOption = this.colProperty.customizedOptions;
       this.renderDataColumn(this.value, customizedOption);
 
     } else {
       this.staticData = this.renderHtmlColumn(this.value, this.colProperty.format);
-    }
-
+    } */
+    this.staticData = this.renderHtmlColumn(this.value, this.colProperty.format);
     this.colProperty.labelVisible = false
     this.dataField = this.colProperty.dataField;
 
@@ -153,18 +163,24 @@ export class TdItemComponent  {
   renderHtmlColumn(text: any, format: any) {
 
     const type = this.colType
+    console.log('type',type)
     let result = text
     switch (type) {
       case 'campo':
         result =this.defaultRender(text,format)
         
         break;
+      case 'campoLista':
+        result =this.listaRender(text)
+        
+      break;  
       case 'campoDateTime':
       case 'campoData':
         result =this.dateRender(text,format)
         
         break;
       case 'campoImg':
+        this.toolTipImg = text
         result = `<img src="${text}" class="cell-img" >`
         break;
       case 'campoButton':
@@ -332,11 +348,49 @@ export class TdItemComponent  {
     return formatDate(dateR, format, 'en-US');
   }
   
-  clickTd(event:any) {
-    event.value = this.staticData
-    this.emitClick.emit(event)
+  listaRender(text:any):any{
+     let ressss = text
+
+      const customizedOptions = this.colProperty.customizedOptions
+
+      if(customizedOptions.options && customizedOptions.options.length>0){
+        let valueExp = customizedOptions.valueExp;
+        let displayExp = customizedOptions.displayExp;
+
+        let filter = customizedOptions.options.filter((res:any)=>res[valueExp] == text)
+
+        ressss = filter[0][displayExp] 
+      }
+     return ressss 
   }
 
+  clickTd(event:any) {
+    this.showTooltip(event)
+    event.value = this.staticData;
+    this.emitClick.emit(event)
+  }
+  // Mostra il tooltip e posizionalo accanto al cursore
+  showTooltip(event: MouseEvent): void {
+    this.isTooltipVisible = true;
+    let img = `<img src="${this.toolTipImg}" alt="Immagine Tooltip" style="heigth:800px" >`
+    //alert(img,'Immagine')
+    // Posiziona il tooltip rispetto alla posizione del mouse
+    this.tooltipStyle = {
+      position: 'absolute',
+      top: `${event.layerY - 20}px`, // 10px sotto il cursore
+      left: `${event.layerX - 20}px`, // 10px a destra del cursore
+    };
+  }
+
+  restShow(){
+    this.isTooltipVisible = true;
+  }
+
+  // Nasconde il tooltip
+  hideTooltip(): void {
+    this.isTooltipVisible = false;
+  }
+  
   onValueChangeCheckBox(event: { value: any; }) {
     this.staticData = event.value;
     //this.emitClick.emit(event)

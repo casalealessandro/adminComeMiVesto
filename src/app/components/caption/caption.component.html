@@ -30,9 +30,18 @@
         </div>
 
         <div class="item-wrap last-item-wrap ">
-            <div class="">
-                <!-- [4] => solo ingrandimento -->
-                <button class="btn ana-button"  *ngIf="addButtonShow" (click)="onClickAddButton($event)">
+            <div class="btn-container">
+                
+                <ng-container *ngFor="let cButton of customToolbarButtons">
+
+                    <button [id]="cButton.id" [attr.name]="cButton.name" [disabled]="cButton.disabled"  [ngClass]="cButton.cssClass" class="btn ana-button"  *ngIf="cButton.visible" (click)="toolbarButtonClick(cButton)">
+                        <i *ngIf="cButton.icon" [class]="cButton.icon"></i>
+                        {{cButton.text || cButton.name}} 
+    
+                    </button>
+                </ng-container>
+                
+                <button class="btn ana-button addButton"  id="addButton" name="addButtonShow"   *ngIf="addButtonShow" (click)="onClickAddButton($event)">
                     <i class="mdi mdi-pencil-outline"></i>
                     Aggiungi
 
@@ -41,6 +50,7 @@
       
                 <button class="icon-button"  *ngIf="isClosable" (click)="onClickCrocetta($event)">
                     <i class="mdi mdi-window-close"></i>
+                        Chiudi
                  
                 </button>
             </div>
