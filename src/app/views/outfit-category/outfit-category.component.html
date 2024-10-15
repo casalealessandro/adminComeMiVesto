@@ -1,0 +1,35 @@
+
+<app-anagrafica-wrapper
+  [caption]="title"
+  [subTitle]="subTitle"
+  [tip]="'Gestisci le categorie:crea,cancella,modifica....'"
+  [addButtonShow]="true"
+  
+  [showSpinner]="!showGrid"
+  (emittEventButton)="addCategoryOutfit($event)"
+>
+
+<nav *ngIf="selectedCatOutfit" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item " aria-current="page"><a href="/outfit-category">Elenco categorie</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{selectedCatOutfit.categoryName}}</li>
+  </ol>
+</nav>
+<app-data-grid
+    *ngIf="showGrid"        
+    [colonne]="colOutfitsCategory"
+    [idTable]="0002"
+    [dataSource]="outFitCategories"
+    [remoteOperation]="false"
+    [isEditable]="true"
+    [isEditableEditRow]="true"
+    [showToolbarBottom]="false"
+    [showToolbarTop]="false"
+    [isSearchable]="false"
+    (emittendStartEdit)="editCategoryOutfit($event)"
+    (emittendGridEvent)="gridEvent($event)"
+    (emittendDblRowClick)="dblClickRow($event)"
+    >
+
+    </app-data-grid>
+</app-anagrafica-wrapper>
