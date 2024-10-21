@@ -10,14 +10,14 @@ import { OutfitProductsComponent } from './views/outfit-products/outfit-products
 
 export const routes:Routes = [
     { path: 'dashboard', component: DashboardComponent },
-    /* { path: 'utenti', component: UsersComponent },
+    { path: 'utenti', component: UsersComponent },
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     { path: 'form-list', component: AppFormListComponent },
      { path: 'form-builder/:id', component: FormBuilderComponent },
      { path: 'outfit-list', component: OutfitsComponent },
      { path: 'outfit-category', component: OutfitCategoryComponent },
      { path: 'outfit-category/:id', component: OutfitCategoryComponent },
-     { path: 'outfit-product-list', component: OutfitProductsComponent }, */
+     { path: 'outfit-product-list', component: OutfitProductsComponent },
   ];
   
 

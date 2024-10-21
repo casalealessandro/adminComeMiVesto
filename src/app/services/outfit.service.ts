@@ -73,6 +73,7 @@ export interface wardrobesItem {
   link?: string;
   images: string[];
   ImageUrl?:string;
+  imageUrl?:string;
   prezzo?:number;
 }
 

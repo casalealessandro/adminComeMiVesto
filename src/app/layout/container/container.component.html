@@ -1,10 +1,11 @@
 
-<main class="mi-container " [ngClass]="{'menu-open': isMenuOpen}">
+<main class="mi-container" >
+
     <ng-container >
-        <app-header  [toggleMenu]="toggleMenu"></app-header>
+        <app-header (showHidemMenu)="toggleMenu($event)"  [toggleMenu]="toggleMenu"></app-header>
     
-        <div class="verticalMenucontainer sidebar" [ngClass]="{'open': isMenuOpen}">
-            <app-menu [toggleMenu]="toggleMenu()"></app-menu>
+        <div class="verticalMenucontainer sidebar"  [ngClass]="{'open':isMenuOpen}">
+            <app-menu></app-menu>
         </div>
         
 

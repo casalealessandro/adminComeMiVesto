@@ -163,7 +163,7 @@ export class TdItemComponent  {
   renderHtmlColumn(text: any, format: any) {
 
     const type = this.colType
-    console.log('type',type)
+   // console.log('type',type)
     let result = text
     switch (type) {
       case 'campo':

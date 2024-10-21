@@ -1,6 +1,6 @@
 <!--{'width.px':tableWidth ,'height.px':tableHeightWrapper}-->
 
-<div class="-data-grid-wrapper table-responsive-sm" [ngStyle]="{'width.px':tableWrapWidth}">
+<div class="-data-grid-wrapper table-responsive" [ngStyle]="{'width.px':tableWrapWidth}">
    <div class="-data-grid-toolbar" *ngIf="showToolbarTop">
 
       <!-- <app-toolbar 
@@ -121,7 +121,7 @@
 
                <!--[innerText]="renderHtmlColumn(colRow[col.dataField],col.format)"-->
                <td *ngFor="let col of colsHeader; let i=index" [id]="col.dataField +'_'+ rowIndex"
-                  [width]="col.colWidth" [class]="col.class" [colSpan]="col.colSpan" [align]="'center'"
+                  [class]="col.class" [colSpan]="col.colSpan" [align]="'center'"
                   [title]="colRow[col.dataField] ? colRow[col.dataField] : '' "
                   [ngStyle]="{'width.px':col.colWidth, 'min-width.px':col.colWidth,'max-width.px':col.colWidth}"
                   (click)="tdClick($event,col,i,rowIndex)">

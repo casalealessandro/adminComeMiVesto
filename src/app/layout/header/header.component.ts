@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output, output } from '@angular/core';
 import { Router } from '@angular/router';
 
 
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 
 
 export class HeaderComponent {
-  @Input() toggleMenu!: () => void;
+  @Output() showHidemMenu:EventEmitter<any> = new EventEmitter<any>();
   
   constructor() {}
 
@@ -29,7 +29,9 @@ export class HeaderComponent {
 
 
 
-  
+  toggleMenu(event:Event){
+    this.showHidemMenu.emit(event)
+  }
 
  
 

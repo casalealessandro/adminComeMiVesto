@@ -2,11 +2,11 @@
     background: #fff;
     font-family: "Helvetica Neue", "Segoe UI", helvetica, verdana, sans-serif;
     margin: 0;
-    @media (max-width: 1024px) {
+   /*  @media (max-width: 1024px) {
         width: auto!important;
         max-width: unset!important;
         min-width: unset!important;
-    }
+    } */
 }
 
 .scroll-bottom {
@@ -17,16 +17,16 @@
 .-data-grid {
     
     background-color: var(--bianco);
-    table-layout: fixed;
+   /*  table-layout: fixed;
     width: 100%;
-
+ */
     -webkit-box-shadow: 0px 5px 12px -12px rgba(0, 0, 0, 0.29);
     -moz-box-shadow: 0px 5px 12px -12px rgba(0, 0, 0, 0.29);
     box-shadow: 0px 5px 12px -12px rgba(0, 0, 0, 0.29);
     /*  table-layout: fixed; */
     border-collapse: collapse;
     border-spacing: 0;
-
+    
 }
 
 .-data-grid tbody {
@@ -67,6 +67,14 @@
     font-weight: 400;
 
     padding: 0 5px
+}
+
+@media (max-width: 1024px) {
+    .-data-grid thead th span {
+        width: auto!important;
+        max-width: unset!important;
+        min-width: unset!important;
+    }
 }
 
 .-data-grid thead th .editor,
@@ -215,6 +223,18 @@
     border: solid 1px #e8eaeb;
     border-spacing: 0;
     /* line-height: 26px; */
+}
+
+@media (max-width: 1024px) {
+    .-data-grid tr td {
+  
+            width: auto!important;
+            max-width: unset!important;
+            min-width: unset!important;
+       
+
+       
+    }
 }
 .-data-grid tr td .button-icon{
     text-align: center;

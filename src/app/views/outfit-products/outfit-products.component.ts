@@ -123,8 +123,11 @@ export class OutfitProductsComponent {
   selectedProdOutfit: any;
 
 
+
   ngOnInit(): void {
     this.loadProduct();
+
+
   }
 
   loadProduct(): void {
@@ -133,11 +136,35 @@ export class OutfitProductsComponent {
       
       this.outFitService.setMySignal(res);
 
-      this.products =  this.outFitService.mySignal();
+      this.products =  this.outFitService.mySignal()
+      /* this.products.forEach(ress=>{
+        try {
+          this.outFitService.updateProductOutfit(ress.id, ress);  
+        } catch (error) {
+          console.error(error);
+        }
+        
+      }) */
       this.showGrid = true
     });
   }
+  repairImages(products:wardrobesItem[]) {
+    // Funzione per aggiornare gli URL delle immagini
 
+    return products.map((product:wardrobesItem) => {
+      if (product.imageUrl) { // check if ImageUrl is defined
+        return {
+          ...product, // copia tutte le altre proprietà
+          imageUrl: product.imageUrl.replace('http://', 'https://') // sostituzione
+        };
+      } else {
+        return product; // return the product as is if ImageUrl is undefined
+      }
+    });
+  }
+
+
+  
   editProduct(event: any) {
     event.cancel = true
 

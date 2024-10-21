@@ -49,12 +49,12 @@ export class ContainerComponent {
   
 
  
-  // Listener per l'evento resize, per aggiornare la visibilità del menu
+ /*  // Listener per l'evento resize, per aggiornare la visibilità del menu
   @HostListener('window:resize', ['$event'])
   onResize(event: Event) {
     const windowWidth = (event.target as Window).innerWidth;
     this.updateMenuVisibility(windowWidth);
-  }
+  } */
 
   // Funzione per aggiornare lo stato del menu in base alla risoluzione dello schermo
   updateMenuVisibility(windowWidth: number) {
@@ -68,7 +68,7 @@ export class ContainerComponent {
   }
    
   // Metodo per passare la funzione toggle al componente Header
-  toggleMenu() {
+  toggleMenu(evt:any) {
     this.isMenuOpen = !this.isMenuOpen
   }
 }

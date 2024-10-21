@@ -13,9 +13,10 @@ import { alert } from '../../../widgets/ui-dialogs';
   styleUrl: './product-from-feed.component.scss'
 })
 export class ProductFromFeedComponent {
- 
+  
 
-  selectedStore:any;
+
+  selectedStore: any;
   productService = inject(ProdottiOnlineService);
   outfitService = inject(OutfitsService);
   pageNumber: number = 1;
@@ -44,9 +45,13 @@ export class ProductFromFeedComponent {
 
   ] // Store disponibili
 
-  
+  public storeCategories: any = []
+
+
+
   selectGender: any = [];
   products: any[] = [];
+  filterProduct: any[] = [];
   categories = this.outfitService.getFilteredCollection('outfitsCategories', [{
     field: 'parentCategory',
     operator: '!=',
@@ -146,31 +151,51 @@ export class ProductFromFeedComponent {
     id: 'D', value: 'Donna'
   }]
   justImported: Set<string> = new Set();
+  selectedStoreCategory: any;
 
 
 
   loadProducts() {
-    if (this.totalProducts <= this.products.length) {
+    if (this.products.length <= this.totalProducts ) {
       this.productService.getProdottiFromFeed(this.selectedStore, this.pageNumber).subscribe(resultProucts => {
 
         this.products.push(...resultProucts.products);
         this.totalProducts = resultProucts.productHeader.totalHits;
-
-        this.products.forEach(async ree => {
+        this.filterProduct = JSON.parse(JSON.stringify(this.products))
+        this.filterProduct.forEach(async ree => {
           const id = ree.offers[0].id;
+          this.storeCategories.push(ree.categories[0])
           ree.selectedColor = null,  // oppure un valore di default
-          ree.selectedCategory = null,
-          ree.selectedGender = null
+            ree.selectedCategory = null,
+            ree.selectedGender = null
           this.selectGender[id] = null;
           let res = await this.outfitService.getFilteredCollection('outfitsProducts', [{
             field: 'id',
             operator: '==',
             value: id
           }])
+
           if (res.length > 0) {
             this.justImported.add(id)
           }
         })
+
+
+        this.storeCategories = this.storeCategories.filter((obj: any, index: any, self: any) =>
+          index === self.findIndex((t: any) => (t.name === obj.name))
+        );
+        this.storeCategories = this.storeCategories.sort((a:any, b:any) => {
+          if (a.name < b.name) {
+              return -1; // a viene prima di b
+          }
+          if (a.name > b.name) {
+              return 1; // b viene prima di a
+          }
+          return 0; // sono uguali
+      });
+        if(this.selectedStoreCategory){
+          this.onChangeCategory()
+        }
       })
     }
 
@@ -184,6 +209,7 @@ export class ProductFromFeedComponent {
   loadMoreProducts() {
 
     this.pageNumber++
+    this.filterProduct = []
     this.loadProducts()
   }
   async saveToWardrobe(product: any) {
@@ -194,7 +220,8 @@ export class ProductFromFeedComponent {
     let price = product.offers[0].priceHistory[0].price.value
     let link = product.offers[0].productUrl
     let feedId = product.offers[0].feedId;
-    let parentCategory = (await this.categories).filter(ress=>ress.id == product.selectCategories)[0].parentCategory
+    let parentCategory = (await this.categories).filter(ress => ress.id == product.selectCategories)[0].parentCategory;
+    let imageUrl = product.productImage.url
     const id = product.offers[0].id;
     let dateEdit = new Date();
     let prodSave = {
@@ -205,12 +232,12 @@ export class ProductFromFeedComponent {
       outfitSubCategory: product.selectCategories,
       brend: product.brand,
       color: product.selectColor,
-      imageUrl: product.productImage.url,
+      imageUrl: imageUrl.replace('http://', 'https://'),
       link: link,
       feedId: feedId,
       gender: product.selectGender,
-      createdAt:dateEdit.getTime(),
-      editedAt:dateEdit.getTime(),
+      createdAt: dateEdit.getTime(),
+      editedAt: dateEdit.getTime(),
 
     }
 
@@ -226,6 +253,7 @@ export class ProductFromFeedComponent {
     this.totalProducts = 0;
     this.pageNumber = 1;
     this.justImported.clear()
+    this.storeCategories = []
     this.loadProducts()
   }
 
@@ -242,7 +270,9 @@ export class ProductFromFeedComponent {
 
 
   onSelectCategories(event: Event) {
-    console.log('selectCategories', event)
+   
   }
-
+  onChangeCategory($event?: Event) {
+    this.filterProduct = this.products.filter(resProd=> resProd.categories.map((res: any) => res.name).includes(this.selectedStoreCategory))
+  }
 }

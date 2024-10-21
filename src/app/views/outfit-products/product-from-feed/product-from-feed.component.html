@@ -9,12 +9,22 @@
         </select>
         <label for="floatingSelect">Seleziona uno store</label>
     </div>
+    <div class="form-floating">
+        <select class="form-select" id="floatingSelect" aria-label="Floating label select example"
+            [(ngModel)]="selectedStoreCategory" (change)="onChangeCategory($event)">
+            <option *ngFor="let category of storeCategories" [value]="category.name">
+                {{category.name}}
+            </option>
+
+        </select>
+        <label for="floatingSelect">Seleziona uno store</label>
+    </div>
     <div class="container">
 
         <div class="row container-products">
             <span *ngIf="products.length==0"> Nessun Prodotto...</span>
             <!-- Itera sui prodotti -->
-            <div class="col-md-4" *ngFor="let product of products; let i=index">
+            <div class="col-md-4" *ngFor="let product of filterProduct; let i=index">
                 <div class="card mb-4">
                     <img src="{{ product.productImage.url }}" class="card-img-top " alt="{{ product.name }}">
                     <div class="card-img-overlay">
