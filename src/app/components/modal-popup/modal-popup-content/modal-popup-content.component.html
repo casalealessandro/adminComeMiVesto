@@ -1,6 +1,6 @@
 <div [ngStyle]="{'display': isPanelVisible ? 'block' : 'none', 'z-index': zIndexModalDialog }" class="modal popup"
     [ngClass]="{'position-bottom':position == 'bottom'}" [ngClass]="classFade" tabindex="-1" [id]="idPopUp"
-    role="dialog" aria-hidden="true">
+    role="dialog" >
 
     <div [id]="idPopUp" class="modal-dialog formEditPopup "
         [ngStyle]="{'max-width':popUpWidth ? popUpWidth : '','width': popUpWidth ? popUpWidth : '' }">

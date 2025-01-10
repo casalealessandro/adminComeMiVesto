@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, HostListener, signal, WritableSignal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, effect, HostListener, signal, WritableSignal } from '@angular/core';
 import { AnagraficaWrapperComponent } from '../anagrafica-wrapper/anagrafica-wrapper.component';
 import { FooterComponent } from '../footer/footer.component';
 import { HeaderComponent } from '../header/header.component';
@@ -7,23 +7,19 @@ import { ToolbarComponent } from '../toolbar/toolbar.component';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { PopupWrapperComponent } from '../../components/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component';
+import { OverlayComponent } from '../../components/overlay-component/overlay.component';
+import { UserService } from '../../services/user.service';
 
 
 
 @Component({
   selector: 'app-container',
-  standalone:true,
-  imports:[
+  standalone: true,
+  imports: [
     CommonModule,
     RouterOutlet,
-    AnagraficaWrapperComponent,
-    FooterComponent,
     HeaderComponent,
-    MenuComponent,
-    ToolbarComponent,
-    PopupWrapperComponent,
-    
-    
+    MenuComponent
   ],
   templateUrl: './container.component.html',
   styleUrl: './container.component.scss',
@@ -31,30 +27,35 @@ import { PopupWrapperComponent } from '../../components/modal-popup/modal-popup-
 })
 export class ContainerComponent {
   isClose: boolean = false;
-  isLogin:boolean = false;
+  isLogin: boolean = false;
   idTipoUtente: number = -1;
-  
+
 
 
   // Signal per tracciare se il menu è aperto o chiuso
-  isMenuOpen: boolean= false;
+  isMenuOpen: boolean = false;
 
-  
-  constructor() {}
+
+  constructor(private userService: UserService) {
+
+    effect(() => {
+      this.isLogin = this.userService.isLoginUser();
+    });
+  }
 
   ngOnInit() {
-
+    this.isLogin = this.userService.isLoggedUser();
     this.updateMenuVisibility(window.innerWidth);
   }
-  
 
- 
- /*  // Listener per l'evento resize, per aggiornare la visibilità del menu
-  @HostListener('window:resize', ['$event'])
-  onResize(event: Event) {
-    const windowWidth = (event.target as Window).innerWidth;
-    this.updateMenuVisibility(windowWidth);
-  } */
+
+
+  /*  // Listener per l'evento resize, per aggiornare la visibilità del menu
+   @HostListener('window:resize', ['$event'])
+   onResize(event: Event) {
+     const windowWidth = (event.target as Window).innerWidth;
+     this.updateMenuVisibility(windowWidth);
+   } */
 
   // Funzione per aggiornare lo stato del menu in base alla risoluzione dello schermo
   updateMenuVisibility(windowWidth: number) {
@@ -64,11 +65,11 @@ export class ContainerComponent {
       this.isMenuOpen = false;  // Su mobile, il menu è chiuso inizialmente
     }
 
-    console.log(''+this.isMenuOpen )
+    console.log('' + this.isMenuOpen)
   }
-   
+
   // Metodo per passare la funzione toggle al componente Header
-  toggleMenu(evt:any) {
+  toggleMenu(evt: any) {
     this.isMenuOpen = !this.isMenuOpen
   }
 }

@@ -1,0 +1,53 @@
+// Definisci variabili per rendere i colori e gli stili più facili da personalizzare
+$overlay-bg-color: rgba(0, 0, 0, 0.3);
+$content-bg-color: #fff;
+$box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+$border-radius: 4px;
+$z-index-overlay: 1000;
+$z-index-content: 1001;
+
+.overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+ 
+    z-index: $z-index-overlay;
+    cursor: pointer;
+    &.bg-overlay{
+        background-color:  $overlay-bg-color;
+    }
+}
+
+.overlay-content {
+    position: absolute;
+
+    min-width: 1px;
+    min-height: 1px;
+
+    background-color:$content-bg-color;
+    box-shadow: $box-shadow;
+    padding: 10px;
+    border-radius: $border-radius;
+    z-index: $z-index-content;
+    display: flex;
+    flex-direction: column;
+    // Anima la comparsa del contenuto per un effetto più fluido
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    opacity: 0;
+    transform: translateY(-10px);
+   
+    &.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Se necessario, aggiungi breakpoint per dispositivi mobili
+@media (max-width: 768px) {
+    .overlay-content {
+        width: 90vw;
+        left: 5vw !important;
+    }
+}

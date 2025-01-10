@@ -1,26 +1,19 @@
-@font-face {
-    font-family: 'Neue Helvetica';
-    src: url('./assets/fonts/helvetica-neue/helveticaneue.woff2') format('woff2'),
-        url('./assets/fonts/helvetica-neue/helveticaneue.woff2') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';
+
 /* Varaibili Globali */
 :root {
     --primary: #023957;
     --primary_border: #0239574f;
-    --secondary: #5aacf4;
-    --blueDevextreme: #7ab8eb;
-    --blueSoft: #045072;
+
+    --blueSoft: rgb(100 116 139 / 1);
     --bg-grey: #f4f7fa;
     --link-nav: #f3f1E9;
     --bianco: #fff;
     --giallo: #edcd5f;
-    --border_color:#e2e8f0;
+    --table-th-bg: rgb(248 250 252 / 1);
+    --border_color: #e2e8f099;
+
     /**Altezza Globale degli elementi di layout***/
 
     --height_caption: 27px;
@@ -49,7 +42,7 @@
 
 body {
     height: 100%;
-    font-family: 'Neue Helvetica', sans-serif !important;
+    font-family: 'Public Sans', sans-serif !important;
     letter-spacing: .025em;
     font-size: .875rem;
     -webkit-font-smoothing: antialiased;
@@ -67,42 +60,41 @@ a {
     color: var(--blueSoft) !important;
 }
 
-h2, .h2 {
+h2,
+.h2 {
     font-size: 1.2rem;
 }
-h3, .h3 {
+
+h3,
+.h3 {
     font-size: 1rem;
 }
+
 div {
     position: relative;
     max-width: 100%;
 }
-.mi-container{
-    //height: calc(100vh - var(--header_height));
-}
-.ana-container{
-   position: relative;
-  /*  min-height: 800px; */
-   overflow-y: auto;
-}
+
 .icon-button {
     background: none;
     border: none;
     color: var(--primary);
-    
-}
-.del{
-    color:rgba(185,28,28,1)
+
 }
 
-.ana-button{
-    background-color: rgba(4, 80, 114,1);
+.del {
+    color: rgba(185, 28, 28, 1)
+}
+
+.ana-button {
+    background-color: rgba(4, 80, 114, 1);
     color: var(--bianco);
-    i{
+
+    i {
         margin-right: 0.5rem;
     }
 
-    &:hover{
+    &:hover {
         background-color: rgba(4, 80, 114, .8);
         color: var(--bianco);
     }
@@ -150,7 +142,8 @@ div {
         }
     }
 }
-.font-medium{
+
+.font-medium {
     font-weight: 500;
 }
 
@@ -204,7 +197,7 @@ input:-webkit-autofill:active {
     color: var(--blueSoft);
 }
 
-.text{
+.text {
     font-size: .94rem;
 }
 
@@ -212,6 +205,7 @@ input:-webkit-autofill:active {
 .items-center {
     align-items: center;
 }
+
 .ui-modal-dialog {
     pointer-events: auto;
     display: flex;
@@ -281,4 +275,14 @@ input:-webkit-autofill:active {
 
 
     }
+}
+
+.accordion-button {
+    &:not(.collapsed) {
+    
+        background-color: var(--table-th-bg);
+      
+    }
+
+    
 }

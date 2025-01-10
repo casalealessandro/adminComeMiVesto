@@ -9,6 +9,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { FirebaseApp } from '@angular/fire/app';
 import { Data } from '@angular/router';
+import { doc } from 'firebase/firestore';
 
 export interface outfit {
   userName: any;
@@ -75,6 +76,7 @@ export interface wardrobesItem {
   ImageUrl?:string;
   imageUrl?:string;
   prezzo?:number;
+  gender?:any;
 }
 
 export interface FireBaseConditions {
@@ -125,7 +127,26 @@ export class OutfitsService {
     return this.mySignal();
   }
 
+  login(){
+    const  headers={
+      headers: new HttpHeaders().set(
+        "Authorization", 'Bearer ' 
+      ).set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+        .set('Content-Type', 'application/json; charset=utf-8')
+        .set('responseType','text'),
+      params: new HttpParams(),
+      responseType: 'text' as 'json'  // Aggiungi responseType qui
 
+     
+    }
+
+    const api = "http://192.168.1.170:8080/authenticate"
+
+    this.httpClient.post(api, {email: 'prova2', password: 'prova2'}, headers).subscribe(res=>{
+      console.log(res)
+    })
+  }
+  
 
   async getOutfits(conditions?: FireBaseConditions[], orderBy?: FireBaseOrderBy[]): Promise<outfit[]> {
 
@@ -182,6 +203,15 @@ export class OutfitsService {
     return results
   }
 
+  async getOutfitById(outfitId: any): Promise<outfit[]> {
+   
+    let query = this.firestore.collection('outfits').ref.where('id', '==', outfitId)
+
+    const querySnapshot = await query.get();
+
+    const results = querySnapshot.docs.map((doc: any) => doc.data()) as outfit[];
+    return results
+  }
 
   //Salvataggio in FireStone
 
@@ -365,6 +395,25 @@ export class OutfitsService {
 
     } catch (error) {
       console.log(error)
+      return false
+    }
+  }
+
+  async removeProductOutfit(id: any): Promise<boolean> {
+
+    let query = this.firestore.collection('outfitsProducts').doc(id).ref
+
+    // Applica questa condizione alla query
+
+   
+
+    try {
+       // Elimina il doc che corrispondono al ID
+      await query.delete();
+     
+      return true
+    } catch (error) {
+      console.error('Error deleting documents:', error);
       return false
     }
   }

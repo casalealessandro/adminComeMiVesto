@@ -1,0 +1,141 @@
+.image-container {
+
+  /* Stile per il contenitore dell'immagine */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  flex-direction: column;
+  //border: 2px solid #ccc;
+  /* Colore del contorno quando l'immagine è vuota */
+  //border-radius: 8px;
+  /* Angoli arrotondati */
+  background-color: #424242;
+  /* Colore di sfondo per il caso in cui non ci sia un'immagine */
+  position: relative;
+  /* Per posizionare il messaggio di upload */
+
+
+  /* Stile per l'immagine stessa */
+  img {
+    max-width: 400px;
+    
+    /* Dimensione massima dell'immagine */
+    border-bottom: 2px solid #e0e0e0;
+    /* Assicura che l'immagine si adatti bene senza distorsioni */
+
+
+    &.darken {
+      opacity: 0.5;
+    }
+  }
+
+  /* Stile per il messaggio di upload */
+  &::before {
+    content: 'Carica un\'immagine';
+    color: #888;
+    /* Colore del testo del messaggio di upload */
+    font-size: 14px;
+    /* Dimensione del testo */
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    /* Assicura che il messaggio non interferisca con gli eventi di clic */
+    display: none;
+    /* Nascosto di default */
+  }
+
+  /* Mostra il messaggio di upload solo se non ci sono immagini */
+  &:empty {
+    &::before {
+      display: block;
+    }
+
+
+  }
+
+  .select-photo {
+    background: rgba(66, 66, 66, 1); // Sfondo semi-trasparente per il pulsante
+    color: #fff; // Colore del testo bianco
+  }
+
+  #toggle-button {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    z-index: 400; // Assicuriamoci che il pulsante sia sopra l'immagine e i tag
+    background: rgba(0, 0, 0, 0.6); // Sfondo semi-trasparente per il pulsante
+    color: #fff; // Colore del testo bianco
+    font-size: 10px;
+  }
+
+  .tag {
+
+
+    position: absolute;
+    display: inline-block;
+    z-index: 1;
+
+
+    .card-tag-content {
+      font-size: 13px;
+      display: inline-block;
+      width: auto;
+      background-color: rgba(255, 255, 255, 0.8);
+      transition: background-color 0.3s ease;
+      border-radius: 15px;
+      padding: 2px;
+      margin: 0;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+      text-align: center;
+
+   
+      .item-title {
+        width: 170px;  
+        white-space: nowrap;   /* Evita che il testo vada a capo */
+        overflow: hidden;      /* Nasconde il testo in eccesso */
+        text-overflow: ellipsis; /* Aggiunge i puntini di sospensione */
+        font-weight: bold;
+        color: #000;
+      }
+
+      .item-price {
+        font-size: 12px;
+        font-weight: bold;
+        color: #000;
+        margin-top: 5px;
+      }
+    }
+
+  }
+ 
+}
+.chips{
+  margin-top: 10px;
+  display: flex;
+  justify-content:flex-start;
+  align-items: center;  
+  .chips-itm{
+    margin-right: 5px;
+    padding: 3px 5px;
+    border-radius: 3px;
+    background-color: #f0eeee;
+    color: #000;
+    font-size: 12px;
+    font-weight: bold;
+    &:last-child{
+      margin-right: 0;
+    }
+  }
+}
+.tag-toggle-button {
+  z-index: 1002;
+  color: #fff;
+}
+

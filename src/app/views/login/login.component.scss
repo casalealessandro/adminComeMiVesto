@@ -1,0 +1,19 @@
+::ng-deep.content-wrap {
+    &.login-container {
+        width: 600px;
+
+        .form-container{
+            .badge {
+                display: none;
+            }
+
+            
+        }
+        .form-footer{
+            .btn-submit-form{
+                flex: 1;
+            }
+        }   
+        
+    }
+}

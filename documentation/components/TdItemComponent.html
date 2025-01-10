@@ -1,0 +1,3079 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>admin documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="../" class="navbar-brand">admin documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content component">
+                   <div class="content-data">
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Components</li>
+  <li class="breadcrumb-item"
+  >
+  TdItemComponent</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a href="#info" class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li class="nav-item">
+            <a href="#source" class="nav-link"
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
+        </li>
+        <li class="nav-item">
+            <a href="#templateData" class="nav-link"
+                role="tab" id="templateData-tab" data-bs-toggle="tab" data-link="template">Template</a>
+        </li>
+        <li class="nav-item">
+            <a href="#styleData" class="nav-link"
+                role="tab" id="styleData-tab" data-bs-toggle="tab" data-link="style">Styles</a>
+        </li>
+        <li class="nav-item">
+            <a href="#tree" class="nav-link"
+                role="tab" id="tree-tab" data-bs-toggle="tab" data-link="dom-tree">DOM Tree</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="info"><p class="comment">
+    <h3>File</h3>
+</p>
+<p class="comment">
+    <code>src/app/components/data-grid/td-item/td-item.component.ts</code>
+</p>
+
+
+
+
+
+
+<section data-compodoc="block-metadata">
+    <h3>Metadata</h3>
+    <table class="table table-sm table-hover metadata">
+        <tbody>
+
+
+
+
+
+
+
+
+
+
+
+
+            <tr>
+                <td class="col-md-3">selector</td>
+                <td class="col-md-9"><code>app-td-item</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">standalone</td>
+                <td class="col-md-9"><code>true</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">imports</td>
+                <td class="col-md-9">
+                            <code>CommonModule</code>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">styleUrls</td>
+                <td class="col-md-9"><code>./td-item.component.scss</code></td>
+            </tr>
+
+
+
+            <tr>
+                <td class="col-md-3">templateUrl</td>
+                <td class="col-md-9"><code>./td-item.component.html</code></td>
+            </tr>
+
+
+
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-index">
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#anagraficaService" >anagraficaService</a>
+                            </li>
+                            <li>
+                                <a href="#dataField" >dataField</a>
+                            </li>
+                            <li>
+                                <a href="#displayExpr" >displayExpr</a>
+                            </li>
+                            <li>
+                                    <span class="modifier"></span>
+                                <a href="#dynamicContent" >dynamicContent</a>
+                            </li>
+                            <li>
+                                <a href="#editorButtons" >editorButtons</a>
+                            </li>
+                            <li>
+                                <a href="#isTooltipVisible" >isTooltipVisible</a>
+                            </li>
+                            <li>
+                                <a href="#notEditing" >notEditing</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Private</span>
+                                <a href="#overlayService" >overlayService</a>
+                            </li>
+                            <li>
+                                <a href="#remoteData" >remoteData</a>
+                            </li>
+                            <li>
+                                <a href="#showBooleanFlag" >showBooleanFlag</a>
+                            </li>
+                            <li>
+                                <a href="#staticData" >staticData</a>
+                            </li>
+                            <li>
+                                <a href="#styleData" >styleData</a>
+                            </li>
+                            <li>
+                                <a href="#summaryTextHtml" >summaryTextHtml</a>
+                            </li>
+                            <li>
+                                <a href="#toolTipImg" >toolTipImg</a>
+                            </li>
+                            <li>
+                                <a href="#tooltipStyle" >tooltipStyle</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Methods</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#actionCell" >actionCell</a>
+                            </li>
+                            <li>
+                                <a href="#clickTd" >clickTd</a>
+                            </li>
+                            <li>
+                                <a href="#dateRender" >dateRender</a>
+                            </li>
+                            <li>
+                                <a href="#defaultRender" >defaultRender</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Async</span>
+                                <a href="#getElementValue" >getElementValue</a>
+                            </li>
+                            <li>
+                                <a href="#hideTooltip" >hideTooltip</a>
+                            </li>
+                            <li>
+                                <a href="#highlightMatches" >highlightMatches</a>
+                            </li>
+                            <li>
+                                <a href="#listaRender" >listaRender</a>
+                            </li>
+                            <li>
+                                <a href="#ngAfterViewInit" >ngAfterViewInit</a>
+                            </li>
+                            <li>
+                                <a href="#numberRender" >numberRender</a>
+                            </li>
+                            <li>
+                                <a href="#onValueChangeCheckBox" >onValueChangeCheckBox</a>
+                            </li>
+                            <li>
+                                <a href="#openOverlay" >openOverlay</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Async</span>
+                                <a href="#renderDataColumn" >renderDataColumn</a>
+                            </li>
+                            <li>
+                                <a href="#renderHtmlColumn" >renderHtmlColumn</a>
+                            </li>
+                            <li>
+                                <a href="#restShow" >restShow</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Async</span>
+                                <a href="#showDialog" >showDialog</a>
+                            </li>
+                            <li>
+                                <a href="#showTooltip" >showTooltip</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Inputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#colProperty" >colProperty</a>
+                            </li>
+                            <li>
+                                <a href="#colType" >colType</a>
+                            </li>
+                            <li>
+                                <a href="#dataRow" >dataRow</a>
+                            </li>
+                            <li>
+                                <a href="#isMockDataLoading" >isMockDataLoading</a>
+                            </li>
+                            <li>
+                                <a href="#rowIndex" >rowIndex</a>
+                            </li>
+                            <li>
+                                <a href="#searchText" >searchText</a>
+                            </li>
+                            <li>
+                                <a href="#showSummaryText" >showSummaryText</a>
+                            </li>
+                            <li>
+                                <a href="#value" >value</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Outputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#btnActionClick" >btnActionClick</a>
+                            </li>
+                            <li>
+                                <a href="#emitClick" >emitClick</a>
+                            </li>
+                            <li>
+                                <a href="#emitText" >emitText</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+        </tbody>
+    </table>
+</section>
+
+
+    <section data-compodoc="block-inputs">
+    <h3 id="inputs">Inputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="colProperty"></a>
+                        <b>colProperty</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="26" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:26</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="colType"></a>
+                        <b>colType</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="27" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:27</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="dataRow"></a>
+                        <b>dataRow</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>{}</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[]</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="31" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:31</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="isMockDataLoading"></a>
+                        <b>isMockDataLoading</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="37" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:37</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="rowIndex"></a>
+                        <b>rowIndex</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="30" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:30</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="searchText"></a>
+                        <b>searchText</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>null</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="32" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:32</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="showSummaryText"></a>
+                        <b>showSummaryText</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="33" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:33</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="value"></a>
+                        <b>value</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="28" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:28</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+    <section data-compodoc="block-outputs">
+    <h3 id="outputs">Outputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="btnActionClick"></a>
+                        <b>btnActionClick</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="36" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:36</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="emitClick"></a>
+                        <b>emitClick</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="34" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:34</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="emitText"></a>
+                        <b>emitText</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="35" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:35</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+
+
+    <section data-compodoc="block-methods">
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="actionCell"></a>
+                    <span class="name">
+                        <span ><b>actionCell</b></span>
+                        <a href="#actionCell"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>actionCell(event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, eventName: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="428"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:428</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>eventName</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="clickTd"></a>
+                    <span class="name">
+                        <span ><b>clickTd</b></span>
+                        <a href="#clickTd"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>clickTd(event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="421"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:421</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="dateRender"></a>
+                    <span class="name">
+                        <span ><b>dateRender</b></span>
+                        <a href="#dateRender"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>dateRender(date: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, format: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="363"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:363</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                                <td>Default value</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>date</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+                                            <td>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                                <td>format</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+                                            <td>
+                                                    <code>&quot;dd/MM/yyyy&quot;</code>
+                                            </td>
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="defaultRender"></a>
+                    <span class="name">
+                        <span ><b>defaultRender</b></span>
+                        <a href="#defaultRender"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>defaultRender(text: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, format: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="215"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:215</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>text</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>format</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getElementValue"></a>
+                    <span class="name">
+                            <span class="modifier">Async</span>
+                        <span ><b>getElementValue</b></span>
+                        <a href="#getElementValue"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>getElementValue(api: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, colData: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, value: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="155"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:155</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>api</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>colData</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>value</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="hideTooltip"></a>
+                    <span class="name">
+                        <span ><b>hideTooltip</b></span>
+                        <a href="#hideTooltip"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>hideTooltip()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="504"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:504</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="highlightMatches"></a>
+                    <span class="name">
+                        <span ><b>highlightMatches</b></span>
+                        <a href="#highlightMatches"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>highlightMatches(testo: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="513"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:513</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>testo</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="listaRender"></a>
+                    <span class="name">
+                        <span ><b>listaRender</b></span>
+                        <a href="#listaRender"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>listaRender(text: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="405"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:405</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>text</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngAfterViewInit"></a>
+                    <span class="name">
+                        <span ><b>ngAfterViewInit</b></span>
+                        <a href="#ngAfterViewInit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>ngAfterViewInit()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="58"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:58</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="numberRender"></a>
+                    <span class="name">
+                        <span ><b>numberRender</b></span>
+                        <a href="#numberRender"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>numberRender(text: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, format: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="323"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:323</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>text</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>format</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="onValueChangeCheckBox"></a>
+                    <span class="name">
+                        <span ><b>onValueChangeCheckBox</b></span>
+                        <a href="#onValueChangeCheckBox"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>onValueChangeCheckBox(event: literal type)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="508"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:508</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                        <code>literal type</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="openOverlay"></a>
+                    <span class="name">
+                        <span ><b>openOverlay</b></span>
+                        <a href="#openOverlay"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>openOverlay(event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="460"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:460</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="renderDataColumn"></a>
+                    <span class="name">
+                            <span class="modifier">Async</span>
+                        <span ><b>renderDataColumn</b></span>
+                        <a href="#renderDataColumn"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>renderDataColumn(data: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, colData: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, items?: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="85"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:85</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>data</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>colData</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>items</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    Yes
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="renderHtmlColumn"></a>
+                    <span class="name">
+                        <span ><b>renderHtmlColumn</b></span>
+                        <a href="#renderHtmlColumn"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>renderHtmlColumn(text: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>, format: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="174"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:174</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>text</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>format</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="restShow"></a>
+                    <span class="name">
+                        <span ><b>restShow</b></span>
+                        <a href="#restShow"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>restShow()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="499"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:499</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="showDialog"></a>
+                    <span class="name">
+                            <span class="modifier">Async</span>
+                        <span ><b>showDialog</b></span>
+                        <a href="#showDialog"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>showDialog(evt: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="450"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:450</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>evt</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="showTooltip"></a>
+                    <span class="name">
+                        <span ><b>showTooltip</b></span>
+                        <a href="#showTooltip"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>showTooltip(event: MouseEvent)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="441"
+                                    class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:441</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                        <code>MouseEvent</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+    <section data-compodoc="block-properties">
+    
+    <h3 id="inputs">
+        Properties
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="anagraficaService"></a>
+                    <span class="name">
+                        <span ><b>anagraficaService</b></span>
+                        <a href="#anagraficaService"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>inject(AnagraficaService)</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="47" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:47</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="dataField"></a>
+                    <span class="name">
+                        <span ><b>dataField</b></span>
+                        <a href="#dataField"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="42" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:42</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="displayExpr"></a>
+                    <span class="name">
+                        <span ><b>displayExpr</b></span>
+                        <a href="#displayExpr"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="48" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:48</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="dynamicContent"></a>
+                    <span class="name">
+                            <span class="modifier"></span>
+                        <span ><b>dynamicContent</b></span>
+                        <a href="#dynamicContent"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>TemplateRef&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <b>Decorators : </b>
+                        <br />
+                        <code>
+                            @ViewChild(&#x27;dynamicContent&#x27;, {static: false})<br />
+                        </code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="22" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:22</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="editorButtons"></a>
+                    <span class="name">
+                        <span ><b>editorButtons</b></span>
+                        <a href="#editorButtons"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="../interfaces/button.html" target="_self" >button[]</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[]</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="39" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:39</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isTooltipVisible"></a>
+                    <span class="name">
+                        <span ><b>isTooltipVisible</b></span>
+                        <a href="#isTooltipVisible"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="49" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:49</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="notEditing"></a>
+                    <span class="name">
+                        <span ><b>notEditing</b></span>
+                        <a href="#notEditing"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="44" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:44</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="overlayService"></a>
+                    <span class="name">
+                            <span class="modifier">Private</span>
+                        <span ><b>overlayService</b></span>
+                        <a href="#overlayService"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>inject(OverlayService)</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="24" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:24</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="remoteData"></a>
+                    <span class="name">
+                        <span ><b>remoteData</b></span>
+                        <a href="#remoteData"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="40" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:40</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="showBooleanFlag"></a>
+                    <span class="name">
+                        <span ><b>showBooleanFlag</b></span>
+                        <a href="#showBooleanFlag"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="45" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:45</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="staticData"></a>
+                    <span class="name">
+                        <span ><b>staticData</b></span>
+                        <a href="#staticData"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="41" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:41</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="styleData"></a>
+                    <span class="name">
+                        <span ><b>styleData</b></span>
+                        <a href="#styleData"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{}</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="43" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:43</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="summaryTextHtml"></a>
+                    <span class="name">
+                        <span ><b>summaryTextHtml</b></span>
+                        <a href="#summaryTextHtml"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;&#x27;</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="46" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:46</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="toolTipImg"></a>
+                    <span class="name">
+                        <span ><b>toolTipImg</b></span>
+                        <a href="#toolTipImg"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="55" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:55</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="tooltipStyle"></a>
+                    <span class="name">
+                        <span ><b>tooltipStyle</b></span>
+                        <a href="#tooltipStyle"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>literal type</code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="50" class="link-to-prism">src/app/components/data-grid/td-item/td-item.component.ts:50</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+</section>
+
+</div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Component, ComponentRef, ElementRef, EventEmitter, inject, Input, Output, TemplateRef, ViewChild, ViewContainerRef, } from &#x27;@angular/core&#x27;;
+import { CommonModule, getLocaleNumberFormat, registerLocaleData } from &#x27;@angular/common&#x27;
+import { formatCurrency, formatDate, formatNumber, formatPercent, } from &#x27;@angular/common&#x27;;
+import localeFit from &#x27;@angular/common/locales/it&#x27;
+import { AnagraficaService } from &#x27;../../../services/anagrafica.service&#x27;;
+import { alert, showPopover } from &#x27;../../../widgets/ui-dialogs&#x27;;
+import { OverlayComponent } from &#x27;../../overlay-component/overlay.component&#x27;;
+import { OverlayService } from &#x27;../../../services/overlay.service&#x27;;
+import { button } from &#x27;../../../interface/app.interface&#x27;;
+
+
+registerLocaleData(localeFit);
+@Component({
+  selector: &#x27;app-td-item&#x27;,
+  templateUrl: &#x27;./td-item.component.html&#x27;,
+  standalone: true,
+  imports: [CommonModule],
+  styleUrls: [&#x27;./td-item.component.scss&#x27;]
+})
+export class TdItemComponent {
+
+  @ViewChild(&#x27;dynamicContent&#x27;, { static: false }) dynamicContent!: TemplateRef&lt;any&gt;;
+  
+  private overlayService &#x3D; inject(OverlayService);
+
+  @Input() colProperty: any;
+  @Input() colType: any;
+  @Input() value: any;
+
+  @Input() rowIndex: any;
+  @Input() dataRow &#x3D; [];
+  @Input() searchText: any &#x3D; null
+  @Input() showSummaryText: boolean &#x3D; false;
+  @Output() emitClick: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;(); //Emit all&#x27;esterno                    
+  @Output() emitText: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;(); //Emit all&#x27;esterno                    
+  @Output() btnActionClick: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;(); //Emit all&#x27;esterno                    
+  @Input() isMockDataLoading: boolean &#x3D; false;
+
+  editorButtons: button[] &#x3D; []
+  remoteData: any;
+  staticData: any;
+  dataField: any
+  styleData: any &#x3D; {}
+  notEditing: boolean &#x3D; false
+  showBooleanFlag: boolean &#x3D; false;
+  summaryTextHtml &#x3D; &#x27;&#x27;
+  anagraficaService &#x3D; inject(AnagraficaService)
+  displayExpr: any;
+  isTooltipVisible: boolean &#x3D; false;
+  tooltipStyle!: {
+    position: string;
+    top: string; // 10px sotto il cursore
+    left: string;
+  };
+  toolTipImg: any;
+
+
+  ngAfterViewInit() {
+
+    const colPropertyAlign &#x3D; !this.colProperty.colAlignment ? &#x27;left&#x27; : this.colProperty.colAlignment
+
+    this.styleData &#x3D; {
+      &#x27;text-align&#x27;: colPropertyAlign,
+    }
+
+
+    this.staticData &#x3D; this.renderHtmlColumn(this.value, this.colProperty.format);
+    this.colProperty.labelVisible &#x3D; false
+    this.dataField &#x3D; this.colProperty.dataField;
+
+
+    switch (this.colType) {
+      case &#x27;editorButtons&#x27;:
+        console.log(this.colProperty)
+        this.editorButtons&#x3D; this.colProperty.editorbuttons
+        break;
+      case &#x27;removeButtons&#x27;:
+
+        break;
+      default:
+        break;
+    }
+  }
+
+  async renderDataColumn(data: any, colData: any, items?: any) {
+    //console.log(&#x27;data--&gt;&#x27; + data, colData);
+
+    if (colData.valueExpr &amp;&amp; colData.valueExpr !&#x3D; &#x27;object&#x27;) {
+
+      let dataSource &#x3D; colData.dataSource;
+      if (!this.value) {
+        return
+      }
+      if (typeof colData.static !&#x3D; &#x27;undefined&#x27;) {
+        if (colData.static) {
+          /*let staticData &#x3D; typeof colData.items !&#x3D; &#x27;undefined&#x27; ? colData.items : this.formservice.getService(colData.dataSource);
+
+          const staticaData &#x3D; staticData.filter((dataF: { [x: string]: any; })&#x3D;&gt;data &#x3D;&#x3D; dataF[colData.valueExpr])
+          this.staticData &#x3D; staticaData[0][colData.displayExpr];*/
+          return
+        }
+      }
+      if (Array.isArray(data)) {
+        //let displayExpr &#x3D; !colData.valueExpr ? colData.displayExpr : colData.valueExpr
+        this.staticData &#x3D; data
+
+      } else {
+        await this.getElementValue(dataSource, colData, this.value);
+      }
+
+      if (this.remoteData) {
+        if (colData.displayExpr) {
+          this.displayExpr &#x3D; colData.displayExpr;
+          this.staticData &#x3D; this.remoteData[this.displayExpr];
+        } else {
+          this.displayExpr &#x3D; colData.valueExpr;
+          this.staticData &#x3D; this.remoteData[this.displayExpr];
+        }
+        this.staticData &#x3D; this.renderHtmlColumn(this.staticData, &#x27;&#x27;)
+      }
+    } else if (colData.valueExpr &#x3D;&#x3D; &#x27;object&#x27;) {
+
+      if (Array.isArray(data)) {
+        let displayExpr &#x3D; colData.displayExpr
+        this.staticData &#x3D; data.map(res &#x3D;&gt; {
+          return res[displayExpr]
+        })
+      }
+
+
+    }
+    else {
+      this.staticData &#x3D; this.value
+    }
+
+    /*   if(colData.related){
+        let related &#x3D; colData.related;
+  
+        related.forEach((values:any, key) &#x3D;&gt; {
+          let arrayValue &#x3D; values.split(&#x27;|&#x27;)
+          if (arrayValue.length &gt; 1) {
+            if(typeof  this.remoteData[arrayValue[1]] !&#x3D;&#x27;undefined&#x27;)
+              this.dataRow[arrayValue[1]] &#x3D; this.remoteData[arrayValue[0]]
+          } else {
+            if(typeof  this.remoteData[values] !&#x3D;&#x27;undefined&#x27;)
+              this.dataRow[values] &#x3D; this.remoteData[values]
+          }
+  
+        })
+        
+      } */
+
+  }
+
+  async getElementValue(api: any, colData: any, value: any) {
+    let queryString &#x3D; &#x27;&#x27;
+
+    await this.anagraficaService.getValue(api, value, queryString).then((res: any) &#x3D;&gt; {
+
+
+
+      if (res[&#x27;items&#x27;]) {
+        res &#x3D; res[&#x27;items&#x27;]
+      }
+      this.remoteData &#x3D; res
+      return this.remoteData
+    })
+
+  }
+
+
+
+
+  renderHtmlColumn(text: any, format: any) {
+
+    const type &#x3D; this.colType
+    // console.log(&#x27;type&#x27;,type)
+    let result &#x3D; text
+    switch (type) {
+      case &#x27;campo&#x27;:
+        result &#x3D; this.defaultRender(text, format)
+
+        break;
+      case &#x27;campoNumber&#x27;:
+        result &#x3D; this.numberRender(text, format)
+
+        break;
+      case &#x27;campoLista&#x27;:
+        result &#x3D; this.listaRender(text)
+
+        break;
+      case &#x27;campoDateTime&#x27;:
+      case &#x27;campoData&#x27;:
+        result &#x3D; this.dateRender(text, format)
+
+        break;
+      case &#x27;campoImg&#x27;:
+        this.toolTipImg &#x3D; text
+        result &#x3D; &#x60;&lt;img src&#x3D;&quot;${text}&quot; class&#x3D;&quot;cell-img&quot; &gt;&#x60;
+        break;
+      case &#x27;campoButton&#x27;:
+        const buttonInfo &#x3D; this.colProperty[&#x27;button&#x27;];
+        console.log(&#x27;buttonInfo&#x27;, buttonInfo);
+
+        result &#x3D; &#x60;&lt;button class&#x3D;&quot;btn &quot;&gt;&lt;span class&#x3D;&quot;${buttonInfo.icon}&quot;&gt;&lt;/span&gt;&lt;/button&gt;&#x60;;
+
+        break;
+      default:
+        result &#x3D; this.defaultRender(text, format)
+    }
+
+    return result
+  }
+
+  defaultRender(text: any, format: any): string {
+
+    if (this.showSummaryText &amp;&amp; text) {
+      this.summaryTextHtml +&#x3D; &quot;&lt;span style&#x3D;\&quot;padding-right:5px\&quot;&gt;Tot: &lt;/span&gt;&quot;
+    }
+
+    let dateType &#x3D; /(\d{4})([\/-])(\d{1,2})\2(\d{1,2})/;
+    let isMatch &#x3D; dateType.test(text);
+
+    if (isMatch) {
+
+      if (format) {
+        let date &#x3D; new Date(text)
+        return formatDate(date, format, &#x27;en-US&#x27;)
+      } else {
+        let date &#x3D; new Date(text)
+        return formatDate(date, &quot;dd/MM/yyyy&quot;, &#x27;en-US&#x27;)
+      }
+
+    }
+
+    if (typeof text &#x3D;&#x3D; &#x27;boolean&#x27;) {
+      const dataOptions &#x3D; this.colProperty.dataOptions
+      if (typeof dataOptions.trueText &#x3D;&#x3D; &#x27;undefined&#x27; || dataOptions.falseText &#x3D;&#x3D; &#x27;undefined&#x27;) {
+        this.showBooleanFlag &#x3D; true;
+
+      } else {
+        if (text) {
+          text &#x3D; dataOptions.trueText;
+        } else {
+          text &#x3D; dataOptions.falseText;
+        }
+      }
+
+
+    }
+
+    if (typeof text &#x3D;&#x3D; &#x27;number&#x27;) {
+
+      this.styleData &#x3D; {
+        &#x27;text-align&#x27;: &#x27;right&#x27;,
+      }
+
+      if (!format) {
+
+        let numberUSFormatted &#x3D; formatNumber(text, &#x27;it-IT&#x27;, &#x27;1.0-3&#x27;);
+        return numberUSFormatted;
+
+      } else {
+
+        /**
+         * Retrieves a number format for a given locale.
+         *
+         * I numeri vengono formattati utilizzando modelli, come &quot;#,###.00&quot;. Ad esempio, il modello &quot;#,###.00&quot;.
+         * se utilizzato per formattare il numero 12345.678 potrebbe risultare in &quot;12&#x27;345.678&quot;. Ciò accadrebbe se il
+         * Il separatore di raggruppamento per la tua lingua è un apostrofo e il separatore decimale è una virgola.
+         *
+         * &lt;b&gt;Importante:&lt;/b&gt; i caratteri &#x60;.&#x60; &#x60;,&#x60; &#x60;0&#x60; &#x60;#&#x60; (e altri di seguito) sono segnaposto speciali
+         * che rappresentano il separatore decimale e così via e NON sono caratteri reali.
+         * NON devi &quot;tradurre&quot; i segnaposto. Ad esempio, non cambiare &#x60;.&#x60; in &#x60;,&#x60; anche se in
+         * nella tua lingua il punto decimale si scrive con una virgola. I simboli dovrebbero essere sostituiti da
+         * equivalenti locali, utilizzando il &#x60;NumberSymbol&#x60; appropriato per la tua lingua.
+         *
+         * Here are the special characters used in number patterns:
+         *
+         * | Symbol | Meaning |
+         * |--------|---------|
+         * | . | Replaced automatically by the character used for the decimal point. |
+         * | , | Replaced by the &quot;grouping&quot; (thousands) separator. |
+         * | 0 | Replaced by a digit (or zero if there aren&#x27;t enough digits). |
+         * | # | Replaced by a digit (or nothing if there aren&#x27;t enough). |
+         * | ¤ | Replaced by a currency symbol, such as $ or USD. |
+         * | % | Marks a percent format. The % symbol may change position, but must be retained. |
+         * | E | Marks a scientific format. The E symbol may change position, but must be retained. |
+         * | &#x27; | Special characters used as literal characters are quoted with ASCII single quotes. |
+         *
+         */
+
+        if (format.includes(&#x27;#&#x27;)) {
+          /*  let spilitted &#x3D; format.split(&#x27;.&#x27;);
+ 
+           let count &#x3D; spilitted.length; */
+          const parts &#x3D; text.toFixed(3).split(&#x27;.&#x27;);
+          const [integerPart, decimalPart] &#x3D; parts;
+
+          const integerFormatted &#x3D; integerPart.replace(/\B(?&#x3D;(\d{3})+(?!\d))/g, &#x27;.&#x27;);
+
+          // Utilizza la variabile &#x27;format&#x27; per determinare il numero di cifre decimali
+          const decimalDigits &#x3D; format.split(&#x27;.&#x27;)[1].length;
+          const formattedNumber &#x3D; &#x60;${integerFormatted},${decimalPart.slice(0, decimalDigits)}&#x60;;
+
+          return formattedNumber;
+        } else {
+          let numberUSFormatted &#x3D; formatNumber(text, &#x27;it-IT&#x27;, &#x27;1.0-3&#x27;);
+          return numberUSFormatted;
+        }
+
+
+      }
+
+
+    }
+
+
+
+
+    return text
+  }
+  numberRender(text: any, format: any): string {
+    this.styleData &#x3D; {
+      &#x27;text-align&#x27;: &#x27;right&#x27;,
+    }
+
+    if (typeof text &#x3D;&#x3D; &#x27;string&#x27;) {
+      text &#x3D; parseFloat(text)
+    }
+
+    if (!format) {
+
+      let numberUSFormatted &#x3D; formatNumber(text, &#x27;it-IT&#x27;, &#x27;1.0-3&#x27;);
+      return numberUSFormatted;
+
+    } else {
+
+
+
+      if (format.includes(&#x27;#&#x27;)) {
+        /*  let spilitted &#x3D; format.split(&#x27;.&#x27;);
+
+         let count &#x3D; spilitted.length; */
+        const parts &#x3D; text.toFixed(3).split(&#x27;.&#x27;);
+        const [integerPart, decimalPart] &#x3D; parts;
+
+        const integerFormatted &#x3D; integerPart.replace(/\B(?&#x3D;(\d{3})+(?!\d))/g, &#x27;.&#x27;);
+
+        // Utilizza la variabile &#x27;format&#x27; per determinare il numero di cifre decimali
+        const decimalDigits &#x3D; format.split(&#x27;.&#x27;)[1].length;
+        const formattedNumber &#x3D; &#x60;${integerFormatted},${decimalPart.slice(0, decimalDigits)}&#x60;;
+
+        return formattedNumber;
+      } else {
+        let numberUSFormatted &#x3D; formatNumber(text, &#x27;it-IT&#x27;, &#x27;1.0-3&#x27;);
+        return numberUSFormatted;
+      }
+    }
+
+
+  }
+  dateRender(date: any, format &#x3D; &quot;dd/MM/yyyy&quot;) {
+
+    // Proviamo a gestire l&#x27;input come un tipo stringa o numero (timestamp)
+    let dateR: Date;
+
+    if (typeof date &#x3D;&#x3D;&#x3D; &#x27;string&#x27; || typeof date &#x3D;&#x3D;&#x3D; &#x27;number&#x27;) {
+      // Se è una stringa, cerchiamo di riconoscerla come data
+      // Proviamo a usare una regex per i formati di stringa riconosciuti
+      const dateStringType1 &#x3D; /(\d{4})([\/-])(\d{1,2})\2(\d{1,2})/; // yyyy-mm-dd o yyyy/mm/dd
+      const dateStringType2 &#x3D; /(\d{1,2})([\/-])(\d{1,2})\2(\d{4})/; // dd-mm-yyyy o dd/mm/yyyy
+
+      if (typeof date &#x3D;&#x3D; &#x27;string&#x27; &amp;&amp; dateStringType1.test(date)) {
+        // Formato yyyy-mm-dd o yyyy/mm/dd
+        dateR &#x3D; new Date(date);
+      } else if (typeof date &#x3D;&#x3D; &#x27;string&#x27; &amp;&amp; dateStringType2.test(date)) {
+        // Formato dd-mm-yyyy o dd/mm/yyyy, dobbiamo riorganizzare i pezzi
+        const parts &#x3D; date.split(/[-\/]/);
+        const day &#x3D; parseInt(parts[0], 10);
+        const month &#x3D; parseInt(parts[1], 10) - 1; // JavaScript usa mesi indicizzati da 0
+        const year &#x3D; parseInt(parts[2], 10);
+        dateR &#x3D; new Date(year, month, day);
+      } else {
+        // Tenta di costruire una data con il costruttore predefinito di JavaScript
+        dateR &#x3D; new Date(date);
+      }
+    } else if (date instanceof Date) {
+      // Se è già un oggetto Date, lo usiamo direttamente
+      dateR &#x3D; date;
+    } else {
+      // Se l&#x27;input non è riconosciuto, restituiamo un errore o null
+      return &#x27;Invalid date format&#x27;;
+    }
+
+    // Controlla se la data è valida
+    if (isNaN(dateR.getTime())) {
+      return &#x27;Invalid date&#x27;;
+    }
+
+    // Usiamo il metodo formatDate per formattare la data
+    return formatDate(dateR, format, &#x27;en-US&#x27;);
+  }
+
+  listaRender(text: any): any {
+    let ressss &#x3D; text
+
+    const customizedOptions &#x3D; this.colProperty.customizedOptions
+
+    if (customizedOptions.options &amp;&amp; customizedOptions.options.length &gt; 0) {
+      let valueExp &#x3D; customizedOptions.valueExp;
+      let displayExp &#x3D; customizedOptions.displayExp;
+
+      let filter &#x3D; customizedOptions.options.filter((res: any) &#x3D;&gt; res[valueExp] &#x3D;&#x3D; text)
+
+      ressss &#x3D; filter[0][displayExp]
+    }
+    return ressss
+  }
+
+  clickTd(event: any) {
+    
+    this.showTooltip(event)
+    event.value &#x3D; this.staticData;
+    this.emitClick.emit(event)
+  }
+
+  actionCell(event: any, eventName: any) {
+    let data &#x3D; {
+      action: eventName,
+      rowIndex: this.rowIndex,
+      cancel:false
+    }
+    this.btnActionClick.emit(data);
+    if(!data.cancel){
+      this.overlayService.closeOverlay()
+    }
+    
+  }
+  // Mostra il tooltip e posizionalo accanto al cursore
+  showTooltip(event: MouseEvent): void {
+    event.stopImmediatePropagation(); event.stopPropagation()
+    /* if(this.overlayService.currentOverlayIndex() &#x3D;&#x3D;&#x3D; this.rowIndex){
+      this.overlayService.closeOverlay();
+      return
+    } */
+   this.openOverlay(event)
+  }
+
+  async showDialog(evt:any){
+    evt.stopImmediatePropagation(); evt.stopPropagation()
+    /* if(this.overlayService.currentOverlayIndex() &#x3D;&#x3D;&#x3D; this.rowIndex){
+      this.overlayService.closeOverlay();
+      return
+    } */
+    
+    this.openOverlay(evt)
+  }
+
+  openOverlay(event: any): void {
+
+    const button &#x3D; event.currentTarget as HTMLElement;
+    const rect &#x3D; button.getBoundingClientRect();
+    const position &#x3D; { 
+      top: rect.bottom + window.scrollY, // Posiziona l&#x27;overlay sotto il bottone
+      left: rect.left + window.scrollX
+    };
+    // Calcola la larghezza della finestra e controlla che l&#x27;overlay non esca dal lato destro
+    const windowWidth &#x3D; window.innerWidth;
+    const overlayWidth &#x3D; 423; // Imposta la larghezza dell&#x27;overlay (può essere dinamica se necessario)
+
+    // Se l&#x27;overlay va fuori dalla finestra, correggiamo la posizione
+    if (position.left + overlayWidth &gt; windowWidth) {
+      position.left &#x3D; windowWidth - overlayWidth - 10; // Imposta un piccolo margine
+    }
+
+    const data &#x3D; {
+      position: position,
+      contentTemplate:this.dynamicContent,
+      showBgOverlay:false,
+      index:this.rowIndex
+
+    }
+    // Creazione dinamica dell&#x27;overlay
+    this.overlayService.openOverlay(data) 
+    
+  }
+/* 
+  closeOverlay() {
+    
+    if (this.overlayRef) {
+      this.overlayRef.destroy();
+     // return Promise.resolve(true);
+    }
+
+    //return Promise.resolve(false);
+  }
+ */
+  restShow() {
+    this.isTooltipVisible &#x3D; true;
+  }
+
+  // Nasconde il tooltip
+  hideTooltip(): void {
+    this.isTooltipVisible &#x3D; false;
+  }
+
+  onValueChangeCheckBox(event: { value: any; }) {
+    this.staticData &#x3D; event.value;
+    //this.emitClick.emit(event)
+  }
+
+  highlightMatches(testo: any): string {
+
+    if (!testo) {
+      return &#x27;&#x27;;
+    }
+
+    if (!this.searchText) {
+      //this.
+      return this.summaryTextHtml + testo; // Nessun testo di ricerca, restituisci il testo originale
+
+    }
+
+
+    const regex &#x3D; new RegExp(this.searchText, &#x27;gi&#x27;);
+
+    if (typeof testo &#x3D;&#x3D; &#x27;string&#x27;) {
+      return testo.replace(regex, match &#x3D;&gt; &#x60;&lt;span class&#x3D;&quot;highlight&quot;&gt;${match}&lt;/span&gt;&#x60;);
+    }
+    return &#x27;&#x27;
+  }
+
+
+}
+</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="templateData">
+        <pre class="line-numbers"><code class="language-html">&lt;ng-container [ngSwitch]&#x3D;&quot;colType&quot;&gt;
+
+    &lt;ng-container *ngSwitchCase&#x3D;&quot;&#x27;editorButtons&#x27;&quot;&gt;
+        &lt;div class&#x3D;&quot;editor-buttons-content&quot;&gt;
+            &lt;button class&#x3D;&quot;button-in-cell&quot; [ngStyle]&#x3D;&quot;styleData&quot; (click)&#x3D;&quot;showDialog($event)&quot;&gt;
+                &lt;span class&#x3D;&quot;mdi mdi-dots-vertical&quot;&gt;&lt;/span&gt;
+            &lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;ng-template #dynamicContent let-close&#x3D;&quot;close&quot;&gt;
+            &lt;div class&#x3D;&quot;editor-buttons-menu&quot;&gt;
+                &lt;ul&gt;
+                    &lt;li *ngFor&#x3D;&quot;let editorButton of editorButtons&quot;&gt;
+
+                        &lt;span *ngIf&#x3D;&quot;editorButton.visible&quot; class&#x3D;&quot;&quot; [ngStyle]&#x3D;&quot;styleData&quot;
+                            (click)&#x3D;&quot;actionCell($event,editorButton.nameEvent)&quot;&gt;
+
+                            &lt;span class&#x3D;&quot;btn-icon {{editorButton.icon}}&quot;&gt;&lt;/span&gt;
+                            {{editorButton.text}}
+                        &lt;/span&gt;
+
+                    &lt;/li&gt;
+                &lt;/ul&gt;
+
+            &lt;/div&gt;
+        &lt;/ng-template&gt;
+
+
+    &lt;/ng-container&gt;
+
+    &lt;ng-container *ngSwitchDefault&gt;
+
+        &lt;span *ngIf&#x3D;&quot;!showBooleanFlag &amp;&amp; !isMockDataLoading; else skeletonTemplate&quot; class&#x3D;&quot;contet-data &quot;
+            [ngStyle]&#x3D;&quot;styleData&quot; [ngClass]&#x3D;&quot;{&#x27;summary-item&#x27;:showSummaryText}&quot; (click)&#x3D;&quot;clickTd($event)&quot;
+            [innerHTML]&#x3D;&quot;highlightMatches(staticData)&quot;&gt;
+
+        &lt;/span&gt;
+    &lt;/ng-container&gt;
+&lt;/ng-container&gt;
+
+&lt;ng-template #skeletonTemplate&gt;
+
+    &lt;span class&#x3D;&quot;contet-data loadingSkeleton&quot; [ngStyle]&#x3D;&quot;styleData&quot; [ngClass]&#x3D;&quot;{&#x27;summary-item&#x27;:showSummaryText}&quot;&gt;
+    &lt;/span&gt;
+
+&lt;/ng-template&gt;
+
+&lt;!-- Tooltip nascosto, viene mostrato al passaggio del mouse --&gt;
+&lt;ng-template #dynamicContent let-close&#x3D;&quot;close&quot;&gt;
+
+    &lt;div *ngIf&#x3D;&quot;this.colType &#x3D;&#x3D; &#x27;campoImg&#x27; &quot; class&#x3D;&quot;tooltip-custom&quot; [ngStyle]&#x3D;&quot;tooltipStyle&quot;
+        (mouseenter)&#x3D;&quot;restShow()&quot; (mouseleave)&#x3D;&quot;hideTooltip()&quot;&gt;
+        &lt;img [src]&#x3D;&quot;toolTipImg&quot; alt&#x3D;&quot;Immagine Tooltip&quot;&gt;
+    &lt;/div&gt;
+&lt;/ng-template&gt;</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="styleData">
+                <p class="comment">
+                    <code>./td-item.component.scss</code>
+                </p>
+                <pre class="line-numbers"><code class="language-scss">::ng-deep.contet-data {
+
+    width: 100%;
+    display: block;
+    padding: 1rem 1.25rem;
+    position: relative;
+    word-break: break-all;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .cell-img {
+        object-fit: cover;
+        max-height: 27px
+    }
+
+}
+
+
+::ng-deep.highlight {
+    background-color: var(--blueDevextreme);
+    color: #fff;
+}
+
+.summary-item {
+    color: #99a1a8;
+    font-weight: 700;
+    text-align: right !important;
+}
+
+
+.loadingSkeleton {
+    background: #eee;
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    border-radius: 5px;
+    background-size: 150% 100%;
+    width: 100%;
+    height: 100%;
+    animation: 0.9s shine linear infinite;
+}
+
+@keyframes shine {
+    to {
+        background-position-x: -150%;
+    }
+}
+
+
+.tooltip-custom {
+    display: inline-block;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 5px;
+    z-index: 1000;
+}
+.editor-buttons-content{
+    display: flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 1rem 0rem;   
+    
+    .button-in-cell {
+        position: relative;
+        background: transparent;
+        color: var(--blueSoft);
+    }
+}
+
+
+
+.editor-buttons-menu {
+    border-radius: .375rem;
+    border-color: transparent;
+    background-color: rgb(255 255 255 / 1);
+
+
+    ul {
+        list-style: none;
+
+        padding: 0.1rem;
+        margin: 0.3rem;
+
+        li {
+            cursor: pointer;
+            padding: .5rem;
+
+            .btn-icon {
+                width: 1rem;
+                font-size: 1rem;
+                margin-right: .5rem;
+            }
+
+
+            &amp;:hover {
+                background:var(--table-th-bg)
+            }
+        }
+    }
+
+
+}</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="tree">
+        <div id="tree-container"></div>
+        <div class="tree-legend">
+            <div class="title">
+                <b>Legend</b>
+            </div>
+            <div>
+                <div class="color htmlelement"></div><span>Html element</span>
+            </div>
+            <div>
+                <div class="color component"></div><span>Component</span>
+            </div>
+            <div>
+                <div class="color directive"></div><span>Html element with directive</span>
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
+<script src="../js/libs/vis.min.js"></script>
+<script src="../js/libs/htmlparser.js"></script>
+<script src="../js/libs/deep-iterator.js"></script>
+<script>
+        var COMPONENT_TEMPLATE = '<div><ng-container [ngSwitch]="colType">    <ng-container *ngSwitchCase="\'editorButtons\'">        <div class="editor-buttons-content">            <button class="button-in-cell" [ngStyle]="styleData" (click)="showDialog($event)">                <span class="mdi mdi-dots-vertical"></span>            </button>        </div>        <ng-template #dynamicContent let-close="close">            <div class="editor-buttons-menu">                <ul>                    <li *ngFor="let editorButton of editorButtons">                        <span *ngIf="editorButton.visible" class="" [ngStyle]="styleData"                            (click)="actionCell($event,editorButton.nameEvent)">                            <span class="btn-icon {{editorButton.icon}}"></span>                            {{editorButton.text}}                        </span>                    </li>                </ul>            </div>        </ng-template>    </ng-container>    <ng-container *ngSwitchDefault>        <span *ngIf="!showBooleanFlag && !isMockDataLoading; else skeletonTemplate" class="contet-data "            [ngStyle]="styleData" [ngClass]="{\'summary-item\':showSummaryText}" (click)="clickTd($event)"            [innerHTML]="highlightMatches(staticData)">        </span>    </ng-container></ng-container><ng-template #skeletonTemplate>    <span class="contet-data loadingSkeleton" [ngStyle]="styleData" [ngClass]="{\'summary-item\':showSummaryText}">    </span></ng-template><!-- Tooltip nascosto, viene mostrato al passaggio del mouse --><ng-template #dynamicContent let-close="close">    <div *ngIf="this.colType == \'campoImg\' " class="tooltip-custom" [ngStyle]="tooltipStyle"        (mouseenter)="restShow()" (mouseleave)="hideTooltip()">        <img [src]="toolTipImg" alt="Immagine Tooltip">    </div></ng-template></div>'
+    var COMPONENTS = [{'name': 'AnagraficaWrapperComponent', 'selector': 'app-anagrafica-wrapper'},{'name': 'AppComponent', 'selector': 'app-root'},{'name': 'AppFormListComponent', 'selector': 'app-form-list'},{'name': 'CaptionComponent', 'selector': 'app-caption'},{'name': 'ContainerComponent', 'selector': 'app-container'},{'name': 'CustomScrollbarComponent', 'selector': 'app-custom-scrollbar'},{'name': 'DashboardComponent', 'selector': 'app-dashboard'},{'name': 'DataGridComponent', 'selector': 'app-data-grid'},{'name': 'DynamicFileBoxComponent', 'selector': 'app-dynamic-file-box'},{'name': 'DynamicFormComponent', 'selector': 'app-dynamic-form'},{'name': 'DynamicSelectBoxComponent', 'selector': 'app-dynamic-select-box'},{'name': 'ElementComponent', 'selector': 'app-element'},{'name': 'FooterComponent', 'selector': 'app-footer'},{'name': 'FormBuilderComponent', 'selector': 'app-form-builder'},{'name': 'FotoOutfitPage', 'selector': 'app-foto-outfit'},{'name': 'HeaderComponent', 'selector': 'app-header'},{'name': 'MenuComponent', 'selector': 'app-menu'},{'name': 'NicaPopupContentComponent', 'selector': 'app-modal-popup-content'},{'name': 'OutfitCategoryComponent', 'selector': 'app-outfit-category'},{'name': 'OutfitFormComponent', 'selector': 'app-outfit-form'},{'name': 'OutfitProductsComponent', 'selector': 'app-outfit-products'},{'name': 'OutfitsComponent', 'selector': 'app-outfits'},{'name': 'OverlayComponent', 'selector': 'app-overlay'},{'name': 'PopupWrapperComponent', 'selector': 'app-modal-popup-wrapper'},{'name': 'ProductFromFeedComponent', 'selector': 'app-product-from-feed'},{'name': 'StaticMenuComponent', 'selector': 'app-static-menu'},{'name': 'StaticMenuFunctionsComponent', 'selector': 'app-static-menu-functions'},{'name': 'TdItemComponent', 'selector': 'app-td-item'},{'name': 'ToolbarComponent', 'selector': 'app-toolbar'},{'name': 'UsersComponent', 'selector': 'app-users'}];
+    var DIRECTIVES = [];
+    var ACTUAL_COMPONENT = {'name': 'TdItemComponent'};
+</script>
+<script src="../js/tree.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'component';
+            var COMPODOC_CURRENT_PAGE_URL = 'TdItemComponent.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

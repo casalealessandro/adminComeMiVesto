@@ -1,0 +1,24 @@
+.scrollbar-container {
+    
+    overflow-y: auto; /* Scorrimento verticale */
+    padding: 0;
+    /* Firefox */
+    scrollbar-width: thin; /* Imposta la scrollbar sottile */
+    scrollbar-color: #e3e3e3 #ffffff;
+  
+    /* Chrome, Edge e Safari */
+    &::-webkit-scrollbar {
+      width: 6px; /* Riduci la larghezza della scrollbar */
+    }
+  
+    &::-webkit-scrollbar-track {
+      background: #ffffff;
+    }
+  
+    &::-webkit-scrollbar-thumb {
+      background-color: #e3e3e3;
+      border-radius: 10px; /* Riduci il raggio per un aspetto più compatto */
+      border: 2px solid #ffffff; /* Riduci lo spessore del bordo per evitare che sembri troppo largo */
+    }
+  }
+  

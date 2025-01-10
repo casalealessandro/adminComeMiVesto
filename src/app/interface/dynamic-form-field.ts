@@ -19,7 +19,8 @@ export interface DynamicFormField {
     selectOptions?: SelectOptions;
     checkBoxOptions?: CheckBoxOptions;
     fileBoxOptions?:FileBoxOptions
-    funcButton?:boolean
+    funcButton?:boolean,
+    
 }
 
 

@@ -34,16 +34,23 @@
                 
                 <ng-container *ngFor="let cButton of customToolbarButtons">
 
-                    <button [id]="cButton.id" [attr.name]="cButton.name" [disabled]="cButton.disabled"  [ngClass]="cButton.cssClass" class="btn ana-button"  *ngIf="cButton.visible" (click)="toolbarButtonClick(cButton)">
+                    <button [id]="cButton.id" [attr.name]="cButton.name" [disabled]="cButton.disabled"  [ngClass]="cButton.cssClass" class="btn ana-button"  *ngIf="cButton.visible" 
+                        (click)="toolbarButtonClick(cButton)">
                         <i *ngIf="cButton.icon" [class]="cButton.icon"></i>
                         {{cButton.text || cButton.name}} 
     
                     </button>
                 </ng-container>
                 
-                <button class="btn ana-button addButton"  id="addButton" name="addButtonShow"   *ngIf="addButtonShow" (click)="onClickAddButton($event)">
-                    <i class="mdi mdi-pencil-outline"></i>
-                    Aggiungi
+                <button 
+                    *ngIf="addButtonShow"
+                    [id]="addButton.id"
+                    [name]="addButton.name"   
+                    class="btn ana-button addButton"
+                    [ngClass]="addButton.cssClass || ''" 
+                    (click)="onClickAddButton(addButton)">
+                    <i [class]="addButton.icon"></i>
+                    {{addButton.text || addButton.name}}
 
                 </button>
                 

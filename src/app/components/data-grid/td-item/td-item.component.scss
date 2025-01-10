@@ -2,7 +2,8 @@
 
     width: 100%;
     display: block;
-    padding: 0 5px;
+    padding: 1rem 1.25rem;
+    position: relative;
     word-break: break-all;
     word-wrap: break-word;
     overflow: hidden;
@@ -11,7 +12,7 @@
 
     .cell-img {
         object-fit: cover;
-        height: 5rem
+        max-height: 27px
     }
 
 }
@@ -46,11 +47,59 @@
 }
 
 
-    .tooltip-custom {
-        display: inline-block;
-        padding: 5px;
-        background-color: rgba(0, 0, 0, 0.8);
-        color: white;
-        border-radius: 5px;
-        z-index: 1000;
+.tooltip-custom {
+    display: inline-block;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 5px;
+    z-index: 1000;
+}
+.editor-buttons-content{
+    display: flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 1rem 0rem;   
+    
+    .button-in-cell {
+        position: relative;
+        background: transparent;
+        color: var(--blueSoft);
     }
+}
+
+
+
+.editor-buttons-menu {
+    border-radius: .375rem;
+    border-color: transparent;
+    background-color: rgb(255 255 255 / 1);
+
+
+    ul {
+        list-style: none;
+
+        padding: 0.1rem;
+        margin: 0.3rem;
+
+        li {
+            cursor: pointer;
+            padding: .5rem;
+
+            .btn-icon {
+                width: 1rem;
+                font-size: 1rem;
+                margin-right: .5rem;
+            }
+
+
+            &:hover {
+                background:var(--table-th-bg)
+            }
+        }
+    }
+
+
+}

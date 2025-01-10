@@ -1,0 +1,47 @@
+<div #imageContainer class="image-container">
+  <!-- Loader che viene mostrato durante il caricamento dell'immagine -->
+  <span *ngIf="imageLoading()" ></span>
+
+  <img *ngIf="image" #imageElement [src]="image()"  class="outfit-pin-image"  [ngClass]="{'darken': showTag()}"
+
+    (click)="addTag($event)" />
+ 
+  
+  <ng-container *ngIf="showTag()">
+    <div *ngFor="let tag of tags()" class="tag" [ngStyle]="tagStyle[tag.id]" (click)="editTag(tag)">
+
+      <div class="card-tag-content">
+        
+          <div class="item-title">{{ tag.name  }}</div>
+          <div class="item-brend">{{ tag.brend }}</div>
+          <div class="item-price">{{ tag.prezzo }}</div>
+       
+      </div>
+
+    </div>
+  </ng-container>
+  <input #fileInput type="file" (change)="captureImage($event)" hidden name="file" [(ngModel)]="image">
+  <button class="btn button tag-toggle-button" *ngIf="tags().length>0" (click)="toggleTags()" id="toggle-button"
+    [ngStyle]="tagToggleButton" >
+    <i class="pricetags-outline"></i>
+    {{ showTag() ? 'Nascondi Tags' : 'Mostra Tags' }}
+
+  </button>
+  <button *ngIf="enableNewImagecaptured"  class="btn button select-photo" (click)="chooseFile()">
+
+    Seleziona foto
+
+  </button>
+
+ 
+</div>
+<section class="chips">
+  <span *ngFor="let tag of tags()" (click)="editTag(tag)" class="chips-itm shadow-sm" >
+   
+    <label>{{tag.name}}</label> 
+    <button class="tag-btn"  class="btn button"  (click)="removeTag(tag.id)">
+      <i class="close-circle">X</i>
+    </button>
+  </span>
+</section>
+

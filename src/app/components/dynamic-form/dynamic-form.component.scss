@@ -1,6 +1,6 @@
 .form-container{
-    max-height: 750px;
-    overflow-y: scroll;
+ 
+    
     padding: 1rem;
     .col-form-label{
         display: flex;
@@ -36,6 +36,12 @@
             }
         }
             
+    }
+
+    .functional-btn{
+        right: calc(var(--bs-gutter-x)* 0.5);
+        position: absolute;
+        top:var(--bs-gutter-y);;
     }
 }
 

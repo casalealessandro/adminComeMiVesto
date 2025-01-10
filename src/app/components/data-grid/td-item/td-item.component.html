@@ -1,27 +1,55 @@
+<ng-container [ngSwitch]="colType">
 
-<span 
-    *ngIf="!showBooleanFlag && !isMockDataLoading; else skeletonTemplate"
-    class="contet-data " [ngStyle]="styleData"
-    [ngClass]="{'summary-item':showSummaryText}"
-    (click)="clickTd($event)"
-    [innerHTML]="highlightMatches(staticData)"
-    
->   
+    <ng-container *ngSwitchCase="'editorButtons'">
+        <div class="editor-buttons-content">
+            <button class="button-in-cell" [ngStyle]="styleData" (click)="showDialog($event)">
+                <span class="mdi mdi-dots-vertical"></span>
+            </button>
+        </div>
 
-</span>
+        <ng-template #dynamicContent let-close="close">
+            <div class="editor-buttons-menu">
+                <ul>
+                    <li *ngFor="let editorButton of editorButtons">
+
+                        <span *ngIf="editorButton.visible" class="" [ngStyle]="styleData"
+                            (click)="actionCell($event,editorButton.nameEvent)">
+
+                            <span class="btn-icon {{editorButton.icon}}"></span>
+                            {{editorButton.text}}
+                        </span>
+
+                    </li>
+                </ul>
+
+            </div>
+        </ng-template>
+
+
+    </ng-container>
+
+    <ng-container *ngSwitchDefault>
+
+        <span *ngIf="!showBooleanFlag && !isMockDataLoading; else skeletonTemplate" class="contet-data "
+            [ngStyle]="styleData" [ngClass]="{'summary-item':showSummaryText}" (click)="clickTd($event)"
+            [innerHTML]="highlightMatches(staticData)">
+
+        </span>
+    </ng-container>
+</ng-container>
 
 <ng-template #skeletonTemplate>
 
-    <span class="contet-data loadingSkeleton" [ngStyle]= "styleData"
-    [ngClass]="{'summary-item':showSummaryText}"> </span>
+    <span class="contet-data loadingSkeleton" [ngStyle]="styleData" [ngClass]="{'summary-item':showSummaryText}">
+    </span>
 
-</ng-template> 
+</ng-template>
 
 <!-- Tooltip nascosto, viene mostrato al passaggio del mouse -->
-<div *ngIf="isTooltipVisible &&  this.colType == 'campoImg' " class="tooltip-custom" [ngStyle]="tooltipStyle" (mouseenter)="restShow()" (mouseleave)="hideTooltip()">
-    <img [src]="toolTipImg" alt="Immagine Tooltip" >
-</div>
+<ng-template #dynamicContent let-close="close">
 
-
-
-
+    <div *ngIf="this.colType == 'campoImg' " class="tooltip-custom" [ngStyle]="tooltipStyle"
+        (mouseenter)="restShow()" (mouseleave)="hideTooltip()">
+        <img [src]="toolTipImg" alt="Immagine Tooltip">
+    </div>
+</ng-template>

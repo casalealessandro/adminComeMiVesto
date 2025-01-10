@@ -1,0 +1,2058 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>admin documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="../" class="navbar-brand">admin documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content component">
+                   <div class="content-data">
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Components</li>
+  <li class="breadcrumb-item"
+  >
+  NicaPopupContentComponent</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a href="#info" class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li class="nav-item">
+            <a href="#source" class="nav-link"
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
+        </li>
+        <li class="nav-item">
+            <a href="#templateData" class="nav-link"
+                role="tab" id="templateData-tab" data-bs-toggle="tab" data-link="template">Template</a>
+        </li>
+        <li class="nav-item">
+            <a href="#styleData" class="nav-link"
+                role="tab" id="styleData-tab" data-bs-toggle="tab" data-link="style">Styles</a>
+        </li>
+        <li class="nav-item">
+            <a href="#tree" class="nav-link"
+                role="tab" id="tree-tab" data-bs-toggle="tab" data-link="dom-tree">DOM Tree</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="info"><p class="comment">
+    <h3>File</h3>
+</p>
+<p class="comment">
+    <code>src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts</code>
+</p>
+
+
+
+
+    <p class="comment">
+        <h3>Implements</h3>
+    </p>
+    <p class="comment">
+                <code>OnInit</code>
+                <code>AfterViewInit</code>
+                <code>OnChanges</code>
+    </p>
+
+
+<section data-compodoc="block-metadata">
+    <h3>Metadata</h3>
+    <table class="table table-sm table-hover metadata">
+        <tbody>
+
+
+
+
+
+
+
+
+
+
+
+
+            <tr>
+                <td class="col-md-3">selector</td>
+                <td class="col-md-9"><code>app-modal-popup-content</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">standalone</td>
+                <td class="col-md-9"><code>true</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">imports</td>
+                <td class="col-md-9">
+                                <code><a href="../components/CaptionComponent.html" target="_self" >CaptionComponent</a></code>
+                            <code>CommonModule</code>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">styleUrls</td>
+                <td class="col-md-9"><code>./modal-popup-content.component.scss</code></td>
+            </tr>
+
+
+
+            <tr>
+                <td class="col-md-3">templateUrl</td>
+                <td class="col-md-9"><code>./modal-popup-content.component.html</code></td>
+            </tr>
+
+
+
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-index">
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#accessoringData" >accessoringData</a>
+                            </li>
+                            <li>
+                                <a href="#classFade" >classFade</a>
+                            </li>
+                            <li>
+                                <a href="#component" >component</a>
+                            </li>
+                            <li>
+                                <a href="#componentRef" >componentRef</a>
+                            </li>
+                            <li>
+                                    <span class="modifier"></span>
+                                <a href="#containerComponent" >containerComponent</a>
+                            </li>
+                            <li>
+                                <a href="#idPopUp" >idPopUp</a>
+                            </li>
+                            <li>
+                                <a href="#isClosablePopUp" >isClosablePopUp</a>
+                            </li>
+                            <li>
+                                <a href="#isPanelVisible" >isPanelVisible</a>
+                            </li>
+                            <li>
+                                <a href="#popUpWidth" >popUpWidth</a>
+                            </li>
+                            <li>
+                                <a href="#position" >position</a>
+                            </li>
+                            <li>
+                                <a href="#showCaptionFooter" >showCaptionFooter</a>
+                            </li>
+                            <li>
+                                <a href="#showCaptionHeader" >showCaptionHeader</a>
+                            </li>
+                            <li>
+                                <a href="#titlePopUp" >titlePopUp</a>
+                            </li>
+                            <li>
+                                <a href="#zIndex" >zIndex</a>
+                            </li>
+                            <li>
+                                <a href="#zIndexModalDialog" >zIndexModalDialog</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Methods</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#emettiChiusura" >emettiChiusura</a>
+                            </li>
+                            <li>
+                                <a href="#ngAfterViewInit" >ngAfterViewInit</a>
+                            </li>
+                            <li>
+                                <a href="#ngOnChanges" >ngOnChanges</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Async</span>
+                                <a href="#ngOnInit" >ngOnInit</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Inputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#classePopup" >classePopup</a>
+                            </li>
+                            <li>
+                                <a href="#componentName" >componentName</a>
+                            </li>
+                            <li>
+                                <a href="#index" >index</a>
+                            </li>
+                            <li>
+                                <a href="#infoPopUp" >infoPopUp</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Outputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#outputEmit" >outputEmit</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Accessors</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                    <a href="#getMaxZIndex" >getMaxZIndex</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-constructor">
+    <h3 id="constructor">Constructor</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+<code>constructor(popUpService: <a href="../injectables/PopUpService.html" target="_self">PopUpService</a>)</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="53" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:53</a></div>
+                            </td>
+                        </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                            <div>
+                                    <b>Parameters :</b>
+                                    <table class="params">
+                                        <thead>
+                                            <tr>
+                                                <td>Name</td>
+                                                    <td>Type</td>
+                                                <td>Optional</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                                <tr>
+                                                        <td>popUpService</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../injectables/PopUpService.html" target="_self" >PopUpService</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+    <section data-compodoc="block-inputs">
+    <h3 id="inputs">Inputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="classePopup"></a>
+                        <b>classePopup</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="34" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:34</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="componentName"></a>
+                        <b>componentName</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="33" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:33</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="index"></a>
+                        <b>index</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="32" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:32</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="infoPopUp"></a>
+                        <b>infoPopUp</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="../interfaces/infoPopUp.html" target="_self" >infoPopUp</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="31" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:31</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+    <section data-compodoc="block-outputs">
+    <h3 id="outputs">Outputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="outputEmit"></a>
+                        <b>outputEmit</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="35" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:35</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+
+
+    <section data-compodoc="block-methods">
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="emettiChiusura"></a>
+                    <span class="name">
+                        <span ><b>emettiChiusura</b></span>
+                        <a href="#emettiChiusura"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>emettiChiusura($event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="274"
+                                    class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:274</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>$event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngAfterViewInit"></a>
+                    <span class="name">
+                        <span ><b>ngAfterViewInit</b></span>
+                        <a href="#ngAfterViewInit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>ngAfterViewInit()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="267"
+                                    class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:267</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngOnChanges"></a>
+                    <span class="name">
+                        <span ><b>ngOnChanges</b></span>
+                        <a href="#ngOnChanges"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>ngOnChanges(changes: SimpleChanges)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="60"
+                                    class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:60</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>changes</td>
+                                            <td>
+                                                        <code>SimpleChanges</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngOnInit"></a>
+                    <span class="name">
+                            <span class="modifier">Async</span>
+                        <span ><b>ngOnInit</b></span>
+                        <a href="#ngOnInit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>ngOnInit()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="100"
+                                    class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:100</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+    <section data-compodoc="block-properties">
+    
+    <h3 id="inputs">
+        Properties
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="accessoringData"></a>
+                    <span class="name">
+                        <span ><b>accessoringData</b></span>
+                        <a href="#accessoringData"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="49" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:49</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="classFade"></a>
+                    <span class="name">
+                        <span ><b>classFade</b></span>
+                        <a href="#classFade"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="47" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:47</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="component"></a>
+                    <span class="name">
+                        <span ><b>component</b></span>
+                        <a href="#component"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="40" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:40</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="componentRef"></a>
+                    <span class="name">
+                        <span ><b>componentRef</b></span>
+                        <a href="#componentRef"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Array&lt;ComponentRef&lt;any&gt;&gt;</code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="41" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:41</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="containerComponent"></a>
+                    <span class="name">
+                            <span class="modifier"></span>
+                        <span ><b>containerComponent</b></span>
+                        <a href="#containerComponent"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>ViewContainerRef</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <b>Decorators : </b>
+                        <br />
+                        <code>
+                            @ViewChild(&#x27;containerComponent&#x27;, {static: true, read: ViewContainerRef})<br />
+                        </code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="39" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:39</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="idPopUp"></a>
+                    <span class="name">
+                        <span ><b>idPopUp</b></span>
+                        <a href="#idPopUp"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="51" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:51</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isClosablePopUp"></a>
+                    <span class="name">
+                        <span ><b>isClosablePopUp</b></span>
+                        <a href="#isClosablePopUp"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="52" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:52</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isPanelVisible"></a>
+                    <span class="name">
+                        <span ><b>isPanelVisible</b></span>
+                        <a href="#isPanelVisible"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="44" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:44</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="popUpWidth"></a>
+                    <span class="name">
+                        <span ><b>popUpWidth</b></span>
+                        <a href="#popUpWidth"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>null</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="48" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:48</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="position"></a>
+                    <span class="name">
+                        <span ><b>position</b></span>
+                        <a href="#position"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;center&#x27;</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="53" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:53</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="showCaptionFooter"></a>
+                    <span class="name">
+                        <span ><b>showCaptionFooter</b></span>
+                        <a href="#showCaptionFooter"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="43" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:43</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="showCaptionHeader"></a>
+                    <span class="name">
+                        <span ><b>showCaptionHeader</b></span>
+                        <a href="#showCaptionHeader"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="42" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:42</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="titlePopUp"></a>
+                    <span class="name">
+                        <span ><b>titlePopUp</b></span>
+                        <a href="#titlePopUp"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="50" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:50</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="zIndex"></a>
+                    <span class="name">
+                        <span ><b>zIndex</b></span>
+                        <a href="#zIndex"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>500</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="45" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:45</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="zIndexModalDialog"></a>
+                    <span class="name">
+                        <span ><b>zIndexModalDialog</b></span>
+                        <a href="#zIndexModalDialog"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="46" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:46</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-accessors">
+    <h3 id="accessors">
+        Accessors
+    </h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="getMaxZIndex"></a>
+                        <span class="name"><b>getMaxZIndex</b><a href="#getMaxZIndex"><span class="icon ion-ios-link"></span></a></span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <span class="accessor"><b>get</b><code>getMaxZIndex()</code></span>
+                    </td>
+                </tr>
+                            <tr>
+                                <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="81" class="link-to-prism">src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.ts:81</a></div>
+                                </td>
+                            </tr>
+
+            </tbody>
+        </table>
+</section>
+</div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { AfterViewInit, Component, ComponentRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, Type, ViewChild, ViewContainerRef, inject } from &#x27;@angular/core&#x27;;
+import { PopUpService } from &#x27;../../../services/popup.service&#x27;;
+import { CaptionComponent } from &#x27;../../caption/caption.component&#x27;;
+import { CommonModule } from &#x27;@angular/common&#x27;;
+
+export interface infoPopUp{
+  popUpWidth: string; 
+  showCaptionHeader: boolean;
+  showCaptionFooter: boolean; 
+  title: any; 
+  isClosable:boolean;
+  class: any;
+  componentName: any; 
+  accessoringData: any;
+  position: string; 
+  dataToSend: any; 
+  id: any; 
+  instancedData: any; 
+}
+
+
+@Component({
+  selector: &#x27;app-modal-popup-content&#x27;,
+  templateUrl: &#x27;./modal-popup-content.component.html&#x27;,
+  standalone:true,
+  imports:[CaptionComponent,CommonModule],
+  styleUrls: [&#x27;./modal-popup-content.component.scss&#x27;]
+})
+
+export class NicaPopupContentComponent implements OnInit, AfterViewInit, OnChanges {
+  @Input() infoPopUp!:infoPopUp;
+  @Input() index: any;
+  @Input() componentName!: string;
+  @Input() classePopup: any;
+  @Output() outputEmit: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;(); //Emit all&#x27;esterno
+
+  // @ViewChild(&#x27;containerComponent&#x27;, { static: false, read: ViewContainerRef }) containerComponent: ViewContainerRef;
+  @ViewChild(&quot;containerComponent&quot;, { static: true, read: ViewContainerRef })
+  containerComponent!: ViewContainerRef;
+  component: any
+  componentRef!: Array&lt;ComponentRef&lt;any&gt;&gt;;
+  showCaptionHeader: boolean &#x3D; false;
+  showCaptionFooter: boolean &#x3D; false;
+  isPanelVisible: boolean &#x3D; false;
+  zIndex: number &#x3D; 500;
+  zIndexModalDialog!: number;
+  classFade: any;
+  popUpWidth: any &#x3D; null
+  accessoringData: any;
+  titlePopUp: any;
+  idPopUp: any;
+  isClosablePopUp:boolean&#x3D;false
+  position&#x3D;&#x27;center&#x27;
+  constructor(
+
+    private popUpService: PopUpService
+  ) { }
+
+
+  ngOnChanges(changes: SimpleChanges) {
+    //console.log(&#x27;changes--&gt;&#x27;,changes)
+    if (this.infoPopUp.popUpWidth) {
+      this.popUpWidth &#x3D; this.infoPopUp.popUpWidth + &#x27;px&#x27;;
+    }
+    if (this.infoPopUp.showCaptionHeader) {
+      this.showCaptionHeader &#x3D; this.infoPopUp.showCaptionHeader ;
+    }
+    if (this.infoPopUp.showCaptionFooter) {
+      this.showCaptionFooter &#x3D; this.infoPopUp.showCaptionFooter ;
+    }
+    if (this.infoPopUp.title) {
+      this.titlePopUp &#x3D; this.infoPopUp.title ;
+    }
+
+    if(this.infoPopUp.class){
+      this.classFade &#x3D; this.infoPopUp.class
+      
+    }
+
+  }
+  get getMaxZIndex() {
+    let element  &#x3D; document.querySelectorAll(&#x27;.modal&#x27;);
+    let allZIndex: number[] &#x3D; []
+    element.forEach(el&#x3D;&gt;{
+      if(!el.classList.contains(&#x27;modal-dialog&#x27;)){
+        allZIndex.push(parseFloat(window.getComputedStyle(el).zIndex))
+      }
+    })
+
+    return Math.max(...allZIndex);
+
+    return Math.max(
+      ...Array.from(document.querySelectorAll(&#x27;div.dx-overlay-content&#x27;), el &#x3D;&gt;
+       
+        parseFloat(window.getComputedStyle(el).zIndex),
+      ).filter(zIndex &#x3D;&gt; !Number.isNaN(zIndex)),
+      0,
+    );
+  }
+  async ngOnInit() {
+    //https://interactjs.io/docs/draggable/
+
+    this.isPanelVisible &#x3D; true;
+    //per ricordarsi di quello che è stato...
+   /*  if(this.getMaxZIndex &gt; 1501){
+      this.zIndex &#x3D; this.getMaxZIndex + 1;
+    }
+    */
+
+    
+    
+
+    this.zIndexModalDialog &#x3D; this.getMaxZIndex +1;
+    /*
+     Create a style element
+    const style &#x3D; document.createElement(&#x27;style&#x27;);
+
+    // Define CSS rules
+    const css &#x3D;  &#x27;::ng-deep.dx-overlay-wrapper { z-index:&#x27;+ this.zIndexModalDialog +&#x27;!important; }&#x27;;
+
+    // Add CSS rules to the style element
+    style.appendChild(document.createTextNode(css));
+
+    // Append the style element to the document head
+    document.head.appendChild(style);
+    */
+
+    const componentName &#x3D; this.infoPopUp.componentName
+
+    this.accessoringData &#x3D; this.infoPopUp.accessoringData
+
+    this.position &#x3D; this.infoPopUp.position;
+
+    
+    /*const imported &#x3D; await import(&#x60;&#x27;../&#x27;${component}&#x60;)  // Array.from(this._componentFactoryResolver[&#x27;_factories&#x27;].keys());
+    const factoryClass &#x3D; &lt;Type&lt;any&gt;&gt; inject()
+    if(typeof factoryClass &#x3D;&#x3D; &#x27;undefined&#x27;){
+      
+      alert(&quot;Attenzione c&#x27;è stato un problema&quot;)
+      return
+    }*/
+    //const componentFactory: ComponentFactory&lt;any&gt; &#x3D; this._componentFactoryResolver.resolveComponentFactory(factoryClass);
+
+    //this.containerComponent.remove()
+
+    let component &#x3D; this.popUpService.getComponentByName(componentName)
+    let instComponent &#x3D; this.containerComponent.createComponent(component)
+    instComponent.instance[&#x27;itemData&#x27;] &#x3D; this.infoPopUp.dataToSend;
+
+
+    instComponent.instance[&#x27;cssClass&#x27;] &#x3D; &#x27;modal-content &#x27;
+    
+    
+    this.componentName &#x3D; componentName;
+
+    this.idPopUp &#x3D; this.infoPopUp.id;
+    if (this.infoPopUp.popUpWidth) {
+      this.popUpWidth &#x3D; this.infoPopUp.popUpWidth + &#x27;px&#x27;;
+    }
+    if (this.infoPopUp.showCaptionHeader) {
+      this.showCaptionHeader &#x3D; this.infoPopUp.showCaptionHeader ;
+    }
+    if (this.infoPopUp.showCaptionFooter) {
+      this.showCaptionFooter &#x3D; this.infoPopUp.showCaptionFooter ;
+    }
+    if (this.infoPopUp.title) {
+      this.titlePopUp &#x3D; this.infoPopUp.title ;
+    }
+
+    if(this.infoPopUp.class){
+      this.classFade &#x3D; this.infoPopUp.class
+      /* for(let i&#x3D; 0;document.getElementsByClassName(&quot;modal&quot;).length;i++){
+
+        //es. aggiunta classe per fadein
+        document.getElementsByClassName(&quot;modal&quot;).item(i).classList.add(this.infoPopUp.class);
+
+
+      } */
+
+    }
+
+    this.isClosablePopUp &#x3D; typeof this.infoPopUp.isClosable !&#x3D; &#x27;undefined&#x27; ? this.infoPopUp.isClosable : false;
+
+
+    const instancedComponent &#x3D; instComponent.instance
+    
+    
+
+    if(typeof this.infoPopUp.instancedData !&#x3D; &#x27;undefined&#x27;){
+        
+      const instancedDatas &#x3D; this.infoPopUp.instancedData
+      for(let instancedData in instancedDatas){
+       instancedComponent[instancedData] &#x3D; instancedDatas[instancedData];
+
+//       console.log(&#x27;Event--&gt;&#x27;+instancedData);
+       
+      }
+      
+      //console.log(&#x27;Event--&gt;&#x27;+instancedComponent)
+    }
+
+    for (let allEvent in instancedComponent) {
+      
+                
+
+      if (instComponent.instance[allEvent] instanceof EventEmitter) {
+
+       
+
+        (instComponent.instance[allEvent] as EventEmitter&lt;any&gt;).subscribe(
+         
+          (res) &#x3D;&gt; {
+           
+            try{
+              let newRes
+              if(typeof res &#x3D;&#x3D; &#x27;boolean&#x27;){
+                newRes &#x3D; {
+                  componentName:componentName,
+                  accessoringData:this.accessoringData,
+                  guid:this.idPopUp,
+                  name:allEvent
+                }
+                res &#x3D; newRes
+              }else{
+                res.componentName &#x3D; componentName;
+                res.accessoringData &#x3D; this.accessoringData;
+                res.guid &#x3D; this.idPopUp
+                 if(typeof res.name &#x3D;&#x3D;&#x27;undefined&#x27;){
+                  res.name &#x3D; allEvent
+                 } 
+              }
+              
+            }catch(ex){
+
+              //console.error(&quot;WHHOOOPPPSSS DEVI METTERE IL DISCO NEL TUO COMPUTER&quot;);
+            }
+            finally{
+              this.popUpService.setOutputComponent(res)
+
+
+            }
+
+          }
+        )
+
+      }
+    }
+
+    /* (instComponent.instance.onAllEvent as EventEmitter&lt;any&gt;).subscribe(
+
+      (res) &#x3D;&gt; {
+        res.componentName &#x3D; component;
+        res.accessoringData &#x3D; this.accessoringData
+        this.popUpService.setOutputComponent(res)
+
+      }
+    )
+
+ */
+
+    //var myModal &#x3D; new bootstrap.Modal(document.getElementById(&#x27;myModal&#x27;), options)
+
+  }
+ 
+
+
+  ngAfterViewInit() {
+
+
+
+
+  }
+
+  emettiChiusura($event: any){
+
+      
+    if(!this.idPopUp){
+      this.popUpService.destroyCurrentOpenPopUp(this.componentName);
+    }else{
+      this.popUpService.destroyCurrentOpenPopUpByGuid(this.idPopUp);
+    }
+    let reeee &#x3D;{guid:this.idPopUp,name:&#x27;stochiudendo&#x27;}
+    this.popUpService.setOutputComponent(reeee)
+    
+    this.popUpService.destroyOutputComponent();
+
+
+  }
+  /*
+   
+
+    const componentFactory: ComponentFactory&lt;any&gt; &#x3D; this._componentFactoryResolver.resolveComponentFactory(factoryClass);
+
+
+    setTimeout(() &#x3D;&gt; {
+
+
+      this.componentRef &#x3D; this.containerComponent.createComponent(componentFactory);
+      this.componentRef.instance.itemData &#x3D; dataToSend;
+
+
+      (this.componentRef.instance.emittendSelectionMultipleRow as EventEmitter&lt;any&gt;).subscribe(
+
+        (res) &#x3D;&gt; {
+
+          let e &#x3D; res;
+          let component &#x3D; res.component;
+          let key &#x3D; component.dataField;
+          let newItem;
+          let masterKey &#x3D; this.masterKey;
+          this.datasource[this.currEditIndx][key] &#x3D; null;
+
+          let indx &#x3D; 0;
+          if (typeof masterKey !&#x3D; &#x27;undefined&#x27;) {
+            if (!this.datasource[this.currEditIndx][masterKey]) {
+              this.dynamicGridComponent.instance.editCell(this.currEditIndx, masterKey)
+              this.isPanelVisible &#x3D; false;
+              //this.onEditCanceled(e)
+              return
+            }
+
+          }
+
+          let dataSourceCheck &#x3D; this.datasource.filter(ress &#x3D;&gt; ress[masterKey] !&#x3D; null)
+
+
+          for (let x in dataSourceCheck) {
+            e.data.map(res &#x3D;&gt; {
+              if (dataSourceCheck[x][masterKey] &#x3D;&#x3D; res[masterKey]) {
+                indx++
+              }
+            })
+
+
+          }
+          let valueCheck
+          if ((indx &gt; 0)) {
+            valueCheck &#x3D; dataSourceCheck[indx][masterKey]
+            notify({
+              message: &#x27;Valore: &#x27; + valueCheck + &#x27; è già presente!&#x27;,
+              height: 55,
+              width: 450,
+              position: &#x27;center center&#x27;
+
+            }, &#x27;warning&#x27;, 3000);
+            //this.dynamicGridComponent.instance.editCell(this.currEditIndx, campo.dataField)
+            this.dynamicGridComponent.instance.cellValue(this.currEditIndx, masterKey, null)
+            //const element &#x3D; this.dynamicGridComponent.instance.getCellElement(this.currEditIndx, campo.dataField)
+            //this.dynamicGridComponent.instance.focus(element);
+
+            return
+
+          }
+
+          if (e.data.length &gt; 0) {
+
+            newItem &#x3D; { ...this.datasource[this.currEditIndx], [key]: e.data }
+
+            this.datasource[this.currEditIndx] &#x3D; newItem;
+
+            this.dynamicGridComponent.instance.cellValue(this.currEditIndx, campo.dataField, e.data);
+
+          } else {
+            newItem &#x3D; { ...this.datasource[this.currEditIndx], [key]: &#x27;&#x27; }
+            this.datasource[this.currEditIndx] &#x3D; newItem;
+            this.dynamicGridComponent.instance.cellValue(this.currEditIndx, campo.dataField, null);
+
+            this._overlaySidePanelService.close();
+            this.dynamicGridComponent.instance.editCell(this.currEditIndx, campo.dataField)
+
+            const element &#x3D; this.dynamicGridComponent.instance.getCellElement(this.currEditIndx, campo.dataField)
+            this.dynamicGridComponent.instance.focus(element);
+            return
+
+          }
+
+         
+
+          let related &#x3D; e.related;
+
+          if (related) {
+            e.component.dynamic.related.forEach((value, key) &#x3D;&gt; {
+
+              this.datasource[this.currEditIndx][value] &#x3D; related[value];
+              //this.dynamicGridComponent.instance.cellValue(this.currEditIndx, campo.dataField, related[value]);
+            })
+
+          }
+
+
+
+          if (e.name &#x3D;&#x3D; &#x27;saveMultipleSelectionsRowGrid&#x27;) {
+            this.isPanelVisible &#x3D; false;
+            this.containerComponent.clear();
+            this.onEditCanceled(e);
+            this.dynamicGridComponent.instance.saveEditData()
+          }
+
+        }
+      );
+
+
+      (this.componentRef.instance.emittendSelectionRow as EventEmitter&lt;any&gt;).subscribe(
+
+
+        (res) &#x3D;&gt; {
+
+          let e &#x3D; res;
+          let valueExpr &#x3D; e.component.dynamic.valueExpr !&#x3D; &#x27;&#x27; ? e.component.dynamic.valueExpr : e.component.dynamic.displayExpr
+          let displayExpr &#x3D; e.component.dynamic.displayExpr
+          let value
+
+
+          let masterKey &#x3D; this.masterKey;
+          let index &#x3D; 0
+
+          if (Array.isArray(e.data)) {
+
+            value &#x3D; e.data;
+
+          } else {
+            if (Array.isArray(displayExpr)) {
+              value &#x3D; e.data[&#x27;displayExpr&#x27;].join(&#x27; - &#x27;);
+            } else {
+              value &#x3D; e.data[valueExpr];
+            }
+          }
+
+
+
+
+          let descrizione &#x3D; &#x27;&#x27;;
+
+          if (e.component.dynamic.valueExpr !&#x3D; &#x27;&#x27;) {
+            descrizione &#x3D; e.data[displayExpr]
+          }
+
+          let dataSourceCheck &#x3D; this.datasource.filter(ress &#x3D;&gt; ress[masterKey] !&#x3D; null)
+          let indx &#x3D; 0
+
+
+          if (typeof masterKey !&#x3D; &#x27;undefined&#x27;) {
+            if (masterKey !&#x3D; &#x27;&#x27;) {
+              if (!this.datasource[this.currEditIndx][masterKey] &amp;&amp; campo.dataField !&#x3D; masterKey) {
+                this.dynamicGridComponent.instance.editCell(this.currEditIndx, masterKey)
+                this.isPanelVisible &#x3D; false;
+                //this.onEditCanceled(e)
+                return
+              }
+            }
+
+
+          }
+
+          for (let x in dataSourceCheck) {
+            //console.log(this.datasource[x][masterKey])
+            if (dataSourceCheck[x][masterKey] &#x3D;&#x3D; value) {
+              indx++
+              index &#x3D; parseInt(x)
+            }
+
+          }
+          let valueCheck
+          if ((indx &gt; 0)) {
+
+            valueCheck &#x3D; dataSourceCheck[index][masterKey]
+            notify({
+              message: &#x27;Valore: &#x27; + value + &#x27; è già presente!&#x27;,
+              height: 55,
+              width: 450,
+              position: &#x27;center center&#x27;
+
+            }, &#x27;warning&#x27;, 3000);
+
+
+            return
+
+          }
+
+
+          let key &#x3D; e.component.dataField;
+
+        
+
+          let related &#x3D; e.component.dynamic.related
+
+          const keyVariable &#x3D; key;
+          const valueArray &#x3D; value;
+
+          const newItem &#x3D; { ...this.datasource[this.currEditIndx], [keyVariable]: valueArray };
+
+          this.datasource[this.currEditIndx] &#x3D; newItem
+
+          this.dynamicGridComponent.instance.cellValue(this.currEditIndx, campo.dataField, valueArray)
+
+          if (e.component.costantValue) {
+
+            e.component.costantValue.forEach(values &#x3D;&gt; {
+              this.datasource[this.currEditIndx][values.key] &#x3D; values.value;
+            })
+
+          }
+          if (e.data.related) {
+
+            let rel &#x3D; e.data.related
+            let newItem;
+            let newItemDesc;
+            related.forEach((values, key) &#x3D;&gt; {
+              let arrayValue &#x3D; values.split(&#x27;|&#x27;)
+              if (arrayValue.length &gt; 1) {
+                newItem &#x3D; { ...this.datasource[this.currEditIndx], [arrayValue[1]]: rel[arrayValue[1]] };
+
+                this.dynamicGridComponent.instance.cellValue(this.currEditIndx, arrayValue[1], rel[arrayValue[1]])
+              } else {
+                newItem &#x3D; { ...this.datasource[this.currEditIndx], [values]: rel[values] };
+                this.dynamicGridComponent.instance.cellValue(this.currEditIndx, values, rel[values])
+
+              }
+
+
+              this.datasource[this.currEditIndx] &#x3D; newItem
+
+            })
+
+          }
+
+
+          this.isPanelVisible &#x3D; false;
+          this.containerComponent.clear();
+          this.dynamicGridComponent.instance.saveEditData()
+          this.onEditCanceled(e)
+        }
+
+      );
+
+
+      (this.componentRef.instance.emittedToolbarEvent as EventEmitter&lt;any&gt;).subscribe(
+        (res) &#x3D;&gt; {
+
+
+          if (res &#x3D;&#x3D; &#x27;close&#x27;) {
+
+
+            if (this.containerComponent) {
+
+              //console.warn(&#x27;stoo chiudendo nidificato&#x27;,this.isPanelVisible)
+
+              this.containerComponent.clear();
+
+            }
+
+            this.isPanelVisible &#x3D; false;
+          }
+
+
+
+        }
+      )
+
+
+    }, 500);
+
+
+  
+  */
+
+}
+</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="templateData">
+        <pre class="line-numbers"><code class="language-html">&lt;div [ngStyle]&#x3D;&quot;{&#x27;display&#x27;: isPanelVisible ? &#x27;block&#x27; : &#x27;none&#x27;, &#x27;z-index&#x27;: zIndexModalDialog }&quot; class&#x3D;&quot;modal popup&quot;
+    [ngClass]&#x3D;&quot;{&#x27;position-bottom&#x27;:position &#x3D;&#x3D; &#x27;bottom&#x27;}&quot; [ngClass]&#x3D;&quot;classFade&quot; tabindex&#x3D;&quot;-1&quot; [id]&#x3D;&quot;idPopUp&quot;
+    role&#x3D;&quot;dialog&quot; &gt;
+
+    &lt;div [id]&#x3D;&quot;idPopUp&quot; class&#x3D;&quot;modal-dialog formEditPopup &quot;
+        [ngStyle]&#x3D;&quot;{&#x27;max-width&#x27;:popUpWidth ? popUpWidth : &#x27;&#x27;,&#x27;width&#x27;: popUpWidth ? popUpWidth : &#x27;&#x27; }&quot;&gt;
+
+        &lt;app-caption 
+            *ngIf&#x3D;&quot;showCaptionHeader&quot; 
+            [caption]&#x3D;&quot;titlePopUp&quot; 
+            [isClosable]&#x3D;&quot;isClosablePopUp&quot;
+            [cssClass]&#x3D;&quot;&#x27;modal&#x27;&quot;
+            (emitChiusura)&#x3D;&quot;emettiChiusura($event)&quot; 
+            [help]&#x3D;&quot;&#x27;&#x27;&quot;&gt;
+        &lt;/app-caption&gt;
+
+
+        &lt;div #containerComponent class&#x3D;&quot;modal-content&quot;&gt;
+
+
+
+
+        &lt;/div&gt;
+
+        &lt;app-caption *ngIf&#x3D;&quot;showCaptionFooter&quot;  [isFooter]&#x3D;&quot;showCaptionFooter&quot; (emitChiusura)&#x3D;&quot;emettiChiusura($event)&quot;&gt;
+        &lt;/app-caption&gt;
+
+
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="styleData">
+                <p class="comment">
+                    <code>./modal-popup-content.component.scss</code>
+                </p>
+                <pre class="line-numbers"><code class="language-scss">::ng-deep.popup {
+  z-index: 500;
+  pointer-events: auto;
+  background-color: rgba(255, 255, 255, .8);
+
+  .modal-dialog {
+
+    max-width: 90%;
+    border: 1px solid var(--primary);
+    background: #fff;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+    border-radius: 4px;
+    pointer-events: auto;
+    width: fit-content;
+   
+    .caption-container {
+      &amp;.modal{
+          
+          border: 1px solid var(--border_color);
+        
+      }
+    }
+    .modal-content {
+      border: none;
+      box-sizing: border-box;
+      background: transparent;
+
+      .formEdit {
+        background: var(--bg-grey);
+      }
+
+      
+
+
+
+    }
+
+
+
+  }
+}
+
+::ng-deep.position-bottom {
+  .modal-dialog {
+    z-index: 501;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    position: fixed;
+    max-width: 96%;
+    background: transparent;
+  }
+
+  /* Per l&#x27; apertura popup */
+
+}
+
+.fade-in-fwd {
+  -webkit-animation: fade-in-fwd 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+  animation: fade-in-fwd 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+}
+
+@-webkit-keyframes fade-in-fwd {
+  0% {
+    -webkit-transform: translateZ(-80px);
+    transform: translateZ(-80px);
+    opacity: 0;
+  }
+
+  100% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-fwd {
+  0% {
+    -webkit-transform: translateZ(-80px);
+    transform: translateZ(-80px);
+    opacity: 0;
+  }
+
+  100% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    opacity: 1;
+  }
+}
+
+
+
+/* Per la chisura popup */
+.fade-out-bck {
+  -webkit-animation: fade-out-bck 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+  animation: fade-out-bck 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+
+@keyframes fade-out-bck {
+  0% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateZ(-80px);
+    transform: translateZ(-80px);
+    opacity: 0;
+  }
+}
+
+/**Slide**/
+.slide-center {
+  -webkit-animation: slide-center-fw 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) none;
+  animation: slide-center-fw 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) none;
+}
+
+
+
+@keyframes slide-center-fw {
+  0% {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  100% {
+    -webkit-transform: translateZ(160px);
+    transform: translateZ(160px);
+  }
+}
+
+
+::ng-deep.modal-content .modal-data-grid-wrapper {
+  margin: auto;
+}</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="tree">
+        <div id="tree-container"></div>
+        <div class="tree-legend">
+            <div class="title">
+                <b>Legend</b>
+            </div>
+            <div>
+                <div class="color htmlelement"></div><span>Html element</span>
+            </div>
+            <div>
+                <div class="color component"></div><span>Component</span>
+            </div>
+            <div>
+                <div class="color directive"></div><span>Html element with directive</span>
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
+<script src="../js/libs/vis.min.js"></script>
+<script src="../js/libs/htmlparser.js"></script>
+<script src="../js/libs/deep-iterator.js"></script>
+<script>
+        var COMPONENT_TEMPLATE = '<div><div [ngStyle]="{\'display\': isPanelVisible ? \'block\' : \'none\', \'z-index\': zIndexModalDialog }" class="modal popup"    [ngClass]="{\'position-bottom\':position == \'bottom\'}" [ngClass]="classFade" tabindex="-1" [id]="idPopUp"    role="dialog" >    <div [id]="idPopUp" class="modal-dialog formEditPopup "        [ngStyle]="{\'max-width\':popUpWidth ? popUpWidth : \'\',\'width\': popUpWidth ? popUpWidth : \'\' }">        <app-caption             *ngIf="showCaptionHeader"             [caption]="titlePopUp"             [isClosable]="isClosablePopUp"            [cssClass]="\'modal\'"            (emitChiusura)="emettiChiusura($event)"             [help]="\'\'">        </app-caption>        <div #containerComponent class="modal-content">        </div>        <app-caption *ngIf="showCaptionFooter"  [isFooter]="showCaptionFooter" (emitChiusura)="emettiChiusura($event)">        </app-caption>    </div></div></div>'
+    var COMPONENTS = [{'name': 'AnagraficaWrapperComponent', 'selector': 'app-anagrafica-wrapper'},{'name': 'AppComponent', 'selector': 'app-root'},{'name': 'AppFormListComponent', 'selector': 'app-form-list'},{'name': 'CaptionComponent', 'selector': 'app-caption'},{'name': 'ContainerComponent', 'selector': 'app-container'},{'name': 'CustomScrollbarComponent', 'selector': 'app-custom-scrollbar'},{'name': 'DashboardComponent', 'selector': 'app-dashboard'},{'name': 'DataGridComponent', 'selector': 'app-data-grid'},{'name': 'DynamicFileBoxComponent', 'selector': 'app-dynamic-file-box'},{'name': 'DynamicFormComponent', 'selector': 'app-dynamic-form'},{'name': 'DynamicSelectBoxComponent', 'selector': 'app-dynamic-select-box'},{'name': 'ElementComponent', 'selector': 'app-element'},{'name': 'FooterComponent', 'selector': 'app-footer'},{'name': 'FormBuilderComponent', 'selector': 'app-form-builder'},{'name': 'FotoOutfitPage', 'selector': 'app-foto-outfit'},{'name': 'HeaderComponent', 'selector': 'app-header'},{'name': 'MenuComponent', 'selector': 'app-menu'},{'name': 'NicaPopupContentComponent', 'selector': 'app-modal-popup-content'},{'name': 'OutfitCategoryComponent', 'selector': 'app-outfit-category'},{'name': 'OutfitFormComponent', 'selector': 'app-outfit-form'},{'name': 'OutfitProductsComponent', 'selector': 'app-outfit-products'},{'name': 'OutfitsComponent', 'selector': 'app-outfits'},{'name': 'OverlayComponent', 'selector': 'app-overlay'},{'name': 'PopupWrapperComponent', 'selector': 'app-modal-popup-wrapper'},{'name': 'ProductFromFeedComponent', 'selector': 'app-product-from-feed'},{'name': 'StaticMenuComponent', 'selector': 'app-static-menu'},{'name': 'StaticMenuFunctionsComponent', 'selector': 'app-static-menu-functions'},{'name': 'TdItemComponent', 'selector': 'app-td-item'},{'name': 'ToolbarComponent', 'selector': 'app-toolbar'},{'name': 'UsersComponent', 'selector': 'app-users'}];
+    var DIRECTIVES = [];
+    var ACTUAL_COMPONENT = {'name': 'NicaPopupContentComponent'};
+</script>
+<script src="../js/tree.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'component';
+            var COMPODOC_CURRENT_PAGE_URL = 'NicaPopupContentComponent.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

@@ -1,0 +1,9 @@
+<div *ngIf="false" [ngClass]="{'bg-overlay':showBgOverlay} " class="overlay-backdrop"  ></div>
+<div
+#overlayContent
+  *ngIf="isVisible()"
+  class="overlay-content"
+  [ngStyle]="{ top: position().top + 'px', left: position().left + 'px' }"
+>
+  <ng-container *ngTemplateOutlet="contentTemplate; context: templateContext"></ng-container>
+</div>

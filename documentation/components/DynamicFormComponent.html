@@ -1,0 +1,2182 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>admin documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="../" class="navbar-brand">admin documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content component">
+                   <div class="content-data">
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Components</li>
+  <li class="breadcrumb-item"
+  >
+  DynamicFormComponent</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a href="#info" class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li class="nav-item">
+            <a href="#source" class="nav-link"
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
+        </li>
+        <li class="nav-item">
+            <a href="#templateData" class="nav-link"
+                role="tab" id="templateData-tab" data-bs-toggle="tab" data-link="template">Template</a>
+        </li>
+        <li class="nav-item">
+            <a href="#styleData" class="nav-link"
+                role="tab" id="styleData-tab" data-bs-toggle="tab" data-link="style">Styles</a>
+        </li>
+        <li class="nav-item">
+            <a href="#tree" class="nav-link"
+                role="tab" id="tree-tab" data-bs-toggle="tab" data-link="dom-tree">DOM Tree</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="info"><p class="comment">
+    <h3>File</h3>
+</p>
+<p class="comment">
+    <code>src/app/components/dynamic-form/dynamic-form.component.ts</code>
+</p>
+
+
+
+
+
+
+<section data-compodoc="block-metadata">
+    <h3>Metadata</h3>
+    <table class="table table-sm table-hover metadata">
+        <tbody>
+
+
+
+
+
+
+
+
+
+
+
+
+            <tr>
+                <td class="col-md-3">selector</td>
+                <td class="col-md-9"><code>app-dynamic-form</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">standalone</td>
+                <td class="col-md-9"><code>true</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">imports</td>
+                <td class="col-md-9">
+                            <code>CommonModule</code>
+                                <code><a href="../components/DynamicSelectBoxComponent.html" target="_self" >DynamicSelectBoxComponent</a></code>
+                                <code><a href="../components/DynamicFileBoxComponent.html" target="_self" >DynamicFileBoxComponent</a></code>
+                            <code>FormsModule</code>
+                            <code>ReactiveFormsModule</code>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">styleUrls</td>
+                <td class="col-md-9"><code>./dynamic-form.component.scss</code></td>
+            </tr>
+
+
+
+            <tr>
+                <td class="col-md-3">templateUrl</td>
+                <td class="col-md-9"><code>./dynamic-form.component.html</code></td>
+            </tr>
+
+
+
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-index">
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#dataSet" >dataSet</a>
+                            </li>
+                            <li>
+                                <a href="#fieldConfigs" >fieldConfigs</a>
+                            </li>
+                            <li>
+                                <a href="#fields" >fields</a>
+                            </li>
+                            <li>
+                                <a href="#form" >form</a>
+                            </li>
+                            <li>
+                                <a href="#formShow" >formShow</a>
+                            </li>
+                            <li>
+                                <a href="#formValues" >formValues</a>
+                            </li>
+                            <li>
+                                <a href="#inEdit" >inEdit</a>
+                            </li>
+                            <li>
+                                <a href="#parentValues" >parentValues</a>
+                            </li>
+                            <li>
+                                <a href="#templateService" >templateService</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Methods</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#cancellForm" >cancellForm</a>
+                            </li>
+                            <li>
+                                <a href="#getInvalidFields" >getInvalidFields</a>
+                            </li>
+                            <li>
+                                <a href="#getParentValues" >getParentValues</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Private</span>
+                                <a href="#getValidators" >getValidators</a>
+                            </li>
+                            <li>
+                                <a href="#initializeForm" >initializeForm</a>
+                            </li>
+                            <li>
+                                <a href="#initializeFormValues" >initializeFormValues</a>
+                            </li>
+                            <li>
+                                <a href="#ngOnChanges" >ngOnChanges</a>
+                            </li>
+                            <li>
+                                <a href="#ngOnInit" >ngOnInit</a>
+                            </li>
+                            <li>
+                                <a href="#onFucBtnClick" >onFucBtnClick</a>
+                            </li>
+                            <li>
+                                <a href="#onValueChange" >onValueChange</a>
+                            </li>
+                            <li>
+                                <a href="#onValueChangeSelectBox" >onValueChangeSelectBox</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Async</span>
+                                <a href="#presentToast" >presentToast</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Public</span>
+                                <a href="#refresh" >refresh</a>
+                            </li>
+                            <li>
+                                <a href="#submitForm" >submitForm</a>
+                            </li>
+                            <li>
+                                <a href="#updateCascadeOptions" >updateCascadeOptions</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Inputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#editData" >editData</a>
+                            </li>
+                            <li>
+                                <a href="#idData" >idData</a>
+                            </li>
+                            <li>
+                                <a href="#service" >service</a>
+                            </li>
+                            <li>
+                                <a href="#showBottomButtons" >showBottomButtons</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Outputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#functionalInputFormEvent" >functionalInputFormEvent</a>
+                            </li>
+                            <li>
+                                <a href="#submitFormEvent" >submitFormEvent</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+        </tbody>
+    </table>
+</section>
+
+
+    <section data-compodoc="block-inputs">
+    <h3 id="inputs">Inputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="editData"></a>
+                        <b>editData</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>any | undefined</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="23" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:23</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="idData"></a>
+                        <b>idData</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>any | undefined</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="24" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:24</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="service"></a>
+                        <b>service</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>string | undefined</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="22" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:22</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="showBottomButtons"></a>
+                        <b>showBottomButtons</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>true</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="25" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:25</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+    <section data-compodoc="block-outputs">
+    <h3 id="outputs">Outputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="functionalInputFormEvent"></a>
+                        <b>functionalInputFormEvent</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="28" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:28</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="submitFormEvent"></a>
+                        <b>submitFormEvent</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="27" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:27</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+
+
+    <section data-compodoc="block-methods">
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="cancellForm"></a>
+                    <span class="name">
+                        <span ><b>cancellForm</b></span>
+                        <a href="#cancellForm"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>cancellForm()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="203"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:203</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getInvalidFields"></a>
+                    <span class="name">
+                        <span ><b>getInvalidFields</b></span>
+                        <a href="#getInvalidFields"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>getInvalidFields(formGroup: FormGroup)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="214"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:214</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>formGroup</td>
+                                            <td>
+                                                        <code>FormGroup</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>string[]</code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getParentValues"></a>
+                    <span class="name">
+                        <span ><b>getParentValues</b></span>
+                        <a href="#getParentValues"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>getParentValues(parent: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="166"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:166</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>parent</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getValidators"></a>
+                    <span class="name">
+                            <span class="modifier">Private</span>
+                        <span ><b>getValidators</b></span>
+                        <a href="#getValidators"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>getValidators(field: <a href="../interfaces/DynamicFormField.html" target="_self">DynamicFormField</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="111"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:111</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>field</td>
+                                            <td>
+                                                            <code><a href="../interfaces/DynamicFormField.html" target="_self" >DynamicFormField</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>    <code>{}</code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="initializeForm"></a>
+                    <span class="name">
+                        <span ><b>initializeForm</b></span>
+                        <a href="#initializeForm"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>initializeForm()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="69"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:69</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="initializeFormValues"></a>
+                    <span class="name">
+                        <span ><b>initializeFormValues</b></span>
+                        <a href="#initializeFormValues"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>initializeFormValues(field: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="129"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:129</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>field</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngOnChanges"></a>
+                    <span class="name">
+                        <span ><b>ngOnChanges</b></span>
+                        <a href="#ngOnChanges"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>ngOnChanges(changes: SimpleChanges)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="42"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:42</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>changes</td>
+                                            <td>
+                                                        <code>SimpleChanges</code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngOnInit"></a>
+                    <span class="name">
+                        <span ><b>ngOnInit</b></span>
+                        <a href="#ngOnInit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>ngOnInit()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="48"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:48</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="onFucBtnClick"></a>
+                    <span class="name">
+                        <span ><b>onFucBtnClick</b></span>
+                        <a href="#onFucBtnClick"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>onFucBtnClick(evt: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="233"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:233</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>evt</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="onValueChange"></a>
+                    <span class="name">
+                        <span ><b>onValueChange</b></span>
+                        <a href="#onValueChange"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>onValueChange(fieldName: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, value: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="142"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:142</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>fieldName</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>value</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="onValueChangeSelectBox"></a>
+                    <span class="name">
+                        <span ><b>onValueChangeSelectBox</b></span>
+                        <a href="#onValueChangeSelectBox"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>onValueChangeSelectBox(fieldName: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="156"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:156</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>fieldName</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="presentToast"></a>
+                    <span class="name">
+                            <span class="modifier">Async</span>
+                        <span ><b>presentToast</b></span>
+                        <a href="#presentToast"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>presentToast(message: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="229"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:229</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>message</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="refresh"></a>
+                    <span class="name">
+                            <span class="modifier">Public</span>
+                        <span ><b>refresh</b></span>
+                        <a href="#refresh"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+                        <span class="modifier-icon icon ion-ios-reset"></span>
+                    <code>refresh()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="246"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:246</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="submitForm"></a>
+                    <span class="name">
+                        <span ><b>submitForm</b></span>
+                        <a href="#submitForm"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>submitForm()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="187"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:187</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="updateCascadeOptions"></a>
+                    <span class="name">
+                        <span ><b>updateCascadeOptions</b></span>
+                        <a href="#updateCascadeOptions"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>updateCascadeOptions(fieldName: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, value: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="172"
+                                    class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:172</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>fieldName</td>
+                                            <td>
+                                                            <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                        <tr>
+                                                <td>value</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+    <section data-compodoc="block-properties">
+    
+    <h3 id="inputs">
+        Properties
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="dataSet"></a>
+                    <span class="name">
+                        <span ><b>dataSet</b></span>
+                        <a href="#dataSet"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[]</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="32" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:32</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="fieldConfigs"></a>
+                    <span class="name">
+                        <span ><b>fieldConfigs</b></span>
+                        <a href="#fieldConfigs"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{}</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="35" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:35</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="fields"></a>
+                    <span class="name">
+                        <span ><b>fields</b></span>
+                        <a href="#fields"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>DynamicFormField[]</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[]</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="33" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:33</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="form"></a>
+                    <span class="name">
+                        <span ><b>form</b></span>
+                        <a href="#form"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>FormGroup</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>new FormGroup({})</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="30" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:30</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="formShow"></a>
+                    <span class="name">
+                        <span ><b>formShow</b></span>
+                        <a href="#formShow"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="34" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:34</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="formValues"></a>
+                    <span class="name">
+                        <span ><b>formValues</b></span>
+                        <a href="#formValues"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>literal type</code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>{}</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="31" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:31</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="inEdit"></a>
+                    <span class="name">
+                        <span ><b>inEdit</b></span>
+                        <a href="#inEdit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>true</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="37" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:37</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="parentValues"></a>
+                    <span class="name">
+                        <span ><b>parentValues</b></span>
+                        <a href="#parentValues"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>signal&lt;{ [key: string]: any }&gt;({})</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="39" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:39</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="templateService"></a>
+                    <span class="name">
+                        <span ><b>templateService</b></span>
+                        <a href="#templateService"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>inject(FormService)</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="36" class="link-to-prism">src/app/components/dynamic-form/dynamic-form.component.ts:36</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+</section>
+
+</div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Component, effect, EventEmitter, inject, Input, OnInit, Output, Signal, signal, SimpleChanges } from &#x27;@angular/core&#x27;;
+
+
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from &#x27;@angular/forms&#x27;;
+import { DynamicFormField } from &#x27;../../interface/dynamic-form-field&#x27;;
+import { FormService } from &#x27;../../services/form.service&#x27;;
+import { alert } from &#x27;../../widgets/ui-dialogs&#x27;;
+import { CommonModule } from &#x27;@angular/common&#x27;;
+import { DynamicSelectBoxComponent } from &#x27;./items/dynamic-select-box/dynamic-select-box.component&#x27;;
+import { DynamicFileBoxComponent } from &#x27;./items/dynamic-file-box/dynamic-file-box.component&#x27;;
+
+@Component({
+  selector: &#x27;app-dynamic-form&#x27;,
+  standalone: true,
+  imports: [CommonModule, DynamicSelectBoxComponent, DynamicFileBoxComponent, FormsModule, ReactiveFormsModule],
+  templateUrl: &#x27;./dynamic-form.component.html&#x27;,
+  styleUrls: [&#x27;./dynamic-form.component.scss&#x27;],
+})
+
+export class DynamicFormComponent {
+  
+  @Input() service: string | undefined;
+  @Input() editData: any | undefined;
+  @Input() idData: any | undefined;
+  @Input() showBottomButtons: boolean&#x3D; true;
+
+  @Output() submitFormEvent: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;(); //Emit all&#x27;esterno;
+  @Output() functionalInputFormEvent: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;(); //Emit all&#x27;esterno;
+  
+  form: FormGroup &#x3D; new FormGroup({});
+  formValues: { [key: string]: any } &#x3D; {};
+  dataSet: any &#x3D; []
+  fields: DynamicFormField[] &#x3D; [];
+  formShow: boolean &#x3D; false
+  fieldConfigs: any &#x3D; {};
+  templateService &#x3D; inject(FormService)
+  inEdit: boolean &#x3D; true
+  // Signal per il valore del parent
+  parentValues&#x3D; signal&lt;{ [key: string]: any }&gt;({}); // Mappa per i segnali dei parent
+
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes[&#x27;editData&#x27;] &amp;&amp; changes[&#x27;editData&#x27;].currentValue) {
+      //this.initializeForm();
+    }
+  }
+
+  ngOnInit(): void {
+
+    if (!this.service) {
+      return
+    }
+    if (typeof this.editData &#x3D;&#x3D;&#x3D; &#x27;undefined&#x27;) {
+      this.editData &#x3D; {};
+      this.inEdit &#x3D; false
+    }
+    //I dati che servono per fare un insert.
+    if (typeof this.idData !&#x3D; &#x27;undefined&#x27;) {
+      this.editData &#x3D; this.idData
+    }
+    this.templateService.getFormFields(this.service).subscribe(fields &#x3D;&gt; {
+      this.fields &#x3D; fields;
+      this.initializeForm();
+    });
+
+
+  }
+
+  initializeForm() {
+    // Inizializza editData come oggetto vuoto se è undefined
+    this.editData &#x3D; this.editData || {};
+
+    const formGroup &#x3D; new FormGroup({});
+
+    this.fields.forEach(field &#x3D;&gt; {
+
+      let validators &#x3D; this.getValidators(field);
+
+      // Recupera il valore dall&#x27;editData o imposta null come valore predefinito
+      const value &#x3D; this.editData[field.name] || null;
+      console.log(field.name)
+      // Aggiungi il controllo al formGroup con i validatori come terzo argomento
+      try {
+        formGroup.addControl(field.name, new FormControl(value, validators));
+      } catch (error) {
+        console.error(&#x60;Error setting control for field ${field.name}:&#x60;, error);
+      }
+      
+
+      // Creazione del segnale per il parent
+      if (field.selectOptions &amp;&amp; field.selectOptions.parent) {
+        const parentField &#x3D; field.selectOptions.parent;
+        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] || &#x27;&#x27; }); // Inizializza il segnale
+
+      
+         
+       
+      }
+     // console.log(this.parentValues())
+         
+      // Inizializza i valori del form
+      this.initializeFormValues(field);
+    });
+
+    this.form &#x3D; formGroup;
+
+    console.log(this.form)
+  }
+
+  // Metodo separato per gestire i validatori
+  private getValidators(field: DynamicFormField) {
+    const validators &#x3D; [];
+
+    if (field.required) {
+      validators.push(Validators.required);
+    }
+    if (typeof field.minlength !&#x3D;&#x3D; &#x27;undefined&#x27;) {
+      validators.push(Validators.minLength(field.minlength));
+    }
+    if (typeof field.maxlength !&#x3D;&#x3D; &#x27;undefined&#x27;) {
+      validators.push(Validators.maxLength(field.maxlength));
+    }
+
+    return validators;
+  }
+
+
+
+  initializeFormValues(field: any) {
+
+    //this.formValues[field.name] &#x3D; field.type &#x3D;&#x3D;&#x3D; &#x27;selectBox&#x27; &amp;&amp; field.multiple ? [] : &#x27;&#x27;;
+
+    if (typeof this.editData[field.name] !&#x3D; &#x27;undefined&#x27;) {
+      this.formValues[field.name] &#x3D; this.editData[field.name];
+      //this.formValues[field.name] &#x3D; field.type &#x3D;&#x3D;&#x3D; &#x27;selectBox&#x27; &amp;&amp; field.multiple ? this.editData[field.name] : this.editData[field.name];
+
+    }
+
+    this.fieldConfigs[field.name] &#x3D; field
+  }
+
+  onValueChange(fieldName: string, value: any) {
+
+
+
+    const control &#x3D; this.form.get(fieldName);
+
+    if (control &amp;&amp; control.value !&#x3D;&#x3D; value) {
+      control.setValue(value, { emitEvent: false });
+      this.formValues[fieldName] &#x3D; value;
+    }
+
+
+  }
+
+  onValueChangeSelectBox(fieldName: string, event: any) {
+    this.onValueChange(fieldName, event.selectedValue);
+    // Controllo se fieldName è un parent
+    if (fieldName in this.parentValues()) {
+
+      
+      this.parentValues.set({ ...this.parentValues(), [fieldName]:  event.selectedValue}); // Imposta il valore del parent
+    }
+    console.log(this.parentValues())
+  }
+  getParentValues(parent:any){
+    if(parent){
+      return this.parentValues()[parent]
+    }
+     return null 
+  }
+  updateCascadeOptions(fieldName: string, value: any) {
+    const fieldConfig &#x3D; this.fieldConfigs[fieldName];
+    if (fieldConfig &amp;&amp; fieldConfig.cascadeFrom) {
+
+      if (fieldName &#x3D;&#x3D;&#x3D; fieldConfig.cascadeFrom) {
+
+        const updatedOptions &#x3D; fieldConfig.cascadeOptions[value] || [];
+        this.formValues[fieldName] &#x3D; updatedOptions;
+
+      }
+
+    }
+  }
+
+
+  submitForm() {
+    if (this.form.valid) {
+      let eventT &#x3D; {
+        name: &#x27;submitForm&#x27;,
+        formData: this.form.value,
+        form: this.form,
+        inEdit: this.inEdit
+      }
+      this.submitFormEvent.emit(eventT);
+    } else {
+      const invalidFields &#x3D; this.getInvalidFields(this.form);
+
+
+      this.presentToast(&#x60;Mancano i seguenti campi:${invalidFields.join(&#x27;, &#x27;)}&#x60;);
+    }
+  }
+  cancellForm() {
+    let eventT &#x3D; {
+      name: &#x27;cancelForm&#x27;,
+      formData: this.form.value,
+      form: this.form,
+      component: this
+    }
+    this.submitFormEvent.emit(eventT);
+  }
+
+  // Metodo per ottenere i campi non validi
+  getInvalidFields(formGroup: FormGroup): string[] {
+    const invalidFields: string[] &#x3D; [];
+
+    Object.keys(formGroup.controls).forEach(field &#x3D;&gt; {
+      const control &#x3D; formGroup.get(field);
+      if (control &amp;&amp; control.invalid) {
+
+        let ff &#x3D; this.fieldConfigs[field].label
+        invalidFields.push(ff);
+      }
+    });
+
+    return invalidFields;
+  }
+
+  async presentToast(message: string) {
+    alert(message, &#x27;Errore!&#x27;)
+  }
+
+  onFucBtnClick(evt:any) {
+    /* evt.stopPropagation();
+    evt.preventDefault(); */
+    
+    let send &#x3D;{
+      name:&#x27;functionalInputClick&#x27;,
+      nomeCampo:evt.name,
+      allFields:evt
+    }
+
+    this.functionalInputFormEvent.emit(send)
+  }
+
+  public refresh() {
+    this.form.reset()
+  }
+}
+</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="templateData">
+        <pre class="line-numbers"><code class="language-html">&lt;form [formGroup]&#x3D;&quot;form&quot; (ngSubmit)&#x3D;&quot;submitForm()&quot;&gt;
+    &lt;div class&#x3D;&quot;form-container&quot;&gt;
+      &lt;ng-container *ngFor&#x3D;&quot;let field of fields&quot;&gt;
+        &lt;ng-container *ngIf&#x3D;&quot;field.type &#x3D;&#x3D; &#x27;hiddenBox&#x27;&quot;&gt;
+          &lt;input [type]&#x3D;&quot;field.typeInput&quot;   [name]&#x3D;&quot;field.name&quot; 
+          [formControlName]&#x3D;&quot;field.name&quot;
+          
+          [id]&#x3D;&quot;field.htmlId&quot; 
+          class&#x3D;&quot;form-control&quot; 
+          [(ngModel)]&#x3D;&quot;formValues[field.name]&quot;
+          &gt;
+        &lt;/ng-container&gt;
+     
+        &lt;div class&#x3D;&quot;row mt-3 mb-3&quot;&gt;
+          &lt;label *ngIf&#x3D;&quot;field.type !&#x3D; &#x27;hiddenBox&#x27;&quot; class&#x3D;&quot;col-sm-3 col-form-label font-medium&quot;&gt;{{ field.label }}
+            &lt;span class&#x3D;&quot;badge bg-secondary&quot; *ngIf&#x3D;&quot;field.required&quot;&gt;Richiesto&lt;/span&gt;
+          &lt;/label&gt;
+          &lt;div class&#x3D;&quot;col-sm-9&quot; &gt;
+            &lt;input *ngIf&#x3D;&quot;field.type &#x3D;&#x3D;&#x3D; &#x27;textBox&#x27;&quot; 
+              [type]&#x3D;&quot;!field.typeInput ? &#x27;text&#x27; : field.typeInput &quot;
+              [name]&#x3D;&quot;field.name&quot; 
+              [formControlName]&#x3D;&quot;field.name&quot;
+              [attr.required]&#x3D;&quot;field.required ? true : null&quot;
+              [id]&#x3D;&quot;field?.htmlId&quot; 
+              class&#x3D;&quot;form-control&quot; 
+              
+              [placeholder]&#x3D;&quot;field?.placeholder&quot;
+              [maxlength]&#x3D;&quot;field.maxlength!&quot;
+              [minlength]&#x3D;&quot;field.minlength!&quot;
+              &gt;
+            &lt;ng-container *ngIf&#x3D;&quot;field.funcButton&quot;&gt;
+              &lt;button type&#x3D;&quot;button&quot; class&#x3D;&quot;btn functional-btn&quot;  (click)&#x3D;&quot;onFucBtnClick(field)&quot;&gt;
+                &lt;span class&#x3D;&quot;mdi mdi-text-box-search-outline&quot;&gt;&lt;/span&gt;
+              &lt;/button&gt;
+            &lt;/ng-container&gt;
+           
+              &lt;textarea  *ngIf&#x3D;&quot;field.type &#x3D;&#x3D;&#x3D; &#x27;textArea&#x27;&quot;
+            [placeholder]&#x3D;&quot;field.placeholder&quot; rows&#x3D;&quot;4&quot;
+            class&#x3D;&quot;form-control&quot; [formControlName]&#x3D;&quot;field.name&quot;
+              &gt;
+  
+              &lt;/textarea&gt;
+              
+              &lt;app-dynamic-select-box
+                *ngIf&#x3D;&quot;field.type &#x3D;&#x3D;&#x3D; &#x27;selectBox&#x27; &amp;&amp; field.selectOptions&quot; 
+                [config]&#x3D;&quot;field&quot;
+                [formGroup]&#x3D;&quot;form&quot;
+                [parentValue]&#x3D;&quot;getParentValues(field.selectOptions.parent)&quot; 
+                [value]&#x3D;&quot;formValues[field.name]&quot;
+                [values]&#x3D;&quot;field.selectOptions.multiple ? formValues[field.name] : []&quot;
+
+                (valueChange)&#x3D;&quot;onValueChangeSelectBox(field.name, $event)&quot;&gt;
+
+               
+             
+            &lt;/app-dynamic-select-box&gt;
+              &lt;app-dynamic-file-box
+               *ngIf&#x3D;&quot;field.type &#x3D;&#x3D;&#x3D; &#x27;fileBox&#x27;&quot; [config]&#x3D;&quot;field&quot;
+              [value]&#x3D;&quot;formValues[field.name]&quot; [formGroup]&#x3D;&quot;form&quot;
+             
+              (valueChange)&#x3D;&quot;onValueChange(field.name, $event)&quot;&gt;
+            &lt;/app-dynamic-file-box&gt;
+
+
+          &lt;/div&gt;
+  
+  
+          &lt;!--  &lt;div *ngIf&#x3D;&quot;name.invalid &amp;&amp; name.touched&quot; class&#x3D;&quot;text-danger&quot;&gt;*Nome obbligatorio&lt;/div&gt; --&gt;
+        &lt;/div&gt;
+  
+  
+      
+      &lt;/ng-container&gt;
+    &lt;/div&gt;
+    
+
+
+    &lt;div class&#x3D;&quot;form-footer&quot; *ngIf&#x3D;&quot;showBottomButtons&quot;&gt;
+
+      &lt;button type&#x3D;&quot;button&quot; class&#x3D;&quot;btn ana-button&quot; (click)&#x3D;&quot;cancellForm()&quot;&gt;&lt;span class&#x3D;&quot;mdi mdi-keyboard-return&quot;&gt;&lt;/span&gt;Chiudi&lt;/button&gt; 
+      &lt;button type&#x3D;&quot;submit&quot; class&#x3D;&quot;btn ana-button&quot; &gt;&lt;span class&#x3D;&quot;mdi mdi-content-save-outline&quot;&gt;&lt;/span&gt;Salva&lt;/button&gt;
+      
+  &lt;/div&gt;
+&lt;/form&gt;</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="styleData">
+                <p class="comment">
+                    <code>./dynamic-form.component.scss</code>
+                </p>
+                <pre class="line-numbers"><code class="language-scss">.form-container{
+    max-height: 750px;
+    overflow-y: scroll;
+    padding: 1rem;
+    .col-form-label{
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start
+    }
+
+    .custom-checkbox{
+        margin-left: -.6rem;
+        margin-right: 0.5rem;
+    }
+   
+    .table{
+        thead{
+            td{
+                background-color: var(--bg-grey);
+                padding: 0.6rem 0.5rem;
+                
+            }
+        }
+
+        td{
+            input{
+                /* background: #e5e7eb;
+                padding: 0.6rem 0.5rem; */
+            }
+            .action-cell{
+                text-align: center;
+            }
+            .button-in-cell{
+                font-size: 1.4rem;
+                padding: 0;
+            }
+        }
+            
+    }
+
+    .functional-btn{
+        right: calc(var(--bs-gutter-x)* 0.5);
+        position: absolute;
+        top:var(--bs-gutter-y);;
+    }
+}
+
+.form-footer{
+    border: 1px solid var(--border_color);
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: end;
+}</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="tree">
+        <div id="tree-container"></div>
+        <div class="tree-legend">
+            <div class="title">
+                <b>Legend</b>
+            </div>
+            <div>
+                <div class="color htmlelement"></div><span>Html element</span>
+            </div>
+            <div>
+                <div class="color component"></div><span>Component</span>
+            </div>
+            <div>
+                <div class="color directive"></div><span>Html element with directive</span>
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
+<script src="../js/libs/vis.min.js"></script>
+<script src="../js/libs/htmlparser.js"></script>
+<script src="../js/libs/deep-iterator.js"></script>
+<script>
+        var COMPONENT_TEMPLATE = '<div><form [formGroup]="form" (ngSubmit)="submitForm()">    <div class="form-container">      <ng-container *ngFor="let field of fields">        <ng-container *ngIf="field.type == \'hiddenBox\'">          <input [type]="field.typeInput"   [name]="field.name"           [formControlName]="field.name"                    [id]="field.htmlId"           class="form-control"           [(ngModel)]="formValues[field.name]"          >        </ng-container>             <div class="row mt-3 mb-3">          <label *ngIf="field.type != \'hiddenBox\'" class="col-sm-3 col-form-label font-medium">{{ field.label }}            <span class="badge bg-secondary" *ngIf="field.required">Richiesto</span>          </label>          <div class="col-sm-9" >            <input *ngIf="field.type === \'textBox\'"               [type]="!field.typeInput ? \'text\' : field.typeInput "              [name]="field.name"               [formControlName]="field.name"              [attr.required]="field.required ? true : null"              [id]="field?.htmlId"               class="form-control"                             [placeholder]="field?.placeholder"              [maxlength]="field.maxlength!"              [minlength]="field.minlength!"              >            <ng-container *ngIf="field.funcButton">              <button type="button" class="btn functional-btn"  (click)="onFucBtnClick(field)">                <span class="mdi mdi-text-box-search-outline"></span>              </button>            </ng-container>                         <textarea  *ngIf="field.type === \'textArea\'"            [placeholder]="field.placeholder" rows="4"            class="form-control" [formControlName]="field.name"              >                </textarea>                            <app-dynamic-select-box                *ngIf="field.type === \'selectBox\' && field.selectOptions"                 [config]="field"                [formGroup]="form"                [parentValue]="getParentValues(field.selectOptions.parent)"                 [value]="formValues[field.name]"                [values]="field.selectOptions.multiple ? formValues[field.name] : []"                (valueChange)="onValueChangeSelectBox(field.name, $event)">                                        </app-dynamic-select-box>              <app-dynamic-file-box               *ngIf="field.type === \'fileBox\'" [config]="field"              [value]="formValues[field.name]" [formGroup]="form"                           (valueChange)="onValueChange(field.name, $event)">            </app-dynamic-file-box>          </div>              <!--  <div *ngIf="name.invalid && name.touched" class="text-danger">*Nome obbligatorio</div> -->        </div>                </ng-container>    </div>        <div class="form-footer" *ngIf="showBottomButtons">      <button type="button" class="btn ana-button" (click)="cancellForm()"><span class="mdi mdi-keyboard-return"></span>Chiudi</button>       <button type="submit" class="btn ana-button" ><span class="mdi mdi-content-save-outline"></span>Salva</button>        </div></form></div>'
+    var COMPONENTS = [{'name': 'AnagraficaWrapperComponent', 'selector': 'app-anagrafica-wrapper'},{'name': 'AppComponent', 'selector': 'app-root'},{'name': 'AppFormListComponent', 'selector': 'app-form-list'},{'name': 'CaptionComponent', 'selector': 'app-caption'},{'name': 'ContainerComponent', 'selector': 'app-container'},{'name': 'CustomScrollbarComponent', 'selector': 'app-custom-scrollbar'},{'name': 'DashboardComponent', 'selector': 'app-dashboard'},{'name': 'DataGridComponent', 'selector': 'app-data-grid'},{'name': 'DynamicFileBoxComponent', 'selector': 'app-dynamic-file-box'},{'name': 'DynamicFormComponent', 'selector': 'app-dynamic-form'},{'name': 'DynamicSelectBoxComponent', 'selector': 'app-dynamic-select-box'},{'name': 'ElementComponent', 'selector': 'app-element'},{'name': 'FooterComponent', 'selector': 'app-footer'},{'name': 'FormBuilderComponent', 'selector': 'app-form-builder'},{'name': 'FotoOutfitPage', 'selector': 'app-foto-outfit'},{'name': 'HeaderComponent', 'selector': 'app-header'},{'name': 'MenuComponent', 'selector': 'app-menu'},{'name': 'NicaPopupContentComponent', 'selector': 'app-modal-popup-content'},{'name': 'OutfitCategoryComponent', 'selector': 'app-outfit-category'},{'name': 'OutfitFormComponent', 'selector': 'app-outfit-form'},{'name': 'OutfitProductsComponent', 'selector': 'app-outfit-products'},{'name': 'OutfitsComponent', 'selector': 'app-outfits'},{'name': 'OverlayComponent', 'selector': 'app-overlay'},{'name': 'PopupWrapperComponent', 'selector': 'app-modal-popup-wrapper'},{'name': 'ProductFromFeedComponent', 'selector': 'app-product-from-feed'},{'name': 'StaticMenuComponent', 'selector': 'app-static-menu'},{'name': 'StaticMenuFunctionsComponent', 'selector': 'app-static-menu-functions'},{'name': 'TdItemComponent', 'selector': 'app-td-item'},{'name': 'ToolbarComponent', 'selector': 'app-toolbar'},{'name': 'UsersComponent', 'selector': 'app-users'}];
+    var DIRECTIVES = [];
+    var ACTUAL_COMPONENT = {'name': 'DynamicFormComponent'};
+</script>
+<script src="../js/tree.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'component';
+            var COMPODOC_CURRENT_PAGE_URL = 'DynamicFormComponent.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

@@ -1,0 +1,1627 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>admin documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="../" class="navbar-brand">admin documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content component">
+                   <div class="content-data">
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Components</li>
+  <li class="breadcrumb-item"
+  >
+  AnagraficaWrapperComponent</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a href="#info" class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li class="nav-item">
+            <a href="#source" class="nav-link"
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
+        </li>
+        <li class="nav-item">
+            <a href="#templateData" class="nav-link"
+                role="tab" id="templateData-tab" data-bs-toggle="tab" data-link="template">Template</a>
+        </li>
+        <li class="nav-item">
+            <a href="#styleData" class="nav-link"
+                role="tab" id="styleData-tab" data-bs-toggle="tab" data-link="style">Styles</a>
+        </li>
+        <li class="nav-item">
+            <a href="#tree" class="nav-link"
+                role="tab" id="tree-tab" data-bs-toggle="tab" data-link="dom-tree">DOM Tree</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="info"><p class="comment">
+    <h3>File</h3>
+</p>
+<p class="comment">
+    <code>src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts</code>
+</p>
+
+
+
+
+
+
+<section data-compodoc="block-metadata">
+    <h3>Metadata</h3>
+    <table class="table table-sm table-hover metadata">
+        <tbody>
+
+
+
+
+
+
+
+
+
+
+
+
+            <tr>
+                <td class="col-md-3">selector</td>
+                <td class="col-md-9"><code>app-anagrafica-wrapper</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">standalone</td>
+                <td class="col-md-9"><code>true</code></td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">imports</td>
+                <td class="col-md-9">
+                                <code><a href="../components/CaptionComponent.html" target="_self" >CaptionComponent</a></code>
+                            <code>CommonModule</code>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="col-md-3">styleUrls</td>
+                <td class="col-md-9"><code>./anagrafica-wrapper.component.scss</code></td>
+            </tr>
+
+
+
+            <tr>
+                <td class="col-md-3">templateUrl</td>
+                <td class="col-md-9"><code>./anagrafica-wrapper.component.html</code></td>
+            </tr>
+
+
+
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-index">
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#heightWrap" >heightWrap</a>
+                            </li>
+                            <li>
+                                <a href="#itemTabs" >itemTabs</a>
+                            </li>
+                            <li>
+                                <a href="#showItemsTabs" >showItemsTabs</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Private</span>
+                                <a href="#tabSubscription" >tabSubscription</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Public</span>
+                                <a href="#timeInterval" >timeInterval</a>
+                            </li>
+                            <li>
+                                    <span class="modifier"></span>
+                                <a href="#toolbarTab" >toolbarTab</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Methods</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#buttonToolbarLeft" >buttonToolbarLeft</a>
+                            </li>
+                            <li>
+                                <a href="#getWindowHeight" >getWindowHeight</a>
+                            </li>
+                            <li>
+                                <a href="#ngAfterViewInit" >ngAfterViewInit</a>
+                            </li>
+                            <li>
+                                <a href="#onAddClick" >onAddClick</a>
+                            </li>
+                            <li>
+                                <a href="#onButtonToolbarClick" >onButtonToolbarClick</a>
+                            </li>
+                            <li>
+                                <a href="#onCrocettaClick" >onCrocettaClick</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Inputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#addButtonShow" >addButtonShow</a>
+                            </li>
+                            <li>
+                                <a href="#anaHeight" >anaHeight</a>
+                            </li>
+                            <li>
+                                <a href="#breadcrumbNavigation" >breadcrumbNavigation</a>
+                            </li>
+                            <li>
+                                <a href="#caption" >caption</a>
+                            </li>
+                            <li>
+                                <a href="#customToolbarButtons" >customToolbarButtons</a>
+                            </li>
+                            <li>
+                                <a href="#helpDoc" >helpDoc</a>
+                            </li>
+                            <li>
+                                <a href="#showSpinner" >showSpinner</a>
+                            </li>
+                            <li>
+                                <a href="#subTitle" >subTitle</a>
+                            </li>
+                            <li>
+                                <a href="#tip" >tip</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Outputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#emittChiusura" >emittChiusura</a>
+                            </li>
+                            <li>
+                                <a href="#emittEventButton" >emittEventButton</a>
+                            </li>
+                            <li>
+                                <a href="#emitToolbarLeft" >emitToolbarLeft</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-constructor">
+    <h3 id="constructor">Constructor</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+<code>constructor()</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="47" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:47</a></div>
+                            </td>
+                        </tr>
+
+            </tbody>
+        </table>
+</section>
+
+    <section data-compodoc="block-inputs">
+    <h3 id="inputs">Inputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="addButtonShow"></a>
+                        <b>addButtonShow</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="28" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:28</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="anaHeight"></a>
+                        <b>anaHeight</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>800</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="25" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:25</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="breadcrumbNavigation"></a>
+                        <b>breadcrumbNavigation</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[]</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="30" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:30</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="caption"></a>
+                        <b>caption</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;&#x27;</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="24" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:24</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="customToolbarButtons"></a>
+                        <b>customToolbarButtons</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="../interfaces/ToolbarButton.html" target="_self" >ToolbarButton[]</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="32" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:32</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="helpDoc"></a>
+                        <b>helpDoc</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;&#x27;</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="29" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:29</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="showSpinner"></a>
+                        <b>showSpinner</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="31" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:31</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="subTitle"></a>
+                        <b>subTitle</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;&#x27;</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="26" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:26</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="tip"></a>
+                        <b>tip</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>&#x27;&#x27;</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="27" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:27</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+    <section data-compodoc="block-outputs">
+    <h3 id="outputs">Outputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="emittChiusura"></a>
+                        <b>emittChiusura</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="34" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:34</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="emittEventButton"></a>
+                        <b>emittEventButton</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="35" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:35</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="emitToolbarLeft"></a>
+                        <b>emitToolbarLeft</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="36" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:36</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+
+
+    <section data-compodoc="block-methods">
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="buttonToolbarLeft"></a>
+                    <span class="name">
+                        <span ><b>buttonToolbarLeft</b></span>
+                        <a href="#buttonToolbarLeft"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>buttonToolbarLeft(event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="97"
+                                    class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:97</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getWindowHeight"></a>
+                    <span class="name">
+                        <span ><b>getWindowHeight</b></span>
+                        <a href="#getWindowHeight"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>getWindowHeight()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="60"
+                                    class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:60</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngAfterViewInit"></a>
+                    <span class="name">
+                        <span ><b>ngAfterViewInit</b></span>
+                        <a href="#ngAfterViewInit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>ngAfterViewInit()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="52"
+                                    class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:52</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="onAddClick"></a>
+                    <span class="name">
+                        <span ><b>onAddClick</b></span>
+                        <a href="#onAddClick"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>onAddClick(event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="103"
+                                    class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:103</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="onButtonToolbarClick"></a>
+                    <span class="name">
+                        <span ><b>onButtonToolbarClick</b></span>
+                        <a href="#onButtonToolbarClick"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>onButtonToolbarClick(event: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="107"
+                                    class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:107</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>event</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="onCrocettaClick"></a>
+                    <span class="name">
+                        <span ><b>onCrocettaClick</b></span>
+                        <a href="#onCrocettaClick"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>onCrocettaClick(evt: <a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank">any</a>)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="89"
+                                    class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:89</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                                <td>Type</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>evt</td>
+                                            <td>
+                                                            <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+                                            </td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+    <section data-compodoc="block-properties">
+    
+    <h3 id="inputs">
+        Properties
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="heightWrap"></a>
+                    <span class="name">
+                        <span ><b>heightWrap</b></span>
+                        <a href="#heightWrap"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="44" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:44</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="itemTabs"></a>
+                    <span class="name">
+                        <span ><b>itemTabs</b></span>
+                        <a href="#itemTabs"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>[]</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="45" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:45</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="showItemsTabs"></a>
+                    <span class="name">
+                        <span ><b>showItemsTabs</b></span>
+                        <a href="#showItemsTabs"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>false</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="46" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:46</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="tabSubscription"></a>
+                    <span class="name">
+                            <span class="modifier">Private</span>
+                        <span ><b>tabSubscription</b></span>
+                        <a href="#tabSubscription"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>Subscription | undefined</code>
+
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="47" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:47</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="timeInterval"></a>
+                    <span class="name">
+                            <span class="modifier">Public</span>
+                        <span ><b>timeInterval</b></span>
+                        <a href="#timeInterval"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Default value : </i><code>0</code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="42" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:42</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="toolbarTab"></a>
+                    <span class="name">
+                            <span class="modifier"></span>
+                        <span ><b>toolbarTab</b></span>
+                        <a href="#toolbarTab"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="../components/ToolbarComponent.html" target="_self" >ToolbarComponent</a></code>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <b>Decorators : </b>
+                        <br />
+                        <code>
+                            @ViewChild(&#x27;toolbarTab&#x27;, {static: true})<br />
+                        </code>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="22" class="link-to-prism">src/app/layout/anagrafica-wrapper/anagrafica-wrapper.component.ts:22</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+</section>
+
+</div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Component, Input, OnInit, Output, EventEmitter, ViewChild, AfterViewInit, CUSTOM_ELEMENTS_SCHEMA } from &#x27;@angular/core&#x27;;
+
+
+import { Subscription } from &#x27;rxjs&#x27;;
+import { ToolbarComponent } from &#x27;../toolbar/toolbar.component&#x27;;
+import { CaptionComponent } from &#x27;../../components/caption/caption.component&#x27;;
+import { CommonModule } from &#x27;@angular/common&#x27;;
+import { ToolbarButton } from &#x27;../../interface/app.interface&#x27;;
+
+
+
+@Component({
+  selector: &#x27;app-anagrafica-wrapper&#x27;,
+  standalone:true,
+  imports:[CaptionComponent,CommonModule],
+  templateUrl: &#x27;./anagrafica-wrapper.component.html&#x27;,
+  styleUrls: [&#x27;./anagrafica-wrapper.component.scss&#x27;],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+})
+export class AnagraficaWrapperComponent {
+
+  @ViewChild(&#x27;toolbarTab&#x27;, { static: true })  toolbarTab!: ToolbarComponent;
+
+  @Input() caption:string&#x3D;&#x27;&#x27;
+  @Input() anaHeight:number&#x3D;800
+  @Input() subTitle:string&#x3D;&#x27;&#x27;
+  @Input() tip:string&#x3D;&#x27;&#x27;
+  @Input() addButtonShow:boolean&#x3D;false
+  @Input() helpDoc:string&#x3D;&#x27;&#x27;
+  @Input() breadcrumbNavigation:any&#x3D;[]; 
+  @Input() showSpinner:boolean&#x3D; false; 
+  @Input() customToolbarButtons!:ToolbarButton[]; 
+
+  @Output() emittChiusura: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittEventButton: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emitToolbarLeft: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+
+
+
+ 
+
+  public timeInterval: any &#x3D; 0;
+
+  heightWrap!: number;
+  itemTabs: any &#x3D; [];
+  showItemsTabs:boolean&#x3D;false
+  private tabSubscription: Subscription | undefined;
+  
+  constructor() {}
+
+
+  ngAfterViewInit(){
+    this.getWindowHeight()
+    
+  }
+
+
+
+
+  getWindowHeight() {
+
+    const windowHeight &#x3D; window.innerHeight;
+    const documentHeight &#x3D; document.documentElement.clientHeight;
+  
+    // Altezza massima tra l&#x27;altezza della finestra e l&#x27;altezza del documento
+
+    const heightWin  &#x3D; Math.max(windowHeight, documentHeight);
+
+    let  headerHeight, footerHeight ,menuHeight;
+    headerHeight &#x3D; document.getElementById(&#x27;header&#x27;)!.offsetHeight ;
+    footerHeight &#x3D; 200// document.getElementById(&#x27;footer&#x27;)!.offsetHeight;
+    setTimeout(() &#x3D;&gt; {
+      /* menuHeight &#x3D; document.getElementById(&#x27;horizontalMenucontainer&#x27;)!.offsetHeight 
+ 
+      if(menuHeight &#x3D;&#x3D; 0){
+        menuHeight &#x3D; 60.5
+      } */
+     
+     
+      this.heightWrap &#x3D; heightWin - headerHeight - footerHeight //- menuHeight ;   
+      this.heightWrap &#x3D; this.heightWrap  - 13;
+     }, 300);
+   
+    
+  }
+  
+
+ 
+  onCrocettaClick(evt:any) {
+
+    this.emittChiusura.emit(evt);
+
+  }
+
+
+
+  buttonToolbarLeft(event: any) {
+
+    this.emitToolbarLeft.emit(event)
+
+  }
+
+  onAddClick(event:any){
+    this.emittEventButton.emit(event)
+  }
+
+  onButtonToolbarClick(event:any){
+    this.emittEventButton.emit(event)
+  }
+}
+</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="templateData">
+        <pre class="line-numbers"><code class="language-html">&lt;div id&#x3D;&quot;cWrap&quot; class&#x3D;&quot;content-wrap&quot;&gt;
+    &lt;div class&#x3D;&quot;anagrafica-wrap&quot; [ngStyle]&#x3D;&quot;{&#x27;height.px&#x27;:anaHeight}&quot;&gt;
+        &lt;app-caption 
+            [caption]&#x3D;&quot;caption&quot; 
+            [showBreadcrumb]&#x3D;&quot;false&quot;
+            [addButtonShow]&#x3D;&quot;addButtonShow&quot;
+            [customToolbarButtons]&#x3D;&quot;customToolbarButtons&quot;
+            [help]&#x3D;&quot;helpDoc&quot;
+            [breadcrumbNavigation]&#x3D;&quot;breadcrumbNavigation&quot; [isClosable]&#x3D;&quot;false&quot;
+            (emettiChiusura)&#x3D;&quot;onCrocettaClick($event)&quot; 
+            (emitToolbarButtonClick)&#x3D;&quot;onButtonToolbarClick($event)&quot;
+            (emitAddEvent)&#x3D;&quot;onAddClick($event)&quot; [isFooter]&#x3D;&quot;false&quot;&gt;
+        &lt;/app-caption&gt;
+
+
+        &lt;div class&#x3D;&quot;anagrafica-container&quot;&gt;
+
+            &lt;div class&#x3D;&quot;anagrafica-row&quot;&gt;
+                &lt;!--Tab funzionale--&gt;
+
+                &lt;!-- &lt;app-toolbar 
+                    
+                    #toolbarTab 
+                    
+                    [textColor]&#x3D;&quot;&#x27;#023957&#x27;&quot; 
+                    [height]&#x3D;&quot;27&quot;
+                    class&#x3D;&quot;nav-tab nav-tabs&quot; 
+                    [bootstrapClass]&#x3D;&quot;&quot; 
+                    [buttonCustomUp]&#x3D;&quot;itemTabs&quot;
+                    position&#x3D;&quot;horizontal&quot; 
+                    [isDx]&#x3D;&quot;false&quot;
+                    (risposta)&#x3D;&quot;buttonToolbarLeft($event)&quot; 
+                    &gt;
+                &lt;/app-toolbar&gt; --&gt;
+
+
+
+
+                &lt;div class&#x3D;&quot;col-lg-12 wrapForm&quot;&gt;
+
+                    &lt;div class&#x3D;&quot;text&quot;&gt;
+                        &lt;h2 *ngIf&#x3D;&quot;subTitle&quot;&gt;&lt;span class&#x3D;&quot;mdi mdi-database&quot;&gt;&lt;/span&gt;{{subTitle}}&lt;/h2&gt;
+
+                    &lt;/div&gt;
+                    &lt;div  *ngIf&#x3D;&quot;tip&quot; class&#x3D;&quot;alert alert-primary d-flex align-items-centeralert-dismissible fade show&quot; role&#x3D;&quot;alert&quot; &gt;
+                        &lt;span class&#x3D;&quot;mdi mdi-lightbulb-alert-outline me-2&quot;&gt;&lt;/span&gt;
+                        {{tip}}
+                       &lt;!--  &lt;button type&#x3D;&quot;button&quot; class&#x3D;&quot;btn-close&quot; data-bs-dismiss&#x3D;&quot;alert&quot; aria-label&#x3D;&quot;Close&quot;&gt;&lt;/button&gt; --&gt;
+                    &lt;/div&gt;
+                    &lt;ng-container *ngIf&#x3D;&quot;showSpinner&quot;&gt;
+                        &lt;p&gt;Carimento in corso...&lt;/p&gt;
+                    &lt;/ng-container&gt;
+                    &lt;ng-content id&#x3D;&#x27;ng-content&#x27;&gt;
+
+
+                    &lt;/ng-content&gt;
+
+
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+
+
+        &lt;app-caption [showBreadcrumb]&#x3D;&quot;false&quot; [isClosable]&#x3D;&quot;false&quot; (emettiChiusura)&#x3D;&quot;onCrocettaClick($event)&quot;
+            [isFooter]&#x3D;&quot;true&quot;&gt;
+        &lt;/app-caption&gt;
+    &lt;/div&gt;
+
+&lt;/div&gt;</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="styleData">
+                <p class="comment">
+                    <code>./anagrafica-wrapper.component.scss</code>
+                </p>
+                <pre class="line-numbers"><code class="language-scss">::ng-deep .isPopUp {
+    position: absolute;
+    bottom: 0px;
+}
+
+::ng-deep.content-wrap {
+    position: relative;
+  
+    width: var(--width_container);
+    margin: 5px auto;
+
+    .anagrafica-wrap {
+
+
+        margin-top: .3rem;
+
+        .anagrafica-container {
+            box-shadow: 0 3px 5px #0000000b;
+            margin-top: .88rem;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: .6rem;
+
+
+            .anagrafica-row {
+                position: relative;
+                padding: 1.25rem;
+                
+                /*****Toolbar Left *****/
+
+                .wrapanaToolbar {
+
+                    position: absolute;
+
+                    left: 0;
+                    top: 0;
+                    padding: 0;
+                    width: 55px;
+                    z-index: 2;
+                    box-shadow: 2px 0 20px rgb(69 65 78 / 7%);
+                    border-top: 1px solid rgba(0, 0, 0, .150);
+
+                    &amp;.closed {
+
+                        width: 0;
+                        visibility: hidden;
+                    }
+
+                    &amp;.open {
+                        width: 177px;
+                        display: block;
+                        visibility: visible;
+                        height: 100%;
+
+                    }
+
+                    .nica-toolbar {
+                        -moz-transition: ease 0.35s;
+                        -o-transition: ease 0.35s;
+                        -webkit-transition: ease 0.3s;
+                        transition: ease 0.35s;
+
+
+                        .toolbar-shadow {
+                            box-shadow: 2px 0 20px rgb(69 65 78 / 7%) !important;
+                            padding-right: 0;
+                        }
+
+                        .sidebar-sticky-top {
+                            padding: 0px 6px;
+                        }
+
+                        .item-nav {
+
+                            display: block;
+                            height: 35px;
+                            border-bottom: 1px solid rgba(253, 253, 253, 0.531);
+                            width: 100%;
+                            padding: 0;
+
+                            .item-content {
+
+                                i {
+                                    font-size: 25px !important;
+                                    width: 28px !important;
+                                    height: 28px !important;
+                                    line-height: 28px !important;
+                                    color: #fff !important;
+                                    font-weight: 300 !important;
+
+                                }
+                            }
+                        }
+
+                        .sidebar-sticky-bottom {
+                            .item-nav {
+                                height: 26px;
+                            }
+                        }
+
+                        .sub-item-nav {
+                            ::before {
+                                content: &quot;\FA14&quot;;
+                                display: block;
+                                font-family: &quot;Material Design Icons&quot;;
+                                color: #fff;
+                                width: 5px;
+
+                            }
+                        }
+
+
+                        p {
+
+                            font-size: 12px;
+                        }
+
+
+
+                    }
+                }
+
+                .wrapForm{
+                    border:1px solid #e2e8f099;
+                    border-radius: 0.6rem;
+                    padding: 1.25rem;
+                }   
+
+
+            }
+        }
+    }
+}
+
+/****************Personalizzazioni****************/</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="tree">
+        <div id="tree-container"></div>
+        <div class="tree-legend">
+            <div class="title">
+                <b>Legend</b>
+            </div>
+            <div>
+                <div class="color htmlelement"></div><span>Html element</span>
+            </div>
+            <div>
+                <div class="color component"></div><span>Component</span>
+            </div>
+            <div>
+                <div class="color directive"></div><span>Html element with directive</span>
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
+<script src="../js/libs/vis.min.js"></script>
+<script src="../js/libs/htmlparser.js"></script>
+<script src="../js/libs/deep-iterator.js"></script>
+<script>
+        var COMPONENT_TEMPLATE = '<div><div id="cWrap" class="content-wrap">    <div class="anagrafica-wrap" [ngStyle]="{\'height.px\':anaHeight}">        <app-caption             [caption]="caption"             [showBreadcrumb]="false"            [addButtonShow]="addButtonShow"            [customToolbarButtons]="customToolbarButtons"            [help]="helpDoc"            [breadcrumbNavigation]="breadcrumbNavigation" [isClosable]="false"            (emettiChiusura)="onCrocettaClick($event)"             (emitToolbarButtonClick)="onButtonToolbarClick($event)"            (emitAddEvent)="onAddClick($event)" [isFooter]="false">        </app-caption>        <div class="anagrafica-container">            <div class="anagrafica-row">                <!--Tab funzionale-->                <!-- <app-toolbar                                         #toolbarTab                                         [textColor]="\'#023957\'"                     [height]="27"                    class="nav-tab nav-tabs"                     [bootstrapClass]=""                     [buttonCustomUp]="itemTabs"                    position="horizontal"                     [isDx]="false"                    (risposta)="buttonToolbarLeft($event)"                     >                </app-toolbar> -->                <div class="col-lg-12 wrapForm">                    <div class="text">                        <h2 *ngIf="subTitle"><span class="mdi mdi-database"></span>{{subTitle}}</h2>                    </div>                    <div  *ngIf="tip" class="alert alert-primary d-flex align-items-centeralert-dismissible fade show" role="alert" >                        <span class="mdi mdi-lightbulb-alert-outline me-2"></span>                        {{tip}}                       <!--  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> -->                    </div>                    <ng-container *ngIf="showSpinner">                        <p>Carimento in corso...</p>                    </ng-container>                    <ng-content id=\'ng-content\'>                    </ng-content>                </div>            </div>        </div>        <app-caption [showBreadcrumb]="false" [isClosable]="false" (emettiChiusura)="onCrocettaClick($event)"            [isFooter]="true">        </app-caption>    </div></div></div>'
+    var COMPONENTS = [{'name': 'AnagraficaWrapperComponent', 'selector': 'app-anagrafica-wrapper'},{'name': 'AppComponent', 'selector': 'app-root'},{'name': 'AppFormListComponent', 'selector': 'app-form-list'},{'name': 'CaptionComponent', 'selector': 'app-caption'},{'name': 'ContainerComponent', 'selector': 'app-container'},{'name': 'CustomScrollbarComponent', 'selector': 'app-custom-scrollbar'},{'name': 'DashboardComponent', 'selector': 'app-dashboard'},{'name': 'DataGridComponent', 'selector': 'app-data-grid'},{'name': 'DynamicFileBoxComponent', 'selector': 'app-dynamic-file-box'},{'name': 'DynamicFormComponent', 'selector': 'app-dynamic-form'},{'name': 'DynamicSelectBoxComponent', 'selector': 'app-dynamic-select-box'},{'name': 'ElementComponent', 'selector': 'app-element'},{'name': 'FooterComponent', 'selector': 'app-footer'},{'name': 'FormBuilderComponent', 'selector': 'app-form-builder'},{'name': 'FotoOutfitPage', 'selector': 'app-foto-outfit'},{'name': 'HeaderComponent', 'selector': 'app-header'},{'name': 'MenuComponent', 'selector': 'app-menu'},{'name': 'NicaPopupContentComponent', 'selector': 'app-modal-popup-content'},{'name': 'OutfitCategoryComponent', 'selector': 'app-outfit-category'},{'name': 'OutfitFormComponent', 'selector': 'app-outfit-form'},{'name': 'OutfitProductsComponent', 'selector': 'app-outfit-products'},{'name': 'OutfitsComponent', 'selector': 'app-outfits'},{'name': 'OverlayComponent', 'selector': 'app-overlay'},{'name': 'PopupWrapperComponent', 'selector': 'app-modal-popup-wrapper'},{'name': 'ProductFromFeedComponent', 'selector': 'app-product-from-feed'},{'name': 'StaticMenuComponent', 'selector': 'app-static-menu'},{'name': 'StaticMenuFunctionsComponent', 'selector': 'app-static-menu-functions'},{'name': 'TdItemComponent', 'selector': 'app-td-item'},{'name': 'ToolbarComponent', 'selector': 'app-toolbar'},{'name': 'UsersComponent', 'selector': 'app-users'}];
+    var DIRECTIVES = [];
+    var ACTUAL_COMPONENT = {'name': 'AnagraficaWrapperComponent'};
+</script>
+<script src="../js/tree.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'component';
+            var COMPODOC_CURRENT_PAGE_URL = 'AnagraficaWrapperComponent.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

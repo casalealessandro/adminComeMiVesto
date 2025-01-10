@@ -1,28 +1,30 @@
-<app-anagrafica-wrapper
-  [caption]="'Elenco Outfit caricati dagli utenti'"
-  [subTitle]="subtitle"
-  [tip]="'Gestisci gli Outfit, modera,cancella,sospendi....'"
-  [addButtonShow]="true"
-  [showSpinner]="!showGrid"
-  [customToolbarButtons]="customToolbarButtons"
-  (emittEventButton)="eventToolbarProduct($event)"
->
+<app-anagrafica-wrapper [caption]="'Elenco Outfit caricati dagli utenti'" [subTitle]="subtitle"
+  [tip]="'Gestisci gli Outfit, modera,cancella,sospendi....'" [addButtonShow]="true" [showSpinner]="!showGrid"
+  [customToolbarButtons]="customToolbarButtons" (emittEventButton)="eventToolbarProduct($event)">
+  
+  <div class="accordion my-3" id="accordionExample">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+          aria-expanded="true" aria-controls="collapseOne">
+          <span class="mdi mdi-filter-outline"></span> Filtri
+        </button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+        data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <app-dynamic-form [service]="'filterProduct'" [showBottomButtons]="true" (submitFormEvent)="filterProduct($event)">
+          </app-dynamic-form>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <app-data-grid *ngIf="showGrid" [colonne]="colProductsGrid" [idTable]="000252" [dataSource]="products"
+    [remoteOperation]="false" [isEditable]="true" [isEditableEditRow]="true" [showToolbarBottom]="false"
+    [showToolbarTop]="false" [isSearchable]="false" (emittendStartEdit)="editProduct($event)"
+    (emittendGridEvent)="gridEvent($event)" (emittendDblRowClick)="gridEvent($event)">
 
-<app-data-grid
-    *ngIf="showGrid"        
-    [colonne]="colProductsGrid"
-    [idTable]="000252"
-    [dataSource]="products"
-    [remoteOperation]="false"
-    [isEditable]="true"
-    [isEditableEditRow]="true"
-    [showToolbarBottom]="false"
-    [showToolbarTop]="false"
-    [isSearchable]="false"
-    (emittendStartEdit)="editProduct($event)"
-    (emittendGridEvent)="gridEvent($event)"
-    
-    >
-
-    </app-data-grid>
+  </app-data-grid>
 </app-anagrafica-wrapper>
