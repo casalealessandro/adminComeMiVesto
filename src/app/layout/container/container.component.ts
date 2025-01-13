@@ -10,6 +10,8 @@ import { PopupWrapperComponent } from '../../components/modal-popup/modal-popup-
 import { OverlayComponent } from '../../components/overlay-component/overlay.component';
 import { UserService } from '../../services/user.service';
 
+import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
+import { MenuService } from '../../services/menu.service';
 
 
 @Component({
@@ -30,13 +32,18 @@ export class ContainerComponent {
   isLogin: boolean = false;
   idTipoUtente: number = -1;
 
+// Modalità del menu: 'side' (a lato), 'over' (sovrapposto), 'push' (spingendo il contenuto)
+  mode: 'side' | 'over' | 'push' = 'side';
+   // Observable che rappresenta lo stato del menu (collegato al servizio)
+  getIsMenuOpenObservable = this.menuService.getIsMenuOpenObservable;
 
 
   // Signal per tracciare se il menu è aperto o chiuso
   isMenuOpen: boolean = false;
 
 
-  constructor(private userService: UserService) {
+
+  constructor(private userService: UserService, private menuService: MenuService, private breakpointObserver: BreakpointObserver) {
 
     effect(() => {
       this.isLogin = this.userService.isLoginUser();
@@ -46,6 +53,19 @@ export class ContainerComponent {
   ngOnInit() {
     this.isLogin = this.userService.isLoggedUser();
     this.updateMenuVisibility(window.innerWidth);
+    //osserva i breakpoint (dimensioni dello schermo) per cambiare la modalità del menu
+    this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small, Breakpoints.Medium, Breakpoints.Large])
+    .subscribe(result => {
+      console.log('result',result)
+      if(result.breakpoints[Breakpoints.XSmall] || result.breakpoints[Breakpoints.Small] ) {
+        this.mode = 'over'; //modalita overlay per schermi piccoli
+      } else if (result.breakpoints[Breakpoints.Medium]) {
+        this.mode = 'side';
+      }
+      else {
+        this.mode ='push'; //modalita overlay per schermi grandi 
+      }
+    });
   }
 
 

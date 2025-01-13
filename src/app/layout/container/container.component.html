@@ -1,31 +1,31 @@
+<main
+  class="mi-container"
+  [ngClass]="{
+    'menu-over': mode === 'over',
+    'menu-side': mode === 'side',
+    'menu-push': mode === 'push'
+  }"
+>
+  <ng-container>
+    <app-header
+      *ngIf="isLogin"
+      (showHidemMenu)="toggleMenu($event)"
+      [toggleMenu]="toggleMenu"
+    ></app-header>
 
-<main class="mi-container" >
-
-    <ng-container >
-        <app-header *ngIf="isLogin" (showHidemMenu)="toggleMenu($event)"  [toggleMenu]="toggleMenu"></app-header>
-    
-        <div  *ngIf="isLogin" class="verticalMenucontainer sidebar"  [ngClass]="{'open':isMenuOpen}">
-            <app-menu></app-menu>
-        </div>
-        
-
-        
-    </ng-container>
-    
-
-    <div class="container no-padding ana-container" >
-        
-       
-        
-        <router-outlet></router-outlet>
-            
-        
+    <div
+      *ngIf="isLogin"
+      class="verticalMenucontainer sidebar"
+      [ngClass]="{ open: isMenuOpen }"
+    >
+      <app-menu></app-menu>
     </div>
-    <!-- <app-popup-wrapper></app-popup-wrapper> -->
+  </ng-container>
 
+  <div class="container no-padding ana-container">
+    <router-outlet></router-outlet>
+  </div>
+  <!-- <app-popup-wrapper></app-popup-wrapper> -->
 
-
-
-     <!-- <app-footer ></app-footer>-->
-
+  <!-- <app-footer ></app-footer>-->
 </main>

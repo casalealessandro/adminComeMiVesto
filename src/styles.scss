@@ -285,4 +285,43 @@ input:-webkit-autofill:active {
     }
 
     
+
+}
+.mi-container {
+    &.menu-over {
+        .menu-container{
+            position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transform: translateX(-100%);
+      z-index: 1000;
+      &.open {
+        transform: translateX(0);
+      }
+        }
+      
+    }
+    &.menu-side {
+        .menu-container{
+            transform: none;
+            height: 100vh;
+            position: relative;
+            .nav-item  {
+                .menu-label{
+                    display: none;
+                }
+            }
+        }
+      
+    }
+    &.menu-push {
+        .menu-container{
+            height: 100vh;
+            transform: none;
+            position: relative;
+        }
+       
+    }
+
 }
