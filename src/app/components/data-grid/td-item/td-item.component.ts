@@ -419,8 +419,10 @@ export class TdItemComponent {
   }
 
   clickTd(event: any) {
+    if(this.colType == "campoImg"){
+      this.showTooltip(event)
+    }
     
-    this.showTooltip(event)
     event.value = this.staticData;
     this.emitClick.emit(event)
   }
@@ -448,7 +450,8 @@ export class TdItemComponent {
   }
 
   async showDialog(evt:any){
-    evt.stopImmediatePropagation(); evt.stopPropagation()
+    evt.stopImmediatePropagation(); 
+    evt.stopPropagation()
     /* if(this.overlayService.currentOverlayIndex() === this.rowIndex){
       this.overlayService.closeOverlay();
       return

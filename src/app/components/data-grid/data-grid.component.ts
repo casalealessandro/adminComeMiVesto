@@ -1669,10 +1669,10 @@ export class DataGridComponent {
   }
 
   tdClick(event: any, colInfo: ColData, tdIndex: any, rowIndex: any) {
-
+/* console.log(event)
     if (this.modeEdit != 'cell') {
       return
-    }
+    } */
     const colType = colInfo.type
     switch (colType) {
 
