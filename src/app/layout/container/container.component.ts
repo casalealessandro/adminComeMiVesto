@@ -9,6 +9,7 @@ import { RouterOutlet } from '@angular/router';
 import { PopupWrapperComponent } from '../../components/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component';
 import { OverlayComponent } from '../../components/overlay-component/overlay.component';
 import { UserService } from '../../services/user.service';
+
 import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import { MenuService } from '../../services/menu.service';
 
@@ -30,6 +31,7 @@ export class ContainerComponent {
   isClose: boolean = false;
   isLogin: boolean = false;
   idTipoUtente: number = -1;
+
 // Modalità del menu: 'side' (a lato), 'over' (sovrapposto), 'push' (spingendo il contenuto)
   mode: 'side' | 'over' | 'push' = 'side';
    // Observable che rappresenta lo stato del menu (collegato al servizio)
@@ -38,6 +40,7 @@ export class ContainerComponent {
 
   // Signal per tracciare se il menu è aperto o chiuso
   isMenuOpen: boolean = false;
+
 
 
   constructor(private userService: UserService, private menuService: MenuService, private breakpointObserver: BreakpointObserver) {
