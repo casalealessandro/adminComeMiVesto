@@ -1,16 +1,4 @@
 <div class="menu-container" [class.open]="getIsMenuOpenObservable | async">
-  <a
-    href="/"
-    class="d-block p-3 link-body-emphasis text-decoration-none"
-    data-bs-toggle="tooltip"
-    data-bs-placement="right"
-    data-bs-original-title="Icon-only"
-  >
-    <svg class="bi pe-none" width="40" height="32">
-      <use xlink:href="#bootstrap"></use>
-    </svg>
-    <span class="visually-hidden">Icon-only</span>
-  </a>
   <ul class="nav nav-pills nav-flush flex-column mb-auto text-center menu-list">
     <li class="nav-item menu-item" *ngFor="let menuItem of allMenu">
       <a
@@ -23,7 +11,7 @@
         [attr.data-bs-original-title]="menuItem.label"
         (click)="navigateTo(menuItem.path)"
       >
-        <span [class]="menuItem.icon"></span>
+        <span [ngClass]="menuItem.icon" class="menu-icon"></span>
         <span class="menu-label text">{{ menuItem.label }}</span>
       </a>
     </li>
