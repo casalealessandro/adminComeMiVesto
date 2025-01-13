@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs/internal/Observable';
 import { AngularFireFunctions } from '@angular/fire/compat/functions';
@@ -9,20 +9,23 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { FirebaseApp } from '@angular/fire/app';
 import { HttpsCallableResult } from '@angular/fire/functions';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { limitToLast } from 'firebase/firestore/lite';
 @Injectable({
   providedIn: 'root'
 })
 
 export class UserService {
-
+  
 
 
   api = environment.BASE_API_URL
 
-  isLoginUser: boolean = false; // set null initial value
+  isLoginUser = signal<boolean>(false); // set null initial value
   TokenLoggato!: string;
-  sessionToken: any;
+  sessionUserId: any;
   firestore= inject(AngularFirestore);
+  angularFireAuth= inject(AngularFireAuth);
   httpClient= inject(HttpClient)
   auth = getAuth(inject(FirebaseApp));
   functions=inject(AngularFireFunctions)
@@ -37,7 +40,16 @@ export class UserService {
       params: new HttpParams()
     }
   };
+  
+  set token(sToken:string) {
+    sessionStorage.setItem('token', sToken)
+    
+  }
 
+  get token() {
+    return  sessionStorage.getItem('token') ?? '';
+    
+  }
 
   get InfoUtenteConnesso(): Utente {
     let utenteConnesso: string = sessionStorage.getItem('utenteConnesso') ?? '';
@@ -56,15 +68,9 @@ export class UserService {
     );
   }
 
-  isLoggedUser(): Observable<boolean> {
-
-    return this.isExistsUsers().pipe(
-      map(infoUser => {
-        // Se infoUser non è null o undefined e l'ID è presente e l'utente non è sospeso, restituisci true, altrimenti false
-        //this.InfoUtenteConnesso = infoUser
-        return infoUser && infoUser.id && !infoUser['sospeso'];
-      })
-    );
+  isLoggedUser(): boolean {
+    this.isLoginUser.set(this.token ? true : false);
+    return this.token ? true : false;
   }
 
   isExistsUsers() {
@@ -73,10 +79,31 @@ export class UserService {
     return this.httpClient.get<any>(EndPoint, HeaderOdata);
   }
 
-  loginUser(data: any): Observable<any> {
-    const EndPoint = environment.BASE_API_URL + 'Token/login';
+  async loginUser(data: any): Promise<boolean> {
+    const EndPoint = `${this.apiFire}/user/login` //environment.BASE_API_URL + 'Token/login';
     const HeaderOdata = this.httpOptions;
-    return this.httpClient.post<any>(EndPoint, data, HeaderOdata);
+    
+    try {
+
+      const resAuth = await this.authFirebase(data);
+      if(resAuth){
+        let res =  this.httpClient.post<any>(EndPoint, data, HeaderOdata);
+
+        const result = await lastValueFrom(res)
+
+        if (result){
+          this.token = result;
+          this.isLoginUser.set(true);
+          return true;
+        }  
+      }
+        
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+
+    return false;
   }
 
   async LogOut() {
@@ -108,17 +135,23 @@ export class UserService {
 
   }
 
-  set token(sToken:string) {
-    sessionStorage.setItem('token', sToken)
-    this.sessionToken = sToken
-    //this.TokenLoggato.access_token = token;
-  }
+  
+  async authFirebase(data: any):Promise<boolean> {
+    try {
+      // Effettua l'autenticazione con email e password
+      const credential = await this.angularFireAuth.signInWithEmailAndPassword(data.email, data.password);
+      sessionStorage.setItem('utenteConnesso', JSON.stringify(credential.user));
+  
+      // Ritorna true per indicare il successo
+      return true;
+    } catch (error) {
+      console.error('Errore durante l\'autenticazione:', error);
+  
+      // In caso di errore, ritorna false
+      return false;
+    }
 
-  get token() {
-    return  sessionStorage.getItem('token') ?? '';
-    
   }
-
   async sendPasswordFirebase(email:string):Promise<boolean>{
     
     try {

@@ -1,16 +1,40 @@
 .mi-container {
-    
-
+        &.menu-over {
+            .menu-container{
+                position: fixed;
+          top: 0;
+          left: 0;
+          height: 100%;
+          transform: translateX(-100%);
+          z-index: 1000;
+          &.open {
+            transform: translateX(0);
+          }
+            }
+          
+        }
+        &.menu-side {
+            .ana-container{
+               margin-left: 100px;
+            }
+          
+        }
+        &.menu-push {
+            .ana-container{
+               margin-left: 250px;
+            }
+           
+        }
+        .ana-container {
+            // margin-left: 150px ;
+        }
     .verticalMenucontainer {
 
         position: absolute;
         left: 0;
         overflow-x: hidden;
         overflow-y: auto;
-
         z-index: 1001;
-        padding-left: 1.25rem;
-        padding-right: 1.25rem;
         box-sizing: border-box;
         border: 1px solid var(--border_color);
 

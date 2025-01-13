@@ -1,4 +1,4 @@
-<div id="cWrap" class="content-wrap">
+<div id="cWrap" class="content-wrap" [ngClass]="cssClass">
     <div class="anagrafica-wrap" [ngStyle]="{'height.px':anaHeight}">
         <app-caption 
             [caption]="caption" 
@@ -42,10 +42,10 @@
                         <h2 *ngIf="subTitle"><span class="mdi mdi-database"></span>{{subTitle}}</h2>
 
                     </div>
-                    <div  *ngIf="tip" class="alert alert-primary d-flex align-items-centeralert-dismissible fade show" role="alert" >
+                    <div  *ngIf="tip" class="alert alert-primary d-flex align-items-center alert-dismissible fade show" role="alert" >
                         <span class="mdi mdi-lightbulb-alert-outline me-2"></span>
                         {{tip}}
-                       <!--  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> -->
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     <ng-container *ngIf="showSpinner">
                         <p>Carimento in corso...</p>

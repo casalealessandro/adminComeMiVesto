@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { FormControl, FormsModule } from '@angular/forms';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, signal, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormField, FileBoxOptions } from '../../../../interface/dynamic-form-field';
 
 
@@ -10,7 +10,7 @@ import { DynamicFormField, FileBoxOptions } from '../../../../interface/dynamic-
   templateUrl: './dynamic-file-box.component.html',
   styleUrls: ['./dynamic-file-box.component.scss'],
   standalone:true,
-  imports:[CommonModule,FormsModule],
+  imports:[CommonModule,FormsModule,ReactiveFormsModule],
 
 })
 export class DynamicFileBoxComponent implements AfterViewInit {
@@ -22,9 +22,10 @@ export class DynamicFileBoxComponent implements AfterViewInit {
 
   @Input() config!: DynamicFormField;
   @Input() formControlD!: FormControl;
+  @Input() formGroup!: any;
 
   @Input() disabled = false;
-  @Input() value:any;
+  @Input() value:any = '';
   
   
   @Output() valueChange = new EventEmitter<string | string[]>();
@@ -32,35 +33,36 @@ export class DynamicFileBoxComponent implements AfterViewInit {
   @Input() maxWidth = 300; // Larghezza massima per i post verticali tipo Instagram
   @Input() maxHeight = 1350; // Altezza massima per i post verticali tipo Instagram
 
-  imageLoading: boolean = true
+  imageLoading= signal(true);
   blobImg: any;
   fileName: any;
   format: string = '';
   openFullScreen: boolean = false
   base64String: string | undefined;
   fileBoxOptions?:FileBoxOptions 
-  
+  fieldName:string = '';
 
   ngOnInit() { }
   
   ngAfterViewInit(): void {
-    this.fileBoxOptions = this.config.fileBoxOptions
+    this.fileBoxOptions = this.config.fileBoxOptions;
+    this.fieldName = this.config.name
     if (this.imageElement) {
 
       this.imageElement.nativeElement.onload = (event: Event) => {
         setTimeout(() => {
-          this.imageLoading = false;  // Nasconde il loader
+          this.imageLoading.set(false);  // Nasconde il loader
         }, 1500);
 
       };
       // Nel caso in cui si verifichi un errore nel caricamento dell'immagine
       this.imageElement.nativeElement.onerror = () => {
-        this.imageLoading = false;  // Nascondi il loader anche in caso di errore
+        this.imageLoading.set(false);;  // Nascondi il loader anche in caso di errore
       };
     }
 
     if (!this.imageElement) {
-      this.imageLoading = false;  
+      this.imageLoading.set(false);  
     }
 
   }
@@ -76,7 +78,7 @@ export class DynamicFileBoxComponent implements AfterViewInit {
       const file = input.files[0];
       if (this.validateFile(file)) {
         const reader = new FileReader();
-        this.imageLoading = true;
+        this.imageLoading.set(true);
         reader.onload = async (e: ProgressEvent<FileReader>) => {
           const dataUrl = e.target?.result as string;
   
@@ -88,11 +90,11 @@ export class DynamicFileBoxComponent implements AfterViewInit {
   
             // Assegna il valore ridimensionato
             this.value = resizedImage.dataUrl;
-            this.imageLoading = false;
+            this.imageLoading.set(true);
             this.valueChange.emit(this.value);
           } catch (error) {
             console.error('Errore durante il ridimensionamento dell\'immagine:', error);
-            this.imageLoading = false;
+            this.imageLoading.set(true);
           }
         };
   

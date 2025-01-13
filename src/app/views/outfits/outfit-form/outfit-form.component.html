@@ -1,0 +1,28 @@
+<app-anagrafica-wrapper
+  [caption]="outfitTitle"
+  [subTitle]="subtitle"
+  [tip]="'...'"
+  [addButtonShow]="false"
+  [showSpinner]="false"
+  
+  
+>
+
+<app-foto-outfit
+[image]="imageUrl"
+[tags]="tags"
+(eventImageTags)="setTags($event)"
+>
+
+</app-foto-outfit>
+
+<app-dynamic-form
+[editData]="outfitData()"
+[service]="'outfitForm'"
+(submitFormEvent)="submitFormOutfit($event)"
+(functionalInputFormEvent)="btnInputEvent($event)"
+
+>
+
+</app-dynamic-form>
+</app-anagrafica-wrapper>

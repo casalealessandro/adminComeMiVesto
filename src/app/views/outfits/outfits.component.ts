@@ -7,6 +7,7 @@ import { DataGridComponent } from '../../components/data-grid/data-grid.componen
 import { Colonne, ToolbarButton, UserProfile } from '../../interface/app.interface';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 
 
@@ -34,6 +35,7 @@ export class OutfitsComponent {
   subtitle: string = `Elenco outfit creati nell' app`;
   
   propertiesModal= inject ( PopUpService ); 
+  router= inject ( Router ); 
 
   colOutfitsGrid:Colonne[]=[
     {
@@ -44,7 +46,7 @@ export class OutfitsComponent {
           colVisible: true,
           allowEditing: true,
           dataField: "title",
-          colWidth: '200',
+          colWidth: '300',
           caption: "Titolo",
         
           colCaption: 'Titolo',
@@ -59,7 +61,7 @@ export class OutfitsComponent {
           colVisible: true,
           allowEditing: true,
           dataField: "imageUrl",
-          colWidth: '68',
+          colWidth: '150',
           class:'outfit-image',
         
           colCaption: 'Immagine',
@@ -104,7 +106,7 @@ export class OutfitsComponent {
           colVisible: true,
           allowEditing: true,
           dataField: "createdAt",
-          colWidth: '110',
+          colWidth: '70',
           caption: "Creazione",
         
           colCaption: 'Creazione',
@@ -119,9 +121,9 @@ export class OutfitsComponent {
           colVisible: true,
           allowEditing: true,
           dataField: "editedAt",
-          colWidth: '110',
+          colWidth: '70',
         
-          colCaption: 'Ultima modifica',
+          colCaption: 'Modifica',
           allowFiltering: undefined,
           labelAlignment: undefined,
           edit: undefined,
@@ -133,7 +135,7 @@ export class OutfitsComponent {
           colVisible: true,
           allowEditing: true,
           dataField: "status",
-          colWidth: '110',
+          colWidth: '80',
           caption: "Stato",
         
           colCaption: 'Stato',
@@ -148,9 +150,8 @@ export class OutfitsComponent {
           colVisible: true,
           allowEditing: true,
           dataField: "",
-          colWidth: '70',
-          caption: "Stato",
-        
+          colWidth: '40',
+          caption: "Approva",
           colCaption: 'Stato',
           allowFiltering: undefined,
           labelAlignment: undefined,
@@ -170,12 +171,22 @@ export class OutfitsComponent {
       ],
       groupDataField: ''
     }
-  ]
+  ];
+
   customToolbarButtons: ToolbarButton[] = [
     {
       id: 'toJSON',
       name: 'toJSON',
       text: 'Importa da Jsn',
+      disabled: false,
+      visible: true,
+      icon:'mdi mdi-database-import-outline',
+      widget: 'button'
+    },
+    {
+      id: 'testLogin',
+      name: 'login',
+      text: 'Login',
       disabled: false,
       visible: true,
       icon:'mdi mdi-database-import-outline',
@@ -222,7 +233,8 @@ export class OutfitsComponent {
   }
 
   async eventToolbarOutfit(evt:any) {
-    const name = evt.name || evt.id
+    const name = evt.name || evt.id;
+    console.log('eventToolbarOutfit',name)
     switch (name) {
       case 'toJSON':
         this.showSpinner= true
@@ -232,19 +244,29 @@ export class OutfitsComponent {
           this.loadOutfits()
         }
         break;
-    
+      case 'addButton':
+        this.router.navigate(['/outfit-detail']);
+        //this.editOutfit();
+        break  
+      case 'login':
+       this.outfitService.login()
+        break  
       default:
         break;
     }
     //throw new Error('Method not implemented.');
   }
 
-  editOutfit(event: any) {
+  editOutfit(event?: any) {
+    if(typeof event != 'undefined' && event){
+      event.cancel = true;
+      this.selectedOutfit = event.data as outfit;
+      this.router.navigate(['/outfit-detail',this.selectedOutfit.id]);
+      return
+    }
+   
 
-    event.cancel = true
 
-    this.selectedOutfit = event.data as outfit;
-    
     let guid = Math.random().toString().replace("0.", "");
       let InstanceData = {
         service:'outfitFormAdmin',
@@ -283,6 +305,8 @@ export class OutfitsComponent {
         }
       })
   }
+
+
 
   gridEvent(event: any){
     console.log('gridEvent-->',event);

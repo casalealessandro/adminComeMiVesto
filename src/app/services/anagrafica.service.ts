@@ -2,7 +2,7 @@ import { HttpClient} from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { ActivatedRoute, Route, Router } from '@angular/router';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, Observable } from 'rxjs';
 import { UserService } from './user.service';
 
 
@@ -16,7 +16,8 @@ import { UserService } from './user.service';
 export class AnagraficaService {
 
   token: string = '';
-  userService=inject(UserService)
+  userService=inject(UserService);
+  private apiUrl: string = environment.BASE_API_URL
   constructor(private httpClient: HttpClient, private activatedRoute: ActivatedRoute) {
 
   }
@@ -25,40 +26,39 @@ export class AnagraficaService {
     return this.userService.httpOptions
   };
   
-  async getElenco($subjectCalled: any, filterKey = '', filter = '', theQueryString = ''):Promise<any> {
+  /**
+   * Retrieves a list of items from a specified subject using the provided query string.
+   *
+   * @param $subjectCalled - The endPoint from api.
+   * @param queryString - The query string to filter the items.
+   * @returns An Observable of the retrieved items.
+   *
+   * @example
+   * ```typescript
+   * const items = await anagraficaService.getElenco('employees', '?filter=name eq \'John\'').subcribe();
+   * console.log(items);
+   * ```
+   */
+  getElenco($subjectCalled: string, queryString:string):Observable<any> {
 
-    let filterString = filter != '' ? filter : '';
-    let pathFilter = filterKey != '' ? '/' + filterKey : '';
+    let EndPoint = `${this.apiUrl}${$subjectCalled}`
 
 
-    let queryString = theQueryString != '' ? theQueryString : '';
-    let completeString = '';
-
-    if (pathFilter != '' && queryString != '' && filterString != '') {
-
-      completeString = pathFilter + queryString + '&' + filterString + '&'
-
-    }
-
-    let EndPoint = ''
-
-    if (completeString != '') {
-      EndPoint = environment.BASE_API_URL + completeString;
-    } else {
-      EndPoint = environment.BASE_API_URL + $subjectCalled + pathFilter + filterString + queryString;
-    }
+    if (queryString) {
+      EndPoint = `${EndPoint}${queryString}`
+    } 
 
 
     const HeaderOdata = this.httpOptionCall;
 
     const response = this.httpClient.get(EndPoint, HeaderOdata)
-    pathFilter = '';
-    queryString = '';
-    filterString = ''
 
+    return response.pipe(res=>{
+      return res
+    })
 
-    return await lastValueFrom(response);
   }
+
 
   async getValue(subjectCalled:string, filterKey: any, queryString:string):Promise<any> {
 

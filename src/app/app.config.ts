@@ -21,7 +21,9 @@ export const appConfig: ApplicationConfig = {
       AngularFireAuthModule,
       AngularFireFunctionsModule,
       FirebaseAppModule,
-      HttpClientModule
+      HttpClientModule,
+      
+
     ),
     
   

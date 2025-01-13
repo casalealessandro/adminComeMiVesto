@@ -70,6 +70,16 @@ export class CaptionComponent {
   @Output() emitBreadCrumbClick : EventEmitter<any> = new EventEmitter<any>();
   
 
+  addButton:ToolbarButton =
+    {
+      id: 'addButton',
+      name: 'addButton',
+      text: 'Aggiungi',
+      disabled: false,
+      visible: this.addButtonShow,
+      icon:'mdi mdi-pencil-outline',
+      widget: 'button'
+    }
   
   
 

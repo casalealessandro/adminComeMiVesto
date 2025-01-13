@@ -8,11 +8,21 @@ import { Observable } from 'rxjs';
 import { alert } from '../../widgets/ui-dialogs';
 import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
 import { PopUpService } from '../../services/popup.service';
+import { TimestampToDatePipe } from '../../pipes/timestamp-to-date.pipe';
+import { CustomScrollbarComponent } from '../../components/custom-scrollbar/custom-scrollbar.component';
+
+
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule,AnagraficaWrapperComponent,DynamicFormComponent,],
+  imports: [
+    CommonModule,
+    FormsModule,
+    AnagraficaWrapperComponent,
+    TimestampToDatePipe,
+    CustomScrollbarComponent
+],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })
@@ -74,7 +84,26 @@ editUser(user: UserProfile) {
 }
 
 createNewuser() {
-  throw new Error('Method not implemented.');
+  
+  
+
+  let guid = Math.random().toString().replace("0.", "");
+      let InstanceData = {
+        service:'testRegistrazione'
+      }
+      
+      this.propertiesModal.setNewPopUp(guid, 'DynamicFormComponent', null, 800, null, InstanceData, false, true, "Modifica Outfit",'',false)
+      
+  
+      this.propertiesModal.outputComponent.subscribe(async resulOutputComponent=>{
+        if(resulOutputComponent.guid == guid && resulOutputComponent.name == 'submitForm'){
+           
+        }
+  
+        if(resulOutputComponent.guid == guid && resulOutputComponent.name == 'cancelForm'){
+        
+        }
+      })
 }
 
 async sendPasswordReset(user: UserProfile): Promise<void> {

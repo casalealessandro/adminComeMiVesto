@@ -29,6 +29,7 @@ export class AnagraficaWrapperComponent {
   @Input() helpDoc:string=''
   @Input() breadcrumbNavigation:any=[]; 
   @Input() showSpinner:boolean= false; 
+  @Input() cssClass:string= ''; 
   @Input() customToolbarButtons!:ToolbarButton[]; 
 
   @Output() emittChiusura: EventEmitter<any> = new EventEmitter<any>();
@@ -46,15 +47,20 @@ export class AnagraficaWrapperComponent {
   showItemsTabs:boolean=false
   private tabSubscription: Subscription | undefined;
   
-  constructor() {}
+  constructor() {this.setAutoDismiss()}
 
 
   ngAfterViewInit(){
-    this.getWindowHeight()
+    //this.getWindowHeight()
     
   }
 
-
+// Metodo per chiudere automaticamente l'alert
+private setAutoDismiss(): void {
+  setTimeout(() => {
+    this.tip = '';
+  }, 60000); // 1 minuto (60000 ms)
+}
 
 
   getWindowHeight() {

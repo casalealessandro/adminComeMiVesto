@@ -41,6 +41,10 @@ export class ProductFromFeedComponent {
     {
       id: '39848',
       name: 'Julian Fashion IT- Lys'
+    },
+    {
+      id: '109063',
+      name: 'Brupa PF'
     }
 
   ] // Store disponibili
@@ -166,8 +170,8 @@ export class ProductFromFeedComponent {
           const id = ree.offers[0].id;
           this.storeCategories.push(ree.categories[0])
           ree.selectedColor = null,  // oppure un valore di default
-            ree.selectedCategory = null,
-            ree.selectedGender = null
+          ree.selectedCategory = null,
+          ree.selectedGender = null
           this.selectGender[id] = null;
           let res = await this.outfitService.getFilteredCollection('outfitsProducts', [{
             field: 'id',

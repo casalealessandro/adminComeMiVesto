@@ -1,0 +1,1169 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>admin documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="../" class="navbar-brand">admin documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content interface">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Interfaces</li>
+  <li class="breadcrumb-item"
+  >
+  outfitCategories</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/app/services/outfit.service.ts</code>
+        </p>
+
+
+
+
+        <section data-compodoc="block-index">
+            <h3 id="index">Index</h3>
+            <table class="table table-sm table-bordered index-table">
+                <tbody>
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Properties</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                        <a href="#categoryName" 
+>
+                                            categoryName
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#createdAt" 
+>
+                                            createdAt
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#editedAt" 
+>
+                                            editedAt
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#gender" 
+>
+                                            gender
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#id" 
+>
+                                            id
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#imageUrl" 
+>
+                                            imageUrl
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#order" 
+>
+                                            order
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#parentCategory" 
+>
+                                            parentCategory
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#status" 
+>
+                                            status
+                                        </a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+
+
+            <section data-compodoc="block-properties">
+                <h3 id="inputs">Properties</h3>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="categoryName"></a>
+                                        <span class="name "><b>categoryName</b>
+                                            <a href="#categoryName">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>categoryName:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="createdAt"></a>
+                                        <span class="name "><b>createdAt</b>
+                                            <a href="#createdAt">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>createdAt:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="editedAt"></a>
+                                        <span class="name "><b>editedAt</b>
+                                            <a href="#editedAt">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>editedAt:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="gender"></a>
+                                        <span class="name "><b>gender</b>
+                                            <a href="#gender">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>gender:         <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="id"></a>
+                                        <span class="name "><b>id</b>
+                                            <a href="#id">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>id:         <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="imageUrl"></a>
+                                        <span class="name "><b>imageUrl</b>
+                                            <a href="#imageUrl">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>imageUrl:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="order"></a>
+                                        <span class="name "><b>order</b>
+                                            <a href="#order">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>order:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="parentCategory"></a>
+                                        <span class="name "><b>parentCategory</b>
+                                            <a href="#parentCategory">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>parentCategory:         <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="status"></a>
+                                        <span class="name "><b>status</b>
+                                            <a href="#status">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>status:         <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+            </section>
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { HttpClient, HttpHeaders, HttpParams } from &#x27;@angular/common/http&#x27;;
+import { inject, Injectable, signal } from &#x27;@angular/core&#x27;;
+import { environment } from &#x27;../../environments/environment&#x27;;
+import { Observable } from &#x27;rxjs/internal/Observable&#x27;;
+import { AngularFireFunctions } from &#x27;@angular/fire/compat/functions&#x27;;
+import { firstValueFrom, lastValueFrom, map, of } from &#x27;rxjs&#x27;;
+import { UserProfile, Utente } from &#x27;../interface/app.interface&#x27;;
+import { AngularFirestore } from &#x27;@angular/fire/compat/firestore&#x27;;
+import { getAuth, sendPasswordResetEmail } from &#x27;firebase/auth&#x27;;
+import { FirebaseApp } from &#x27;@angular/fire/app&#x27;;
+import { Data } from &#x27;@angular/router&#x27;;
+import { doc } from &#x27;firebase/firestore&#x27;;
+
+export interface outfit {
+  userName: any;
+  id: any;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  tags: Tag[];
+  gender: string; // Assumendo che i valori possibili siano solo &quot;man&quot; o &quot;woman&quot;
+  style: string; // Assumendo alcuni stili possibili
+  season: string; // Assumendo alcune stagioni possibili
+  color?: string;
+  userId: any;
+  visits?: number;
+  likes?: number;
+  createdAt?: any;
+  editedAt?: any;
+  outfitSubCategory?: any,
+  outfitCategory?: any,
+  status: &#x27;approved&#x27; | &#x27;rifiutato&#x27; | &#x27;pending&#x27;
+  feedId?: any
+
+}
+
+export interface outfitCategories {
+
+  id: any;
+  imageUrl?: string;
+  categoryName: string;
+  parentCategory: any;
+  status: any;
+  order: number;
+  gender: any;
+  createdAt: number;
+  editedAt?: number
+}
+
+export interface Tag {
+  id: any;
+  name: string;
+  x: number;
+  y: number;
+  link?: string;
+  color: string;
+  brend?: string;
+  outfitCategory: string;
+  outfitSubCategory?: string;
+  prezzo?: number;
+  imageUrl?: string;
+  images?: string[]
+}[]
+
+
+export interface wardrobesItem {
+  id: number;
+  userId: string;
+  name: string;
+  outfitCategory: string;
+  outfitSubCategory: string;
+  brend: string;
+  color:string;
+  link?: string;
+  images: string[];
+  ImageUrl?:string;
+  imageUrl?:string;
+  prezzo?:number;
+  gender?:any;
+}
+
+export interface FireBaseConditions {
+  field: string;
+  operator: string;
+  value: any
+}[]
+
+export interface FireBaseOrderBy {
+  field: string;
+  by: &#x27;asc&#x27; | &#x27;desc&#x27;
+}[]
+
+
+@Injectable({
+  providedIn: &#x27;root&#x27;
+})
+
+
+
+export class OutfitsService {
+
+
+
+  api &#x3D; environment.BASE_API_URL
+
+  isLoginUser: boolean &#x3D; false; // set null initial value
+  TokenLoggato!: string;
+  sessionToken: any;
+  firestore &#x3D; inject(AngularFirestore);
+  httpClient &#x3D; inject(HttpClient)
+  auth &#x3D; getAuth(inject(FirebaseApp));
+  functions &#x3D; inject(AngularFireFunctions)
+  apiFire &#x3D; &quot;https://us-central1-comemivesto-5e5f9.cloudfunctions.net/api&quot;
+  resultsSignal &#x3D; signal&lt;any[]&gt;([]);
+  feedUrl: string &#x3D; &quot;https://api.tradedoubler.com/1.0/products.json&quot;
+
+  // Definizione di un signal con un array vuoto come valore iniziale
+  mySignal &#x3D; signal&lt;any[]&gt;([]);
+
+  // Metodo per aggiornare il valore del signal
+  setMySignal(data: any[]) {
+    this.mySignal.set(data);
+  }
+
+  // Getter per ottenere il valore corrente del signal
+  getMySignal() {
+    return this.mySignal();
+  }
+
+  login(){
+    const  headers&#x3D;{
+      headers: new HttpHeaders().set(
+        &quot;Authorization&quot;, &#x27;Bearer &#x27; 
+      ).set(&#x27;Content-Type&#x27;, &#x27;application/x-www-form-urlencoded; charset&#x3D;UTF-8&#x27;)
+        .set(&#x27;Content-Type&#x27;, &#x27;application/json; charset&#x3D;utf-8&#x27;)
+        .set(&#x27;responseType&#x27;,&#x27;text&#x27;),
+      params: new HttpParams(),
+      responseType: &#x27;text&#x27; as &#x27;json&#x27;  // Aggiungi responseType qui
+
+     
+    }
+
+    const api &#x3D; &quot;http://192.168.1.170:8080/authenticate&quot;
+
+    this.httpClient.post(api, {email: &#x27;prova2&#x27;, password: &#x27;prova2&#x27;}, headers).subscribe(res&#x3D;&gt;{
+      console.log(res)
+    })
+  }
+  
+
+  async getOutfits(conditions?: FireBaseConditions[], orderBy?: FireBaseOrderBy[]): Promise&lt;outfit[]&gt; {
+
+    let query: any &#x3D; this.firestore.collection(&#x27;outfits&#x27;).ref;
+
+    if (conditions) {
+      // Applica tutte le condizioni alla query 
+      conditions.forEach(condition &#x3D;&gt; {
+
+        query &#x3D; query.where(condition.field, condition.operator, condition.value);
+        //console.log(&#x27;conditions--&gt;&#x27;,query)
+      });
+    }
+
+    if (orderBy) {
+      // Applica l&#x27;ordinamento alla query
+      orderBy.forEach(order &#x3D;&gt; {
+        query &#x3D; query.orderBy(order.field, order.by);
+      });
+    }
+
+    // Imposta il limite a 10
+    //query &#x3D; query.limit(10);
+    try {
+
+      const querySnapshot &#x3D; await query.get();
+
+      const results &#x3D; querySnapshot.docs.map((doc: any) &#x3D;&gt; doc.data());
+      this.resultsSignal &#x3D; signal&lt;any[]&gt;(results);
+      return results;  // Usa &#x60;of&#x60; per restituire un Observable
+    } catch (error) {
+      console.error(&#x27;Error getting filtered collection:&#x27;, error);
+      return [];  // Usa &#x60;of&#x60; per restituire un Observable
+    }
+
+
+
+    /*    return this.firestore.collection(&#x27;outfits&#x27;).valueChanges().pipe(
+   
+         map((users: any[]) &#x3D;&gt; {
+           return users
+          
+         })
+       ); */
+  }
+
+  async getOutfitUser(userId: any): Promise&lt;UserProfile[]&gt; {
+
+    let query &#x3D; this.firestore.collection(&#x27;users&#x27;).ref.where(&#x27;uid&#x27;, &#x27;&#x3D;&#x3D;&#x27;, userId)
+
+    const querySnapshot &#x3D; await query.get();
+
+    const results &#x3D; querySnapshot.docs.map((doc: any) &#x3D;&gt; doc.data());
+    return results
+  }
+
+  async getOutfitById(outfitId: any): Promise&lt;outfit[]&gt; {
+   
+    let query &#x3D; this.firestore.collection(&#x27;outfits&#x27;).ref.where(&#x27;id&#x27;, &#x27;&#x3D;&#x3D;&#x27;, outfitId)
+
+    const querySnapshot &#x3D; await query.get();
+
+    const results &#x3D; querySnapshot.docs.map((doc: any) &#x3D;&gt; doc.data()) as outfit[];
+    return results
+  }
+
+  //Salvataggio in FireStone
+
+  async saveOutfitCollection(nameDoc: string | undefined, data: any, reget: boolean &#x3D; true): Promise&lt;boolean&gt; {
+
+    try {
+      const Collection &#x3D; await this.firestore.collection(&#x27;outfits&#x27;)
+      if (!nameDoc) {
+        Collection.add(data);
+        if (reget) {
+          this.getOutfits()
+        }
+
+        return true
+      } else {
+        Collection.doc(nameDoc).set(data);
+        if (reget) {
+          this.getOutfits()
+        }
+
+        return true
+      }
+
+    } catch (error) {
+
+
+      return false
+    }
+  }
+
+  //Modifica in FireStone
+
+  async updateInCollection(nameDoc: any, data: Partial&lt;any&gt;): Promise&lt;boolean&gt; {
+    try {
+
+      this.firestore.collection(&#x27;outfits&#x27;).doc(nameDoc).update(data);
+      this.getOutfits()
+      return true
+
+
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+
+  }
+
+  async removeOutfit(id: any): Promise&lt;boolean&gt; {
+
+    let query: any &#x3D; this.firestore.collection(&#x27;outfits&#x27;).ref;
+
+    // Applica questa condizione alla query
+
+    query &#x3D; query.where(&#x27;id&#x27;, &#x27;&#x3D;&#x3D;&#x27;, id);
+
+    try {
+      const querySnapshot &#x3D; await query.get();
+      // Elimina tutti i documenti che corrispondono alla query
+      const deletePromises &#x3D; querySnapshot.docs.map((doc: any) &#x3D;&gt; doc.ref.delete());
+      await Promise.all(deletePromises);
+      this.getOutfits()
+      return true
+    } catch (error) {
+      console.error(&#x27;Error deleting documents:&#x27;, error);
+      return false
+    }
+  }
+
+
+  //Funzione per salvare gli outfit ottenuti e mappati
+  async JsonOutfits(): Promise&lt;boolean&gt; {
+
+
+    try {
+      const prod &#x3D; this.getProductsFromFeed();
+      prod.subscribe(async resProd &#x3D;&gt; {
+        console.log(&#x27;resProd&#x27;, resProd)
+
+        resProd.forEach(async (element: outfit) &#x3D;&gt; {
+          let condition: FireBaseConditions[] &#x3D; [{
+            field: &#x27;id&#x27;,
+            operator: &#x27;&#x3D;&#x3D;&#x27;,
+            value: element.id
+          }]
+          let check &#x3D; await this.getOutfits(condition)
+          if (check.length &#x3D;&#x3D; 0) {
+            let ress &#x3D; await this.saveOutfitCollection(element.id, element, false);
+            if (!ress) {
+              console.log(&quot;c&#x27;è stato un problema&quot;)
+            }
+          }
+
+        });
+
+        await this.getOutfits()
+
+        return true
+      })
+    } catch (error) {
+      console.error(&#x27;Errore:&#x27;, error)
+      return false
+    }
+    return false
+
+  }
+
+  // Funzione per ottenere i prodotti dal feed e trasformarli
+  getProductsFromFeed(page: number &#x3D; 1, fid: number &#x3D; 104437): Observable&lt;any[]&gt; {
+    const queryString &#x3D; &#x60;;page&#x3D;${page};pageSize&#x3D;100;fid&#x3D;${fid}?token&#x3D;83C91107EA3A44C6B67AD66A2799E13653192324&quot;&#x60;
+    return this.httpClient.get&lt;any&gt;(&quot;https://api.tradedoubler.com/1.0/products.json;page&#x3D;1;pageSize&#x3D;100;fid&#x3D;104437?token&#x3D;83C91107EA3A44C6B67AD66A2799E13653192324&quot;).pipe(
+      map(response &#x3D;&gt; {
+        /* const girlProducts &#x3D; response.products.filter((item: any) &#x3D;&gt;
+          item.categories.some((cat: any) &#x3D;&gt; cat.name.toLowerCase() &#x3D;&#x3D;&#x3D; &#x27;Dress&#x27;)
+        ); */
+
+        // Prendi solo i primi 4 prodotti della categoria &quot;girl&quot; e mappa
+        return response.products.map((item: any) &#x3D;&gt; this.mapToFirebase(item,));
+      })
+    );
+  }
+
+
+  // Funzione di mappatura per convertire il formato del prodotto
+  private mapToFirebase(item: any): outfit {
+    const date &#x3D; new Date
+    return {
+      style: &#x27;C&#x27;, // mappalo secondo la logica della tua app
+      visits: 0,
+      outfitSubCategory: [&#x27;CDC&#x27;],
+      gender: &#x27;D&#x27;,
+      createdAt: date.getTime(),
+      editedAt: date.getTime(),
+      id: item.offers[0].id,
+      feedId: item.offers[0].feedId,
+      tags: [
+        {
+          brend: &#x27;vestitielegantishop&#x27;,
+          x: 0.60,
+          outfitCategory: &#x27;ABC&#x27;,
+          color: &#x27;&#x27;,
+          y: 0.60,
+          name: item.name,
+          id: item.offers[0].id,
+          outfitSubCategory: &#x27;CDC&#x27;,
+          link: item.offers[0].productUrl,
+          imageUrl: item.productImage.url,
+          prezzo: item.offers[0].priceHistory[0].price.value
+        }
+      ],
+      description: item.description.replace(&quot;Controlla la tabella taglie e misure, per sapere se la taglia dell&#x27;abito è adatta alle tue misure corporee.&quot;, &#x27;&#x27;),
+      userId: &#x27;yoq2HOxUJhdn4shCUgIB8ICMBVq2&#x27;,
+      season: &#x27;E&#x27;,
+      imageUrl: item.productImage.url,
+
+      status: &#x27;pending&#x27;,
+      likes: 0,
+      title: item.name,
+      outfitCategory: [&#x27;ABC&#x27;],
+      userName: &#x27;Maria &#x27;
+    };
+  }
+
+
+  //Prodotti Creati e messi a disposizione nell&#x27;app
+
+  getProducts(): Observable&lt;wardrobesItem[]&gt;{
+    return this.firestore.collection(&#x27;outfitsProducts&#x27;).valueChanges().pipe(
+      map((Products: any[]) &#x3D;&gt; {
+        return Products;
+      })
+    );
+  }
+
+  updateProductOutfit(nameDoc:any,data:any){
+    try {
+
+      this.firestore.collection(&#x27;outfitsProducts&#x27;).doc(nameDoc).update(data);
+      
+      return true
+
+
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  }
+
+  async removeProductOutfit(id: any): Promise&lt;boolean&gt; {
+
+    let query &#x3D; this.firestore.collection(&#x27;outfitsProducts&#x27;).doc(id).ref
+
+    // Applica questa condizione alla query
+
+   
+
+    try {
+       // Elimina il doc che corrispondono al ID
+      await query.delete();
+     
+      return true
+    } catch (error) {
+      console.error(&#x27;Error deleting documents:&#x27;, error);
+      return false
+    }
+  }
+
+  /**Categorie Outfits**/
+
+
+  getOutFitCategories(idParent?: any): Observable&lt;outfitCategories[]&gt; {
+
+    return this.firestore.collection(&#x27;outfitsCategories&#x27;, ref &#x3D;&gt; {
+      if (idParent) {
+        // Se idParent è fornito, applica il filtro
+        return ref.where(&#x27;parentCategory&#x27;, &#x27;&#x3D;&#x3D;&#x27;, idParent);
+      } else {
+        return ref.where(&#x27;parentCategory&#x27;, &#x27;&#x3D;&#x3D;&#x27;, &#x27;&#x27;);
+
+      }
+    }).valueChanges().pipe(
+      map((Categories: any[]) &#x3D;&gt; {
+        return Categories;
+      })
+    );
+  }
+
+  async updateOutfitCategories(categoriesId: string, data: Partial&lt;outfitCategories&gt;): Promise&lt;boolean&gt; {
+    try {
+
+      this.firestore.collection(&#x27;outfitsCategories&#x27;).doc(categoriesId).update(data);
+
+      return true
+
+
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  }
+
+  async saveOutfitCategories(data: outfitCategories): Promise&lt;boolean&gt; {
+    try {
+      const Collection &#x3D; await this.firestore.collection(&#x27;outfitsCategories&#x27;)
+      if (!data.id) {
+        Collection.add(data);
+
+
+        return true
+      } else {
+        Collection.doc(data.id).set(data);
+
+        //this.getOutFitCategories()
+
+
+        return true
+      }
+
+    } catch (error) {
+
+
+      return false
+    }
+  }
+
+  async removeOutfitCategories(id: any): Promise&lt;boolean&gt; {
+
+    let query: any &#x3D; this.firestore.collection(&#x27;outfitsCategories&#x27;).ref;
+
+    // Applica questa condizione alla query
+
+    query &#x3D; query.where(&#x27;id&#x27;, &#x27;&#x3D;&#x3D;&#x27;, id);
+
+    try {
+      const querySnapshot &#x3D; await query.get();
+      // Elimina tutti i documenti che corrispondono alla query
+      const deletePromises &#x3D; querySnapshot.docs.map((doc: any) &#x3D;&gt; doc.ref.delete());
+      await Promise.all(deletePromises);
+      this.getOutFitCategories()
+      return true
+    } catch (error) {
+      console.error(&#x27;Error deleting documents:&#x27;, error);
+      return false
+    }
+  }
+
+  /**Promise**/
+
+  async getFilteredCollection(collection: string, conditions?:FireBaseConditions[],orderBy?:any[]): Promise&lt;any[]&gt; {
+    
+    let query: any &#x3D; this.firestore.collection(collection).ref;
+    
+    if(conditions){
+      // Applica tutte le condizioni alla query 
+      conditions.forEach(condition &#x3D;&gt; {
+        
+        query &#x3D; query.where(condition.field, condition.operator, condition.value);
+        //console.log(&#x27;conditions--&gt;&#x27;,query)
+      });
+    }
+
+    if(orderBy){
+      // Applica l&#x27;ordinamento alla query
+      orderBy.forEach(order &#x3D;&gt; {
+        query &#x3D; query.orderBy(order.field, order.by);
+      });
+    }
+     
+    
+    try {
+      
+      const querySnapshot &#x3D; await query.get();
+
+      const results &#x3D; querySnapshot.docs.map((doc: any) &#x3D;&gt; doc.data());
+      //this.resultsSignal.set(results);
+      this.resultsSignal &#x3D; signal&lt;any[]&gt;(results);
+      return results;
+    } catch (error) {
+      console.error(&#x27;Error getting filtered collection:&#x27;, error);
+      return [];
+    }
+
+
+
+  }
+
+  //Salvataggio in FireStone
+
+  async saveOutfitsProducts(nameDoc: string | undefined, data: any): Promise&lt;boolean&gt; {
+    
+    try {
+      const Collection &#x3D; await this.firestore.collection(&#x27;outfitsProducts&#x27;)
+      if (!nameDoc) {
+        Collection.add(data);
+        
+        return true
+      } else {
+        
+        Collection.doc(nameDoc).set(data);
+        return true
+      }
+      
+    } catch (error) {
+
+      
+
+      
+      return false
+    }
+  }
+
+
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'interface';
+            var COMPODOC_CURRENT_PAGE_URL = 'outfitCategories.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

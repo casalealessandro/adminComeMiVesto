@@ -1,0 +1,2444 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>admin documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="../" class="navbar-brand">admin documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content component">
+                   <div class="content-data">
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Components</li>
+  <li class="breadcrumb-item"
+  >
+  StaticMenuFunctionsComponent</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a href="#info" class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li class="nav-item">
+            <a href="#source" class="nav-link"
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
+        </li>
+        <li class="nav-item">
+            <a href="#templateData" class="nav-link"
+                role="tab" id="templateData-tab" data-bs-toggle="tab" data-link="template">Template</a>
+        </li>
+        <li class="nav-item">
+            <a href="#styleData" class="nav-link"
+                role="tab" id="styleData-tab" data-bs-toggle="tab" data-link="style">Styles</a>
+        </li>
+        <li class="nav-item">
+            <a href="#tree" class="nav-link"
+                role="tab" id="tree-tab" data-bs-toggle="tab" data-link="dom-tree">DOM Tree</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="info"><p class="comment">
+    <h3>File</h3>
+</p>
+<p class="comment">
+    <code>src/app/layout/static-menu-functions/static-menu-functions.component.ts</code>
+</p>
+
+
+
+
+
+
+<section data-compodoc="block-metadata">
+    <h3>Metadata</h3>
+    <table class="table table-sm table-hover metadata">
+        <tbody>
+
+
+
+
+
+
+
+
+
+
+
+
+            <tr>
+                <td class="col-md-3">selector</td>
+                <td class="col-md-9"><code>app-static-menu-functions</code></td>
+            </tr>
+
+
+
+            <tr>
+                <td class="col-md-3">styleUrls</td>
+                <td class="col-md-9"><code>./static-menu-functions.component.css</code></td>
+            </tr>
+
+
+
+            <tr>
+                <td class="col-md-3">templateUrl</td>
+                <td class="col-md-9"><code>./static-menu-functions.component.html</code></td>
+            </tr>
+
+
+
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-index">
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#menu" >menu</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Methods</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#clickItemFunction" >clickItemFunction</a>
+                            </li>
+                            <li>
+                                <a href="#hideShowMainMenu" >hideShowMainMenu</a>
+                            </li>
+                            <li>
+                                <a href="#ngOnInit" >ngOnInit</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Inputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#currentMainMenuActive" >currentMainMenuActive</a>
+                            </li>
+                            <li>
+                                <a href="#subMenu" >subMenu</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Outputs</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#emittendItemFunctionMenu" >emittendItemFunctionMenu</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+        </tbody>
+    </table>
+</section>
+
+    <section data-compodoc="block-constructor">
+    <h3 id="constructor">Constructor</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+<code>constructor(ruote: Router, utente: <a href="../injectables/UserService.html" target="_self">UserService</a>)</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="20" class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:20</a></div>
+                            </td>
+                        </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                            <div>
+                                    <b>Parameters :</b>
+                                    <table class="params">
+                                        <thead>
+                                            <tr>
+                                                <td>Name</td>
+                                                    <td>Type</td>
+                                                <td>Optional</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                                <tr>
+                                                        <td>ruote</td>
+                                                  
+                                                        <td>
+                                                                    <code>Router</code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                </tr>
+                                                <tr>
+                                                        <td>utente</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../injectables/UserService.html" target="_self" >UserService</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+    <section data-compodoc="block-inputs">
+    <h3 id="inputs">Inputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="currentMainMenuActive"></a>
+                        <b>currentMainMenuActive</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="19" class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:19</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="subMenu"></a>
+                        <b>subMenu</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="18" class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:18</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+    <section data-compodoc="block-outputs">
+    <h3 id="outputs">Outputs</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="emittendItemFunctionMenu"></a>
+                        <b>emittendItemFunctionMenu</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <i>Type : </i>    <code>EventEmitter&lt;any&gt;</code>
+
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-2" colspan="2">
+                                    <div class="io-line">Defined in <a href="" data-line="20" class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:20</a></div>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+</section>
+
+
+    <section data-compodoc="block-methods">
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="clickItemFunction"></a>
+                    <span class="name">
+                        <span ><b>clickItemFunction</b></span>
+                        <a href="#clickItemFunction"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>clickItemFunction(ev)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="28"
+                                    class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:28</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>ev</td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="hideShowMainMenu"></a>
+                    <span class="name">
+                        <span ><b>hideShowMainMenu</b></span>
+                        <a href="#hideShowMainMenu"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>hideShowMainMenu(e)</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="298"
+                                    class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:298</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                            <div class="io-description">
+                                <b>Parameters :</b>
+                                
+                                <table class="params">
+                                    <thead>
+                                        <tr>
+                                            <td>Name</td>
+                                            <td>Optional</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                                <td>e</td>
+
+                                            <td>
+                                                    No
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                            <div class="io-description">
+                                
+                            </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="ngOnInit"></a>
+                    <span class="name">
+                        <span ><b>ngOnInit</b></span>
+                        <a href="#ngOnInit"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>ngOnInit()</code>
+                </td>
+            </tr>
+
+
+                    <tr>
+                        <td class="col-md-4">
+                            <div class="io-line">Defined in <a href="" data-line="24"
+                                    class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:24</a></div>
+                        </td>
+                    </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                        <div class="io-description">
+                            <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                        </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+    <section data-compodoc="block-properties">
+    
+    <h3 id="inputs">
+        Properties
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="menu"></a>
+                    <span class="name">
+                        <span ><b>menu</b></span>
+                        <a href="#menu"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+                    <tr>
+                        <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="22" class="link-to-prism">src/app/layout/static-menu-functions/static-menu-functions.component.ts:22</a></div>
+                        </td>
+                    </tr>
+
+
+        </tbody>
+    </table>
+</section>
+
+</div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Component, EventEmitter, Input, OnInit, Output, Pipe } from &#x27;@angular/core&#x27;;
+
+import { Router } from &#x27;@angular/router&#x27;;
+
+import { UserService } from &#x27;../../services/user.service&#x27;;
+import { alert } from &#x27;../../widgets/ui-dialogs&#x27;;
+
+
+
+
+
+@Component({
+  selector: &#x27;app-static-menu-functions&#x27;,
+  templateUrl: &#x27;./static-menu-functions.component.html&#x27;,
+  styleUrls: [&#x27;./static-menu-functions.component.css&#x27;]
+})
+export class StaticMenuFunctionsComponent{
+  @Input() subMenu
+  @Input() currentMainMenuActive;
+  @Output() emittendItemFunctionMenu: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;(); //Emit all&#x27;esterno
+  constructor(private ruote: Router, private utente: UserService) { }
+  menu;
+
+  ngOnInit() {
+    //console.log(&#x27;currentMainMenuActive&#x27;, this.currentMainMenuActive)
+  }
+
+  clickItemFunction(ev) {
+
+    const itemData &#x3D; ev;
+
+
+
+    if (itemData.controller &#x3D;&#x3D; &#x27;&#x27;) {
+      alert(&#x27;Nessun componente attivo&#x27;, &#x27;Messaggio&#x27;)
+      return
+    }
+
+    if (itemData.controller &#x3D;&#x3D; &#x27;Causali2Component&#x27;) {
+
+      itemData.controller &#x3D; &#x27;EditAutocompleteComponent&#x27;;
+      ev.itemData.controller &#x3D; &#x27;EditAutocompleteComponent&#x27;;
+      //return
+    }
+
+
+
+    /* Con ruote*/
+    let valueC
+    let dataFilter &#x3D;{};
+    let titolo &#x3D; &#x27;&#x27;
+    let api
+    let service
+    let breadcrumb
+    let template &#x3D; &#x27;grid&#x27;
+    let controller
+    let descEvent &#x3D; &#x27;&#x27;
+    //alert(itemData.controller,&quot;www&quot;)
+    if (itemData.controller &#x3D;&#x3D; &#x27;Causali2Component&#x27;) itemData.controller &#x3D; &#x27;EditAutocompleteComponent&#x27;;
+    switch (itemData.id) {
+
+      case &#x27;087&#x27;:
+        api &#x3D; &#x27;CausaleRifiuti&#x27;;
+        service &#x3D; &#x27;CausaliRifiuti&#x27;
+        titolo &#x3D; &#x27;Causali&#x27;;
+        breadcrumb &#x3D; &#x27;Causali&#x27;;
+        template &#x3D; &quot;grid&quot;;
+
+        break;
+      case &#x27;086&#x27;:
+        api &#x3D; &#x27;RegistroRifiuti&#x27;;
+        service &#x3D; &#x27;registroRifiuti&#x27;
+        titolo &#x3D; &#x27;RegistroRifiuti&#x27;;
+        breadcrumb &#x3D; &#x27;RegistroRifiuti&#x27;;
+        template &#x3D; &quot;grid&quot;;
+
+        break;
+
+      case &#x27;085&#x27;:
+        api &#x3D; &#x27;soggetto&#x27;;
+        service &#x3D; &#x27;soggetti&#x27;
+        titolo &#x3D; &#x27;Anagrafiche propri impianti&#x27;;
+        breadcrumb &#x3D; &#x27;Anagrafica azienda&#x27;
+        controller &#x3D; &#x27;AnaSoggettoComponent&#x27;
+        descEvent &#x3D; &#x27;&#x27;
+        template &#x3D; &quot;grid&quot;;
+        valueC &#x3D;
+        {
+          NostreAziende: &#x27;S&#x27;
+        }
+
+        dataFilter &#x3D; {
+          nsAzienda: true,
+          NostreAziende: &#x27;S&#x27;
+        }
+        break;
+      case &#x27;043&#x27;:
+        api &#x3D; &#x27;soggetto&#x27;;
+        service &#x3D; &#x27;soggetti&#x27;;
+        titolo &#x3D; &#x27;Anagrafiche azienda&#x27;;
+        breadcrumb &#x3D; &#x27;Anagrafica azienda&#x27;;
+        template &#x3D; &quot;grid&quot;;
+        descEvent &#x3D; &#x27;&#x27;
+        valueC &#x3D;
+        {
+          NostreAziende: &#x27;N&#x27;,
+
+        }
+        dataFilter &#x3D; {
+          nsAzienda: false,
+          NostreAziende: &#x27;N&#x27;,
+        }
+        break;
+      case &#x27;044&#x27;:
+        api &#x3D; &#x27;soggetto&#x27;;
+        service &#x3D; &#x27;soggetti&#x27;;
+        template &#x3D; &quot;grid&quot;,
+          descEvent &#x3D; &#x27;&#x27;
+        valueC &#x3D;
+        {
+          NostreAziende: &#x27;N&#x27;,
+
+        }
+        dataFilter &#x3D; {
+          nsAzienda: false,
+          NostreAziende: &#x27;N&#x27;,
+        }
+        break;
+      case &#x27;045&#x27;:
+        api &#x3D; &#x27;soggetto&#x27;;
+        service &#x3D; &#x27;soggetti&#x27;;
+        template &#x3D; &quot;grid&quot;,
+        descEvent &#x3D; &#x27;&#x27;
+        valueC &#x3D;
+        {
+          NostreAziende: &#x27;N&#x27;,
+
+        }
+        dataFilter &#x3D; {
+          nsAzienda: false,
+          NostreAziende: &#x27;N&#x27;,
+        }
+        break;
+      case &#x27;125&#x27;: // Schede rifiuti Produttori        
+
+
+        titolo &#x3D; &#x27;Schede descrittive rifiuti&#x27;;
+        service &#x3D; &#x27;SchedaRifiutoN&#x27;;
+        api &#x3D; &#x27;SchedaRifiuto&#x27;;
+        template &#x3D; &quot;grid&quot;;
+
+
+        break;
+      case &#x27;126&#x27;: // Schede rifiuti Produttori        
+
+        titolo &#x3D; &#x27;Schede descrittive rifiuti&#x27;;
+        service &#x3D; &#x27;SchedaRifiuto&#x27;;
+        api &#x3D; &#x27;SchedaRifiuto&#x27;;
+        template &#x3D; &quot;grid&quot;;
+
+
+        break;
+
+      case &#x27;200&#x27;:
+        api &#x3D; &#x27;&#x27;;
+        service &#x3D; &#x27;gestioneAziendaAdmin&#x27;
+        titolo &#x3D; &#x27;Gestione info Azienda&#x27;;
+        breadcrumb &#x3D; &#x27;Info azienda&#x27;;
+        template &#x3D; &quot;form&quot;;
+        valueC &#x3D;
+        {
+          idLicenza: this.utente.InfoUtenteConnesso.licenza,
+        }
+        dataFilter &#x3D; {
+          titolo: &#x27;Gestione Utenti e Permessi&#x27;,
+          idLicenza: this.utente.InfoUtenteConnesso.licenza
+        }
+        break;
+      case &#x27;122&#x27;: {
+        api &#x3D; &#x27;ConfigurazioniModuli&#x27;;
+        service &#x3D; &#x27;ConfigurazioniModuli&#x27;;
+        template &#x3D; &quot;grid&quot;
+        break;
+      }
+      case &#x27;090&#x27;: {
+        api &#x3D; &#x27;MovimentoRifiuti&#x27;;
+        service &#x3D; &#x27;movimentiRifiuto&#x27;;
+        template &#x3D; &quot;grid&quot;
+        break;
+      }
+
+      case &#x27;204&#x27;: {
+        api &#x3D; &#x27;DocumentoRifiuti&#x27;;
+        service &#x3D; &#x27;movimentiRifiuto&#x27;;
+        template &#x3D; &quot;grid&quot;,
+        breadcrumb &#x3D; &#x27;Formulari emessi&#x27;
+        break;
+      }
+      case &#x27;206&#x27;: {
+
+        titolo &#x3D; &#x27;Stampa Registri di Carico e Scarico Aziendale&#x27;;
+
+        service &#x3D; &#x27;stampaRegistriFiltri&#x27;;
+        template &#x3D; &quot;form&quot;;
+        break;
+      }
+
+      case &#x27;207&#x27;: {
+
+        titolo &#x3D; &#x27;Generatore di anagrafiche&#x27;;
+         service &#x3D; &#x27;newAnagrafica&#x27;;
+         template &#x3D; &quot;grid&quot;;
+        /*api &#x3D; &#x27;ModelloDiStampa&#x27;;
+        template &#x3D; &quot;grid&quot;; */
+        break;
+      }
+      case &#x27;208&#x27;: {
+
+        titolo &#x3D; &#x27;Giacenze rifiuti&#x27;;
+        service &#x3D; &#x27;GiacenzeRifiuti&#x27;;
+        api &#x3D; &#x27;&#x27;;
+        template &#x3D; &quot;form&quot;;
+        break;
+      }
+        /*
+        case &#x27;804&#x27;:{
+  
+          titolo&#x3D;&#x27;Anagrafica Registri di C/S Rifiuti&#x27;;
+          service &#x3D; &#x27;anaRegistroRifiuti&#x27;;
+          api &#x3D; &#x27;RegistroRifiuti&#x27;;
+          template&#x3D;&quot;grid&quot;;
+          controller&#x3D; &#x27;AnaRegistroRifiutiComponent&#x27;;
+  
+        }*/
+        break;
+
+    }
+
+    if (typeof itemData.text &#x3D;&#x3D; &#x27;undefined&#x27;) {
+      return
+    }
+
+    let pathItem &#x3D; itemData.text.toLowerCase().replace(/[^a-zA-Z ]/g, &#x27;&#x27;);
+    pathItem &#x3D; pathItem.replace(/\s/g, &#x27;-&#x27;);
+
+    //dataFilter.isJustClose &#x3D; true
+
+    let params &#x3D; {
+
+      api: api,
+      service: service,
+      titolo: titolo !&#x3D; &#x27;&#x27; ? titolo : itemData.text,
+      breadcrumb: breadcrumb,
+      currentTabId: itemData.id,
+      currentTabName: itemData.text,
+      queryFilter: JSON.stringify(valueC),
+      data: JSON.stringify(dataFilter),
+      filter: JSON.stringify(dataFilter),
+      helpDoc: itemData.contextHelp,
+      componentName: controller,
+      templateView: template,
+      descEvent: descEvent
+    }
+
+    let perm&#x3D;this.utente.DammiPermessiFunzione(params.currentTabId);
+    if(perm&#x3D;&#x3D;&#x27;&#x27; || perm&#x3D;&#x3D;&#x27;S&#x27;){
+      alert(&quot;Non hai permessi per accedere alla funzione&quot;,&#x27;Permessi&#x27;)
+      return;
+    }
+ //currentTabId:&quot;087&quot;
+
+
+    //console.log(params)
+    this.ruote.navigate(
+      [&#x27;/&#x27; + pathItem],
+      {
+        queryParams: params,
+        skipLocationChange: false,
+        replaceUrl: true,
+      }
+    )
+      .then(data &#x3D;&gt; {
+
+        this.emittendItemFunctionMenu.emit(ev);
+
+
+      })
+      .catch(e &#x3D;&gt; {
+        alert(e, &#x27;&#x27;)
+        //console.log(&#x27;Route non exists, redirection is error&#x27;);
+        //this.ruote.navigate([&#x27;main/dashboard&#x27;])
+      });
+
+
+
+  }
+
+  hideShowMainMenu(e) {
+    e.name &#x3D; &#x27;closeFromButton&#x27;;
+
+    this.emittendItemFunctionMenu.emit(e);
+  }
+}
+</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="templateData">
+        <pre class="line-numbers"><code class="language-html">&lt;div class&#x3D;&quot;sticky&quot;&gt;
+    &lt;div class&#x3D;&quot;horizontal-main hor-menu clearfix d-flex&quot;&gt;
+        &lt;button class&#x3D;&quot;nav-link button-menu-mobile nav-icon&quot; id&#x3D;&quot;togglemenu&quot; (click)&#x3D;&quot;hideShowMainMenu($event)&quot;&gt;
+            &lt;i class&#x3D;&quot;icon-icona-header&quot;&gt;&lt;/i&gt;
+           
+        &lt;/button&gt;
+        &lt;h4 style&#x3D;&quot;width:10%&quot; class&#x3D;&quot;sidebar-title mb-0 flex-grow-0 text-center align-self-center&quot;&gt;&lt;span&gt;{{currentMainMenuActive.text}}&lt;/span&gt;&lt;/h4&gt;
+        &lt;div class&#x3D;&quot;horizontal-mainwrapper  mx-5 w-100 clearfix p-0 &quot;&gt; &lt;!--container è stato rimosso--&gt;
+           
+            &lt;nav class&#x3D;&quot;horizontalMenu clearfix&quot;&gt;
+                
+                &lt;ul class&#x3D;&quot;horizontalMenu-list&quot;&gt;
+                    &lt;!--ricorda classe css active --&gt;
+                    &lt;ng-template *ngFor&#x3D;&quot;let item of subMenu&quot; [ngIf]&#x3D;&quot;item.visible&quot;&gt;
+                        &lt;li class&#x3D;&quot;&quot;&gt;
+                            &lt;a class&#x3D;&quot;sub-icon&quot; &gt;
+                                &lt;i class&#x3D;&quot;hor-icon  material-icons-outlined {{item.image}}&quot;&gt;&lt;/i&gt; {{item.key}}
+                                &lt;i *ngIf&#x3D;&quot;item.items.length&gt;0&quot; class&#x3D;&quot;fa fa-angle-down horizontal-icon&quot;&gt;&lt;/i&gt;
+                            &lt;/a&gt;
+                            &lt;ul class&#x3D;&quot;sub-menu&quot; *ngIf&#x3D;&quot;item.items.length&gt;0&quot;&gt;
+                                &lt;ng-template *ngFor&#x3D;&quot;let subItem of item.items&quot; [ngIf]&#x3D;&quot;subItem.visible&quot;&gt;
+                                    &lt;li&gt;
+                                    
+                                        &lt;a *ngIf&#x3D;&quot;!subItem.disabled;else disabled&quot; (click)&#x3D;&quot;clickItemFunction(subItem)&quot; href&#x3D;&quot;javascript:void(0);&quot;  &gt;
+                                            &lt;i class&#x3D;&quot;mdi mdi-square-medium-outline material-icons-outlined&quot;&gt;&lt;/i&gt;
+                                            {{subItem.text}}
+                                         &lt;/a&gt;
+                                         &lt;ng-template #disabled&gt;
+                                            &lt;a  href&#x3D;&quot;javascript:void(0);&quot; style&#x3D;&quot;pointer-events:none;opacity:0.6;&quot; &gt;
+                                                &lt;i class&#x3D;&quot;mdi mdi-square-medium-outline material-icons-outlined&quot;&gt;&lt;/i&gt;
+                                                {{subItem.text}}
+                                             &lt;/a&gt;
+                                         &lt;/ng-template&gt;
+                                     
+                                    &lt;/li&gt;
+                                &lt;/ng-template&gt;
+                                
+    
+                            &lt;/ul&gt;
+                        &lt;/li&gt;
+
+                    &lt;/ng-template&gt;
+                    
+                &lt;/ul&gt;
+            &lt;/nav&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="styleData">
+                <p class="comment">
+                    <code>./static-menu-functions.component.css</code>
+                </p>
+                <pre class="line-numbers"><code class="language-scss">.horizontal-main {
+    width: 100%;
+    position: relative;
+    padding: 8px;
+    
+}
+
+.horizontalMenu {
+    color: #fff;
+    font-size: 14px;
+    padding: 0;
+    display: block
+}
+
+.horizontalMenu&gt;.horizontalMenu-list {
+    text-align: left;
+    margin: 0 auto;
+    width: 100%;
+    display: block;
+    padding: 0
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li {
+     text-align: center; 
+     
+    display: block;
+    padding: 0;
+    margin: 0;
+    float: left;
+   /* width: 226px;*/
+    
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a {
+    display: block;
+    padding: 2.5px 12px 3px 5px;
+    text-decoration: none;
+    position: relative;
+    color: #1a1630;
+    font-weight: 400;
+    font-size: 14px;
+    margin: 0 2px;
+    border-radius: 50px;
+    vertical-align: middle;
+    font-family: &quot;Helvetica Neue&quot;,&quot;Segoe UI&quot;,helvetica,verdana,sans-serif;
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li:last-child&gt;a {
+    border-right: 0;
+    margin-right: 0
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li:first-child&gt;a {
+    margin-left: 0
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li a.menuhomeicon {
+    padding-left: 25px;
+    padding-right: 25px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a i.horizontal-icon {
+    display: inline-block;
+    font-size: 13px;
+    line-height: inherit;
+    margin-left: 3px;
+    vertical-align: middle
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a .arrow:after {
+    border-left: 4px solid #0000;
+    border-right: 4px solid #0000;
+    border-top: 4px solid;
+    content: &quot;&quot;;
+    float: right;
+    right: 11px;
+    height: 0;
+    margin: 0 0 0 14px;
+    position: absolute;
+    text-align: right;
+    top: 33px;
+    width: 0
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu {
+    float: right;
+    zoom: 1
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu a {
+    padding: 0 30px 0 20px;
+    border-right: none
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu a i {
+    font-size: 15px
+}
+
+.horizontalMenu-list&gt;li.rightmenu:after,
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu:before {
+    content: &quot;&quot;;
+    display: table
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu:after {
+    clear: both
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch {
+    float: right;
+    width: 210px;
+    height: 39px;
+    position: relative;
+    margin: 16px 0 0
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch .searchicon {
+    transition: all .7s ease 0s
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch input {
+    position: relative;
+    float: right;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    text-indent: 15px;
+    height: 39px;
+    z-index: 2;
+    outline: none;
+    color: #333;
+    background-color: #efefef;
+    transition: all .7s ease 0s;
+    font-size: 12px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch input::placeholder {
+    color: #a9a9a9
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch input:focus {
+    color: #333;
+    width: 230px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch input:focus~.btnstyle .fa {
+    color: #000;
+    opacity: 1
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch input:focus~.searchicon {
+    opacity: 1;
+    z-index: 3;
+    color: #fff
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch .btnstyle {
+    top: 0;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 40px;
+    line-height: 30px;
+    z-index: 1;
+    cursor: pointer;
+    opacity: .3;
+    color: #333;
+    z-index: 1000;
+    background-color: initial;
+    border: 0 solid;
+    transition: all .7s ease 0s
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch .btnstyle .fa {
+    line-height: 37px;
+    margin: 0;
+    padding: 0;
+    text-align: center
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch .btnstyle:hover .fa {
+    opacity: 1
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu {
+    position: absolute;
+    top: 30px;
+    z-index: 10;
+    margin: 0;
+    padding: 10px 5px;
+    min-width: 226px;
+    background-color: #c8ced6;
+    border: 1px solid #c8ced6;
+    box-shadow: 0 16px 18px #0404071a;
+    border-radius: 4px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    display: block;
+    list-style: none;
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;a {
+    background-image: none;
+    color: #576482;
+    text-align: left;
+    display: block;
+    line-height: 22px;
+    padding: 6px 7px;
+    text-transform: none;
+    font-size: 13px;
+    letter-spacing: normal;
+    border-right: 0 solid;
+    margin-left: 12px;
+    position: relative;
+    text-decoration: none;
+    
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;a:hover {
+    text-decoration: none;
+    font-weight: 500
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;a&gt;i {
+    margin-right: 9px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+    min-width: 220px;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    margin: 0;
+    padding: 10px 15px;
+    list-style: none;
+    background-color: #fff;
+    border: 1px solid #ebecf1;
+    box-shadow: 0 16px 18px #0404071a;
+    border-radius: 0 4px 4px 0
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    display: block
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a {
+    background-image: none;
+    color: var(--blueSoft);
+    text-align: left;
+    display: block;
+    line-height: 22px;
+    padding: 6px 7px;
+    text-transform: none;
+    font-size: 13px;
+    letter-spacing: normal;
+    border-right: 0 solid;
+    margin-left: 10px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a:hover {
+    text-decoration: none
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a&gt;i {
+    margin-right: 9px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+    min-width: 220px;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    margin: 0;
+    list-style: none;
+    padding: 0;
+    background-color: #fff;
+    border: 1px solid #e8ebf3
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    display: block
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a {
+    background-image: none;
+    color: #576482;
+    text-align: left;
+    display: block;
+    line-height: 22px;
+    padding: 8px 12px;
+    text-transform: none;
+    font-size: 13px;
+    letter-spacing: normal;
+    border-right: 0 solid
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a:hover {
+    text-decoration: none
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a&gt;i {
+    margin-right: 9px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu {
+    width: 100%;
+    left: 0;
+    position: absolute;
+    top: 54px;
+    color: #576482;
+    z-index: 1000;
+    margin: 0;
+    text-align: left;
+    font-size: 15px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .megamenu-content {
+    border: 1px solid #e8ebf3;
+    background-color: #fff;
+    padding: 14px 20px;
+    border-radius: 2px;
+    box-shadow: 0 5px 25px #e3e4ee33
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .title {
+    padding: 5px 5px 5px 0;
+    font-size: 16px;
+    color: #2c2c2c;
+    margin: 0 0 4px;
+    text-align: left;
+    font-weight: 600
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .wsmwnutxt {
+    width: 100%;
+    font-size: 14px;
+    text-align: justify;
+    line-height: 22px;
+    color: #2c2c2c;
+    margin-top: 10px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .link-list li {
+    display: block;
+    text-align: center;
+    white-space: nowrap;
+    text-align: left;
+    padding: 5px 10px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .link-list li a {
+    line-height: 18px;
+    text-align: left;
+    padding: 6px 7px;
+    background: #0000;
+    background-image: none;
+    color: #576482;
+    border-right: 0;
+    display: block;
+    font-size: 13px;
+    margin-left: 10px;
+    position: relative
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu li i {
+    margin-right: 5px;
+    text-align: center;
+    width: 18px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu li a:hover {
+    background: #0000;
+    text-decoration: none
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .link-list li i {
+    font-size: 12px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .mrgtop {
+    margin-top: 15px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .show-grid div {
+    padding-bottom: 10px;
+    padding-top: 10px;
+    background-color: #dbdbdb;
+    border: 1px solid #e7e7e7;
+    color: #6a6a6a;
+    margin: 2px 0;
+    font-size: 13px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu.halfmenu {
+    width: 30%;
+    right: auto;
+    left: auto
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu.halfdiv {
+    width: 20%;
+    right: auto;
+    left: auto
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form {
+    width: 100%;
+    display: block
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form input[type&#x3D;text],
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form textarea {
+    width: 100%;
+    border: 1px solid #e2e2e2;
+    color: #000;
+    font-size: 13px;
+    padding: 8px 5px;
+    margin-bottom: 8px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form textarea {
+    min-height: 122px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form input[type&#x3D;submit] {
+    margin-right: 15px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form input[type&#x3D;button],
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form input[type&#x3D;submit] {
+    width: 25%;
+    display: block;
+    height: 32px;
+    float: right;
+    border: none;
+    cursor: pointer;
+    background-color: #e1e1e1;
+    border-radius: 2px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .carousel-inner .item img {
+    width: 100%
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .carousel-control-next,
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .carousel-control-prev {
+    opacity: .8
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .carousel-caption {
+    bottom: 0;
+    background-color: #000000b3;
+    font-size: 13px;
+    height: 31px;
+    left: 0;
+    padding: 7px 0;
+    right: 0;
+    width: 100%
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .typography-text {
+    padding: 0;
+    font-size: 14px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .typography-text ul {
+    padding: 0;
+    margin: 0
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .typography-text p {
+    text-align: justify;
+    line-height: 24px;
+    color: #656565
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .typography-text ul li {
+    display: block;
+    padding: 2px 0;
+    line-height: 22px
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .typography-text ul li a {
+    color: #656565
+}
+
+@media (min-width: 1024px) {
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .link-list:first-child {
+        border: 0
+    }
+}
+
+.horizontal-header {
+    display: none
+}
+
+.horizontal-overlapbg {
+    opacity: 0;
+    visibility: hidden
+}
+
+.hometext,
+.horizontalMenu .horizontalMenu-click,
+.horizontalMenu .horizontalMenu-click02 {
+    display: none
+}
+
+@media only screen and (max-width: 991px) {
+    body.active {
+        overflow: hidden
+    }
+
+    .desktoplogo {
+        display: none
+    }
+
+    .horizontal-main {
+        height: 0;
+        padding: 0
+    }
+
+    .horizontalMenucontainer {
+        background-attachment: local;
+        background-position: 33% 0
+    }
+
+    .horizontalMenu {
+        width: 100%;
+        background: #0000 none repeat scroll 0 0;
+        left: 0;
+        overflow-y: hidden;
+        padding: 0;
+        top: 0;
+        position: fixed;
+        visibility: hidden;
+        margin: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list {
+        height: auto;
+        min-height: 100%;
+        width: 240px;
+        background: #fff;
+        padding-bottom: 0;
+        margin-left: -240px;
+        display: block;
+        text-align: center
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li {
+        width: 100%;
+        display: block;
+        float: none;
+        border-right: none;
+        background-color: initial;
+        position: relative;
+        white-space: inherit;
+        clear: right;
+        padding: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li span a {
+        width: 85%;
+        margin: 0 auto
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a {
+        padding: 8px 32px 8px 17px;
+        font-size: 14px;
+        text-align: left;
+        border-right: 0 solid;
+        color: #576482;
+        line-height: 25px;
+        border-bottom: 1px solid #e0e4ec;
+        position: static;
+        margin: 0;
+        border-radius: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a span.i {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li a.menuhomeicon {
+        padding-left: 17px;
+        padding-right: 17px;
+        border-top: 1px solid #00000021
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a&gt;.fa {
+        font-size: 16px;
+        color: #fff;
+        display: none !important
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a .arrow:after {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li:hover&gt;a {
+        text-decoration: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a&gt;.hometext {
+        display: inline-block
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu {
+        display: none;
+        position: relative;
+        top: 0;
+        background-color: #f2f4f6;
+        padding: 0 25px;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition: inherit;
+        -webkit-transform-style: flat;
+        box-shadow: none;
+        border: none;
+        border-bottom: 0 solid #e0e4ec;
+        margin: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;a {
+        line-height: 20px;
+        font-size: 13px;
+        padding: 10px 0 10px 16px;
+        color: #576482;
+        position: static
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li span+a {
+        padding-right: 30px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;a&gt;.fa {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;a:hover {
+        background-color: initial;
+        color: #576482;
+        text-decoration: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu li:hover&gt;a {
+        color: #576482
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+        width: 100%;
+        position: static;
+        left: 100%;
+        top: 0;
+        display: none;
+        margin: 0;
+        padding: 0;
+        border: 0 solid;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition: inherit;
+        -webkit-transform-style: flat
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li {
+        margin: 0;
+        padding: 0;
+        position: relative
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a {
+        line-height: 20px;
+        font-size: 13px;
+        padding: 10px 0 10px 26px;
+        color: #576482
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li span+a {
+        padding-right: 30px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a&gt;.fa {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a:hover {
+        background-color: initial;
+        color: #576482;
+        text-decoration: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li:hover&gt;a,
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a.active {
+        color: #000
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+        width: 100%;
+        position: static;
+        left: 100%;
+        top: 0;
+        display: none;
+        margin: 0;
+        padding: 0;
+        border: 0 solid;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition: inherit;
+        -webkit-transform-style: flat
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li {
+        margin: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a {
+        line-height: 20px;
+        font-size: 13px;
+        padding: 10px 0 10px 34px;
+        color: #383838
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li span+a {
+        padding-right: 30px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a&gt;.fa {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a:hover {
+        background-color: #e7e7e7;
+        color: #576482;
+        text-decoration: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;a.active {
+        color: #000
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu {
+        color: #576482;
+        display: none;
+        position: relative;
+        top: 0;
+        padding: 0;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition: inherit;
+        border: 0 solid;
+        border-bottom: 1px solid #00000021;
+        -webkit-transform-style: flat
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .container {
+        padding: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu.halfmenu {
+        width: 100%;
+        margin: 0;
+        padding: 5px 0 10px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .title {
+        color: #576482;
+        font-size: 15px;
+        padding: 10px 8px 10px 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu&gt;ul {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-size: 13px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu&gt;ul&gt;li&gt;a {
+        padding: 9px 14px;
+        line-height: normal;
+        font-size: 13px;
+        background-color: #e7e7e7;
+        color: #576482
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu&gt;ul&gt;li&gt;a:hover {
+        background-color: #000
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu ul li.title {
+        line-height: 26px;
+        color: #576482;
+        margin: 0;
+        font-size: 15px;
+        padding: 7px 0;
+        background-color: initial
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu.halfdiv {
+        width: 100%
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form {
+        padding: 5px 0 62px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .show-grid div {
+        margin: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form input[type&#x3D;button],
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form input[type&#x3D;submit] {
+        width: 46%
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .menu_form textarea {
+        min-height: 100px
+    }
+
+    .horizontal-header {
+        width: 100%;
+        display: block;
+        position: relative;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        height: 54px;
+        border-bottom: 1px solid #0000001a;
+        border-top: 1px solid #0000001a;
+        text-align: center
+    }
+
+    .active .horizontal-header,
+    .horizontal-header {
+        transition: all .25s ease-in-out
+    }
+
+    .horizontal-header .smllogo {
+        display: inline-block;
+        margin-top: 11px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch {
+        width: 86%;
+        margin: 7%;
+        padding: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch input {
+        border-radius: 50px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li.rightmenu&gt;.topmenusearch input:focus {
+        width: 100%
+    }
+
+    .callusbtn {
+        color: #a9a9a9;
+        font-size: 21px;
+        position: absolute;
+        right: 5px;
+        top: 0;
+        transition: all .4s ease-in-out 0s;
+        z-index: 102;
+        padding: 11px 14px
+    }
+
+    .callusbtn .fa {
+        vertical-align: top;
+        margin-top: 4px
+    }
+
+    .callusbtn:hover .fa {
+        color: #a9a9a9
+    }
+
+    .animated-arrow {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 102;
+        transition: all .4s ease-in-out;
+        cursor: pointer;
+        padding: 16px 35px 16px 0;
+        margin: 6px 0 0 8px;
+        box-shadow: 0 2px 3px #0404071a;
+        border-radius: 50px;
+        border: 0 solid #ebecf1
+    }
+
+    .animated-arrow span {
+        transition: all .5s ease-in-out
+    }
+
+    .animated-arrow span,
+    .animated-arrow span:after,
+    .animated-arrow span:before {
+        cursor: pointer;
+        height: 2px;
+        width: 17px;
+        background: #5c678f;
+        position: absolute;
+        display: block;
+        content: &quot;&quot;
+    }
+
+    .animated-arrow span:before {
+        top: -7px;
+        width: 23px
+    }
+
+    .animated-arrow span:after {
+        bottom: -7px;
+        width: 17px
+    }
+
+    .animated-arrow span:after,
+    .animated-arrow span:before {
+        transition: all .5s ease-in-out
+    }
+
+    .active .animated-arrow span {
+        background-color: initial;
+        background: none !important
+    }
+
+    .active .animated-arrow span:after {
+        width: 23px;
+        top: -1px
+    }
+
+    .active .animated-arrow span:before {
+        top: -1px
+    }
+
+    .active .animated-arrow.active span:after {
+        top: -3px
+    }
+
+    .active .animated-arrow span:before {
+        transform: rotate(45deg);
+        -moz-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        -o-transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
+        bottom: 0
+    }
+
+    .active .animated-arrow span:after {
+        transform: rotate(-45deg);
+        -moz-transform: rotate(-45deg);
+        -ms-transform: rotate(-45deg);
+        -o-transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg)
+    }
+
+    .horizontal-overlapbg {
+        right: 0;
+        width: calc(100% - 240px);
+        height: 100vh;
+        min-height: 100%;
+        position: fixed;
+        top: 0;
+        opacity: 0;
+        visibility: hidden;
+        background-color: #00000073;
+        cursor: pointer
+    }
+
+    .active .horizontalMenu .horizontal-overlapbg {
+        opacity: 1;
+        visibility: visible;
+        -webkit-transition: opacity 1.5s ease-in-out;
+        -moz-transition: opacity 1.5s ease-in-out;
+        -ms-transition: opacity 1.5s ease-in-out;
+        -o-transition: opacity 1.5s ease-in-out
+    }
+
+    .horizontalMenucontainer {
+        transition: all .25s ease-in-out
+    }
+
+    .active .horizontalMenucontainer {
+        margin-left: 240px;
+        transition: all .25s ease-in-out
+    }
+
+    .active .horizontalMenu {
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        visibility: visible;
+        z-index: 1000;
+        top: 0;
+        height: 100% !important
+    }
+
+    .active .horizontalMenu&gt;.horizontalMenu-list {
+        transition: all .25s ease-in-out;
+        margin-left: 0
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontalMenu-click {
+        height: 49px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: block;
+        cursor: pointer;
+        width: 100%
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li .horizontalMenu-click.horizontal-activearrow&gt;i {
+        transform: rotate(180deg);
+        margin-top: 10px !important;
+        margin-right: 25px !important
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li .horizontalMenu-click.horizontal-activearrow1&gt;i {
+        transform: rotate(180deg);
+        margin-top: 10px !important;
+        margin-right: 18px !important
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontalMenu-click&gt;i {
+        display: block;
+        height: 23px;
+        width: 25px;
+        margin-top: 14px;
+        margin-right: 10px;
+        background-size: 25px;
+        font-size: 16px;
+        color: #576482;
+        float: right;
+        opacity: .4
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li .horizontalMenu-click02 {
+        height: 41px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: block;
+        cursor: pointer;
+        width: 100%
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li .horizontalMenu-click02&gt;i {
+        display: block;
+        margin: 8px 6px;
+        background-size: 25px;
+        font-size: 16px;
+        color: #576482;
+        float: right;
+        opacity: .4
+    }
+
+    .sub-menu li:before {
+        top: 10px !important
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu .sub-menu-sub:after {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li .horizontalMenu-click02&gt;i.horizontalMenu-rotate {
+        transform: rotate(180deg)
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a .horizontal-icon,
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li a span {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+        background: #0000;
+        box-shadow: none !important
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .link-list li a {
+        color: #fff9
+    }
+
+    .mega-menubg {
+        border: 0 !important;
+        box-shadow: 0 !important
+    }
+
+    .hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .link-list li a {
+        color: #576482
+    }
+
+    .hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a.active {
+        color: #fff;
+        background: #8499c4
+    }
+
+    .hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li:first-child&gt;a {
+        margin-top: 0 !important
+    }
+
+    .hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li:last-child&gt;a {
+        margin-right: 5px !important
+    }
+
+    .mega-menubg {
+        background: #f2f4f6 !important;
+        box-shadow: none !important;
+        padding: 0 20px !important
+    }
+}
+
+@media only screen and (min-width: 992px) and (max-width:1162px) {
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a {
+        padding-left: 5px;
+        padding-right: 5px;
+        font-size: 13px
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a&gt;.arrow {
+        display: none
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li a.menuhomeicon {
+        padding-left: 22px;
+        padding-right: 22px
+    }
+}
+
+.horizontalMenu-list .sub-menu .sub-menu:after,
+.horizontalMenu-list .sub-menu .sub-menu:before {
+    display: none
+}
+
+@media (max-width: 992px) {
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .megamenu-content {
+        border: 0;
+        box-shadow: none
+    }
+}
+
+.sticky.sticky-pin .horizontal-main {
+    box-shadow: -6px 5px 8px 0 #1817260f
+}
+
+.horizontalMenu ul li a.btn {
+    font-size: 14px !important;
+    margin: 5px 0
+}
+
+@media (min-width: 992px) {
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu {
+        opacity: 0;
+        visibility: hidden;
+        -o-transform-origin: 0 0;
+        -ms-transform-origin: 0 0;
+        -moz-transform-origin: 0 0;
+        -webkit-transform-origin: 0 0;
+        -o-transition: -o-transform .3s, opacity .3s;
+        -ms-transition: -ms-transform .3s, opacity .3s;
+        -moz-transition: -moz-transform .3s, opacity .3s;
+        -webkit-transition: -webkit-transform .3s, opacity .3s;
+        transform-style: preserve-3d;
+        -o-transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        transform: rotateX(-75deg);
+        -o-transform: rotateX(-75deg);
+        -moz-transform: rotateX(-75deg);
+        -webkit-transform: rotateX(-75deg)
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li:hover&gt;.horizontal-megamenu,
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li:hover&gt;ul.sub-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: rotateX(0deg);
+        -o-transform: rotateX(0deg);
+        -moz-transform: rotateX(0deg);
+        -webkit-transform: rotateX(0deg)
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+        opacity: 0;
+        visibility: hidden;
+        transform-style: preserve-3d;
+        -o-transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        transform: rotateX(-75deg);
+        -o-transform: rotateX(-75deg);
+        -moz-transform: rotateX(-75deg);
+        -webkit-transform: rotateX(-75deg)
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li:hover&gt;ul.sub-menu {
+        opacity: 1;
+        visibility: visible;
+        -o-transform-origin: 0 0;
+        -ms-transform-origin: 0 0;
+        -moz-transform-origin: 0 0;
+        -webkit-transform-origin: 0 0;
+        transform: rotateX(0deg);
+        -o-transform: rotateX(0deg);
+        -moz-transform: rotateX(0deg);
+        -webkit-transform: rotateX(0deg)
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li:hover&gt;ul.sub-menu,
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+        -o-transition: -o-transform .4s, opacity .4s;
+        -ms-transition: -ms-transform .4s, opacity .4s;
+        -moz-transition: -moz-transform .4s, opacity .4s;
+        -webkit-transition: -webkit-transform .4s, opacity .4s
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu {
+        opacity: 0;
+        visibility: hidden;
+        -o-transform-origin: 0 0;
+        -ms-transform-origin: 0 0;
+        -moz-transform-origin: 0 0;
+        -webkit-transform-origin: 0 0;
+        transform-style: preserve-3d;
+        -o-transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        transform: rotateX(-75deg);
+        -o-transform: rotateX(-75deg);
+        -moz-transform: rotateX(-75deg);
+        -webkit-transform: rotateX(-75deg)
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu&gt;li&gt;ul.sub-menu&gt;li:hover&gt;ul.sub-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: rotateX(0deg);
+        -o-transform: rotateX(0deg);
+        -moz-transform: rotateX(0deg);
+        -webkit-transform: rotateX(0deg)
+    }
+
+    .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu {
+        opacity: 0;
+        visibility: hidden;
+        -o-transform-origin: 0 0;
+        -ms-transform-origin: 0 0;
+        -moz-transform-origin: 0 0;
+        -webkit-transform-origin: 0 0;
+        -o-transition: -o-transform .3s, opacity .3s;
+        -ms-transition: -ms-transform .3s, opacity .3s;
+        -moz-transition: -moz-transform .3s, opacity .3s;
+        -webkit-transition: -webkit-transform .3s, opacity .3s;
+        transform-style: preserve-3d;
+        -o-transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        transform: rotateX(-75deg);
+        -o-transform: rotateX(-75deg);
+        -moz-transform: rotateX(-75deg);
+        -webkit-transform: rotateX(-75deg)
+    }
+
+    .header-style1 .horizontalMenu&gt;.horizontalMenu-list&gt;li {
+        padding: .75rem 0
+    }
+}
+
+.mega-menubg {
+    background: #fff;
+    padding: 14px 15px;
+    border: 1px solid #ebecf1;
+    box-shadow: 0 16px 18px #0404071a;
+    border-radius: 4px
+}
+
+.horizontal-main.hor-menu {
+    background: #fff;
+    border-bottom: 1px solid #0000;
+    box-shadow: 5px 7px 26px -5px #1817260f
+}
+
+.hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;.horizontal-megamenu .link-list li a {
+    color: #576482
+}
+
+.hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a.active,
+.hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;a:hover {
+    color: #1a1630;
+    background: #ebeef1;
+    box-shadow: none
+}
+
+.horizontalMenu&gt;.horizontalMenu-list&gt;li&gt;ul.sub-menu .sub-menu-sub:after {
+    content: &quot;&quot;;
+    font-family: feather;
+    font-size: 13px;
+    position: absolute;
+    top: 9px;
+    right: 14px;
+    
+    color: #023957;
+    opacity: .4
+}
+
+.hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li:first-child&gt;a {
+    margin-left: 0
+}
+
+.hor-menu .horizontalMenu&gt;.horizontalMenu-list&gt;li:last-child&gt;a {
+    margin-right: 0
+}
+
+
+
+
+.hor-icon {
+    fill: #023957;
+    color: #023957;
+    font-size: 20px;
+    line-height: 20px;
+    text-align: center;
+    vertical-align: middle;
+    margin-right: 5px;
+    width: 37.5px;
+    height: 37.5px;
+    background: #fff;
+    padding: 8px;
+    border-radius: 50px;
+    box-shadow: 0 2px 3px #0404071a;
+    border: 1px solid #ebecf1
+}
+
+.hor-content .latest-timeline {
+    height: 365px
+}
+
+.material-icons, .material-icons-outlined {
+    font-weight: 400;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+::ng-deep.custom-class{
+    background:#fff8dc;
+}
+
+</code></pre>
+    </div>
+
+    <div class="tab-pane fade " id="tree">
+        <div id="tree-container"></div>
+        <div class="tree-legend">
+            <div class="title">
+                <b>Legend</b>
+            </div>
+            <div>
+                <div class="color htmlelement"></div><span>Html element</span>
+            </div>
+            <div>
+                <div class="color component"></div><span>Component</span>
+            </div>
+            <div>
+                <div class="color directive"></div><span>Html element with directive</span>
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
+<script src="../js/libs/vis.min.js"></script>
+<script src="../js/libs/htmlparser.js"></script>
+<script src="../js/libs/deep-iterator.js"></script>
+<script>
+        var COMPONENT_TEMPLATE = '<div><div class="sticky">    <div class="horizontal-main hor-menu clearfix d-flex">        <button class="nav-link button-menu-mobile nav-icon" id="togglemenu" (click)="hideShowMainMenu($event)">            <i class="icon-icona-header"></i>                   </button>        <h4 style="width:10%" class="sidebar-title mb-0 flex-grow-0 text-center align-self-center"><span>{{currentMainMenuActive.text}}</span></h4>        <div class="horizontal-mainwrapper  mx-5 w-100 clearfix p-0 "> <!--container è stato rimosso-->                       <nav class="horizontalMenu clearfix">                                <ul class="horizontalMenu-list">                    <!--ricorda classe css active -->                    <ng-template *ngFor="let item of subMenu" [ngIf]="item.visible">                        <li class="">                            <a class="sub-icon" >                                <i class="hor-icon  material-icons-outlined {{item.image}}"></i> {{item.key}}                                <i *ngIf="item.items.length>0" class="fa fa-angle-down horizontal-icon"></i>                            </a>                            <ul class="sub-menu" *ngIf="item.items.length>0">                                <ng-template *ngFor="let subItem of item.items" [ngIf]="subItem.visible">                                    <li>                                                                            <a *ngIf="!subItem.disabled;else disabled" (click)="clickItemFunction(subItem)" href="javascript:void(0);"  >                                            <i class="mdi mdi-square-medium-outline material-icons-outlined"></i>                                            {{subItem.text}}                                         </a>                                         <ng-template #disabled>                                            <a  href="javascript:void(0);" style="pointer-events:none;opacity:0.6;" >                                                <i class="mdi mdi-square-medium-outline material-icons-outlined"></i>                                                {{subItem.text}}                                             </a>                                         </ng-template>                                                                         </li>                                </ng-template>                                                                </ul>                        </li>                    </ng-template>                                    </ul>            </nav>        </div>    </div></div></div>'
+    var COMPONENTS = [{'name': 'AnagraficaWrapperComponent', 'selector': 'app-anagrafica-wrapper'},{'name': 'AppComponent', 'selector': 'app-root'},{'name': 'AppFormListComponent', 'selector': 'app-form-list'},{'name': 'CaptionComponent', 'selector': 'app-caption'},{'name': 'ContainerComponent', 'selector': 'app-container'},{'name': 'CustomScrollbarComponent', 'selector': 'app-custom-scrollbar'},{'name': 'DashboardComponent', 'selector': 'app-dashboard'},{'name': 'DataGridComponent', 'selector': 'app-data-grid'},{'name': 'DynamicFileBoxComponent', 'selector': 'app-dynamic-file-box'},{'name': 'DynamicFormComponent', 'selector': 'app-dynamic-form'},{'name': 'DynamicSelectBoxComponent', 'selector': 'app-dynamic-select-box'},{'name': 'ElementComponent', 'selector': 'app-element'},{'name': 'FooterComponent', 'selector': 'app-footer'},{'name': 'FormBuilderComponent', 'selector': 'app-form-builder'},{'name': 'FotoOutfitPage', 'selector': 'app-foto-outfit'},{'name': 'HeaderComponent', 'selector': 'app-header'},{'name': 'MenuComponent', 'selector': 'app-menu'},{'name': 'NicaPopupContentComponent', 'selector': 'app-modal-popup-content'},{'name': 'OutfitCategoryComponent', 'selector': 'app-outfit-category'},{'name': 'OutfitFormComponent', 'selector': 'app-outfit-form'},{'name': 'OutfitProductsComponent', 'selector': 'app-outfit-products'},{'name': 'OutfitsComponent', 'selector': 'app-outfits'},{'name': 'OverlayComponent', 'selector': 'app-overlay'},{'name': 'PopupWrapperComponent', 'selector': 'app-modal-popup-wrapper'},{'name': 'ProductFromFeedComponent', 'selector': 'app-product-from-feed'},{'name': 'StaticMenuComponent', 'selector': 'app-static-menu'},{'name': 'StaticMenuFunctionsComponent', 'selector': 'app-static-menu-functions'},{'name': 'TdItemComponent', 'selector': 'app-td-item'},{'name': 'ToolbarComponent', 'selector': 'app-toolbar'},{'name': 'UsersComponent', 'selector': 'app-users'}];
+    var DIRECTIVES = [];
+    var ACTUAL_COMPONENT = {'name': 'StaticMenuFunctionsComponent'};
+</script>
+<script src="../js/tree.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'component';
+            var COMPODOC_CURRENT_PAGE_URL = 'StaticMenuFunctionsComponent.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

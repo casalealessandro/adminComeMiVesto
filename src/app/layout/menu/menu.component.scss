@@ -1,18 +1,25 @@
-.nav{
-    background: var(--bianco);
-    border-radius: 0.5rem ;
-
-    .nav-link{
-        display: flex;
-        align-items: center;
-        border-width: 1px 1px 0px 1px;
-        box-shadow: 0 2px 3px #0000000b;
-        padding: .75rem .875rem;
-        color: var(--blueSoft);
-        font-size: 20px;
-        overflow: hidden;
-        .text{
-            font-size: 15px;
-        }
+.menu-container {
+    width: auto;
+    transition: transform 0.3s ease;
+    background-color: #fff;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;   
+  }
+  .menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    &:hover {
+      background-color: #f0f0f0;
     }
-}
+    span {
+      margin-right: 10px;
+    }
+  }
+  

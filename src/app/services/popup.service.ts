@@ -1,6 +1,6 @@
 import { EventEmitter, Injectable, Output, Type, } from '@angular/core';
 
-import { BehaviorSubject} from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 import { entryComponents } from './entryComponents';
 
@@ -14,7 +14,7 @@ import { entryComponents } from './entryComponents';
 
 
 export class PopUpService {
-  
+
   @Output() dataFromComponent: EventEmitter<any> = new EventEmitter<any>();
 
 
@@ -48,12 +48,10 @@ export class PopUpService {
     return false
   }
 
- 
- 
 
   /**********Gestione PopUp **********/
 
-  setNewPopUp(id: string, componentName: any, data: any, popUpWidth: any = '800', accessoringData?: any, instancedData?: any, showCaptionFooter = false, showCaptionHeader = false, title = '', position = 'center', isClosablePopUp=false) {
+  setNewPopUp(id: string, componentName: any, data: any, popUpWidth: any = '800', accessoringData?: any, instancedData?: any, showCaptionFooter = false, showCaptionHeader = false, title = '', position = 'center', isClosablePopUp = false) {
 
     if (!id) {
       id = Math.random().toString().replace("0.", "")
@@ -79,7 +77,7 @@ export class PopUpService {
         title: title,
         position: position,
         id: id,
-        isClosablePopUp:isClosablePopUp
+        isClosablePopUp: isClosablePopUp
       }
       this.currentPopupsSet.push(dataPoUp)
       this._popupsSet.next(this.currentPopupsSet);
@@ -121,7 +119,7 @@ export class PopUpService {
 
       try {
 
-       // document.getElementsByClassName('modal')!.item(index).classList.remove('slide-center');
+        // document.getElementsByClassName('modal')!.item(index).classList.remove('slide-center');
         //document.getElementsByClassName('modal')!.item(index).classList.add('fade-out-bck');
 
 
@@ -192,6 +190,25 @@ export class PopUpService {
     this._outputComponent.next(eventFromComponent)
   }
 
+  async getOutputComponent(guid: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.outputComponent.subscribe(async resulOutputComponent => {
+        if (resulOutputComponent.guid === guid) {
+         
+          
+          if (resulOutputComponent.guid == guid ) {
+            const resolveC = resulOutputComponent;
+            resolve(resolveC); // Risolvi la Promise con i dati del form
+          }
+          
 
+        }
+      });
+    });
+  }
+
+  onSubScribe(){
+    this._popupsSet.unsubscribe()
+  }
 }
 

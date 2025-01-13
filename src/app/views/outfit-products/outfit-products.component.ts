@@ -1,4 +1,4 @@
-import { Component, inject, signal, Signal } from '@angular/core';
+import { Component, EventEmitter, inject, Output, signal, Signal } from '@angular/core';
 import { AnagraficaWrapperComponent } from "../../layout/anagrafica-wrapper/anagrafica-wrapper.component";
 import { DataGridComponent } from "../../components/data-grid/data-grid.component";
 import { Colonne, ToolbarButton } from '../../interface/app.interface';
@@ -7,33 +7,19 @@ import { OutfitsService, wardrobesItem } from '../../services/outfit.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PopUpService } from '../../services/popup.service';
 import { CommonModule } from '@angular/common';
+import { DynamicFormComponent } from "../../components/dynamic-form/dynamic-form.component";
 
 @Component({
   selector: 'app-outfit-products',
   standalone: true,
-  imports: [CommonModule, AnagraficaWrapperComponent, DataGridComponent],
+  imports: [CommonModule, AnagraficaWrapperComponent, DataGridComponent, DynamicFormComponent],
   templateUrl: './outfit-products.component.html',
   styleUrl: './outfit-products.component.scss'
 })
 export class OutfitProductsComponent {
 
-
-  /*
-    {
-    "outfitCategory": "",
-    "link": "https://pdt.tradedoubler.com/click?a(3381907)p(326654)product(44191-0347091683201-I2024)ttid(3)url(https%3A%2F%2Fwww.pullandbear.com%2Fit%2Fcamicia-misto-lino-a-maniche-corte-l03470916%3FcS%3D832)",
-    "id": "ec988939-c7d5-409d-ac22-1129c7b0f2b9",
-    "color": "G",
-    "brend": "Pull&Bear",
-    "feedId": 44191,
-    "imageUrl": "http://static.pullandbear.net/2/photos/2024/I/0/2/p/3470/916/832/3470916832_4_1_1.jpg?t=1723635023568",
-    "gender": "U",
-    "price": "35.99",
-    "outfitSubCategory": "camicie",
-    "name": "Camicia Misto Lino A Maniche Corte"
-}
-  */
-
+  @Output() selectProduct = new EventEmitter<wardrobesItem>();
+  
   colProductsGrid: Colonne[]=[
     
       {
@@ -44,14 +30,15 @@ export class OutfitProductsComponent {
             edit: false,
             groupDataField: undefined,
             colCaption: 'id',
-            dataField: 'id'
+            dataField: 'id',
+            colWidth:40,
           },
           {
             type: 'campoImg',
             colVisible: true,
             allowEditing: true,
             dataField: "imageUrl",
-            colWidth: '77',
+            colWidth:50,
             class: 'outfit-image',
             colCaption: 'Immagine',
             allowFiltering: undefined,
@@ -62,6 +49,7 @@ export class OutfitProductsComponent {
           {
             type: 'campo',
             edit: false,
+            colWidth: 90,
             groupDataField: undefined,
             colCaption: 'Prodotto',
             dataField: 'name'
@@ -72,6 +60,7 @@ export class OutfitProductsComponent {
             groupDataField: undefined,
             colCaption: 'Categoria',
             dataField: 'outfitSubCategory',
+            colWidth: 90,
           },
           {
             type: 'campo',
@@ -79,6 +68,7 @@ export class OutfitProductsComponent {
             groupDataField: undefined,
             colCaption: 'Brend',
             dataField: 'brend',
+            colWidth: 70,
           },
           {
             type: 'campoNumber',
@@ -86,13 +76,29 @@ export class OutfitProductsComponent {
             groupDataField: undefined,
             colCaption: 'Prezzo',
             dataField: 'price',
+            colWidth: 50,
+            format:"#.##"
+            
           },
           {
-            type: 'campo',
+            type: 'campoLista',
             edit: false,
             groupDataField: undefined,
-            colCaption: 'Prezzo',
+            colCaption: 'Genere',
             dataField: 'gender',
+            colWidth: 50,
+            lista: {
+              displayExp: 'name',
+              valueExp: 'id',
+              options: [
+                {id:'U', name: 'Uomo'},
+                {id:'D', name: 'Donna'},
+              ],
+              multiple: false,
+              remote:false,
+              parent: null,
+              
+            }
           },
         ],
         groupDataField: ''
@@ -169,8 +175,7 @@ export class OutfitProductsComponent {
     event.cancel = true
 
     this.selectedProdOutfit = event.data
-
-    
+  
     let InstanceData = {
       service: 'outfitProducts',
       editData: event.data
@@ -220,8 +225,21 @@ export class OutfitProductsComponent {
       }
     })
   }
-  gridEvent($event: any) {
-    throw new Error('Method not implemented.');
+  async gridEvent(event: any) {
+    
+    // Gestione eventi nel griglia 
+    console.log('Grid Event:', event);
+    if (event.name === 'onRowOnlyClick') {
+      this.selectProduct.emit(event)
+    }
+
+    if (event.name === 'delRows') {
+      const rowData = event.rowData
+      let resp = await this.outFitService.removeProductOutfit(rowData.id)
+      if(resp)
+        this.loadProduct()
+    }
+
   }
 
   async eventToolbarProduct(evt: any) {
@@ -251,5 +269,35 @@ export class OutfitProductsComponent {
 
       })
            
+  }
+
+  filterProduct(evt:any){
+    console.log(this.products)
+    console.log('filterProduct',evt)
+    if(evt.name ==="cancelForm"){
+      this.loadProduct();
+      evt.form.reset();
+      return
+    }
+    const formData = evt.formData as wardrobesItem;
+
+    if(formData.gender){ 
+
+      this.products = this.products.filter(p=>p.gender === formData.gender);
+      
+    }
+    
+    if(formData.outfitSubCategory){ 
+
+      this.products = this.products.filter(p=>p.outfitSubCategory === formData.outfitSubCategory);
+      return
+    }
+
+    
+
+    if(formData.outfitCategory){ 
+
+      this.products = this.products.filter(p=>p.outfitCategory == formData.outfitCategory);
+    }
   }
 }

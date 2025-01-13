@@ -1,0 +1,3024 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>admin documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	   <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/dark.css">
+    </head>
+    <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
+
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="../" class="navbar-brand">admin documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="d-none d-md-block menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content interface">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">Interfaces</li>
+  <li class="breadcrumb-item"
+  >
+  tasto</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <a href="#info" 
+                class="nav-link"
+                class="nav-link active"
+                role="tab" id="info-tab" data-bs-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li class="nav-item">
+            <a href="#source" 
+                class="nav-link"
+                
+                role="tab" id="source-tab" data-bs-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/app/components/data-grid/data-grid.component.ts</code>
+        </p>
+
+
+
+
+        <section data-compodoc="block-index">
+            <h3 id="index">Index</h3>
+            <table class="table table-sm table-bordered index-table">
+                <tbody>
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Properties</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#disabled" 
+>
+                                            disabled
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#hint" 
+>
+                                            hint
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#icon" 
+>
+                                            icon
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#id" 
+>
+                                            id
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#image" 
+>
+                                            image
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#name" 
+>
+                                            name
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#separator" 
+>
+                                            separator
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#text" 
+>
+                                            text
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#visible" 
+>
+                                            visible
+                                        </a>
+                                </li>
+                                <li>
+                                        <a href="#widget" 
+>
+                                            widget
+                                        </a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#width" 
+>
+                                            width
+                                        </a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+
+
+            <section data-compodoc="block-properties">
+                <h3 id="inputs">Properties</h3>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="disabled"></a>
+                                        <span class="name "><b>disabled</b>
+                                            <a href="#disabled">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>disabled:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="hint"></a>
+                                        <span class="name "><b>hint</b>
+                                            <a href="#hint">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>hint:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="icon"></a>
+                                        <span class="name "><b>icon</b>
+                                            <a href="#icon">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>icon:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="id"></a>
+                                        <span class="name "><b>id</b>
+                                            <a href="#id">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>id:         <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="image"></a>
+                                        <span class="name "><b>image</b>
+                                            <a href="#image">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>image:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="name"></a>
+                                        <span class="name "><b>name</b>
+                                            <a href="#name">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>name:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="separator"></a>
+                                        <span class="name "><b>separator</b>
+                                            <a href="#separator">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>separator:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="text"></a>
+                                        <span class="name "><b>text</b>
+                                            <a href="#text">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>text:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="visible"></a>
+                                        <span class="name "><b>visible</b>
+                                            <a href="#visible">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>visible:     <code>boolean | Function</code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>    <code>boolean | Function</code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="widget"></a>
+                                        <span class="name "><b>widget</b>
+                                            <a href="#widget">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>widget:         <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="width"></a>
+                                        <span class="name "><b>width</b>
+                                            <a href="#width">
+                                                <span class="icon ion-ios-link"></span>
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>width:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+            </section>
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Component, ElementRef, EventEmitter, Input, OnInit, Output, AfterViewInit, SimpleChanges, ViewChildren, QueryList, ViewChild, AfterViewChecked, HostListener, inject, signal, input, effect, Renderer2 } from &#x27;@angular/core&#x27;;
+
+
+import { FormArray, FormBuilder, FormGroup, Validators } from &#x27;@angular/forms&#x27;;
+import { ColData, Colonne, detailOptions, ToolbarButton } from &#x27;../../interface/app.interface&#x27;;
+import { CommonModule } from &#x27;@angular/common&#x27;;
+import { alert, confirm } from &#x27;../../widgets/ui-dialogs&#x27;;
+import { AnagraficaService } from &#x27;../../services/anagrafica.service&#x27;;
+import { TdItemComponent } from &#x27;./td-item/td-item.component&#x27;;
+import { ToolbarComponent } from &#x27;../../layout/toolbar/toolbar.component&#x27;;
+import { CustomScrollbarComponent } from &#x27;../custom-scrollbar/custom-scrollbar.component&#x27;;
+import { OverlayService } from &#x27;../../services/overlay.service&#x27;;
+
+
+
+export interface tasto {
+
+  id: any;
+  text?: string;
+  icon?: string;
+  disabled?: boolean;
+  image?: string;
+  separator?: boolean;
+  visible?: boolean | Function;
+  hint?: string;
+  name?: string;
+  widget: any;
+  width?: number
+
+}
+
+@Component({
+  selector: &#x27;app-data-grid&#x27;,
+  templateUrl: &#x27;./data-grid.component.html&#x27;,
+  standalone: true,
+  imports: [
+    CommonModule,
+    TdItemComponent,
+
+    CustomScrollbarComponent
+  ],
+
+  styleUrls: [&#x27;./data-grid.component.scss&#x27;]
+})
+
+
+export class DataGridComponent {
+  @ViewChild(&#x27;dataGridWrapper&#x27;, { static: false }) dataGridWrapper!: ElementRef&lt;HTMLDivElement&gt;;
+
+  @ViewChildren(&#x27;riga&#x27;)
+  righe!: QueryList&lt;ElementRef&gt;;
+
+  @ViewChildren(&#x27;tbody&#x27;)
+  tbody!: QueryList&lt;ElementRef&gt;;
+
+  @Input() idTable: any;
+  @Input() service: any;
+  @Input() api: any;
+  @Input() queryString: string &#x3D; &#x27;&#x27;; //per ora è string ma va generata dynamicamente ricordati di farlo (02/04/2024 query string è dinamica)
+  @Input() queryStringInEditor: string &#x3D; &#x27;&#x27;; //Eventuale query string da usare nella post o nella put, ES:api--&gt;/CampoRichiestoDocRifiuti
+  @Input() isKeyID: boolean &#x3D; true; //se false l&#x27;api in put sarà senza /id  ES:api--&gt;/CampoRichiestoDocRifiuti
+
+  @Input() remoteOperation: boolean &#x3D; false;
+
+  dataSource &#x3D; input&lt;any[]&gt;([]);
+  rowsData &#x3D; signal&lt;any[]&gt;([])
+
+  @Input() overrideDataSource &#x3D; null;
+  @Input() dataJson: any
+  @Input() selectedData: any[] &#x3D; [] //Dati in ingresso ad esempio da una form , e seleziona/evidenzia le righe..(funziona solo su dati visibili) 
+  @Input() tableHeight: number &#x3D; 540;
+  @Input() tableWidth!: number
+  @Input()
+  colonne!: Colonne[];
+  @Input() isEditable: boolean &#x3D; false
+
+  @Input() modeEdit: string &#x3D; &#x27;row&#x27;;
+
+  @Input() selectionRowMode: string &#x3D; &#x27;single&#x27; //signle, multiple o detail, se detail e la griglia ha una riga di dettaglio seleziona solo le righe di dettaglio ;
+  @Input() showFilter: boolean &#x3D; false;
+  @Input() showToolbarTop: boolean &#x3D; false;
+  @Input() showToolbarBottom: boolean &#x3D; false;
+  @Input() rowAlternate: boolean &#x3D; true;
+  @Input() isEditableNewRow: boolean &#x3D; true;
+  @Input() isEditableEditRow: boolean &#x3D; true;
+  @Input() isEditableDeleteRow: boolean &#x3D; true;
+  @Input() isSearchable: boolean &#x3D; true;
+  @Input() searchType: any &#x3D; &#x27;&#x27;;
+  @Input() toolbarButtonsBottom!: ToolbarButton[];
+  @Input() toolbarButtonsTop!: ToolbarButton[];
+  @Input() detailOptions: detailOptions &#x3D; {
+    isRemote: false,
+    service: &#x27;&#x27;, api: &#x27;&#x27;,
+    isEditable: false,
+    colonne: [],
+    costantValue: [],
+    queryString: &#x27;&#x27;,
+    groupDataField: &#x27;&#x27;
+  };
+
+  @Input() justRowExpanded: boolean &#x3D; false;
+  @Input() toolbarButtonsBottomLeft &#x3D; [];
+  @Input() toolbarButtonsBottomRight &#x3D; [];
+  @Input() toolbarButtonsTopLeft &#x3D; [];
+  @Input() toolbarButtonsTopRight &#x3D; [];
+  @Input() tabIndex &#x3D; 800;
+  @Input() showFooterSummary: boolean &#x3D; false;
+
+  @Output() emittendSelectionRow: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittendDblRowClick: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittendGridEvent: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittendStartEdit: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittendButtonExit: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittendCellValueChange: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittendToolbarClick: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+  @Output() emittendBttonCellClick: EventEmitter&lt;any&gt; &#x3D; new EventEmitter&lt;any&gt;();
+
+  @Input() continuousEditing: boolean &#x3D; false;
+
+  showT: boolean &#x3D; false;
+
+  colsHeader: ColData[] &#x3D; [];
+  colsGroup: any[] &#x3D; [];
+
+  colsDetail: any[] &#x3D; [];
+  /**Variabili per le righe selezionate**/
+  rowSelected: boolean[] &#x3D; [];
+  selectedRowIndex: number &#x3D; 0;
+  rowSelectedDetail: boolean[] &#x3D; [false];
+  selectedSubRowIndex: number &#x3D; -1;
+  rowIsDisable: boolean[] &#x3D; [];
+  /**************************************/
+
+  showNullData: boolean &#x3D; false;
+  textEmpty: string &#x3D; &#x27;...&#x27;
+  showNullDataDetail: boolean &#x3D; false;
+
+  showDetailRow: boolean[] &#x3D; [false];
+  haveDetail: boolean &#x3D; false;
+  colsRowDetail: any &#x3D; [];
+  colsGroupDetail: any;
+  colsGroupCaption: any[] &#x3D; []
+  currentLastRowHeight &#x3D; 0;
+  lastRowOffsetHeight: number &#x3D; 0;
+  tBodyoffsetHeight!: number;
+
+  bodyHeight: number &#x3D; 200;
+  colsGroupShow: boolean &#x3D; false;
+  bodyStyle!: { height?: string; display: string; &#x27;overflow-y&#x27;?: string; width?: string; &#x27;border-top&#x27;: string; };
+  theadStyle!: { display?: string; width?: string; };
+  cellSelectWidth!: number;
+  tableHeightWrapper!: number;
+  buttonSXToolbar!: ToolbarButton[];
+  buttonDXToolbar!: ToolbarButton[];
+  buttonBottomToolbar!: tasto[];
+  isSelIconMultipleVisible: boolean &#x3D; false;
+  groupIndexCol: any &#x3D; null;
+  groupedData: { [key: string]: any[] } | null &#x3D; null;
+  isSelIconDetailVisible: boolean &#x3D; false;
+  isOddRow: boolean &#x3D; true;
+  showEmptyRow: boolean &#x3D; false;
+  emptyRowStyleClass!: { height: string; backgroundColor: string; };
+  pageSize: number &#x3D; 20; // Imposta la dimensione della pagina desiderata
+  currentPage &#x3D; 0;
+  totalRecords &#x3D; 0;
+  isLoading: boolean &#x3D; false;
+  tableStyle!: { &#x27;width.px&#x27;?: number; &#x27;height.px&#x27;?: number; &#x27;overflow-y&#x27;?: string; display?: string; &#x27;table-layout&#x27;?: string; };
+  searchText!: string
+
+  isHovered: any[] &#x3D; [false];
+  isHoveredDetatil: any[] &#x3D; [false];
+  rowcustomclass: any[] &#x3D; [];
+  tableWidthDetail!: number;
+  checkQueryStringError: boolean &#x3D; false;
+  validationObject: any &#x3D; {}
+  inEditState: boolean &#x3D; false;
+
+  latestScrollTopPosition: number &#x3D; 0;
+  tableWrapWidth!: number
+  enableTfoot: boolean &#x3D; false;
+  valueSumm: any &#x3D; [];
+  rowSelectedAll: any &#x3D; false;
+  showEditorCellByRow: boolean &#x3D; false;
+
+  anagraficaService &#x3D; inject(AnagraficaService);
+  overrideService &#x3D; inject(OverlayService);
+  formservice: any;
+  sortDirection: &#x27;asc&#x27; | &#x27;desc&#x27; &#x3D; &#x27;asc&#x27;; // fleg per l&#x27;ordinamento asc e desc
+  sortedColumn: any; //  colonna orginatata
+
+  constructor(
+    //private formservice: FormsTemplateService,
+
+  ) {
+    effect(() &#x3D;&gt; {
+      if (this.dataSource()?.length &gt; 0) {
+        this.renderGrid();
+      }
+    }, { allowSignalWrites: true });
+    //this.refresh &#x3D; this.refresh.bind(this);
+    //this.hideColumn &#x3D; this.hideColumn.bind(this);
+    //this.calcolaSomma &#x3D; this.calcolaSomma.bind(this);
+
+
+  }
+
+
+
+  @HostListener(&#x27;window:scroll&#x27;, [&#x27;$event&#x27;])
+  @HostListener(&#x27;window:keydown&#x27;, [&#x27;$event&#x27;])
+
+  handleKeyDown(event: any) {
+
+
+    let tableId &#x3D; document.getElementById(this.idTable) as HTMLElement;
+    const focusedElement &#x3D; document.activeElement as HTMLElement;
+
+
+    if (event.code &#x3D;&#x3D; &#x27;Enter&#x27; || event.code &#x3D;&#x3D; &#x27;NumpadEnter&#x27;) {
+
+      setTimeout(() &#x3D;&gt; {
+
+      }, 300);
+
+
+    }
+
+    if (event.code &#x3D;&#x3D; &#x27;NumpadAdd&#x27;) {
+      setTimeout(() &#x3D;&gt; {
+        if (this.continuousEditing) {
+          this.addRow()
+        }
+      });
+    }
+
+    if (event.code &#x3D;&#x3D; &#x27;Escape&#x27;) {
+      event.stopPropagation();
+      event.preventDefault();
+
+    }
+
+
+  }
+
+
+
+
+
+
+  ngAfterViewInit() {
+    //imposto il paddig che ho dichiarato nel css sia dx che a sx se cambia sputtana tt 
+    const paddingGrid &#x3D; 1.25
+    const scrollbarWidth &#x3D; 10;
+
+    const remInPixels &#x3D; this.getBaseRemInPixels();
+    const sizeInPixels &#x3D; this.convertRemToPixels(paddingGrid, remInPixels);
+    console.log(&#x60;1.25rem in pixels: ${sizeInPixels}px&#x60;);
+
+    if (!this.tableWidth) {
+      if (!this.dataGridWrapper) {
+
+        const dataGridWrapper &#x3D; document.getElementById(&#x27;dataGridWrapper&#x27;);
+
+        if (dataGridWrapper) {
+          this.tableWidth &#x3D; dataGridWrapper.offsetWidth - sizeInPixels - scrollbarWidth;
+        }
+
+
+      } else {
+        this.tableWidth &#x3D; this.dataGridWrapper.nativeElement.getBoundingClientRect().width - sizeInPixels - scrollbarWidth;
+      }
+    }
+
+    this.tableWrapWidth &#x3D; this.tableWidth
+
+
+    if (!this.idTable) {
+
+      alert(&#x27;Manca ID devo aggiornare&#x27;, &#x27;Errore!&#x27;)
+    }
+
+    if (typeof this.dataJson &#x3D;&#x3D; &#x27;string&#x27;) {
+      this.dataJson &#x3D; JSON.parse(this.dataJson)
+    }
+
+
+  }
+
+  getBaseRemInPixels(): number {
+    const fontSize &#x3D; getComputedStyle(document.documentElement).fontSize;
+    return parseFloat(fontSize);
+  }
+
+  convertRemToPixels(remValue: number, baseRemInPixels: number): number {
+    return remValue * baseRemInPixels;
+  }
+
+
+  /**
+   * Renders the grid based on the provided parameters.
+   *
+   * @remarks
+   * This function initializes the grid, sets up the toolbar, and handles remote or local data operations.
+   * It also builds the header columns, detail grid, and editor data.
+   *
+   * @returns {Promise&lt;void&gt;} - A promise that resolves when the grid has been initialized.
+   */
+  async renderGrid(): Promise&lt;void&gt; {
+
+    this.textEmpty &#x3D; &#x27;...&#x27;;
+
+    this.enableTfoot &#x3D; false;
+
+    if (this.showFooterSummary) {
+      this.enableTfoot &#x3D; true;
+      this.valueSumm &#x3D; []
+    }
+
+    this.renderToolBarGrid(this.showToolbarTop, this.showToolbarBottom);
+
+    if (this.remoteOperation) {
+
+      const check &#x3D; await this.buildAndTestQueryString()
+      if (check) {
+        await this.loadRemoteRecords()
+      }
+
+    } else {
+      this.rowsData.set(this.dataSource())
+ 
+      this.totalRecords &#x3D; this.rowsData().length
+    }
+
+    this.selectRowByData()
+
+
+    let cols
+
+    let colonne &#x3D; typeof this.colonne &#x3D;&#x3D; &#x27;undefined&#x27; ? [] : this.colonne
+
+    if (this.service &amp;&amp; colonne.length &#x3D;&#x3D; 0) {
+
+      //cols &#x3D; JSON.parse(JSON.stringify(this.formservice.getService(this.service)));
+
+    } else {
+      let findItem &#x3D; this.colonne.find(ress &#x3D;&gt; ress.itemType)
+      if (typeof findItem &#x3D;&#x3D; &#x27;undefined&#x27;) {
+        let colSpan &#x3D; this.colonne.length
+        cols &#x3D; [{
+          itemType: &quot;group&quot;, colSpan: colSpan, caption: &quot;&quot;,
+          groupDataField: &#x27;&#x27;,
+
+          data: this.colonne
+        }]
+      } else {
+        cols &#x3D; this.colonne;
+      }
+    }
+
+
+    await this.buildHeaderColumns(cols!);
+
+    let detailGridCols &#x3D; cols!.filter(res &#x3D;&gt; res.itemType &#x3D;&#x3D; &#x27;dettaglio&#x27;);
+    await this.builDetailGrid(detailGridCols, detailGridCols);
+
+    await this.resizeCols();
+
+    await this.setStyleBody()
+
+
+    if (this.enableTfoot) {
+      this.calcSommaryCells()
+    }
+
+
+    let dataOutput &#x3D; {
+      name: &#x27;gridHasInitialized&#x27;,
+      dataSource: this.rowsData(),
+      compnent: this,
+      colonne: this.colsHeader
+    }
+
+    this.emittendGridEvent.emit(dataOutput);
+
+  }
+
+  /**
+   * Renders the toolbar grid based on the provided parameters.
+   *
+   * @param isToobarTop - Indicates whether the toolbar should be rendered at the top.
+   * @param isToobarBottom - Indicates whether the toolbar should be rendered at the bottom.
+   */
+  renderToolBarGrid(isToobarTop: boolean, isToobarBottom: boolean) {
+
+
+    try {
+      if (this.showToolbarBottom) {
+
+      }
+
+      this.buttonSXToolbar &#x3D; [];
+      this.buttonDXToolbar &#x3D; [];
+
+      if (isToobarTop) {
+
+        this.showToolbarTop &#x3D; isToobarTop;
+        this.buttonDXToolbar &#x3D; [
+          {
+            id: &#x27;addRow&#x27;,
+            name: &#x27;Nuovo&#x27;,
+            text: &#x27;Nuovo&#x27;,
+            icon: &#x27;icon-plus-circled&#x27;,
+            disabled: false,
+            visible: this.isEditableNewRow,
+            widget: &#x27;button&#x27;
+          },
+
+
+        ]
+        this.buttonSXToolbar &#x3D; [{
+          id: &#x27;searchable&#x27;,
+          name: &#x27;searchable&#x27;,
+          text: &#x27;Cerca&#x27;,
+          icon: &#x27;icon-cerca-barra&#x27;,
+          disabled: false,
+          visible: this.isSearchable,
+          widget: &#x27;textBox&#x27;,
+          width: 300,
+        }]
+        if (typeof this.toolbarButtonsTop !&#x3D; &#x27;undefined&#x27;) {
+          this.toolbarButtonsTop.forEach(buttonDXToolbar &#x3D;&gt; {
+            if (typeof buttonDXToolbar.position !&#x3D; &#x27;undefined&#x27;) {
+              if (buttonDXToolbar.position &#x3D;&#x3D; &#x27;left&#x27;) {
+                this.buttonSXToolbar.unshift(buttonDXToolbar);
+
+              } else if (buttonDXToolbar.position &#x3D;&#x3D; &#x27;right&#x27;) {
+                this.buttonDXToolbar.unshift(buttonDXToolbar)
+              }
+
+            } else {
+              this.buttonDXToolbar.unshift(buttonDXToolbar)
+            }
+
+
+
+          })
+        }
+
+
+        let cH &#x3D; this.tableHeight
+        if (this.tableHeightWrapper &gt; 0) {
+          cH &#x3D; this.tableHeightWrapper
+        }
+        this.tableHeightWrapper &#x3D; cH + 26;
+      }
+
+      if (isToobarBottom) {
+
+        this.showToolbarBottom &#x3D; true
+
+      }
+      //this.showToolbarBottom &#x3D; true;
+    } catch (error) {
+
+    }
+
+  }
+
+
+  buildHeaderColumns(hCol: any): Promise&lt;boolean&gt; {
+
+    this.colsGroup &#x3D; [];
+    this.colsHeader &#x3D; [];
+    this.colsDetail &#x3D; []
+    let tabIndex &#x3D; 1;
+
+    if (this.selectionRowMode &#x3D;&#x3D; &#x27;single&#x27;) {
+      this.colsGroup.push({
+        span: &#x27;0&#x27;,
+        caption: null,
+        class: &#x27;single&#x27;,
+
+        style: &#x27;background-color: #D6EEEE&#x27;,
+      })
+
+    }
+
+    if (this.selectionRowMode &#x3D;&#x3D; &#x27;multiple&#x27;) {
+      this.colsGroup.push({
+        span: &#x27;0&#x27;,
+        caption: null,
+        class: &#x27;nultiple&#x27;,
+
+        style: &#x27;background-color: #D6EEEE&#x27;,
+      })
+      this.isSelIconMultipleVisible &#x3D; true;
+      this.cellSelectWidth &#x3D; 30;
+      this.colsHeader.unshift({
+        type: &#x27;selection&#x27;,
+        id: &#x27;selection&#x27;,
+        caption: &#x27;&#x27;,
+        colWidth: this.cellSelectWidth,
+
+        colCaption: undefined,
+        allowFiltering: undefined,
+        dataField: &#x27;&#x27;,
+        labelAlignment: undefined,
+        edit: undefined,
+        groupDataField: undefined,
+
+      })
+    }
+
+    hCol.forEach((h: any) &#x3D;&gt; {
+
+      if (h.caption &amp;&amp; h.colSpan &amp;&amp; h.itemType &#x3D;&#x3D; &#x27;group&#x27;) {
+        this.colsGroupShow &#x3D; true
+        this.colsGroup.push({
+          span: h.colSpan,
+          caption: h.caption,
+          class: h.class,
+
+          style: &#x27;background-color: #D6EEEE&#x27;,
+        })
+      }
+
+
+      h.data.forEach((resColH: ColData) &#x3D;&gt; {
+
+        tabIndex++
+        let customizedOption
+
+        if (typeof resColH.colVisible !&#x3D; &#x27;undefined&#x27; &amp;&amp; !resColH.colVisible) {
+          return
+        }
+
+        if (resColH.type &#x3D;&#x3D; &#x27;empty&#x27;) {
+          return
+        }
+
+        if (resColH.type &#x3D;&#x3D; &#x27;campoDesc&#x27;) {
+          return
+        }
+
+        if (resColH.type &#x3D;&#x3D; &#x27;campoButton&#x27;) {
+          this.colsHeader.push({
+            type: &#x27;campoButton&#x27;,
+            search: false,
+            id: resColH.dataField,
+            caption: resColH.caption,
+            colWidth: !resColH.colWidth ? resColH.colWidth &#x3D; &#x27;auto&#x27; : resColH.colWidth,
+            width: resColH.colWidth,
+            class: resColH.class,
+            dataField: resColH.dataField,
+            colSpan: resColH.colSpan,
+            colAlignment: resColH.colAlignment,
+            format: resColH.format,
+            isEditable: false,
+            edit: false,
+            editorType: resColH.editorType,
+            customizedOptions: customizedOption,
+
+            validation: resColH.validation ? resColH.validation : [],
+            min: resColH.min,
+            max: resColH.max,
+            maxLength: resColH.maxLength,
+            tabIndex: tabIndex,
+            button: resColH.button,
+            labelAlignment: undefined,
+            groupDataField: undefined,
+
+            colCaption: undefined,
+            allowFiltering: undefined
+          })
+          return
+        }
+
+
+        let customizedOptionKey
+
+
+        if (typeof resColH.dynamic !&#x3D; &#x27;undefined&#x27;) {
+          customizedOptionKey &#x3D; &#x27;dynamic&#x27;;
+          customizedOption &#x3D; resColH.dynamic;
+
+          if (customizedOption.queryString) {
+            let queryString &#x3D; customizedOption.queryString
+            for (let x in this.dataJson) {
+              if (queryString.includes(x)) {
+                queryString &#x3D; queryString.replace(&#x27;$&#x27; + x, this.dataJson[x])
+              }
+            }
+
+            resColH.dynamic.queryString &#x3D; queryString;
+            customizedOption.queryString &#x3D; queryString;
+          }
+
+          //resColH.labelVisible &#x3D; false
+        }
+
+        if (typeof resColH.lista !&#x3D; &#x27;undefined&#x27;) {
+          customizedOptionKey &#x3D; &#x27;lista&#x27;
+          customizedOption &#x3D; resColH.lista
+
+        }
+
+        let allowEditing &#x3D; true
+        if (typeof resColH.allowEditing !&#x3D; &#x27;undefined&#x27;) {
+          allowEditing &#x3D; resColH.allowEditing
+        }
+        if (typeof resColH.colWidth !&#x3D; &#x27;undefined&#x27;) {
+          let colW &#x3D; resColH.colWidth;
+
+          resColH.colWidth &#x3D; colW
+        } else if (resColH.width) {
+
+          let fieldW &#x3D; resColH.width;
+          if (typeof fieldW &#x3D;&#x3D; &#x27;string&#x27;) {
+            if (fieldW.includes(&#x27;px&#x27;)) {
+              fieldW &#x3D; fieldW.replace(&#x27;px&#x27;, &#x27;&#x27;)
+            }
+          }
+          resColH.colWidth &#x3D; fieldW
+        } else {
+          resColH.colWidth &#x3D; &#x27;auto&#x27;
+        }
+
+        if (typeof resColH.groupIndex !&#x3D; &#x27;undefined&#x27;) {
+          this.groupIndexCol &#x3D; {
+
+            customizedOptions: customizedOption,
+            colSpan: resColH.colSpan,
+            id: resColH.dataField,
+            caption: resColH.caption,
+            colWidth: !resColH.colWidth ? resColH.colWidth &#x3D; &#x27;auto&#x27; : resColH.colWidth,
+            class: resColH.class,
+            dataField: resColH.dataField,
+            format: resColH.format,
+            dataOptions: resColH,
+            min: resColH.min,
+            max: resColH.max,
+            maxLength: resColH.maxLength,
+            tabIndex: tabIndex,
+
+
+          };
+
+          return
+
+        }
+
+
+        let showInSummary &#x3D; typeof resColH.showInSummary !&#x3D; &#x27;undefined&#x27; ? resColH.showInSummary : false;
+
+        let colCaption &#x3D; resColH.caption;
+
+        if (typeof resColH.colCaption !&#x3D; &#x27;undefined&#x27;) {
+          if (resColH.colCaption) {
+            colCaption &#x3D; resColH.colCaption
+          }
+        }
+
+        this.colsHeader.push({
+          type: resColH.type,
+
+          search: typeof this.showFilter !&#x3D; &#x27;undefined&#x27; ? this.showFilter : resColH.allowFiltering,
+          id: resColH.dataField,
+          caption: colCaption,
+          colWidth: !resColH.colWidth ? resColH.colWidth &#x3D; &#x27;auto&#x27; : Number(resColH.colWidth),
+          width: resColH.colWidth,
+          class: resColH.class,
+          dataField: resColH.dataField,
+          colSpan: resColH.colSpan,
+          colAlignment: resColH.colAlignment,
+          format: resColH.format,
+          isEditable: allowEditing,
+          editorType: resColH.editorType,
+          customizedOptions: customizedOption,
+          validation: resColH.validation ? resColH.validation : [],
+          min: resColH.min,
+          max: resColH.max,
+          maxLength: resColH.maxLength,
+          tabIndex: tabIndex,
+          showInSummary: showInSummary,
+
+          colCaption: undefined,
+          allowFiltering: undefined,
+          labelAlignment: undefined,
+          edit: undefined,
+          groupDataField: undefined,
+
+        })
+
+        this.valueSumm[resColH.dataField] &#x3D; null;
+      })
+
+    })
+
+
+    this.colsHeader.push(
+      {
+        type: &#x27;editorButtons&#x27;,
+        id: &#x27;editorButtons&#x27;,
+        caption: &#x27;&#x27;,
+        search: false,
+        colWidth: 40,
+        class: null,
+        isEditable: this.isEditable,
+        edit: false,
+        labelAlignment: undefined,
+        groupDataField: undefined,
+        colCaption: undefined,
+        allowFiltering: undefined,
+        dataField: &#x27;&#x27;,
+        editorbuttons: [
+          {
+            id: &#x27;edit&#x27;,
+            nameEvent: &#x27;onEditEvent&#x27;,
+            text: &#x27;Modifica&#x27;,
+            icon: &#x27;mdi mdi-pencil-outline&#x27;,
+            disabled: false,
+            visible: this.isEditableEditRow,
+            cssClass: null,
+            widget: &#x27;button&#x27;,
+            position: &#x27;left&#x27;
+          },
+          {
+            id: &#x27;delete&#x27;,
+            nameEvent: &#x27;onDeleteEvent&#x27;,
+            text: &#x27;Elimina&#x27;,
+            icon: &#x27;mdi mdi-trash-can-outline&#x27;,
+            disabled: false,
+            visible: this.isEditableDeleteRow,
+            cssClass: null,
+            widget: &#x27;button&#x27;,
+            position: &#x27;left&#x27;
+          }
+        ]
+      })
+
+
+
+
+    return Promise.resolve(true)
+
+
+  }
+
+
+  async builDetailGrid(detailGrid: any, keyRow?: any) {
+
+    let colsDetail &#x3D; [];
+    let groupDataField &#x3D; &#x27;detail-grid&#x27;
+    if (detailGrid.length &gt; 0) {
+      colsDetail &#x3D; detailGrid;
+      groupDataField &#x3D; detailGrid[0].groupDataField
+    }
+
+    if (this.tableWidth) {
+      this.tableWidthDetail &#x3D; this.tableWidth - 90
+    }
+
+    if (!this.detailOptions) {
+      return
+    }
+
+    if (this.detailOptions[&#x27;service&#x27;]) {
+      colsDetail &#x3D; this.formservice.getService(this.detailOptions[&#x27;service&#x27;]);
+      colsDetail &#x3D; colsDetail.filter((rees: { itemType: null; }) &#x3D;&gt; rees.itemType !&#x3D; null)
+
+    }
+
+    if (typeof this.detailOptions[&#x27;colonne&#x27;] !&#x3D; &#x27;undefined&#x27;) {
+
+      if (this.detailOptions[&#x27;colonne&#x27;].length &gt; 0) {
+        let findItem &#x3D; this.detailOptions[&#x27;colonne&#x27;].find((ress: any) &#x3D;&gt; ress[&#x27;itemType&#x27;])
+
+        if (typeof findItem &#x3D;&#x3D; &#x27;undefined&#x27;) {
+          let colSpan &#x3D; this.detailOptions[&#x27;colonne&#x27;].length
+          colsDetail &#x3D; [{
+            itemType: &quot;group&quot;, colSpan: colSpan, caption: &quot;&quot;,
+            groupDataField: groupDataField,
+
+            data: this.detailOptions[&#x27;colonne&#x27;]
+          }]
+        } else {
+          colsDetail &#x3D; this.detailOptions[&#x27;colonne&#x27;];
+        }
+      }
+
+    }
+
+
+
+    if (colsDetail.length &#x3D;&#x3D; 0) {
+      return
+    }
+
+    this.haveDetail &#x3D; true;
+
+
+    let indexDetail &#x3D; this.colsHeader.findIndex(resD &#x3D;&gt; resD.type &#x3D;&#x3D; &#x27;detail&#x27;)
+
+    if (indexDetail &gt;&#x3D; 0) {
+      return
+    }
+
+    this.colsHeader.unshift({
+      type: &#x27;detail&#x27;,
+      id: &#x27;detail&#x27;,
+      caption: &#x27;&#x27;,
+      search: false,
+      colWidth: &#x27;30&#x27;,
+      class: &#x27;detailCol&#x27;,
+      groupDataField: groupDataField,
+      labelAlignment: undefined,
+      edit: undefined,
+
+
+      colCaption: undefined,
+      allowFiltering: undefined,
+      dataField: &#x27;&#x27;
+    })
+
+    this.colsGroupCaption &#x3D; []
+
+    colsDetail.forEach((col: Colonne) &#x3D;&gt; {
+      //Sta puttanata che ho fatto qui sotto va gestita bene ricordati
+      if (!this.detailOptions[&#x27;isRemote&#x27;]) {
+
+        this.colsGroupCaption.push({
+          span: col.colSpan,
+          caption: col.caption,
+          class: col.class,
+          style: &#x27;background-color: #D6EEEE&#x27;,
+        })
+        this.colsGroupShow &#x3D; true;
+
+        this.colsGroup.unshift({
+          span: &#x27;1&#x27;,
+          caption: &#x27;&#x27;,
+          class: col.class + &#x27; dettaglio&#x27;,
+        })
+      }
+
+
+      col.data.forEach(resColH &#x3D;&gt; {
+
+        if (typeof resColH.colVisible !&#x3D; &#x27;undefined&#x27; &amp;&amp; !resColH.colVisible) {
+          return
+        }
+
+
+
+        this.colsDetail.push({
+          type: &#x27;data-detail&#x27;,
+          id: resColH.dataField,
+          caption: resColH.caption,
+          colWidth: resColH.colWidth,
+          class: resColH.class,
+          dataField: resColH.dataField,
+          colSpan: resColH.colSpan,
+          captionAlign: resColH.labelAlignment,
+          align: resColH.colAlignment,
+          format: resColH.format,
+
+
+        })
+
+
+      })
+
+    })
+
+
+
+
+    if (this.selectionRowMode &#x3D;&#x3D; &#x27;detail&#x27;) {
+      this.isSelIconDetailVisible &#x3D; true;
+      this.cellSelectWidth &#x3D; 30
+      this.colsDetail.unshift({
+        type: &#x27;selection-detail&#x27;,
+        id: &#x27;selection-detail&#x27;,
+        caption: &#x27;&#x27;,
+        search: false,
+        colWidth: this.cellSelectWidth,
+        class: null,
+        dataField: null,
+        colSpan: null,
+        captionAlign: null,
+        align: null,
+        format: null,
+        isEditable: false,
+        edit: false,
+        editorType: null,
+        customizedOption: null,
+        min: null,
+        max: null,
+        maxLength: null,
+
+      })
+
+    }
+
+    if (this.justRowExpanded) {
+      this.rowsData().forEach((rrr, c) &#x3D;&gt; {
+        for (let x in rrr) {
+          if (x &#x3D;&#x3D; groupDataField) {
+            this.showDetailRow[c] &#x3D; true
+            this.colsRowDetail[c] &#x3D; rrr[groupDataField];
+            this.collapse(null, rrr, c, groupDataField)
+
+          }
+        }
+      })
+    }
+
+
+
+  }
+
+  async resizeCols(cols?: any) {
+
+
+    // Creo una costante larghezza fissa della tabella
+    const larghezzaTabella &#x3D; this.tableWrapWidth;
+
+    if (!cols) {
+      cols &#x3D; this.colsHeader
+    }
+
+    cols &#x3D; cols.map((ress: ColData) &#x3D;&gt; {
+      if (!ress.colWidth) {
+        if (ress.colCaption) {
+          ress.colWidth &#x3D; ress.colCaption.length;
+        } else if (ress.caption) {
+          ress.colWidth &#x3D; ress.caption.length;
+        } else {
+          ress.colWidth &#x3D; &#x27;auto&#x27;;
+        }
+
+      }
+      return ress
+    })
+
+    const totalWidthCols &#x3D; cols.reduce((accumulatore: any, col: ColData) &#x3D;&gt; {
+      return accumulatore + Number(col.colWidth);
+    }, 0); // 0 è il valore iniziale di accumulatore
+
+
+    // Creo una costante dimension che le celle fisse occupano 
+
+    const data &#x3D; [&#x27;icon&#x27;, &#x27;selection&#x27;, &#x27;editorButtons&#x27;, &#x27;removeButtons&#x27;, &#x27;detail&#x27;, &#x27;campoDesc&#x27;, &#x27;empty&#x27;];
+
+
+    //rimuove dall&#x27;oggetto cols le celle di funzione che hanno una dimensione fissa
+    const colonneFisse &#x3D; cols.filter((col: any) &#x3D;&gt; data.some(d &#x3D;&gt; d &#x3D;&#x3D; col.type));
+
+    const totalWidthfixCols &#x3D; colonneFisse.reduce((accumulatore: any, col: ColData) &#x3D;&gt; {
+      return accumulatore + col.colWidth;
+    }, 0); // 0 è il valore iniziale di accumulatore
+
+    //ricalcolo la larghezza della tabella senza le celle fisse.
+    //const totalWidthRestante &#x3D; larghezzaTabella - totalWidthfixCols
+    //rimuove dall&#x27;oggetto cols le celle di funzione che hanno una dimensione fissa
+    const colonneFiltrate &#x3D; cols.filter((col: any) &#x3D;&gt; !data.some(d &#x3D;&gt; d &#x3D;&#x3D; col.type));
+
+    const totalWidthFilterCols &#x3D; colonneFiltrate.reduce((accumulatore: any, col: ColData) &#x3D;&gt; {
+      if (col.colWidth !&#x3D; &#x27;auto&#x27;)
+        return accumulatore + Number(col.colWidth);
+    }, 0);
+    const diffWidthCols &#x3D; larghezzaTabella - totalWidthFilterCols;
+    //ricalcolo la larghezza della tabella senza le celle fisse.
+    const totalWidthRestante &#x3D; diffWidthCols - totalWidthfixCols
+    // Calcola il fattore di scala basato sulla larghezza rimanente e la larghezza totale della tabella
+    const scala: number &#x3D; totalWidthRestante / colonneFiltrate.length;;
+    for (let i &#x3D; 0; i &lt; colonneFiltrate.length; i++) {
+
+      if (colonneFiltrate[i].colWidth !&#x3D; &#x27;auto&#x27;) {
+        const newW &#x3D; Number(colonneFiltrate[i].colWidth) + scala;
+        const indx &#x3D; cols.findIndex((col: ColData) &#x3D;&gt; col.dataField &#x3D;&#x3D; colonneFiltrate[i].dataField);
+
+        cols[indx].colWidth &#x3D; newW
+      }
+
+    }
+
+    const tt &#x3D; cols.reduce((accumulatore: any, col: ColData) &#x3D;&gt; {
+      if (col.colWidth !&#x3D; &#x27;auto&#x27;)
+        return accumulatore + Number(col.colWidth);
+    }, 0);
+
+    console.log(&#x27;dddd&#x27;, tt)
+    return
+
+  }
+
+
+
+
+
+  setCellProperty(item: any) {
+    let cellProperty: any[] &#x3D; [];
+
+    for (let x in item) {
+      const colsHeaderProp &#x3D; this.colsHeader.filter(res &#x3D;&gt; res.dataField &#x3D;&#x3D; x)
+      if (colsHeaderProp.length &gt; 0) {
+        cellProperty &#x3D; { ...cellProperty, [x]: colsHeaderProp[0] }
+
+      }
+
+
+    }
+
+
+    return cellProperty
+  }
+
+
+  latestSkipLoaded: number &#x3D; 0;
+
+  async onScroll(event: Event) {
+
+
+  }
+
+
+  private isScrollingNearBottom(event: any): boolean {
+
+    const element: Element &#x3D; event.target;
+    const offset &#x3D; event.target.offsetHeight - 1; // Imposta un offset in pixel per attivare la paginazione
+
+
+    //Devo fare la somma in pixel di tutti gli elementi attuali
+    let table: HTMLTableElement &#x3D; document.getElementById(this.idTable) as HTMLTableElement;
+
+    let primaRiga: HTMLTableRowElement &#x3D; table.children.item(0) as HTMLTableRowElement;
+
+    let totaleAltezza &#x3D; (primaRiga.offsetHeight - 1) * this.dataSource.length;
+
+
+
+
+
+    if (element.scrollTop &gt; 0 &amp;&amp; element.scrollTop &gt;&#x3D; ((totaleAltezza - offset) - 10) &amp;&amp; element.scrollTop &gt;&#x3D; this.latestScrollTopPosition &amp;&amp; (this.dataSource.length &lt;&#x3D; this.totalRecords)) {
+
+      this.latestScrollTopPosition &#x3D; element.scrollTop;
+
+
+      table.scrollTo(0, element.scrollTop - 10);
+
+      return true;
+    }
+
+
+
+    return false;
+  }
+
+
+
+  selectRowByData() {
+    if (this.selectedData &amp;&amp; this.selectedData.length &gt; 0) {
+      this.selectedData.forEach(elemento &#x3D;&gt; {
+        this.rowSelected[this.rowsData().indexOf(elemento)] &#x3D; true;
+      });
+    }
+
+  }
+
+  /**Funzioni di render**/
+  alternateRowColor(rowIndex: any, rowAlternate: any) {
+    if (rowAlternate) {
+
+      this.isOddRow &#x3D; !this.isOddRow;
+
+    }
+  }
+
+  calcSommaryCells() {
+
+    this.colsHeader.forEach(col &#x3D;&gt; {
+      this.calcolaSomma(col)
+    })
+  }
+
+  setStyleBody(): Promise&lt;boolean&gt; {
+
+
+    const numRows &#x3D; this.rowsData().length
+    const rowHeight &#x3D; 27; // Altezza di una singola riga
+    const totalHeight &#x3D; this.tableHeight;
+
+    const maxRowsByBody &#x3D; Math.floor(totalHeight / rowHeight);
+    let tWidth &#x3D; this.tableWrapWidth;
+
+    //const setOverflow &#x3D; (maxRowsByBody * rowHeight) &lt; (numRows * rowHeight) ;
+    this.bodyHeight &#x3D; totalHeight
+    this.bodyStyle &#x3D; {
+
+
+      &#x27;display&#x27;: &#x27;block&#x27;,
+
+      &#x27;border-top&#x27;: &#x27;1px solid #e8eaeb&#x27;
+    };
+    this.theadStyle &#x3D; {
+
+      &#x27;display&#x27;: &#x27;block&#x27;,
+    }
+
+    if (this.colsGroupShow) {
+      this.tableStyle &#x3D; { &#x27;width.px&#x27;: tWidth, &#x27;height.px&#x27;: this.tableHeight, &#x27;overflow-y&#x27;: &#x27;clip&#x27;, &#x27;table-layout&#x27;: &#x27;auto&#x27;, &#x27;display&#x27;: &#x27;block&#x27; }
+      this.bodyStyle.display &#x3D; &#x27;unset&#x27;
+      this.bodyStyle[&#x27;overflow-y&#x27;] &#x3D; &#x27;unset&#x27;;
+      return Promise.resolve(true)
+    }
+
+    return Promise.resolve(true)
+
+  }
+
+  /**Fine Funzioni di render */
+
+
+  /**Funzione di dataRourceRemote **/
+  loadRemoteRecords(): Promise&lt;boolean&gt; {
+
+
+    try {
+
+
+      this.anagraficaService.getElenco(this.api, this.queryString).subscribe(data &#x3D;&gt; {
+
+        this.dataSource &#x3D; data;
+
+        this.rowsData.set(data)
+        if (data.totalCount) {
+          this.totalRecords &#x3D; data.totalCount;
+        }
+        //this.totalRecords &#x3D; data[&#x27;@odata.count&#x27;];
+
+        return Promise.resolve(true)
+      });
+
+
+
+
+
+
+    } catch (ex) {
+      return Promise.resolve(false)
+
+    } finally {
+
+      return Promise.resolve(true)
+    }
+
+
+  }
+
+  /**Fine funzione di dataRourceRemote **/
+  buildAndTestQueryString(): Promise&lt;boolean&gt; {
+
+    if (this.queryString !&#x3D; &#x27;&#x27;) {
+
+      let queryString &#x3D; this.queryString;
+
+
+      if (this.queryString.includes(&#x27;$&#x27;)) {
+
+        for (let x in this.dataJson) {
+          if (x) {
+            if (queryString.includes(x)) {
+              let regex &#x3D; new RegExp(&#x27;\\$&#x27; + x + &#x27;\\b&#x27;, &#x27;g&#x27;);
+
+              if (!this.dataJson[x]) {
+
+                return Promise.resolve(false);
+              }
+
+              queryString &#x3D; queryString.replace(regex, this.dataJson[x]);
+
+
+            }
+          }
+
+        }
+        this.queryString &#x3D; queryString;
+        return Promise.resolve(true);
+      }
+    }
+
+    return Promise.resolve(true);
+  }
+  async addRow() {
+
+
+    let newRowData: any;
+
+
+    if (this.rowsData().length &#x3D;&#x3D; 0) {
+      this.showNullData &#x3D; false
+    }
+
+
+
+    this.colsHeader.forEach(cells &#x3D;&gt; {
+      if (cells.dataField) {
+        let value &#x3D; null;
+        if (cells.editorType &#x3D;&#x3D; &#x27;dxNumberBox&#x27;) {
+          value &#x3D; 0
+        }
+        newRowData &#x3D; { ...newRowData, [cells.dataField]: value }
+      }
+    })
+
+
+    if (typeof newRowData !&#x3D; &#x27;undefined&#x27;) {
+      newRowData.isNewRow &#x3D; true
+      this.rowsData().push(newRowData)
+    }
+
+    /* let tdEmpty &#x3D; &#x27;&#x27;
+    for (let index &#x3D; 0; index &lt; this.colsHeader.length; index++) {
+      //insert Row
+      tdEmpty +&#x3D; &#x60;&lt;td&gt;&lt;/td&gt;&#x60;
+
+    }*/
+
+    let indexLastRow &#x3D; this.dataSource.length - 1
+
+
+
+
+    this.rowSelected &#x3D; [false];
+    setTimeout(() &#x3D;&gt; {
+      this.rowSelected[indexLastRow] &#x3D; true
+    }, 300);
+  }
+
+  deleteRow(index?: any): any[] {
+
+
+
+    if (index &#x3D;&#x3D; 0) {
+
+
+      if (this.dataSource().length &#x3D;&#x3D; 0) {
+        this.rowsData.update(res &#x3D;&gt; res &#x3D; []);
+      }
+
+
+    }
+
+    this.rowsData.update(res &#x3D;&gt; this.dataSource().splice(index, 1));
+    return this.rowsData()
+
+
+  }
+  /**Funzioni di editor**/
+
+  btnActionClick(evt: any) {
+    console.log(&#x27;btnActionClick&#x27;, evt);
+    switch (evt.action) {
+      case &quot;onEditEvent&quot;:
+        this.startEdit(evt.rowIndex, evt)
+        break;
+      case &quot;onDeleteEvent&quot;:
+        this.removeRowData(evt.rowIndex, evt)
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  startEdit(index: any, event: any) {
+
+
+    let eventEditor &#x3D; {
+      infoEvent: event,
+      rowIndex: index,
+      data: this.rowsData()[index],
+      name: &#x27;buttonEditRowEvent&#x27;,
+      idTable: this.idTable,
+      service: this.service,
+      cancel: false,
+      component: this
+    }
+    this.emittendStartEdit.emit(eventEditor)
+
+    if (eventEditor.cancel) {
+      return
+    }
+
+
+  }
+
+
+  async removeRowData(index: any, event: any) {
+
+
+    confirm(&#x27;Sei certo di voler eliminare questo record?&#x27;, &#x27;Attenzione!&#x27;, res &#x3D;&gt; {
+
+
+      if (!res) {
+        return
+      }
+
+      let delEvent &#x3D; {
+        name: &#x27;delRows&#x27;,
+        rowIndex: index,
+        rowData: this.rowsData()[index]
+      }
+
+      this.emittendGridEvent.emit(delEvent)
+
+      if (!this.remoteOperation) {
+
+        this.deleteRow(index);
+
+
+        //this.renderGrid()
+
+      } else if (res) {
+        let id &#x3D; this.rowsData()[index].id
+        this.anagraficaService.actionDelete(this.api, id).then(res &#x3D;&gt; {
+
+          this.renderGrid()
+        })
+      }
+    })
+
+  }
+
+
+
+
+
+  emitButtonDynamic(event: any, rowIndex: any) {
+    //console.log(&#x27;emitButtonD88888ynamic&#x27;, event)
+
+    switch (event.name) {
+      case &#x27;emitButtonDynamic&#x27;:
+
+
+
+
+        break;
+      case &#x27;emitButtonType2&#x27;:
+        //this.actionCampoButton(event);
+        break;
+      case &#x27;beforeEmitButtonDynamic&#x27;:
+        event.dataSource &#x3D; this.dataSource;
+        event.dataGridComponent &#x3D; this
+        event.rowIndex &#x3D; rowIndex
+        this.emittendGridEvent.emit(event);
+        break;
+
+      default:
+        break;
+    }
+
+  }
+
+  saveAndExit() {
+
+
+    let dataSourceRowSelected: any[] &#x3D; []
+    this.rowSelected.forEach((re, i) &#x3D;&gt; {
+      if (re) {
+
+        dataSourceRowSelected.push(this.rowsData()[i])
+        //console.log(&#x27;dataSourceSel&#x27;, this.dataSource[i]);
+      }
+    })
+    let eventSelectRows &#x3D; {
+      component: this,
+      dataSelected: dataSourceRowSelected,
+
+
+      name: &#x27;onRowMultipleSelectionChange&#x27;
+    }
+
+    this.emittendSelectionRow.emit(eventSelectRows);
+
+
+    return;
+    /* let eventSelectRow &#x3D; {
+      component: this,
+      data: row,
+      rowIndex: index,
+  
+      name: &#x27;onRowMultipleSelectionChange&#x27;
+    }
+  
+    this.emittendSelectionRow.emit(eventSelectRow); */
+  }
+
+  /***Funzioni di selezione riga***/
+  setStateHover(rowIndex: any) {
+    this.isHovered[rowIndex] &#x3D; true;
+  }
+  leaveStateHover(ev: any, element: any, rowIndex: any) {
+    this.isHovered[rowIndex] &#x3D; false;
+  }
+
+  selectRow(event: any, index: any, row: any, selectRowIndex?: any) {
+
+    let prevIndex &#x3D; index - 1
+
+    //this.selectionChange(event, prevIndex)
+
+    let infoRows &#x3D; {
+      isRowFather: false,
+      isRowDetail: false
+    }
+
+
+    let eventClickRow &#x3D; {
+      event: event,
+      rowData: row,
+      component: this,
+      dataSource: this.dataSource,
+      infoRows: infoRows,
+      rowIndex: index,
+      name: &#x27;onRowOnlyClick&#x27;,
+      cancel: false
+    }
+
+    this.emittendSelectionRow.emit(eventClickRow);
+
+    if (eventClickRow.cancel) {
+      return
+    }
+
+    if (!this.selectionRowMode) {
+
+      return
+    }
+
+    if (this.selectionRowMode &#x3D;&#x3D; &#x27;detail&#x27;) {
+      this.collapse(event, row, index);
+
+      return
+    }
+
+
+    if (this.selectionRowMode &#x3D;&#x3D; &#x27;multiple&#x27;) {
+      this.selectRowMultiple(event, index, row)
+      return
+    }
+
+    if (this.showDetailRow[selectRowIndex]) {
+      infoRows.isRowDetail &#x3D; true;
+      this.rowSelectedDetail &#x3D; [false]
+
+      if (!this.rowSelectedDetail[index]) {
+
+        this.rowSelectedDetail[index] &#x3D; true;
+
+
+      } else {
+
+        this.rowSelectedDetail[index] &#x3D; false;
+      }
+
+      let eventSelectRow &#x3D; {
+        event: event,
+        data: row,
+        fatherData: this.rowsData()[selectRowIndex],
+        infoRows: infoRows,
+        rowIndex: index,
+
+        name: &#x27;onRowSelectionChange&#x27;
+      }
+      this.emittendSelectionRow.emit(eventSelectRow);
+
+
+      return
+    }
+
+    this.rowSelected &#x3D; []
+
+    if (!this.rowSelected[index]) {
+
+      this.rowSelected[index] &#x3D; true;
+
+    } else {
+
+      this.rowSelected[index] &#x3D; false;
+    }
+
+
+
+    let eventSelectRow &#x3D; {
+      event: event,
+      data: row,
+      infoRows: infoRows,
+      rowIndex: index,
+
+      name: &#x27;onRowSelectionChange&#x27;
+    }
+
+
+    this.emittendSelectionRow.emit(eventSelectRow);
+
+  }
+  dblRowClick(event: any, index: any, row: any, selectRowIndex?: any) {
+
+    let prevIndex &#x3D; index - 1
+
+    //this.selectionChange(event, prevIndex)
+
+
+
+    let eventDblClickRow &#x3D; {
+      event: event,
+      rowData: row,
+      component: this,
+      dataSource: this.dataSource,
+      rowIndex: index,
+      name: &#x27;onDblRowClick&#x27;,
+      cancel: false
+    }
+
+    this.emittendDblRowClick.emit(eventDblClickRow);
+
+
+
+
+
+
+
+
+
+  }
+
+  selectRowDetail(event: any, index: number, row: any, selectRowIndex?: any) {
+
+    let prevIndex &#x3D; index - 1
+
+
+    let infoRows &#x3D; {
+      isRowFather: false,
+      isRowDetail: false
+    }
+    infoRows.isRowDetail &#x3D; true;
+
+    if (this.showDetailRow[selectRowIndex]) {
+
+
+      this.rowSelectedDetail[index] &#x3D; false;
+    }
+
+
+
+    if (!this.rowSelectedDetail[index]) {
+
+      this.rowSelectedDetail[index] &#x3D; true;
+
+    } else {
+
+      this.rowSelectedDetail[index] &#x3D; false;
+    }
+
+
+
+    let eventSelectRowDetail &#x3D; {
+      event: event,
+      data: row,
+      fatherData: this.rowsData()[selectRowIndex],
+      infoRows: infoRows,
+      rowIndex: index,
+
+      name: &#x27;onRowSelectionChange&#x27;
+    }
+    this.emittendSelectionRow.emit(eventSelectRowDetail);
+
+
+  }
+
+  clickToSelectRowMultiple(event: any, index: any, checkBoxSelect: any) {
+
+    let selRow &#x3D; this.rowSelected[index];
+    if (!selRow) {
+
+      this.rowSelected[index] &#x3D; true;
+
+    } else {
+
+      this.rowSelected[index] &#x3D; false;
+
+    }
+    //this.selectRowMultiple(event, index)
+    event.stopPropagation();
+  }
+
+
+  selectRowMultiple(event: any, index: any, row?: any) {
+
+
+    let selRow &#x3D; this.rowSelected[index];
+    if (!selRow) {
+      this.rowSelected[index] &#x3D; true;
+    } else {
+      this.rowSelected[index] &#x3D; false;
+    }
+
+    if (event) {
+
+      event.stopPropagation();
+      event.preventDefault();
+
+    }
+
+
+
+    let eventSelectRow &#x3D; {
+      event: event,
+      data: row,
+      rowIndex: index,
+      component: this,
+      dataSource: this.dataSource,
+      rowsSelected: this.rowSelected[index],
+      name: &#x27;onRowMultipleSelection&#x27;
+    }
+
+    this.emittendSelectionRow.emit(eventSelectRow);
+
+  }
+
+  clickToSelectAllRows() {
+    this.rowSelectedAll &#x3D; false;
+
+    let dataSourceLength &#x3D; this.rowsData().length;
+
+
+    if (dataSourceLength &gt; 0) {
+      if ((this.rowSelected.length - 1) &#x3D;&#x3D; dataSourceLength) {
+        this.rowSelected &#x3D; [false];
+        this.rowSelectedAll &#x3D; false
+        return
+      }
+
+      for (let x &#x3D; 0; x &lt;&#x3D; dataSourceLength; x++) {
+        this.rowSelected[x] &#x3D; true;
+      }
+
+      this.rowSelectedAll &#x3D; true
+    }
+
+
+  }
+
+
+
+
+  removeSelAndExit(event: any) {
+
+  }
+
+  chooseRow(event: any, i: any, colRow: any) {
+
+    if (this.showDetailRow[i]) {
+      return
+    }
+    this.selectRow(event, i, colRow)
+  }
+
+  tdClick(event: any, colInfo: ColData, tdIndex: any, rowIndex: any) {
+
+    if (this.modeEdit !&#x3D; &#x27;cell&#x27;) {
+      return
+    }
+    const colType &#x3D; colInfo.type
+    switch (colType) {
+
+      case &#x27;campoButton&#x27;:
+        event.stopPropagation()
+        this.buttonClick(event, colInfo.button, colInfo, rowIndex)
+        break;
+
+      default:
+        break;
+    }
+
+    console.log(&#x27;colInfo--&gt;&#x27;, colInfo)
+  }
+
+  updateRowClasses(rowIndex: number) {
+    return {
+      &#x27;-disabled&#x27;: this.rowIsDisable[rowIndex],
+      &#x27;selected-row&#x27;: this.rowSelected[rowIndex],
+      &#x27;state-hover&#x27;: this.isHovered[rowIndex],
+      &#x27;select-have-detail&#x27;: this.isHoveredDetatil[rowIndex],
+      &#x27;custom-class&#x27;: this.rowcustomclass[rowIndex]
+    };
+  }
+
+  /**Fine Funzioni di selezione**/
+
+
+  /** Funzioni di dettaglio **/
+  collapse(e: any, row: any, index: any, groupDataField?: any) {
+
+
+    var elems &#x3D; document.querySelectorAll(&quot;.dx-datagrid-group-opened&quot;);
+
+    [].forEach.call(elems, (el: any) &#x3D;&gt; {
+      el.className &#x3D; el.className.replace(&#x27;dx-datagrid-group-opened&#x27;, &quot;dx-datagrid-group-closed&quot;);
+    });
+
+    let boxW &#x3D; document.querySelector&lt;HTMLElement&gt;(&#x27;.-data-grid-wrapper &#x27;);
+    if (boxW)
+      boxW.classList.add(&#x27;scroll-bottom&#x27;);
+
+    let table &#x3D; document.getElementById(this.idTable)
+    if (table) {
+
+
+
+      let currentTarget &#x3D; table.getElementsByTagName(&quot;tbody&quot;)[0].rows[index]
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        currentTarget &#x3D; e.currentTarget;
+      }
+
+
+      /**Tutto questo devi andattarlo ad angualar, per antonio o Adele */
+      let thisRows &#x3D; currentTarget
+      let targetDetailCol
+      if (thisRows.classList.contains(&#x27;dx-datagrid-group-opened&#x27;) || thisRows.classList.contains(&#x27;dx-datagrid-group-closed&#x27;)) {
+        targetDetailCol &#x3D; thisRows
+      } else {
+        if (thisRows.getElementsByClassName(&#x27;detailCol&#x27;).length &#x3D;&#x3D; 0) {
+          return
+        }
+        targetDetailCol &#x3D; thisRows.getElementsByClassName(&#x27;detailCol&#x27;)[0].children[0];
+      }
+
+
+      if (this.showDetailRow[index]) {
+        this.showDetailRow &#x3D; [false];
+        //this.colsRowDetail &#x3D; [];
+
+        targetDetailCol.classList.remove(&#x27;dx-datagrid-group-opened&#x27;);
+        targetDetailCol.classList.add(&#x27;dx-datagrid-group-closed&#x27;)
+        return
+      }
+
+
+      this.showDetailRow &#x3D; [false];
+
+      let fieldDetail &#x3D; this.colsGroupDetail;
+
+      if (this.detailOptions[&#x27;isRemote&#x27;]) {
+
+        this.renderGridDetailData(this.detailOptions, row, index);
+
+        targetDetailCol.classList.remove(&#x27;dx-datagrid-group-closed&#x27;);
+
+        targetDetailCol.classList.add(&#x27;dx-datagrid-group-opened&#x27;);
+
+
+
+        return
+      } else {
+
+        if (!groupDataField) {
+          let detailCol &#x3D; this.colsHeader.filter(r &#x3D;&gt; r.type &#x3D;&#x3D; &#x27;detail&#x27;)
+          groupDataField &#x3D; detailCol[0].groupDataField
+        }
+
+        this.showDetailRow[index] &#x3D; true;
+
+        this.colsRowDetail[index] &#x3D; this.rowsData()[index][groupDataField];
+
+        if (this.colsRowDetail[index].length &#x3D;&#x3D; 0) {
+
+          this.showNullDataDetail &#x3D; true
+
+
+        }
+
+        this.showDetailRow[index] &#x3D; true;
+
+        let eventExpandingRow &#x3D; {
+          cancel: false,
+          data: row,
+          rowIndex: index,
+          expandedData: this.rowsData()[index][groupDataField],
+          name: &#x27;onRowExpanded&#x27;
+        }
+
+        this.emittendGridEvent.emit(eventExpandingRow);
+
+        targetDetailCol.classList.remove(&#x27;dx-datagrid-group-closed&#x27;);
+
+        targetDetailCol.classList.add(&#x27;dx-datagrid-group-opened&#x27;)
+      }
+
+    }
+
+  }
+
+  async renderGridDetailData(detailOptions: detailOptions, row: any, index: any) {
+
+
+    let cols
+    this.showNullDataDetail &#x3D; false;
+    let queryString &#x3D; &#x27;&#x27;;
+    let api &#x3D; detailOptions.api;
+    let costantValues &#x3D; detailOptions.costantValue;
+    let values: any
+    if (detailOptions.costantValue) {
+
+      const costantValue &#x3D; detailOptions.costantValue;
+
+      costantValue.forEach((element: any) &#x3D;&gt; {
+        let keyEle &#x3D; element[&#x27;key&#x27;];
+        let val &#x3D; &#x27;&#x27;
+        if (typeof row[element[&#x27;value&#x27;]] !&#x3D; &#x27;undefined&#x27;) {
+          val &#x3D; row[element[&#x27;value&#x27;]]
+        } else {
+          val &#x3D; element[&#x27;value&#x27;]
+        }
+
+        values &#x3D; { ...values, [keyEle]: val }
+      })
+
+    }
+
+
+    if (detailOptions.queryString) {
+      if (detailOptions.queryString.includes(&#x27;$&#x27;)) {
+
+        let myqueryString &#x3D; detailOptions.queryString;
+        for (let x in row) {
+          if (myqueryString.includes(x)) {
+
+            var regex &#x3D; new RegExp(&#x27;\\$&#x27; + x + &#x27;\\b&#x27;, &#x27;g&#x27;);
+            // Crea un&#x27;espressione regolare usando il costruttore RegExp
+
+
+            if (myqueryString.match(regex)) {
+              myqueryString &#x3D; myqueryString.replace(regex, row[x])
+            }
+
+          }
+        }
+
+        for (let k in values) {
+          if (myqueryString.includes(k)) {
+
+            var regex &#x3D; new RegExp(&#x27;\\$&#x27; + k + &#x27;\\b&#x27;, &#x27;g&#x27;);
+            // Crea un&#x27;espressione regolare usando il costruttore RegExp
+
+
+            if (myqueryString.match(regex)) {
+              myqueryString &#x3D; myqueryString.replace(regex, values[k])
+            }
+
+          }
+        }
+        queryString &#x3D; myqueryString
+
+
+
+      } else {
+        queryString &#x3D; detailOptions.queryString
+      }
+    }
+
+    this.anagraficaService.getElenco(api, queryString).subscribe(ress &#x3D;&gt; {
+
+
+
+      if (ress[&#x27;items&#x27;]) {
+        ress &#x3D; ress[&#x27;items&#x27;]
+      } else {
+        ress &#x3D; ress
+      }
+
+
+
+      this.colsRowDetail[index] &#x3D; ress;
+
+      if (this.colsRowDetail.length &#x3D;&#x3D; 0) {
+
+        this.showNullDataDetail &#x3D; true
+
+
+      }
+
+      this.showDetailRow[index] &#x3D; true;
+
+
+
+      let eventExpandingRow &#x3D; {
+        cancel: false,
+        data: row,
+        rowIndex: index,
+        expandedData: this.colsRowDetail[index],
+        name: &#x27;onRowExpanded&#x27;
+      }
+
+      this.emittendGridEvent.emit(eventExpandingRow);
+
+
+    })
+
+  }
+
+
+
+
+
+
+
+
+  // Funzione per calcolare la somma di una colonna specifica
+  calcolaSomma(cols: ColData): number {
+
+
+    if (!cols.dataField) {
+      return 0
+    }
+
+    if (!cols.showInSummary) {
+      return 0
+    }
+    let dataField &#x3D; cols.dataField;
+
+    let value &#x3D; this.rowsData().reduce((acc, curr) &#x3D;&gt; acc + curr[dataField], 0);
+
+    return this.valueSumm[dataField] &#x3D; value
+  }
+
+  // Funzione di utilità per formattare le date
+  private formatDate(dateString: string, type: &#x27;EN&#x27; | &#x27;it&#x27; &#x3D; &#x27;EN&#x27;): string {
+
+    const regExpISO: RegExp &#x3D; /(\d{4})([\/-])(\d{1,2})\2(\d{1,2})/;
+    const regExpIT: RegExp &#x3D; /(\d{1,2})([\/-])(\d{1,2})\2(\d{4})/;
+
+
+    let isMatchISO &#x3D; dateString.match(regExpISO);
+    let isMatchIT &#x3D; dateString.match(regExpIT);
+
+    //Se nessuno dei 2 formati è valido
+    if (!isMatchISO &amp;&amp; !isMatchIT) {
+      return &#x27;&#x27;;
+    }
+
+    if (isMatchIT) {
+
+      if (dateString.includes(&#x27;-&#x27;))
+        dateString &#x3D; &#x60;${dateString.split(&#x27;-&#x27;)[2]}-${dateString.split(&#x27;-&#x27;)[1]}-${dateString.split(&#x27;-&#x27;)[0]}&#x60;;
+      else if (dateString.includes(&#x27;/&#x27;))
+        dateString &#x3D; &#x60;${dateString.split(&#x27;/&#x27;)[2]}-${dateString.split(&#x27;/&#x27;)[1]}-${dateString.split(&#x27;/&#x27;)[0]}&#x60;;
+    }
+
+    const date &#x3D; new Date(dateString);
+
+    // Formatta la data come necessario
+    const year &#x3D; date.getFullYear();
+    const month &#x3D; (date.getMonth() + 1).toString().padStart(2, &#x27;0&#x27;); // Mese è 0-based
+    const day &#x3D; date.getDate().toString().padStart(2, &#x27;0&#x27;);
+
+    let finallyData &#x3D; &#x27;&#x27;
+    if (type &#x3D;&#x3D; &#x27;EN&#x27;) {
+      finallyData &#x3D; &#x60;${year}-${month}-${day}&#x60;;
+    }
+
+    if (type &#x3D;&#x3D; &#x27;it&#x27;) {
+      finallyData &#x3D; &#x60;${day}-${month}-${year} &#x60;;
+    }
+
+    return finallyData
+  }
+
+
+
+
+
+
+  builderOdataSearchString(dataField: any, tipoCampo: any, searchType?: &#x27;contains&#x27; | &#x27;startsWith&#x27;) {
+    if (!this.searchText) {
+      return &#x27;&#x27;; // Restituisci una stringa vuota o null
+    }
+
+    switch (tipoCampo.toLowerCase()) {
+      case &#x27;text&#x27;:
+      case &#x27;string&#x27;:
+        if (typeof searchType &#x3D;&#x3D;&#x3D; &#x27;undefined&#x27; || searchType &#x3D;&#x3D;&#x3D; &#x27;contains&#x27;) {
+          return &#x60;(contains(tolower(${dataField}),&#x27;${this.searchText.toLowerCase()}&#x27;))&#x60;;
+        } else {
+          return &#x60;(startswith(tolower(${dataField}),&#x27;${this.searchText.toLowerCase()}&#x27;))&#x60;;
+        }
+
+      case &#x27;number&#x27;:
+        let strToNumber &#x3D; Number(this.searchText);
+        if (!isNaN(strToNumber)) {
+          return &#x60;(${dataField} eq ${strToNumber})&#x60;;
+        }
+        return &#x27;&#x27;; // Restituisci una stringa vuota se la conversione non è valida
+
+      case &#x27;date&#x27;:
+      case &#x27;dateTime&#x27;:
+        let dataFormattata &#x3D; this.formatDate(this.searchText);
+        if (typeof dataFormattata !&#x3D;&#x3D; &#x27;undefined&#x27;) {
+          return &#x60;(${dataField} eq ${dataFormattata})&#x60;;
+        }
+        return &#x27;&#x27;; // Restituisci una stringa vuota se la data non è valida
+
+      case &#x27;boolean&#x27;:
+        return &#x27;&#x27;; // Restituisci una stringa vuota per booleani
+
+      default:
+        if (typeof searchType &#x3D;&#x3D;&#x3D; &#x27;undefined&#x27; || searchType &#x3D;&#x3D;&#x3D; &#x27;contains&#x27;) {
+          return &#x60;(contains(tolower(${dataField}),&#x27;${this.searchText.toLowerCase()}&#x27;))&#x60;;
+        } else {
+          return &#x60;(startswith(tolower(${dataField}),&#x27;${this.searchText.toLowerCase()}&#x27;))&#x60;;
+        }
+    }
+  }
+
+
+  async searchData(event: any) {
+
+    return;
+
+
+  }
+
+
+  async toolbarValueChanged(event: { value: any; event: any; }) {
+    console.log(&#x27;toolbarValueChanged&#x27;, event)
+    let value &#x3D; event.value;
+    let evt &#x3D; event.event
+
+    this.searchText &#x3D; value;
+    this.textEmpty &#x3D; &#x27;Sto cercando...&#x27;
+
+    //da finire
+    this.searchData(event)
+
+
+  }
+
+  buttonEmitted(event: any) {
+    console.log(&#x27;buttonEmitted--&gt;&#x27;, event)
+    switch (event) {
+      case &#x27;addRow&#x27;:
+
+        let eventRowClick &#x3D; {
+          infoEventButtons: event,
+          name: &#x27;buttonNewRowEvent&#x27;,
+          idTable: this.idTable,
+          service: this.service,
+          cancel: false,
+          component: this
+        }
+        this.emittendToolbarClick.emit(eventRowClick)
+
+
+        this.emittendStartEdit.emit(eventRowClick)
+        if (!eventRowClick.cancel) {
+
+          this.addRow()
+        }
+        break;
+
+      case 22:
+        this.saveAndExit()
+        break;
+      case 23:
+        let eventOutput &#x3D; {
+          event: event,
+          cancel: false,
+          name: &#x27;annullaSelezione&#x27;
+        }
+        this.emittendButtonExit.emit(eventOutput)
+        break;
+
+      case 0:
+        let eventOutputZero &#x3D; {
+          event: event,
+          cancel: false,
+          name: &#x27;annullaSelezione&#x27;
+        }
+        this.emittendButtonExit.emit(eventOutputZero)
+        break;
+      case 21:
+        let eventOutputButtons &#x3D; {
+          event: event,
+          cancel: false,
+          name: &#x27;newButtonClick&#x27;
+        }
+
+        let eventOutputClick &#x3D; {
+          infoEventButtons: eventOutputButtons,
+          name: &#x27;toolbarButtonClick&#x27;
+        }
+
+        this.emittendButtonExit.emit(eventOutputClick)
+        break;
+      default:
+        let eventCustomClick &#x3D; {
+          infoEventButtons: event,
+          name: &#x27;toolbarButtonClick&#x27;,
+
+        }
+
+        this.emittendToolbarClick.emit(eventCustomClick)
+        break;
+    }
+
+  }
+
+
+
+
+  isSelectedSubRow(rowIndex: number, subRowIndex: number): boolean {
+    return this.selectedRowIndex &#x3D;&#x3D;&#x3D; rowIndex &amp;&amp; this.selectedSubRowIndex &#x3D;&#x3D;&#x3D; subRowIndex;
+  }
+
+  // Metodo per navigare tra le righe utilizzando le frecce su e giù
+  handleKeyboardEvents(event: KeyboardEvent) {
+
+    if (event.key &#x3D;&#x3D;&#x3D; &#x27;ArrowDown&#x27;) {
+
+      this.navigateByKeyboard(&#x27;ArrowDown&#x27;);
+
+    } else if (event.key &#x3D;&#x3D;&#x3D; &#x27;ArrowUp&#x27;) {
+
+      this.navigateByKeyboard(&#x27;ArrowUp&#x27;);
+
+    }
+  }
+
+  public navigateByKeyboard(key: string) {
+
+    this.isHoveredDetatil &#x3D; [false]
+    switch (key) {
+      case &#x27;ArrowDown&#x27;:
+
+        if (this.showDetailRow[this.selectedRowIndex] &amp;&amp; this.selectedSubRowIndex &lt; this.colsRowDetail[this.selectedRowIndex].length - 1) {
+
+          this.selectedSubRowIndex++;
+
+          //this.selectedSubRowIndex &#x3D; -1;
+        } else if (this.selectedRowIndex &lt; this.dataSource.length - 1) {
+
+          this.selectedRowIndex++;
+          this.selectedSubRowIndex &#x3D; -1;
+        }
+        break;
+      case &#x27;ArrowUp&#x27;:
+
+
+        if (this.selectedSubRowIndex &#x3D;&#x3D;&#x3D; -1 || this.selectedRowIndex &gt; 0) {
+          // Se non c&#x27;è alcuna riga di dettaglio selezionata o se siamo sulla riga principale
+          if (this.selectedSubRowIndex &#x3D;&#x3D; -1 &amp;&amp; this.selectedRowIndex &gt; 0) {
+            this.selectedRowIndex--;
+          }
+          this.selectedSubRowIndex &#x3D; -1;
+        } else if (this.selectedSubRowIndex &gt; 0) {
+          // Se siamo su una riga di dettaglio e ci sono più righe di dettaglio disponibili
+          this.selectedSubRowIndex--;
+        }
+
+        if (this.selectedRowIndex &#x3D;&#x3D; 0) {
+          this.selectedSubRowIndex &#x3D; 0;
+        }
+
+
+
+        break;
+
+
+      default:
+        break;
+    }
+
+    //Da fare
+    //this.focusRow(this.selectedRowIndex, this.selectedSubRowIndex);
+
+    let data
+
+    let infoRows &#x3D; {
+      isRowFather: false,
+      isRowDetail: false
+    }
+
+    let index &#x3D; 0;
+
+    if (this.selectionRowMode &#x3D;&#x3D; &#x27;detail&#x27;) {
+      data &#x3D; this.colsRowDetail[this.selectedRowIndex][this.selectedSubRowIndex];
+      infoRows.isRowDetail &#x3D; true;
+      index &#x3D; this.selectedSubRowIndex;
+
+    } else if (this.selectionRowMode &#x3D;&#x3D; &#x27;single&#x27;) {
+      data &#x3D; this.rowsData()[this.selectedRowIndex];
+      infoRows.isRowDetail &#x3D; false;
+      index &#x3D; this.selectedSubRowIndex
+    }
+
+    if (Object.keys(data).length &gt; 0) {
+      let eventSelectRow &#x3D; {
+        event: null,
+        data: data,
+        infoRows: infoRows,
+        rowIndex: index,
+        keyPressed: key,
+        name: &#x27;onRowSelectionChange&#x27;
+      }
+
+      this.emittendSelectionRow.emit(eventSelectRow);
+    }
+
+
+  }
+
+
+
+  buttonClick(event: any, button: any, col: any, rowIndex: any) {
+    let eventToEmit &#x3D; button;
+    eventToEmit.dataSource &#x3D; this.dataSource;
+    eventToEmit.rowData &#x3D; this.rowsData()[rowIndex];
+    eventToEmit.col &#x3D; col;
+    eventToEmit.rowIndex &#x3D; rowIndex
+    eventToEmit.component &#x3D; this;
+    eventToEmit.event &#x3D; event
+    this.emittendBttonCellClick.emit(eventToEmit);
+
+    event.stopPropagation()
+    event.preventDefault()
+  }
+
+  /** Da richiamare dopo evento KeyUp barra di ricerca per il refresh di OData  */
+  async resetPageInfo() {
+
+    this.showNullData &#x3D; true;
+
+    this.latestSkipLoaded &#x3D; 0;
+    this.latestScrollTopPosition &#x3D; 0;
+    this.currentPage &#x3D; 0;
+
+
+  }
+
+  /**
+   * refresh
+   */
+
+  public refresh() {
+
+    if (this.currentPage &gt;&#x3D; 1) {
+      this.currentPage &#x3D; 0;
+    }
+
+    this.colsHeader &#x3D; [];
+    this.rowsData.update(res &#x3D;&gt; res &#x3D; [])
+
+    this.rowSelected &#x3D; [false]
+    this.rowSelectedDetail &#x3D; [false];
+    this.rowIsDisable &#x3D; [false]
+    this.resetPageInfo()
+    this.renderGrid();
+  }
+
+  public hideColumn(colIndex: number) {
+    this.colsHeader.splice(colIndex, 1)
+    this.resizeCols(this.colsHeader);
+
+  }
+
+  //Orginamento delle colonne 
+  sortColumn(column: string): void {
+    if (this.sortedColumn &#x3D;&#x3D;&#x3D; column) {
+      // Cambia la direzione dell&#x27;ordinamento
+      this.sortDirection &#x3D; this.sortDirection &#x3D;&#x3D;&#x3D; &#x27;asc&#x27; ? &#x27;desc&#x27; : &#x27;asc&#x27;;
+    } else {
+      // Imposta una nuova colonna ordinata
+      this.sortedColumn &#x3D; column;
+      this.sortDirection &#x3D; &#x27;asc&#x27;;
+    }
+
+    // Applica l&#x27;ordinamento ai dati
+    this.rowsData().sort((a, b) &#x3D;&gt; {
+      const valueA &#x3D; a[column];
+      const valueB &#x3D; b[column];
+
+      if (valueA &lt; valueB) return this.sortDirection &#x3D;&#x3D;&#x3D; &#x27;asc&#x27; ? -1 : 1;
+      if (valueA &gt; valueB) return this.sortDirection &#x3D;&#x3D;&#x3D; &#x27;asc&#x27; ? 1 : -1;
+      return 0;
+    });
+  }
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+          <label class="dark-mode-switch">
+               <input type="checkbox">
+               <span class="slider">
+                    <svg class="slider-icon" viewBox="0 0 24 24" fill="none" height="20" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" width="20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+               </span>
+          </label>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'interface';
+            var COMPODOC_CURRENT_PAGE_URL = 'tasto.html';
+            var MAX_SEARCH_RESULTS = 15;
+       </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+
+       <script src="../js/menu-wc.js" defer></script>
+       <script nomodule src="../js/menu-wc_es5.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

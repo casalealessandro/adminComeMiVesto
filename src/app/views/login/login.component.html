@@ -1,0 +1,12 @@
+
+
+<app-anagrafica-wrapper [caption]="'Login'" [cssClass]="'login-container'">    
+    <app-dynamic-form
+    [service]="'loginForm'"
+    [showBottomButtonLeft]="false"
+    [inputBtnRightName]="'Accedi'"
+    
+    (submitFormEvent)="login($event)"
+    >
+    </app-dynamic-form>
+</app-anagrafica-wrapper>

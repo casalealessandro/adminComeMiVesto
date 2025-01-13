@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, output } from '@angular/core';
 import { Router } from '@angular/router';
-
+import { MenuService } from '../../services/menu.service';
 
 @Component({
   selector: 'app-header',
@@ -11,9 +11,9 @@ import { Router } from '@angular/router';
 
 
 export class HeaderComponent {
-  @Output() showHidemMenu:EventEmitter<any> = new EventEmitter<any>();
+  @Output() toggleMenu = new EventEmitter<void>();
   
-  constructor() {}
+  constructor(private menuService: MenuService) {}
 
   ngOnInit() {
     this.renderHeader()
@@ -29,8 +29,8 @@ export class HeaderComponent {
 
 
 
-  toggleMenu(event:Event){
-    this.showHidemMenu.emit(event)
+  onToggleMenu() {
+    this.menuService.toggleMenu(); 
   }
 
  

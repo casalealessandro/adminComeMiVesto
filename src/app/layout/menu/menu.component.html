@@ -1,16 +1,31 @@
-<div class="d-flex flex-column flex-shrink-0 bg-body-tertiary" >
-
-    <a href="/" class="d-block p-3 link-body-emphasis text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Icon-only">
-      <svg class="bi pe-none" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
-      <span class="visually-hidden">Icon-only</span>
-    </a>
-    <ul class="nav nav-pills nav-flush flex-column mb-auto text-center" >
-      <li class="nav-item" *ngFor="let menuItem of allMenu;">
-        <a [href]="menuItem.path" class="nav-link" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Home" data-bs-original-title="Home">
-          <span [class]="menuItem.icon"></span>
-          <span class="text">{{menuItem.label}}</span>
-        </a>
-      </li>
-     
-    </ul>
-  </div>
+<div class="menu-container" [class.open]="getIsMenuOpenObservable | async">
+  <a
+    href="/"
+    class="d-block p-3 link-body-emphasis text-decoration-none"
+    data-bs-toggle="tooltip"
+    data-bs-placement="right"
+    data-bs-original-title="Icon-only"
+  >
+    <svg class="bi pe-none" width="40" height="32">
+      <use xlink:href="#bootstrap"></use>
+    </svg>
+    <span class="visually-hidden">Icon-only</span>
+  </a>
+  <ul class="nav nav-pills nav-flush flex-column mb-auto text-center menu-list">
+    <li class="nav-item menu-item" *ngFor="let menuItem of allMenu">
+      <a
+        [href]="menuItem.path"
+        class="nav-link"
+        aria-current="page"
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        [attr.aria-label]="menuItem.label"
+        [attr.data-bs-original-title]="menuItem.label"
+        (click)="navigateTo(menuItem.path)"
+      >
+        <span [class]="menuItem.icon"></span>
+        <span class="menu-label text">{{ menuItem.label }}</span>
+      </a>
+    </li>
+  </ul>
+</div>
