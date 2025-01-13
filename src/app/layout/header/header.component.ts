@@ -18,24 +18,9 @@ export class HeaderComponent {
   ngOnInit() {
     this.renderHeader()
   }
-
-
   renderHeader() {
-    
-
   }
-
- 
-
-
-
   onToggleMenu() {
     this.menuService.toggleMenu(); 
   }
-
- 
-
-  
-  
-
 }

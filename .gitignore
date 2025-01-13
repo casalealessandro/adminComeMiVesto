@@ -4,3 +4,4 @@ firebase-api
 src/environments/*
 .angular
 .vscode
+.angular/cache/17.3.8/Admin/.tsbuildinfo
