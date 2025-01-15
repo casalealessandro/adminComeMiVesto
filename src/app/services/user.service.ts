@@ -231,7 +231,25 @@ export class UserService {
   }
 
   
+  getUserProfile(uid: any):Observable<UserProfile>  {
 
+    let EndPoint = `${this.apiFire}user-profile`
+
+
+    if (uid) {
+      EndPoint = `${EndPoint}${uid}`
+    } 
+
+
+    const HeaderOdata = this.httpOptions
+
+    const response = this.httpClient.get(EndPoint, HeaderOdata)
+
+    return response.pipe(map((res: any) => {
+      return res as UserProfile;
+    }));
+      
+  }
 
  
 
