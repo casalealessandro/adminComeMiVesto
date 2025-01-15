@@ -31,15 +31,18 @@ export class OverlayComponent {
   @HostListener('document:click', ['$event'])
   clickOutside(event: MouseEvent) {
    
+    setTimeout(() => {
+     // Verifica se il click è fuori dal contenitore ovveride 
     
-    // Verifica se il click è fuori dal contenitore ovveride 
-    
-    const currentTarget = event.target as HTMLElement;
+     const currentTarget = event.target as HTMLElement;
 
-    // Verifica se il click è avvenuto fuori dal contenitore dell'overlay
-    if (this.overlayContentRef && !this.overlayContentRef.nativeElement.contains(currentTarget) && this.isVisible()) {
-      this.closeOverlay();
-    }
+     // Verifica se il click è avvenuto fuori dal contenitore dell'overlay
+     if (this.overlayContentRef && !this.overlayContentRef.nativeElement.contains(currentTarget) && this.isVisible()) {
+       this.closeOverlay();
+     }
+   }, 600);
+    
+   
     
   }
 

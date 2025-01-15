@@ -65,7 +65,8 @@
         align-items: center;
         position: relative;
         cursor: pointer;
-        margin-top: 13\\px;
+        padding: 5px 20px;
+      
       }
       
       .profile-img {
@@ -73,7 +74,7 @@
         height: 40px;
         border-radius: 50%;
         border: 2px solid #fff;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
       }
       
@@ -82,7 +83,7 @@
         border-color: #ffffff;
       }
       
-      .dropdown-window {
+/*       .dropdown-window {
         position: absolute;
         top: 100%;
         left: 0;
@@ -102,4 +103,4 @@
       
       .dropdown-item:hover {
         background-color: rgba(0, 0, 0, 0.1);
-      }
+      } */

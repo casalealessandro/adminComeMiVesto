@@ -106,17 +106,23 @@ export class UserService {
     return false;
   }
 
-  async LogOut() {
+  async LogOut(uid:any): Promise<boolean> {
 
-    const EndPoint = environment.BASE_API_URL + 'Token/Logout';
+    let EndPoint = `${this.apiFire}/user/logOuth/${uid}`;
     const HeaderOdata = this.httpOptions;
 
 
 
     const response = this.httpClient.get<any>(EndPoint, HeaderOdata);
 
-    return await lastValueFrom(response)
+    const res =  await lastValueFrom(response)
 
+    if(res.success){
+      this.clearSessionStorage();
+      this.isLoginUser.set(false);
+      return true;
+    }
+    return false;
   }
 
 

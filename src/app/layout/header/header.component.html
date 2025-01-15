@@ -12,25 +12,28 @@
       </div>
     </div>
     <div class="item-right">
-      <div
-        *ngIf="showProfileInfo"
-        class="profile-info"
-        (click)="toggleDropDown()"
-      >
-        <img
-          src="https://static.vecteezy.com/system/resources/thumbnails/002/318/271/small_2x/user-profile-icon-free-vector.jpg"
-          alt="User Profile"
-          class="profile-img"
-        />
-        <div *ngIf="isDropdownOpen" class="dropdown-window">
-          <div class="dropdown-content">
-            <div class="dropdown-item" (click)="logout()">
-              <i class="fas fa-sign-out-alt"></i>
-              Logout
-            </div>
-          </div>
-        </div>
+      <div  class="profile-info" >
+        <button (click)="toggleDropDown($event)" >
+          <img
+          [src]="userProfile.photoURL"
+          [alt]="userProfile.photoURL" class="profile-img" />
+
+        </button>
+        
       </div>
+      
     </div>
   </div>
 </header>
+
+<ng-template #dynamicContent let-close="close">
+  <div class="dropdown-window" (mouseleave)="toggleDropDownF($event)">
+    <div class="dropdown-content">
+      <div class="dropdown-item" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+      </div>
+    </div>
+  </div>
+
+</ng-template>
