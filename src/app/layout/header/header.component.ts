@@ -60,7 +60,7 @@ export class HeaderComponent {
     };
     // Calcola la larghezza della finestra e controlla che l'overlay non esca dal lato destro
     const windowWidth = window.innerWidth;
-    const overlayWidth = 40; // Imposta la larghezza dell'overlay (può essere dinamica se necessario)
+    const overlayWidth = 220; // Imposta la larghezza dell'overlay (può essere dinamica se necessario)
 
     // Se l'overlay va fuori dalla finestra, correggiamo la posizione
     if (position.left + overlayWidth > windowWidth) {

@@ -42,3 +42,24 @@
       }
     
 }
+
+@media (max-width: 990px){
+    .profile-info {
+        flex: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: row;
+    
+    
+        .profileImage {
+            height: 30px;
+            width: 30px;
+            margin-bottom: 0.5rem;
+            
+    
+            
+        }
+    }
+}
+

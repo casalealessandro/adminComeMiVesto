@@ -48,7 +48,7 @@
 
         .logo-container {
             padding-left: 10px;
-            width: 250px;
+            width: 200px;
 
             .logo-image {
                 max-width: 100%;
@@ -83,17 +83,7 @@
         border-color: #ffffff;
       }
       
-/*       .dropdown-window {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background-color: #fff;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        z-index: 1000;
-        padding: 10px 0;
-        min-width: 250px;
-      }
+       
       .dropdown-item {
         padding: 10px 20px;
         cursor: pointer;
@@ -103,4 +93,7 @@
       
       .dropdown-item:hover {
         background-color: rgba(0, 0, 0, 0.1);
-      } */
+      } 
+       .userProfile {
+        cursor: no-drop;
+       }
