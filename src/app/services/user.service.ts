@@ -233,11 +233,11 @@ export class UserService {
   
   getUserProfile(uid: any):Observable<UserProfile>  {
 
-    let EndPoint = `${this.apiFire}user-profile`
+    let EndPoint = `${this.apiFire}/user/user-profile`
 
 
     if (uid) {
-      EndPoint = `${EndPoint}${uid}`
+      EndPoint = `${EndPoint}/${uid}`
     } 
 
 

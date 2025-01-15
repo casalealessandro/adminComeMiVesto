@@ -58,72 +58,48 @@
             }
         }
 
-        .nav {
-            .nav-link {
-                color: var(--link-nav)!important;
-            }
-        }
-
-        .menu-profile {
-            ul {
-                padding: 0;
-                margin: 0;
-            }
-
-            .img-profile {
-                max-width: 100%;
-                width: 30px;
-                height: 30px;
-            }
-
-            .dropdown-menu {
-                &.show {
-                    position: absolute;
-                    top: 35px;
-                    left: -190px;
-                    z-index: 10;
-                    margin: 0;
-                    padding: 10px 5px;
-                    min-width: 226px;
-                    background-color: #c8ced6;
-                    border: 1px solid #c8ced6;
-                    box-shadow: 0 16px 18px rgba(4, 4, 7, 0.1019607843);
-                    border-radius: 4px;
-                }
-
-                .dropdown-item {
-
-                    position: relative;
-                    display: block;
-                    color: var(--blueSoft) !important;
-                    text-align: left;
-                    line-height: 22px;
-                    padding: 6px 7px;
-                    text-transform: none;
-                    font-size: 13px;
-                    letter-spacing: normal;
-
-                    position: relative;
-
-                    i {
-                        margin-right: 9px;
-                    }
-
-                    display: inline-block;
-
-                    span {
-                        margin-left: 12px;
-                        display: inline-block;
-                    }
-
-                    &:active,
-                    :visited,
-                    :focus {
-                        background: transparent;
-                    }
-
-                }
-            }
-        }
     }
 }
+    .profile-info {
+        display: flex;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+        margin-top: 13\\px;
+      }
+      
+      .profile-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
+      
+      .profile-img:hover {
+        transform: scale(1.1);
+        border-color: #ffffff;
+      }
+      
+      .dropdown-window {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        z-index: 1000;
+        padding: 10px 0;
+        min-width: 250px;
+      }
+      .dropdown-item {
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: background 0.3s;
+        color: #333;
+      }
+      
+      .dropdown-item:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+      }
