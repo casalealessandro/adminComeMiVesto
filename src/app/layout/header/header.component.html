@@ -1,3 +1,8 @@
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  rel="stylesheet"
+/>
+
 <header id="header" class="header">
   <div class="header-container">
     <div class="item-left">
@@ -12,16 +17,15 @@
       </div>
     </div>
     <div class="item-right">
-      <div  class="profile-info" >
-        <button (click)="toggleDropDown($event)" >
+      <div class="profile-info">
+        <button (click)="toggleDropDown($event)">
           <img
-          [src]="userProfile.photoURL"
-          [alt]="userProfile.photoURL" class="profile-img" />
-
+            [src]="userProfile.photoURL"
+            [alt]="userProfile.photoURL"
+            class="profile-img"
+          />
         </button>
-        
       </div>
-      
     </div>
   </div>
 </header>
@@ -29,11 +33,15 @@
 <ng-template #dynamicContent let-close="close">
   <div class="dropdown-window" (mouseleave)="toggleDropDownF($event)">
     <div class="dropdown-content">
+      <h3 class="userProfile">
+        <i class="fas fa-user"></i>
+        {{ userProfile.nome }} {{ userProfile.cognome }}
+      </h3>
+      <h3></h3>
       <div class="dropdown-item" (click)="logout()">
         <i class="fas fa-sign-out-alt"></i>
         Logout
       </div>
     </div>
   </div>
-
 </ng-template>
