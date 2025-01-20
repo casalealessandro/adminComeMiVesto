@@ -1,8 +1,9 @@
-
-
-    <div class="caption-container" [ngClass]="cssClass">
-               
-       <!--  <div class="item-wrap wrap-item-breadcrumb">
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  rel="stylesheet"
+/>
+<div class="caption-container" [ngClass]="cssClass">
+  <!--  <div class="item-wrap wrap-item-breadcrumb">
             <ol class="breadcrumb " *ngIf="showBreadcrumb">
 
                 <li class="breadcrumb-item" *ngFor="let ustep of breadcrumbNavigation; index as i; last as isLast"
@@ -24,57 +25,57 @@
             </ol>
         </div>     -->
 
-        <!--  TITOLO  -->
-        <div class="item-wrap wrap-item-title" >
-            <h2  class="page-title" >{{caption}}</h2>
-        </div>
+  <!--  TITOLO  -->
+  <div class="item-wrap wrap-item-title">
+    <h2 class="page-title">{{ caption }}</h2>
+  </div>
 
-        <div class="item-wrap last-item-wrap ">
-            <div class="btn-container">
-                
-                <ng-container *ngFor="let cButton of customToolbarButtons">
-
-                    <button [id]="cButton.id" [attr.name]="cButton.name" [disabled]="cButton.disabled"  [ngClass]="cButton.cssClass" class="btn ana-button"  *ngIf="cButton.visible" 
-                        (click)="toolbarButtonClick(cButton)">
-                        <i *ngIf="cButton.icon" [class]="cButton.icon"></i>
-                        {{cButton.text || cButton.name}} 
-    
-                    </button>
-                </ng-container>
-                
-                <button 
-                    *ngIf="addButtonShow"
-                    [id]="addButton.id"
-                    [name]="addButton.name"   
-                    class="btn ana-button addButton"
-                    [ngClass]="addButton.cssClass || ''" 
-                    (click)="onClickAddButton(addButton)">
-                    <i [class]="addButton.icon"></i>
-                    {{addButton.text || addButton.name}}
-
-                </button>
-                
-      
-                <button class="icon-button"  *ngIf="isClosable" (click)="onClickCrocetta($event)">
-                    <i class="mdi mdi-window-close"></i>
-                        Chiudi
-                 
-                </button>
-            </div>
-
-
-
-
-
-        </div>
-
-
-
-
-
-
+  <div class="items-class">
+    <div class="input-container">
+      <input type="text" [(ngModel)]="inputValue" *ngIf="showSearchInput" />
+      <button *ngIf="showButtonInput" (click)="onButtonChange($event)">
+        <i class="fas fa-search"></i>
+      </button>
     </div>
+  </div>
 
-  
+  <div class="item-wrap last-item-wrap">
+    <div class="btn-container">
+      <ng-container *ngFor="let cButton of customToolbarButtons">
+        <button
+          [id]="cButton.id"
+          [attr.name]="cButton.name"
+          [disabled]="cButton.disabled"
+          [ngClass]="cButton.cssClass"
+          class="btn ana-button"
+          *ngIf="cButton.visible"
+          (click)="toolbarButtonClick(cButton)"
+        >
+          <i *ngIf="cButton.icon" [class]="cButton.icon"></i>
+          {{ cButton.text || cButton.name }}
+        </button>
+      </ng-container>
 
+      <button
+        *ngIf="addButtonShow"
+        [id]="addButton.id"
+        [name]="addButton.name"
+        class="btn ana-button addButton"
+        [ngClass]="addButton.cssClass || ''"
+        (click)="onClickAddButton(addButton)"
+      >
+        <i [class]="addButton.icon"></i>
+        {{ addButton.text || addButton.name }}
+      </button>
 
+      <button
+        class="icon-button"
+        *ngIf="isClosable"
+        (click)="onClickCrocetta($event)"
+      >
+        <i class="mdi mdi-window-close"></i>
+        Chiudi
+      </button>
+    </div>
+  </div>
+</div>

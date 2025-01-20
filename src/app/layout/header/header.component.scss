@@ -2,7 +2,7 @@
     background-color: #F1F1F1;
     //background-image:linear-gradient(90deg, rgba(2,57,87,1) 0%, rgba(4,80,114,1) 87%);
     height: 65px;
-    position: fixed;
+
     top: 0;
     left: 0;
     width: 100%;
@@ -85,10 +85,11 @@
       
        
       .dropdown-item {
-        padding: 10px 20px;
         cursor: pointer;
         transition: background 0.3s;
         color: #333;
+        margin-top: 15px;
+        font-size: 16px;
       }
       
       .dropdown-item:hover {
@@ -104,3 +105,4 @@
       .button-info{
         background-color: transparent;
       }
+    

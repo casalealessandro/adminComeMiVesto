@@ -3,7 +3,10 @@
   [subTitle]="subtitle"
   [tip]="'Gestisci il profilo utente, resetta la password,sospendi....'"
   [addButtonShow]="true"
+  [showSearchInput]="true"
+  [showButtonInput]="true"
   (emittEventButton)="createNewuser()"
+  (emitEventSearchInput)="filterUsers($event)"
 >
   <ul class="list-group form-list">
     <app-custom-scrollbar [scrollHeigth]="500">

@@ -126,4 +126,24 @@ updateUser(evt:any){
 
 }
 
+filterUsers($event: any) {
+  this.users$ = this.userService.getUsers();
+  this.users$.subscribe(users=>{
+  this.users = users
+  const value = $event;
+    if (!value) {
+      return;
+    }
+  const filterUser = this.users.filter(user => {
+      return user.email.toLowerCase().includes(value.toLowerCase()) ||
+             user.displayName.toLowerCase().includes(value.toLowerCase());
+        })
+        console.log('USER filter',filterUser );
+        console.log('USER ', this.users)
+        
+        this.users = filterUser;
+    })
+  
+  }
+  
 }
