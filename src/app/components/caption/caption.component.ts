@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, NavigationExtras } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { ToolbarButton } from '../../interface/app.interface';
+import { FormsModule } from '@angular/forms';
 
 
 
@@ -25,7 +26,7 @@ class _tasto{
 @Component({
   selector: 'app-caption',
   standalone:true,
-  imports:[CommonModule],
+  imports:[CommonModule, FormsModule],
   templateUrl: './caption.component.html',
   styleUrls: ['./caption.component.scss']
 })
@@ -52,6 +53,9 @@ export class CaptionComponent {
   
  //Mostra i bottone aggiungi
  @Input() addButtonShow: boolean = false;
+ @Input() showSearchInput: boolean = false;
+ @Input() showButtonInput: boolean = false;
+ 
  //Buttoni aggiuntivi
  @Input() customToolbarButtons!:ToolbarButton[]
  
@@ -65,6 +69,9 @@ export class CaptionComponent {
   @Output() emitChiusura: EventEmitter<any> = new EventEmitter<any>();
   @Output() emitAddEvent: EventEmitter<any> = new EventEmitter<any>();
   @Output() emitToolbarButtonClick: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emitToolbarSearchInputChange: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emitToolbarButtonInput: EventEmitter<any> = new EventEmitter<any>();
+  
   
   
   @Output() emitBreadCrumbClick : EventEmitter<any> = new EventEmitter<any>();
@@ -80,7 +87,8 @@ export class CaptionComponent {
       icon:'mdi mdi-pencil-outline',
       widget: 'button'
     }
-  
+    
+    inputValue: string = '';
   
 
   hideShowToolbarMenu(ev: any){
@@ -149,7 +157,17 @@ export class CaptionComponent {
     this.emitToolbarButtonClick.emit(ev)
   }
   
+onInputChange(event: Event): void {
+  const inputValue = (event.target as HTMLInputElement).value;
+  console.log('VALORE CAMBIATO ', inputValue);
+  this.emitToolbarSearchInputChange.emit(inputValue);
+}
 
+onButtonChange(event: Event): void {
+  const buttonValue = this.inputValue;
+  this.emitToolbarSearchInputChange.emit(buttonValue);
+  console.log('VALORE CAMBIATO valueeee', buttonValue);
+}
   
 }
 

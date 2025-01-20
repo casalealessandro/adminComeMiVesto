@@ -26,6 +26,8 @@ export class AnagraficaWrapperComponent {
   @Input() subTitle:string=''
   @Input() tip:string=''
   @Input() addButtonShow:boolean=false
+  @Input() showSearchInput:boolean=false
+  @Input() showButtonInput:boolean=false
   @Input() helpDoc:string=''
   @Input() breadcrumbNavigation:any=[]; 
   @Input() showSpinner:boolean= false; 
@@ -35,7 +37,9 @@ export class AnagraficaWrapperComponent {
   @Output() emittChiusura: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittEventButton: EventEmitter<any> = new EventEmitter<any>();
   @Output() emitToolbarLeft: EventEmitter<any> = new EventEmitter<any>();
-
+  @Output() emitEventSearchInput: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emitEventButtonInputChange: EventEmitter<any> = new EventEmitter<any>();
+  
 
 
  
@@ -112,5 +116,13 @@ private setAutoDismiss(): void {
 
   onButtonToolbarClick(event:any){
     this.emittEventButton.emit(event)
+  }
+  onSearchInputChange(event:any){
+    this.emitEventSearchInput.emit(event);
+
+  }
+  onButtonInputChange(event:any){
+    this.emitEventButtonInputChange.emit(event);
+
   }
 }
