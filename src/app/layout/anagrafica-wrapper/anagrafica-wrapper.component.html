@@ -1,24 +1,29 @@
 <div id="cWrap" class="content-wrap" [ngClass]="cssClass">
-    <div class="anagrafica-wrap" [ngStyle]="{'height.px':anaHeight}">
-        <app-caption 
-            [caption]="caption" 
-            [showBreadcrumb]="false"
-            [addButtonShow]="addButtonShow"
-            [customToolbarButtons]="customToolbarButtons"
-            [help]="helpDoc"
-            [breadcrumbNavigation]="breadcrumbNavigation" [isClosable]="false"
-            (emettiChiusura)="onCrocettaClick($event)" 
-            (emitToolbarButtonClick)="onButtonToolbarClick($event)"
-            (emitAddEvent)="onAddClick($event)" [isFooter]="false">
-        </app-caption>
+  <div class="anagrafica-wrap" [ngStyle]="{ 'height.px': anaHeight }">
+    <app-caption
+      [caption]="caption"
+      [showBreadcrumb]="false"
+      [addButtonShow]="addButtonShow"
+      [showSearchInput]="showSearchInput"
+      [showButtonInput]="showButtonInput"
+      [customToolbarButtons]="customToolbarButtons"
+      [help]="helpDoc"
+      [breadcrumbNavigation]="breadcrumbNavigation"
+      [isClosable]="false"
+      (emettiChiusura)="onCrocettaClick($event)"
+      (emitToolbarButtonClick)="onButtonToolbarClick($event)"
+      (emitAddEvent)="onAddClick($event)"
+      (emitToolbarSearchInputChange)="onSearchInputChange($event)"
+      (emitToolbarButtonInput)="onButtonInputChange($event)"
+      [isFooter]="false"
+    >
+    </app-caption>
 
+    <div class="anagrafica-container">
+      <div class="anagrafica-row">
+        <!--Tab funzionale-->
 
-        <div class="anagrafica-container">
-
-            <div class="anagrafica-row">
-                <!--Tab funzionale-->
-
-                <!-- <app-toolbar 
+        <!-- <app-toolbar 
                     
                     #toolbarTab 
                     
@@ -33,38 +38,40 @@
                     >
                 </app-toolbar> -->
 
-
-
-
-                <div class="col-lg-12 wrapForm">
-
-                    <div class="text">
-                        <h2 *ngIf="subTitle"><span class="mdi mdi-database"></span>{{subTitle}}</h2>
-
-                    </div>
-                    <div  *ngIf="tip" class="alert alert-primary d-flex align-items-center alert-dismissible fade show" role="alert" >
-                        <span class="mdi mdi-lightbulb-alert-outline me-2"></span>
-                        {{tip}}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    <ng-container *ngIf="showSpinner">
-                        <p>Carimento in corso...</p>
-                    </ng-container>
-                    <ng-content id='ng-content'>
-
-
-                    </ng-content>
-
-
-                </div>
-            </div>
+        <div class="col-lg-12 wrapForm">
+          <div class="text">
+            <h2 *ngIf="subTitle">
+              <span class="mdi mdi-database"></span>{{ subTitle }}
+            </h2>
+          </div>
+          <div
+            *ngIf="tip"
+            class="alert alert-primary d-flex align-items-center alert-dismissible fade show"
+            role="alert"
+          >
+            <span class="mdi mdi-lightbulb-alert-outline me-2"></span>
+            {{ tip }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          <ng-container *ngIf="showSpinner">
+            <p>Carimento in corso...</p>
+          </ng-container>
+          <ng-content id="ng-content"> </ng-content>
         </div>
-
-
-
-        <app-caption [showBreadcrumb]="false" [isClosable]="false" (emettiChiusura)="onCrocettaClick($event)"
-            [isFooter]="true">
-        </app-caption>
+      </div>
     </div>
 
+    <app-caption
+      [showBreadcrumb]="false"
+      [isClosable]="false"
+      (emettiChiusura)="onCrocettaClick($event)"
+      [isFooter]="true"
+    >
+    </app-caption>
+  </div>
 </div>
