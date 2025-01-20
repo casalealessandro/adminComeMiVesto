@@ -59,13 +59,16 @@ export class UserService {
   
   getUsers():Observable<UserProfile[]>{
 
-    return this.firestore.collection('users').valueChanges().pipe(
+   
+    let EndPoint = `${this.apiFire}/user/all-users`
 
-      map((users: any[]) => {
-        return users
-       
-      })
-    );
+    const HeaderOdata = this.httpOptions
+
+    const response = this.httpClient.get(EndPoint, HeaderOdata)
+
+    return response.pipe(map((res: any) => {
+      return res as UserProfile[];
+    }));
   }
 
   isLoggedUser(): boolean {

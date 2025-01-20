@@ -59,6 +59,7 @@ export class ContainerComponent {
       console.log('result',result)
       if(result.breakpoints[Breakpoints.XSmall] || result.breakpoints[Breakpoints.Small] ) {
         this.mode = 'over'; //modalita overlay per schermi piccoli
+        
       }else if ( result.breakpoints[Breakpoints.Medium]) {
         this.mode = 'side';
       }

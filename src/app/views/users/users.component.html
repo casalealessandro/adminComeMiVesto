@@ -3,7 +3,7 @@
   [subTitle]="subtitle"
   [tip]="'Gestisci il profilo utente, resetta la password,sospendi....'"
   [addButtonShow]="true"
-  (emittEventButton)="createNewuser()"
+  (emittEventButton)="createNewuser($event)"
 >
   <ul class="list-group form-list">
     <app-custom-scrollbar [scrollHeigth]="500">
@@ -25,10 +25,10 @@
           </span>
 
           <div class="data-wrapper">
-            <span class="data-registrazione">{{
-              user.createAt | timestampToDate
-            }}</span>
-            {{ user.displayName || user.name }} {{ user.email }}
+            <span class="data-registrazione">{{user.createAt | timestampToDate}} - {{ user.displayName || user.name }} 
+            </span>
+            <p>{{ user.email }}</p>
+            
           </div>
         </div>
 

@@ -45,19 +45,19 @@
         border: 1px solid var(--border_color);
 
         // Nascondi il menu su dispositivi con schermo più piccolo di 1024px (tablet e telefoni)
-        @media (max-width: 1024px) {
+        /* @media (max-width: 1024px) {
             top: 0;
             padding-left: 0;
             border: none;
 
-            /* Mostra il menu quando isMenuOpen è true */
+            
             &.open {
                 display: block;
-                /* Adatta l'altezza del menu al contenuto */
+                
             }
 
             display: none;
-        }
+        } */
     }
 }
 

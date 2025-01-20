@@ -44,22 +44,32 @@
 }
 
 @media (max-width: 990px){
-    .profile-info {
-        flex: auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-direction: row;
-    
-    
-        .profileImage {
-            height: 30px;
-            width: 30px;
-            margin-bottom: 0.5rem;
-            
-    
-            
+    .form-list-item{
+        padding-left: 0;
+        padding-right: 0;
+        .profile-info {
+            flex: auto;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            flex-direction: row;
+        
+        
+            .profileImage {
+                height: 28px;
+                width: 28px;
+                margin-bottom: 0.5rem;
+                
+        
+                
+            }
+            .data-wrapper{
+                max-width: 170px;
+                width: 170px;
+                overflow: hidden;
+            }
         }
     }
+    
 }
 
