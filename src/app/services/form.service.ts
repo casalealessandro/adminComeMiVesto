@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { lastValueFrom, map, Observable } from 'rxjs';
-import { DynamicFormField } from '../interface/dynamic-form-field';
+import { DynamicFormField, normalizeDynamicFormFields } from '../interface/dynamic-form-field';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -18,7 +18,7 @@ export class FormService {
       .pipe(
         map((formData: any) => {
           const jsonFields = JSON.parse(formData.json);
-          return jsonFields as DynamicFormField[];
+          return normalizeDynamicFormFields(jsonFields);
         })
       );
   }

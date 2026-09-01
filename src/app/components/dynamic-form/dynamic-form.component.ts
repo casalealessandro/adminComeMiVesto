@@ -136,11 +136,17 @@ export class DynamicFormComponent {
     if (field.required) {
       validators.push(Validators.required);
     }
-    if (typeof field.minlength !== 'undefined') {
-      validators.push(Validators.minLength(field.minlength));
+    if (typeof field.minLength !== 'undefined') {
+      validators.push(Validators.minLength(field.minLength));
     }
-    if (typeof field.maxlength !== 'undefined') {
-      validators.push(Validators.maxLength(field.maxlength));
+    if (typeof field.maxLength !== 'undefined') {
+      validators.push(Validators.maxLength(field.maxLength));
+    }
+    if (field.typeInput === 'number' && typeof field.min !== 'undefined') {
+      validators.push(Validators.min(field.min));
+    }
+    if (field.typeInput === 'number' && typeof field.max !== 'undefined') {
+      validators.push(Validators.max(field.max));
     }
 
     return validators;

@@ -9,6 +9,7 @@ import { PopUpService } from '../../services/popup.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { alert } from '../../widgets/ui-dialogs';
 import { FormService } from '../../services/form.service';
+import { normalizeDynamicFormFields } from '../../interface/dynamic-form-field';
 
 @Component({
   selector: 'app-form-builder',
@@ -71,7 +72,7 @@ export class FormBuilderComponent {
       
       if (data) {
         this.formName = data.nameForm;
-        this.formElements = JSON.parse(data.json);
+        this.formElements = normalizeDynamicFormFields(JSON.parse(data.json));
         
       }
     });
@@ -135,6 +136,7 @@ export class FormBuilderComponent {
  
 
   saveForm(formName: string) {
+    this.formElements = normalizeDynamicFormFields(this.formElements);
     const formJson = JSON.stringify(this.formElements);
 
     console.log('saveForm',formJson)

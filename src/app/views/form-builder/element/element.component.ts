@@ -78,8 +78,8 @@ export class ElementComponent {
         this.fileBoxOptions = {
 
           maxWidth: 0,
-          maxheight: 0,
-          isbase64: true,
+          maxHeight: 0,
+          isBase64: true,
           maxSize: 10
         }
         if (typeof this.formField.fileBoxOptions != 'undefined') {
@@ -87,8 +87,8 @@ export class ElementComponent {
           this.fileBoxOptions = {
 
             maxWidth: fileBoxOptions.maxWidth,
-            maxheight: fileBoxOptions.maxheight,
-            isbase64: fileBoxOptions?.isbase64,
+            maxHeight: fileBoxOptions.maxHeight,
+            isBase64: fileBoxOptions.isBase64,
             maxSize: fileBoxOptions?.maxSize
           }
         }
