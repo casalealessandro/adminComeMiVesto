@@ -71,6 +71,14 @@
 
             </div>
             <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium">Min Length</label>
+                <div class="col-sm-9">
+                    <input type="number" [disabled]="showFileOption" name="minLength" class="form-control"
+                        [(ngModel)]="formField.minLength">
+                </div>
+
+            </div>
+            <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Max Length</label>
                 <div class="col-sm-9">
                     <input type="number" [disabled]="showFileOption" name="maxLength" class="form-control"
@@ -178,13 +186,13 @@
                 <label class="col-sm-3 col-form-label font-medium">Altezza massima</label>
                 <div class="col-sm-9 ">
                     <input
-                       id="maxheight"
-                       name="maxheight"
+                       id="maxHeight"
+                       name="maxHeight"
                        type="number" 
                        class="form-control" 
                       
                        
-                       [(ngModel)]="formField.fileBoxOptions.maxheight">
+                       [(ngModel)]="formField.fileBoxOptions.maxHeight">
                      
                 </div>
                     
@@ -194,7 +202,7 @@
                 <label class="col-sm-3 col-form-label font-medium">Salva foto base64</label>
                 <div class="col-sm-9 form-check">
                     <input id="multiple" name="multiple" type="checkbox" class="form-check-input custom-checkbox"
-                        [(ngModel)]="formField.fileBoxOptions.isbase64">
+                        [(ngModel)]="formField.fileBoxOptions.isBase64">
                     <label for="multiple" class="form-check-label">Spunta per salvare il base64, se non lo fai lo devi gestire a mano!</label>
                 </div>
 

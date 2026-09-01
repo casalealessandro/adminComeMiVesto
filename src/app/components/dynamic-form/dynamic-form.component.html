@@ -8,7 +8,7 @@
             [name]="field.name"
             [formControlName]="field.name"
             [id]="field.htmlId"
-            class="form-control" 
+            class="form-control" [ngClass]="field.cssClass"
             [(ngModel)]="formValues[field.name]">
         </ng-container>
 
@@ -22,10 +22,12 @@
               [name]="field.name" 
               [formControlName]="field.name" 
               [attr.required]="field.required ? true : null"
-              [id]="field?.htmlId" class="form-control" 
+              [id]="field?.htmlId" class="form-control" [ngClass]="field.cssClass"
               [placeholder]="field?.placeholder"
-              [maxlength]="field.maxlength!"
-              [minlength]="field.minlength!">
+              [maxlength]="field.maxLength!"
+              [minlength]="field.minLength!"
+              [min]="field.typeInput === 'number' ? field.min : null"
+              [max]="field.typeInput === 'number' ? field.max : null">
               
             <ng-container  *ngIf="showPasswordButton[field.name]">
 
@@ -50,6 +52,7 @@
             </ng-container>
 
             <textarea *ngIf="field.type === 'textArea'" [placeholder]="field.placeholder" rows="4" class="form-control"
+              [ngClass]="field.cssClass" [minlength]="field.minLength!" [maxlength]="field.maxLength!"
               [formControlName]="field.name">
 
                 </textarea>

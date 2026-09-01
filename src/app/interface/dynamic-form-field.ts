@@ -1,58 +1,76 @@
 export interface DynamicFormField {
-
-  
- 
-    htmlId?:any;
-    name: string; // Nome del campo
-    type: 'textBox' | 'textArea' | 'selectBox' | 'fileBox' | 'checkBox' | 'hiddenBox'; //  Tipo di elemento nella form
-    typeInput:string; //Tipo del campo (es. 'text', 'number', 'email', etc.)
-    label: string; // Etichetta del campo
-    cssClass:string;
-    required?: boolean; // Se il campo è obbligatorio o meno
-    minlength?: number; // Lunghezza minima per il campo
-    maxlength?: number; // Lunghezza massima per il campo
-    placeholder?: string; // Lunghezza massima per il campo
-    options?:any[];
-    maxLength: any;
-    min: any;
-    max: any;
-    selectOptions?: SelectOptions;
-    checkBoxOptions?: CheckBoxOptions;
-    fileBoxOptions?:FileBoxOptions
-    funcButton?:boolean,
-    
+  htmlId?: string;
+  name: string;
+  type: 'textBox' | 'textArea' | 'selectBox' | 'fileBox' | 'checkBox' | 'hiddenBox';
+  typeInput: string;
+  label: string;
+  cssClass?: string;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  placeholder?: string;
+  options?: any[];
+  selectOptions?: SelectOptions;
+  checkBoxOptions?: CheckBoxOptions;
+  fileBoxOptions?: FileBoxOptions;
+  funcButton?: boolean;
 }
 
-
 export interface SelectOptions {
-    displayExp: string;
-    valueExp: string;
-    options?: any[];
-    multiple: boolean;
-    remote:boolean;
-    api?:string;
-    parent: string | null;
+  displayExp: string;
+  valueExp: string;
+  options?: any[];
+  multiple: boolean;
+  remote: boolean;
+  api?: string;
+  parent: string | null;
+}
+
+export interface FileBoxOptions {
+  maxWidth: number;
+  maxHeight: number;
+  isBase64: boolean;
+  maxSize?: number;
+}
+
+export interface CheckBoxOptions {
+  haveLink: boolean;
+  hrefLink: string;
+  hrefText: string;
+}
+
+type LegacyDynamicFormField = DynamicFormField & {
+  minlength?: number;
+  maxlength?: number;
+  fileBoxOptions?: FileBoxOptions & {
+    maxheight?: number;
+    isbase64?: boolean;
+  };
+};
+
+/** Converts saved legacy field names to the canonical camelCase contract. */
+export function normalizeDynamicFormField(field: LegacyDynamicFormField): DynamicFormField {
+  const { minlength, maxlength, fileBoxOptions, ...canonicalField } = field;
+  const normalized: DynamicFormField = {
+    ...canonicalField,
+    minLength: field.minLength ?? minlength,
+    maxLength: field.maxLength ?? maxlength
+  };
+
+  if (fileBoxOptions) {
+    const { maxheight, isbase64, ...canonicalFileBoxOptions } = fileBoxOptions;
+    normalized.fileBoxOptions = {
+      ...canonicalFileBoxOptions,
+      maxHeight: fileBoxOptions.maxHeight ?? maxheight ?? 0,
+      isBase64: fileBoxOptions.isBase64 ?? isbase64 ?? true
+    };
   }
 
-  interface Option {
-    id: string;
-    value: string;
-    parent: string | null;
-  }
+  return normalized;
+}
 
-  export interface FileBoxOptions {
-    maxWidth: number;
-    maxheight: number;
-    isbase64: boolean;
-    maxSize?:number;
-    
-   
-  }
-
-  export interface CheckBoxOptions {
-    haveLink: boolean;
-    hrefLink: string;
-    hrefText: string;
-    
-   
-  }
+export function normalizeDynamicFormFields(fields: LegacyDynamicFormField[]): DynamicFormField[] {
+  return fields.map(normalizeDynamicFormField);
+}
