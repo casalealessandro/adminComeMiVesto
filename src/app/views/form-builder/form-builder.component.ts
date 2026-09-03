@@ -63,6 +63,12 @@ export class FormBuilderComponent {
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       this.formId = params.get('id');
+      if (this.formId === 'new') {
+        this.formTitle = 'Crea Nuovo Form';
+        this.formName = '';
+        this.formElements = [];
+        return;
+      }
       if (this.formId) {
         this.formTitle = 'Modifica Form' 
         this.loadForm(this.formId);

@@ -120,10 +120,9 @@ export class OutfitsService {
     return this.mySignal();
   }
 
-  async getOutfits(filters: Record<string, string> | FireBaseConditions[] = {}, page = 1, limit = 10): Promise<outfit[]> {
+  async getAdminOutfits(filters: Record<string, string> = {}, page = 1, limit = 10): Promise<outfit[]> {
     let params = new HttpParams().set('page', page).set('limit', limit);
-    const filterEntries = Array.isArray(filters) ? filters.map(item => [item.field, String(item.value)] as const) : Object.entries(filters);
-    filterEntries.forEach(([key, value]) => { if (value) params = params.set(key, value); });
+    Object.entries(filters).forEach(([key, value]) => { if (value) params = params.set(key, value); });
     const response = await lastValueFrom(this.httpClient.get<any>(`${this.backendBase}/gen/outfits`, { params }));
     const results = response.data || [];
     this.pagination.set(response.pagination || { page, limit, total: results.length });
@@ -131,29 +130,29 @@ export class OutfitsService {
     return results;
   }
 
-  async getOutfitUser(userId: string): Promise<UserProfile[]> {
+  async getAdminOutfitUser(userId: string): Promise<UserProfile[]> {
     const response = await lastValueFrom(this.httpClient.get<any>(`${this.backendBase}/user/user-profile/${encodeURIComponent(userId)}`));
     return [response.data || response];
   }
 
-  async getOutfitById(outfitId: string): Promise<outfit[]> {
+  async getAdminOutfitById(outfitId: string): Promise<outfit[]> {
     const response = await lastValueFrom(this.httpClient.get<any>(`${this.backendBase}/gen/outfits/${encodeURIComponent(outfitId)}`));
     return [response.data || response];
   }
 
-  async saveOutfitCollection(_nameDoc: string | undefined, data: any, _reget = true): Promise<boolean> {
+  async createAdminOutfit(data: any): Promise<boolean> {
     const body = this.createDto(data);
     await lastValueFrom(this.httpClient.post(`${this.backendBase}/gen/outfits`, body));
     return true;
   }
 
-  async updateInCollection(id: string, data: Partial<outfit>): Promise<boolean> {
+  async updateAdminOutfit(id: string, data: Partial<outfit>): Promise<boolean> {
     const body = this.updateDto(data);
     await lastValueFrom(this.httpClient.put(`${this.backendBase}/gen/outfits/${encodeURIComponent(id)}`, body));
     return true;
   }
 
-  async removeOutfit(id: string): Promise<boolean> {
+  async deleteAdminOutfit(id: string): Promise<boolean> {
     await lastValueFrom(this.httpClient.delete(`${this.backendBase}/gen/outfits/${encodeURIComponent(id)}`));
     return true;
   }
@@ -168,6 +167,77 @@ export class OutfitsService {
     return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]));
   }
 
+  async getOutfits(conditions?: FireBaseConditions[], orderBy?: FireBaseOrderBy[]): Promise<outfit[]> {
+
+    let query: any = this.firestore.collection('outfits').ref;
+
+    if (conditions) {
+      // Applica tutte le condizioni alla query
+      conditions.forEach(condition => {
+
+        query = query.where(condition.field, condition.operator, condition.value);
+        //console.log('conditions-->',query)
+      });
+    }
+
+    if (orderBy) {
+      // Applica l'ordinamento alla query
+      orderBy.forEach(order => {
+        query = query.orderBy(order.field, order.by);
+      });
+    }
+
+    // Imposta il limite a 10
+    //query = query.limit(10);
+    try {
+
+      const querySnapshot = await query.get();
+
+      const results = querySnapshot.docs.map((doc: any) => doc.data());
+      this.resultsSignal = signal<any[]>(results);
+      return results;  // Usa `of` per restituire un Observable
+    } catch (error) {
+      console.error('Error getting filtered collection:', error);
+      return [];  // Usa `of` per restituire un Observable
+    }
+
+
+
+    /*    return this.firestore.collection('outfits').valueChanges().pipe(
+
+         map((users: any[]) => {
+           return users
+
+         })
+       ); */
+  }
+
+  async saveOutfitCollection(nameDoc: string | undefined, data: any, reget: boolean = true): Promise<boolean> {
+
+    try {
+      const Collection = await this.firestore.collection('outfits')
+      if (!nameDoc) {
+        Collection.add(data);
+        if (reget) {
+          this.getOutfits()
+        }
+
+        return true
+      } else {
+        Collection.doc(nameDoc).set(data);
+        if (reget) {
+          this.getOutfits()
+        }
+
+        return true
+      }
+
+    } catch (error) {
+
+
+      return false
+    }
+  }
 
   //Funzione per salvare gli outfit ottenuti e mappati
   async JsonOutfits(): Promise<boolean> {
@@ -277,7 +347,7 @@ export class OutfitsService {
     try {
 
       this.firestore.collection('outfitsProducts').doc(nameDoc).update(data);
-      
+
       return true
 
 
@@ -293,12 +363,12 @@ export class OutfitsService {
 
     // Applica questa condizione alla query
 
-   
+
 
     try {
        // Elimina il doc che corrispondono al ID
       await query.delete();
-     
+
       return true
     } catch (error) {
       console.error('Error deleting documents:', error);
@@ -340,13 +410,13 @@ export class OutfitsService {
   /**Promise**/
 
   async getFilteredCollection(collection: string, conditions?:FireBaseConditions[],orderBy?:any[]): Promise<any[]> {
-    
+
     let query: any = this.firestore.collection(collection).ref;
-    
+
     if(conditions){
-      // Applica tutte le condizioni alla query 
+      // Applica tutte le condizioni alla query
       conditions.forEach(condition => {
-        
+
         query = query.where(condition.field, condition.operator, condition.value);
         //console.log('conditions-->',query)
       });
@@ -358,10 +428,10 @@ export class OutfitsService {
         query = query.orderBy(order.field, order.by);
       });
     }
-     
-    
+
+
     try {
-      
+
       const querySnapshot = await query.get();
 
       const results = querySnapshot.docs.map((doc: any) => doc.data());
@@ -380,24 +450,24 @@ export class OutfitsService {
   //Salvataggio in FireStone
 
   async saveOutfitsProducts(nameDoc: string | undefined, data: any): Promise<boolean> {
-    
+
     try {
       const Collection = await this.firestore.collection('outfitsProducts')
       if (!nameDoc) {
         Collection.add(data);
-        
+
         return true
       } else {
-        
+
         Collection.doc(nameDoc).set(data);
         return true
       }
-      
+
     } catch (error) {
 
-      
 
-      
+
+
       return false
     }
   }
