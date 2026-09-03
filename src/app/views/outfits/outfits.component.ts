@@ -41,7 +41,7 @@ export class OutfitsComponent {
   async loadOutfits(): Promise<void> {
     this.loading = true; this.error = '';
     try {
-      this.outfits = await this.outfitService.getOutfits(this.filters, this.page, this.limit);
+      this.outfits = await this.outfitService.getAdminOutfits(this.filters, this.page, this.limit);
       const pagination = this.outfitService.pagination();
       this.page = pagination.page; this.limit = pagination.limit; this.total = pagination.total;
       this.outfits.forEach(item => item.userName = this.creatorName(item.userId));
@@ -54,11 +54,11 @@ export class OutfitsComponent {
   next(): void { if (this.page * this.limit < this.total) { this.page++; void this.loadOutfits(); } }
   editOutfit(event: any): void { const value = event?.data || event; if (event?.cancel !== undefined) event.cancel = true; this.router.navigate(['/outfit-detail', value.id]); }
   async updateStatus(item: outfit, status: outfit['status']): Promise<void> {
-    try { await this.outfitService.updateInCollection(item.id, { status }); item.status = status; alert('Stato outfit aggiornato.', 'Operazione completata'); }
+    try { await this.outfitService.updateAdminOutfit(item.id, { status }); item.status = status; alert('Stato outfit aggiornato.', 'Operazione completata'); }
     catch { this.error = 'Aggiornamento stato non riuscito.'; }
   }
   removeOutfit(item: outfit): void { confirm(`Eliminare l’outfit “${item.title}”?`, 'Conferma', yes => { if (yes) void this.deleteConfirmed(item); }); }
-  private async deleteConfirmed(item: outfit): Promise<void> { try { await this.outfitService.removeOutfit(item.id); this.outfits = this.outfits.filter(value => value.id !== item.id); this.total--; } catch { this.error = 'Eliminazione non riuscita.'; } }
+  private async deleteConfirmed(item: outfit): Promise<void> { try { await this.outfitService.deleteAdminOutfit(item.id); this.outfits = this.outfits.filter(value => value.id !== item.id); this.total--; } catch { this.error = 'Eliminazione non riuscita.'; } }
   async eventToolbarOutfit(event:any): Promise<void> { const name=event.name||event.id; if(name==='toJSON'){this.loading=true;await this.outfitService.JsonOutfits();await this.loadOutfits();} if(name==='addButton') await this.router.navigate(['/outfit-detail']); }
   gridEvent(event:any): void { if(event.name==='delRows') this.removeOutfit(event.rowData); }
   statusGridEvent(event:any): void { if(event.name==='approve') void this.updateStatus(event.rowData, 'approved'); if(event.name==='reject') void this.updateStatus(event.rowData, 'rifiutato'); }

@@ -47,7 +47,7 @@ export class OutfitFormComponent {
       this.outfitId = params.get('id');
       if (this.outfitId) {
         // Usare il segnale per ottenere il valore quando cambia
-        let resO = await this.outFitService.getOutfitById(this.outfitId)
+        let resO = await this.outFitService.getAdminOutfitById(this.outfitId)
         this.outfitData.set(resO[0])
         this.imageUrl.set(resO[0].imageUrl);
         this.tags.set(this.outfitData().tags)
@@ -95,7 +95,7 @@ export class OutfitFormComponent {
     
     // Salva o aggiorna il prodotto nel database  
     if (inEdit) {
-      let awaitRes = await this.outFitService.updateInCollection(formOutfit.id, formOutfit);
+      let awaitRes = await this.outFitService.updateAdminOutfit(formOutfit.id, formOutfit);
       if(awaitRes){
         this.router.navigate(['/outfit-list']);
       }else{
@@ -103,7 +103,7 @@ export class OutfitFormComponent {
       }
     } else {
       if (this.targetUserId) formOutfit.userId = this.targetUserId;
-      let awaitRes =await this.outFitService.saveOutfitCollection(undefined, formOutfit);
+      let awaitRes =await this.outFitService.createAdminOutfit(formOutfit);
       if(awaitRes){
         this.router.navigate(['/outfit-list']);
       }else{
