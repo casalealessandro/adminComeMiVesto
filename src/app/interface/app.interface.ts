@@ -139,4 +139,10 @@ export interface UserProfile {
   bio?: string;
   userType?: any;
   createAt: number;
+  createdAt?: string | number;
+  lastSignInTime?: string;
+  emailVerified?: boolean;
+  disabled?: boolean;
+  role?: 'admin' | 'editor' | 'creator';
+  gender?: string;
 }

@@ -20,8 +20,8 @@
       <div class="profile-info">
         <button (click)="toggleDropDown($event)" class="button-info">
           <img
-            [src]="userProfile.photoURL"
-            [alt]="userProfile.photoURL"
+            [src]="userProfile?.photoURL || 'https://ionicframework.com/docs/img/demos/avatar.svg'"
+            [alt]="userProfile?.displayName || 'Profilo'"
             class="profile-img"
           />
         </button>
@@ -35,7 +35,7 @@
     <div class="dropdown-content">
       <h3 class="userProfile">
         <i class="fas fa-user"></i>
-        {{ userProfile.nome }} {{ userProfile.cognome }}
+        {{ userProfile?.nome }} {{ userProfile?.cognome }}
       </h3>
       <h3></h3>
       <div class="dropdown-item" (click)="logout()">

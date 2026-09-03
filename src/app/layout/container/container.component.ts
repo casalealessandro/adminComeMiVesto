@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { PopupWrapperComponent } from '../../components/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component';
 import { OverlayComponent } from '../../components/overlay-component/overlay.component';
-import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
 
 import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import { MenuService } from '../../services/menu.service';
@@ -43,15 +43,15 @@ export class ContainerComponent {
 
 
 
-  constructor(private userService: UserService, private menuService: MenuService, private breakpointObserver: BreakpointObserver) {
+  constructor(private auth: AuthService, private menuService: MenuService, private breakpointObserver: BreakpointObserver) {
 
     effect(() => {
-      this.isLogin = this.userService.isLoginUser();
+      this.isLogin = !!this.auth.currentUser();
     });
   }
 
   ngOnInit() {
-    this.isLogin = this.userService.isLoggedUser();
+    void this.auth.waitForUser().then(user => this.isLogin = !!user);
     this.updateMenuVisibility(window.innerWidth);
     //osserva i breakpoint (dimensioni dello schermo) per cambiare la modalità del menu
     this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small, Breakpoints.Medium, Breakpoints.Large])

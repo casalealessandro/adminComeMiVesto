@@ -54,6 +54,7 @@
         pointer-events: none;
     }
 }
+@media(max-width:600px){.content-formbuilder{flex-direction:column}.content-formbuilder .form-view{margin:1rem 0 0}.formbuilder-button .btn{min-height:44px;flex:1}}
 
 .formbuilder-button {
     display: flex;

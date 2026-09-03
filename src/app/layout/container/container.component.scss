@@ -36,7 +36,9 @@
         }
     .verticalMenucontainer {
 
-        position: absolute;
+        position: fixed;
+        top: 65px;
+        bottom: 0;
         left: 0;
         overflow-x: hidden;
         overflow-y: auto;
@@ -59,7 +61,9 @@
             display: none;
         } */
     }
+    .menu-backdrop{position:fixed;inset:65px 0 0;border:0;background:#0008;z-index:1000}
 }
+@media(max-width:767px){.mi-container .ana-container{width:100%;max-width:none;margin:0}.mi-container .verticalMenucontainer{transform:translateX(-110%);transition:transform .2s;background:#fff}.mi-container .verticalMenucontainer.open{transform:translateX(0)}}
 
 ::ng-deep.menu-open {
     .hamburger {

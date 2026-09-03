@@ -1,65 +1,40 @@
 import { inject, Injectable } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { lastValueFrom, map, Observable } from 'rxjs';
-import { DynamicFormField, normalizeDynamicFormFields } from '../interface/dynamic-form-field';
 import { HttpClient } from '@angular/common/http';
+import { map, Observable, firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { DynamicFormField, normalizeDynamicFormFields } from '../interface/dynamic-form-field';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface StoredForm { id: string; nameForm: string; json: DynamicFormField[]; }
+
+export function parseFields(value: unknown): DynamicFormField[] {
+  if (Array.isArray(value)) return normalizeDynamicFormFields(value);
+  if (typeof value === 'string') {
+    try { const parsed = JSON.parse(value); return normalizeDynamicFormFields(Array.isArray(parsed) ? parsed : []); }
+    catch { return []; }
+  }
+  return [];
+}
+
+@Injectable({ providedIn: 'root' })
 export class FormService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiBaseUrl}/gen/forms`;
 
-  constructor() {}
-  private firestore= inject(AngularFirestore);
-  private http= inject(HttpClient);
-
-  getFormFields(nomeAnagrafica: string): Observable<DynamicFormField[]> {
-    return this.firestore.collection('forms').doc(nomeAnagrafica).valueChanges()
-      .pipe(
-        map((formData: any) => {
-          const jsonFields = JSON.parse(formData.json);
-          return normalizeDynamicFormFields(jsonFields);
-        })
-      );
+  getForms(): Observable<StoredForm[]> {
+    return this.http.get<any>(this.base).pipe(map(response => (response.data || []).map((item: any) => ({ ...item, json: parseFields(item.json) }))));
   }
-  // Salva un form
-  saveForm(formId: string, formData: any): Promise<void> {
-    return this.firestore.collection('forms').doc(formId).set(formData);
+  getFormById(formId: string): Observable<StoredForm> {
+    return this.http.get<any>(`${this.base}/${encodeURIComponent(formId)}`).pipe(map(response => {
+      const item = response.data && !Array.isArray(response.data) ? response.data : response;
+      return { id: item.id || formId, nameForm: item.nameForm || formId, json: parseFields(item.json ?? response.data) };
+    }));
   }
-
-  // Ottieni l'elenco dei form
-  getForms(): Observable<any[]> {
-    return this.firestore.collection('forms').valueChanges()
-    .pipe(
-
-      map((forms: any) => {
-        return forms
-       
-      })
-    );
+  getFormFields(formId: string): Observable<DynamicFormField[]> { return this.getFormById(formId).pipe(map(form => form.json)); }
+  saveForm(formId: string, form: Partial<StoredForm>): Promise<unknown> {
+    const json = parseFields(form.json);
+    if (formId === 'new' || !form.id) return firstValueFrom(this.http.post(this.base, { id: form.id || formId, nameForm: form.nameForm, json }));
+    return firstValueFrom(this.http.put(`${this.base}/${encodeURIComponent(formId)}`, { nameForm: form.nameForm, json }));
   }
-
-  // Ottieni un form specifico per ID
-  getFormById(formId: string): Observable<any> {
-    return this.firestore.collection('forms').doc(formId).valueChanges();
-  }
-
-  // Elimina un form
-  deleteForm(formId: string): Promise<void> {
-    return this.firestore.collection('forms').doc(formId).delete();
-  }
-
-  async getData(api:string,queryString:string):Promise<any>{
-
-    const apiFire="https://us-central1-comemivesto-5e5f9.cloudfunctions.net/api/gen/"
-
-    let Query = !queryString ? '' : `${queryString}`
-
-    const completeApi = `${apiFire}${api}${Query}`
-    const call = this.http.get(completeApi)
-
-    return await lastValueFrom(call)
-  }
-
-  
+  deleteForm(formId: string): Promise<unknown> { return firstValueFrom(this.http.delete(`${this.base}/${encodeURIComponent(formId)}`)); }
+  getData(api: string, queryString = ''): Promise<any> { return firstValueFrom(this.http.get(`${environment.apiBaseUrl}/gen/${api}${queryString}`)); }
 }

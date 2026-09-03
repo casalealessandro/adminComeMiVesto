@@ -1,6 +1,7 @@
 
 
 <app-anagrafica-wrapper [caption]="'Login'" [cssClass]="'login-container'">    
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
     <app-dynamic-form
     [service]="'loginForm'"
     [showBottomButtonLeft]="false"

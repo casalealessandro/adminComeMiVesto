@@ -1,72 +1,16 @@
-<app-anagrafica-wrapper
-  [caption]="'Elenco Utenti'"
-  [subTitle]="subtitle"
-  [tip]="'Gestisci il profilo utente, resetta la password,sospendi....'"
-  [addButtonShow]="true"
-  [showSearchInput]="true"
-  [showButtonInput]="true"
-  (emittEventButton)="createNewuser($event)"
-  (emitEventSearchInput)="filterUsers($event)"
->
-  <ul class="list-group form-list">
-    <app-custom-scrollbar [scrollHeigth]="500">
-      <li
-        *ngFor="let user of users"
-        class="form-list-item list-group-item d-flex justify-content-between align-items-center"
-        (dblclick)="editUser(user)"
-      >
-        <div class="profile-info">
-          <span class="img-thumbnail profileImage">
-            <img
-              [src]="
-                user.photoURL ||
-                'https://ionicframework.com/docs/img/demos/avatar.svg'
-              "
-              [alt]="user.name"
-              class=""
-            />
-          </span>
-
-          <div class="data-wrapper">
-            <span class="data-registrazione">{{user.createAt | timestampToDate}} - {{ user.displayName || user.name }} 
-            </span>
-            <p>{{ user.email }}</p>
-            
-          </div>
-        </div>
-
-        <div class="dropdown">
-          <button class="btn icon-button">
-            <span class="mdi mdi-dots-vertical"></span>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            <li>
-              <button class="btn icon-button" (click)="editUser(user)">
-                <span class="mdi mdi-pencil-outline"></span>
-                Modifica
-              </button>
-            </li>
-            <li>
-              <button class="btn icon-button" (click)="deleteUser(user.uid)">
-                <span class="mdi mdi-close del"></span>
-                Elimina
-              </button>
-            </li>
-            <li>
-              <button class="btn icon-button" (click)="disableUser(user.uid)">
-                <span class="mdi mdi-lock-off-outline"></span>
-                Disabilita
-              </button>
-            </li>
-            <li>
-              <button class="btn icon-button" (click)="sendPasswordReset(user)">
-                <span class="mdi mdi-lock-reset"></span>
-                Invia Password
-              </button>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </app-custom-scrollbar>
-  </ul>
-</app-anagrafica-wrapper>
+<main class="admin-page">
+  <header class="page-header"><div><h1>Utenti</h1><p>Gestisci profili, accesso e ruoli.</p></div><button class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">Aggiorna</button></header>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <label class="search">Cerca utenti<input class="form-control" [(ngModel)]="search" (ngModelChange)="applySearch()" placeholder="Email, display name, nome o cognome"></label>
+  <div *ngIf="!loading && !filteredUsers.length" class="empty">Nessun utente trovato.</div>
+  <div class="user-grid">
+    <article class="user-card" *ngFor="let user of filteredUsers">
+      <div class="identity"><img [src]="user.photoURL || 'https://ionicframework.com/docs/img/demos/avatar.svg'" [alt]="user.displayName || user.email"><div><h2>{{ user.displayName || ((user.nome || '') + ' ' + (user.cognome || '')) || 'Utente' }}</h2><p>{{ user.email }}</p></div></div>
+      <div class="badges"><span class="badge text-bg-secondary">{{ user.role || 'creator' }}</span><span class="badge" [class.text-bg-success]="!user.disabled" [class.text-bg-danger]="user.disabled">{{ user.disabled ? 'DISABILITATO' : 'ATTIVO' }}</span><span class="badge text-bg-light">{{ user.emailVerified ? 'Email verificata' : 'Email non verificata' }}</span></div>
+      <dl><div><dt>Creato</dt><dd>{{ user.createdAt || user.createAt | date:'short' }}</dd></div><div><dt>Ultimo accesso</dt><dd>{{ (user.lastSignInTime | date:'short') || '—' }}</dd></div></dl>
+      <div class="actions"><button class="btn btn-sm btn-primary" (click)="openEdit(user)">Dettaglio / modifica</button><button class="btn btn-sm btn-outline-secondary" (click)="resetPassword(user)">Reset password</button><button *ngIf="canManage(user)" class="btn btn-sm btn-outline-warning" (click)="toggleDisabled(user)" [disabled]="busyUid===user.uid">{{ user.disabled ? 'Abilita' : 'Disabilita' }}</button><select *ngIf="auth.isAdmin()" class="form-select form-select-sm" [ngModel]="user.role || 'creator'" (ngModelChange)="changeRole(user,$event)"><option value="creator">creator</option><option value="editor">editor</option><option value="admin">admin</option></select><button *ngIf="canManage(user)" class="btn btn-sm btn-outline-danger" (click)="deleteUser(user)">Elimina</button></div>
+    </article>
+  </div>
+  <button *ngIf="nextPageToken" class="btn btn-outline-primary more" (click)="loadPage()" [disabled]="loading">Carica altri</button><p *ngIf="loading" aria-live="polite">Caricamento…</p>
+</main>
+<div *ngIf="selected" class="edit-backdrop"><section class="edit-panel" role="dialog" aria-modal="true"><header><h2>Modifica profilo</h2><button class="btn-close" aria-label="Chiudi" (click)="selected=undefined"></button></header><label>Email<input class="form-control" [value]="selected.email" readonly></label><label>Display name<input class="form-control" [(ngModel)]="selected.displayName"></label><label>Nome<input class="form-control" [(ngModel)]="selected.nome"></label><label>Cognome<input class="form-control" [(ngModel)]="selected.cognome"></label><label>Bio<textarea class="form-control" [(ngModel)]="selected.bio"></textarea></label><label>Photo URL<input class="form-control" type="url" [(ngModel)]="selected.photoURL"></label><label>Gender<input class="form-control" [(ngModel)]="selected.gender"></label><footer><button class="btn btn-outline-secondary" (click)="selected=undefined">Annulla</button><button class="btn btn-primary" (click)="saveUser()" [disabled]="!!busyUid">Salva</button></footer></section></div>
