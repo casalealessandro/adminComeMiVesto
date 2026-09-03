@@ -35,7 +35,8 @@ export class AuthService {
     const credential = await this.firebaseAuth.signInWithEmailAndPassword(email, password);
     this.currentUser.set(credential.user);
     this.authReady = Promise.resolve(credential.user);
-    return this.refreshRole();
+    try { return await this.refreshRole(); }
+    catch (error) { await this.logout(false); throw error; }
   }
 
   async refreshRole(): Promise<RoleResponse> {

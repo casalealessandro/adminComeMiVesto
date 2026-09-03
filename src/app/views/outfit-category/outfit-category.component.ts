@@ -7,6 +7,7 @@ import { outfitCategories, OutfitsService } from '../../services/outfit.service'
 import { Observable } from 'rxjs';
 import { PopUpService } from '../../services/popup.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { confirm } from '../../widgets/ui-dialogs';
 
 @Component({
   selector: 'app-outfit-category',
@@ -234,6 +235,10 @@ export class OutfitCategoryComponent {
 
     this.createOrEditCategories(InstanceData)
   }  
+  editCategoryCard(category: outfitCategories): void { this.editCategoryOutfit({ data: category, cancel: false }); }
+  openSubcategories(category: outfitCategories): void { this.outFitService.mySignal.set(category as any); this.router.navigate(['/outfit-category', category.id]); }
+  deleteCategory(category: outfitCategories): void { confirm(`Eliminare la categoria “${category.categoryName}”?`, 'Conferma', yes => { if (yes) void this.deleteCategoryConfirmed(category.id); }); }
+  private async deleteCategoryConfirmed(id: string): Promise<void> { try { await this.outFitService.removeOutfitCategories(id); this.outFitCategories = this.outFitCategories.filter(item => item.id !== id); } catch { /* interceptor/UI API mantiene il dettaglio tecnico nascosto */ } }
 
   createOrEditCategories(InstanceData:any){
 
@@ -277,11 +282,7 @@ export class OutfitCategoryComponent {
     const rowData: outfitCategories = event.rowData
     switch (eventName) {
       case "delRows":
-        const  res = await this.outFitService.removeOutfitCategories(rowData.id);
-        if(res){
-  
-          //this.loadOutFitCategories()
-        }
+        this.deleteCategory(rowData);
         break;
 
       default:

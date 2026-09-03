@@ -11,6 +11,10 @@ import { alert } from '../../widgets/ui-dialogs';
 import { FormService } from '../../services/form.service';
 import { normalizeDynamicFormFields } from '../../interface/dynamic-form-field';
 
+export function buildFormPayload(id: string, nameForm: string, json: any[]) {
+  return { id, nameForm: nameForm.trim(), json: normalizeDynamicFormFields(json) };
+}
+
 @Component({
   selector: 'app-form-builder',
   standalone: true,
@@ -135,19 +139,14 @@ export class FormBuilderComponent {
 
  
 
-  saveForm(formName: string) {
+  saveForm(_formName: string) {
     this.formElements = normalizeDynamicFormFields(this.formElements);
     const formJson = this.formElements;
 
-    console.log('saveForm',formJson)
-    const idForm = this.formId === 'new'  ? Math.random().toString().replace("0.", "") : this.formId;
-    const formNameS = this.formId == 'new' ? this.formName.trim() : this.formId;
-    const data =  {
-      nameForm: formNameS,
-      json: formJson,
-      id:idForm
-    }
-    this.formService.saveForm(this.formId === 'new' ? 'new' : (this.formId || formNameS),data).then(() => {
+    const idForm = this.formId === 'new' ? Math.random().toString().replace("0.", "") : this.formId;
+    const formNameS = this.formName.trim();
+    const data = buildFormPayload(idForm!, formNameS, formJson);
+    this.formService.saveForm(this.formId === 'new' ? 'new' : idForm!, data).then(() => {
       alert('Form salvato con successo','Attenzione!');
       this.router.navigate(['/form-list']);
     }).catch((err:any) => {

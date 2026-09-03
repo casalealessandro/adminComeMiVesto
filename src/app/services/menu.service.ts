@@ -4,7 +4,7 @@ import { BehaviorSubject } from "rxjs";
 @Injectable({ providedIn: 'root' })
 export class MenuService {
     // Segnale che rappresenta lo stato del menu (aperto o chiuso)
-    private isOpenMenu: WritableSignal<boolean> = signal(false);
+    readonly isOpenMenu: WritableSignal<boolean> = signal(false);
     // BehaviorSubject per monitorare lo stato del menu in modalità osservabile (compatibile con RxJS)
     private isOpenMenuSubject = new BehaviorSubject<boolean>(this.isOpenMenu());
 

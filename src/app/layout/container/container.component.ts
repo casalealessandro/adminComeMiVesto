@@ -47,6 +47,7 @@ export class ContainerComponent {
 
     effect(() => {
       this.isLogin = !!this.auth.currentUser();
+      this.isMenuOpen = this.menuService.isOpenMenu();
     });
   }
 
@@ -59,12 +60,14 @@ export class ContainerComponent {
       console.log('result',result)
       if(result.breakpoints[Breakpoints.XSmall] || result.breakpoints[Breakpoints.Small] ) {
         this.mode = 'over'; //modalita overlay per schermi piccoli
-        
+        this.menuService.closeMenu();
       }else if ( result.breakpoints[Breakpoints.Medium]) {
         this.mode = 'side';
+        this.menuService.openMenu();
       }
       else {
         this.mode ='push'; //modalita overlay per schermi grandi 
+        this.menuService.openMenu();
       }
     });
   }
@@ -81,9 +84,9 @@ export class ContainerComponent {
   // Funzione per aggiornare lo stato del menu in base alla risoluzione dello schermo
   updateMenuVisibility(windowWidth: number) {
     if (windowWidth > 1024) {
-      this.isMenuOpen = true;  // Su desktop, il menu è sempre aperto
+      this.menuService.openMenu();
     } else {
-      this.isMenuOpen = false;  // Su mobile, il menu è chiuso inizialmente
+      this.menuService.closeMenu();
     }
 
     console.log('' + this.isMenuOpen)
@@ -91,6 +94,7 @@ export class ContainerComponent {
 
   // Metodo per passare la funzione toggle al componente Header
   toggleMenu(evt: any) {
-    this.isMenuOpen = !this.isMenuOpen
+    this.menuService.toggleMenu();
   }
+  closeMenu(): void { this.menuService.closeMenu(); }
 }

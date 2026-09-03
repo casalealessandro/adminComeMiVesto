@@ -7,10 +7,7 @@
   }"
 >
   <ng-container>
-    <app-header
-      *ngIf="isLogin"
-      (toggleMenu)="toggleMenu($event)"
-    ></app-header>
+    <app-header *ngIf="isLogin"></app-header>
 
     <div
       *ngIf="isLogin"
@@ -19,7 +16,7 @@
     >
       <app-menu></app-menu>
     </div>
-    <button *ngIf="isLogin && isMenuOpen && mode === 'over'" class="menu-backdrop" aria-label="Chiudi menu" (click)="toggleMenu($event)"></button>
+    <button *ngIf="isLogin && isMenuOpen && mode === 'over'" class="menu-backdrop" aria-label="Chiudi menu" (click)="closeMenu()"></button>
   </ng-container>
 
   <div class="container no-padding ana-container">

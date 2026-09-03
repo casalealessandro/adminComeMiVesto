@@ -1,15 +1,10 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs/internal/Observable';
-import { AngularFireFunctions } from '@angular/fire/compat/functions';
-import { firstValueFrom, lastValueFrom, map, of } from 'rxjs';
-import { UserProfile, Utente } from '../interface/app.interface';
+import { lastValueFrom, map } from 'rxjs';
+import { UserProfile } from '../interface/app.interface';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
-import { FirebaseApp } from '@angular/fire/app';
-import { Data } from '@angular/router';
-import { doc } from 'firebase/firestore';
 
 export interface outfit {
   userName: any;
@@ -107,8 +102,6 @@ export class OutfitsService {
   sessionToken: any;
   firestore = inject(AngularFirestore);
   httpClient = inject(HttpClient)
-  auth = getAuth(inject(FirebaseApp));
-  functions = inject(AngularFireFunctions)
   backendBase = environment.apiBaseUrl
   resultsSignal = signal<any[]>([]);
   pagination = signal({ page: 1, limit: 10, total: 0 });
@@ -127,30 +120,10 @@ export class OutfitsService {
     return this.mySignal();
   }
 
-  login(){
-    const  headers={
-      headers: new HttpHeaders().set(
-        "Authorization", 'Bearer ' 
-      ).set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
-        .set('Content-Type', 'application/json; charset=utf-8')
-        .set('responseType','text'),
-      params: new HttpParams(),
-      responseType: 'text' as 'json'  // Aggiungi responseType qui
-
-     
-    }
-
-    const api = "http://192.168.1.170:8080/authenticate"
-
-    this.httpClient.post(api, {email: 'prova2', password: 'prova2'}, headers).subscribe(res=>{
-      console.log(res)
-    })
-  }
-  
-
-  async getOutfits(conditions?: FireBaseConditions[], orderBy?: FireBaseOrderBy[], page = 1, limit = 10): Promise<outfit[]> {
+  async getOutfits(filters: Record<string, string> | FireBaseConditions[] = {}, page = 1, limit = 10): Promise<outfit[]> {
     let params = new HttpParams().set('page', page).set('limit', limit);
-    (conditions || []).forEach(condition => params = params.set(condition.field, String(condition.value)));
+    const filterEntries = Array.isArray(filters) ? filters.map(item => [item.field, String(item.value)] as const) : Object.entries(filters);
+    filterEntries.forEach(([key, value]) => { if (value) params = params.set(key, value); });
     const response = await lastValueFrom(this.httpClient.get<any>(`${this.backendBase}/gen/outfits`, { params }));
     const results = response.data || [];
     this.pagination.set(response.pagination || { page, limit, total: results.length });

@@ -20,8 +20,6 @@ export class HeaderComponent {
 
   @ViewChild('dynamicContent', { static: false }) dynamicContent!: TemplateRef<any>;
 
-  @Output() toggleMenu = new EventEmitter<void>();
-
   showProfileInfo = true;
   userProfile !: UserProfile;
 

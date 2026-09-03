@@ -8,6 +8,13 @@
   
 >
 
+<label *ngIf="!outfitId" class="target-user">Creator target
+  <select class="form-select" [(ngModel)]="targetUserId">
+    <option value="">Comportamento predefinito backend</option>
+    <option *ngFor="let user of targetUsers" [value]="user.uid">{{user.displayName || user.email}} ({{user.role || 'creator'}})</option>
+  </select>
+</label>
+
 <app-foto-outfit
 [image]="imageUrl"
 [tags]="tags"
