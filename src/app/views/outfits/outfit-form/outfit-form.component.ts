@@ -6,11 +6,16 @@ import { FotoOutfitPage } from '../foto-outfit/foto-outfit.page';
 import { ActivatedRoute, Router,  } from '@angular/router';
 import { PopUpService } from '../../../services/popup.service';
 import { alert } from '../../../widgets/ui-dialogs';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { UserProfile } from '../../../interface/app.interface';
+import { UserService } from '../../../services/user.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-outfit-form',
   standalone: true,
-  imports: [AnagraficaWrapperComponent, DynamicFormComponent, FotoOutfitPage],
+  imports: [CommonModule, FormsModule, AnagraficaWrapperComponent, DynamicFormComponent, FotoOutfitPage],
   templateUrl: './outfit-form.component.html',
   styleUrl: './outfit-form.component.scss'
 })
@@ -20,16 +25,21 @@ export class OutfitFormComponent {
   private router = inject(Router);
   private outFitService = inject(OutfitsService);
   private popUpService = inject(PopUpService);
+  private userService = inject(UserService);
+  private authService = inject(AuthService);
   subtitle: string = "";
   outfitTitle: string = ""
   outfitId: any;
   imageUrl = signal("")
   tags = signal<Tag[]>([]);
+  targetUsers: UserProfile[] = [];
+  targetUserId = '';
 
 
 
   ngOnInit() {
     this.fetchDataOutfit(); // Recupera i dati all'avvio
+    this.userService.getUsers(100).subscribe(users => this.targetUsers = this.authService.isAdmin() ? users : users.filter(user => user.role === 'creator'));
   }
 
   fetchDataOutfit() {
@@ -46,12 +56,12 @@ export class OutfitFormComponent {
 
   }
   setTags(tagsD: any) {
-    this.tags.update(tagsD.tags)
+    this.tags.set(tagsD.tags)
   }
   async submitFormOutfit(event: any) {
 
     if(event.name == "cancelForm"){
-      this.router.navigate(['/outfits']);
+      this.router.navigate(['/outfit-list']);
       return 
     }
 
@@ -92,6 +102,7 @@ export class OutfitFormComponent {
        alert("Si è verificato un errore durante il salvataggio dell'outfit","Errore durante il salvataggio dell'outfit")
       }
     } else {
+      if (this.targetUserId) formOutfit.userId = this.targetUserId;
       let awaitRes =await this.outFitService.saveOutfitCollection(undefined, formOutfit);
       if(awaitRes){
         this.router.navigate(['/outfit-list']);

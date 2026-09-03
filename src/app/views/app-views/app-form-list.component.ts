@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { FormService } from '../../services/form.service';
 import { confirm } from '../../widgets/ui-dialogs';
 
+export function formEditorRoute(form: { id: string }): [string, string] { return ['/form-builder', form.id]; }
+
 @Component({
   selector: 'app-form-list',
   standalone: true,
@@ -33,14 +35,14 @@ export class AppFormListComponent {
   }
 
   editForm(form: any) {
-    this.router.navigate(['/form-builder', form.nameForm]);
+    this.router.navigate(formEditorRoute(form));
   }
 
   deleteForm(formId: string) {
     confirm('Sei sicuro di voler elimare la form?','Attenzione!',res=>{
       if(res){
         this.formService.deleteForm(formId).then(() => {
-          this.forms = this.forms.filter(form => (form.id || form.nameForm) !== formId);
+          this.forms = this.forms.filter(form => form.id !== formId);
         }).catch((err:any) => {
           console.error('Errore durante l\'eliminazione del form:', err);
         });

@@ -47,7 +47,9 @@ export class UsersComponent {
       error: () => this.error = 'Impossibile aggiornare il profilo.'
     });
   }
-  canManage(user: UserProfile): boolean { return user.uid !== this.auth.currentUser()?.uid && (this.auth.isAdmin() || user.role === 'creator'); }
+  canOperateProfile(user: UserProfile): boolean { return this.auth.isAdmin() || user.role === 'creator'; }
+  canManage(user: UserProfile): boolean { return user.uid !== this.auth.currentUser()?.uid && this.canOperateProfile(user); }
+  canChangeRole(user: UserProfile): boolean { return this.auth.isAdmin() && user.uid !== this.auth.currentUser()?.uid; }
   toggleDisabled(user: UserProfile): void {
     if (!this.canManage(user)) return;
     const action = user.disabled ? 'abilitare' : 'disabilitare';
@@ -62,5 +64,5 @@ export class UsersComponent {
     if (!this.canManage(user)) return;
     confirm(`Eliminare definitivamente l’account ${user.email}? L’operazione non è reversibile.`, 'Conferma eliminazione', yes => yes && this.usersService.deleteUser(user.uid).subscribe({ next: () => { this.users = this.users.filter(item => item.uid !== user.uid); this.applySearch(); alert('Utente eliminato.', 'Operazione completata'); }, error: () => this.error = 'Eliminazione non consentita o non riuscita.' }));
   }
-  changeRole(user: UserProfile, role: UserRole): void { if (this.auth.isAdmin()) this.usersService.updateRole(user.uid, role).subscribe({ next: () => user.role = role, error: () => this.error = 'Modifica ruolo non consentita.' }); }
+  changeRole(user: UserProfile, role: UserRole): void { if (this.canChangeRole(user)) this.usersService.updateRole(user.uid, role).subscribe({ next: () => user.role = role, error: () => this.error = 'Modifica ruolo non consentita.' }); }
 }
