@@ -9,6 +9,9 @@ import { OutfitProductsComponent } from './views/outfit-products/outfit-products
 import { OutfitFormComponent } from './views/outfits/outfit-form/outfit-form.component';
 import { authGuard } from './auth.guard';
 import { LoginComponent } from './views/login/login.component';
+import { AccessDeniedComponent } from './views/access-denied/access-denied.component';
+import { ColorsComponent } from './views/colors/colors.component';
+import { ReportsComponent } from './views/reports/reports.component';
 
 
 export const routes:Routes = [
@@ -16,6 +19,9 @@ export const routes:Routes = [
     { path: 'utenti', component: UsersComponent,canActivate:[authGuard] },
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     { path: 'login', component: LoginComponent},
+    { path: 'access-denied', component: AccessDeniedComponent},
+    { path: 'colors', component: ColorsComponent, canActivate:[authGuard]},
+    { path: 'reports', component: ReportsComponent, canActivate:[authGuard]},
     { path: 'form-list', component: AppFormListComponent,canActivate:[authGuard] },
      { path: 'form-builder/:id', component: FormBuilderComponent ,canActivate:[authGuard]},
      { path: 'outfit-list', component: OutfitsComponent,canActivate:[authGuard] },

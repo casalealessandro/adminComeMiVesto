@@ -72,7 +72,7 @@ export class FormBuilderComponent {
       
       if (data) {
         this.formName = data.nameForm;
-        this.formElements = normalizeDynamicFormFields(JSON.parse(data.json));
+        this.formElements = normalizeDynamicFormFields(data.json);
         
       }
     });
@@ -137,7 +137,7 @@ export class FormBuilderComponent {
 
   saveForm(formName: string) {
     this.formElements = normalizeDynamicFormFields(this.formElements);
-    const formJson = JSON.stringify(this.formElements);
+    const formJson = this.formElements;
 
     console.log('saveForm',formJson)
     const idForm = this.formId === 'new'  ? Math.random().toString().replace("0.", "") : this.formId;
@@ -147,7 +147,7 @@ export class FormBuilderComponent {
       json: formJson,
       id:idForm
     }
-    this.formService.saveForm(formNameS,data).then(() => {
+    this.formService.saveForm(this.formId === 'new' ? 'new' : (this.formId || formNameS),data).then(() => {
       alert('Form salvato con successo','Attenzione!');
       this.router.navigate(['/form-list']);
     }).catch((err:any) => {

@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
 import { CommonModule } from '@angular/common';
-import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
 import { AnagraficaWrapperComponent } from "../../layout/anagrafica-wrapper/anagrafica-wrapper.component";
 import { Router } from '@angular/router';
 
@@ -13,7 +13,9 @@ import { Router } from '@angular/router';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  constructor(private usersService: UserService, private router: Router){
+  errorMessage = '';
+  loading = false;
+  constructor(private auth: AuthService, private router: Router){
 
 
   }
@@ -22,11 +24,12 @@ export class LoginComponent {
   async login(evt:any){
     
     const data = evt.formData
-    const loginResp = await this.usersService.loginUser(data);
-
-    if(loginResp){
-       
-      this.router.navigate(['dashboard'])
-    }
+    this.loading = true;
+    this.errorMessage = '';
+    try {
+      const access = await this.auth.login(data.email, data.password);
+      await this.router.navigate([access.canAccessBackoffice ? '/dashboard' : '/access-denied']);
+    } catch { this.errorMessage = 'Credenziali non valide o servizio non disponibile.'; }
+    finally { this.loading = false; }
   }
 }

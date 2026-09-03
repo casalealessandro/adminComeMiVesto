@@ -4,6 +4,7 @@ import { MenuService } from '../../services/menu.service';
 import { CommonModule } from '@angular/common';
 import { UserProfile } from '../../interface/app.interface';
 import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
 
 @Component({
@@ -25,7 +26,7 @@ export class HeaderComponent {
   userProfile !: UserProfile;
 
 
-  constructor(private menuService: MenuService, private router: Router, private userService: UserService, private overlayService: OverlayService) {
+  constructor(private menuService: MenuService, private router: Router, private userService: UserService, private auth: AuthService, private overlayService: OverlayService) {
    
   }
 
@@ -35,8 +36,9 @@ export class HeaderComponent {
 
   }
   renderHeader() {
-    const utnConnesso = this.userService.InfoUtenteConnesso;
-    this.userService.getUserProfile(utnConnesso.uid).subscribe((userProfile: UserProfile) => {
+    const user = this.auth.currentUser();
+    if (!user) return;
+    this.userService.getUserProfile(user.uid).subscribe((userProfile: UserProfile) => {
       this.userProfile = userProfile;
       console.log('userProfile', userProfile);
     });
@@ -85,10 +87,7 @@ export class HeaderComponent {
 
   async logout() {
     console.log('LOGOUT');
-    const uid = this.userProfile.uid
-    const isLogout = await this.userService.LogOut(uid);
-    if(isLogout)
-      this.router.navigate(['/login']);
+    await this.auth.logout();
   }
 
   checkRoute() {

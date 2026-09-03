@@ -40,7 +40,7 @@ export class AppFormListComponent {
     confirm('Sei sicuro di voler elimare la form?','Attenzione!',res=>{
       if(res){
         this.formService.deleteForm(formId).then(() => {
-          
+          this.forms = this.forms.filter(form => (form.id || form.nameForm) !== formId);
         }).catch((err:any) => {
           console.error('Errore durante l\'eliminazione del form:', err);
         });

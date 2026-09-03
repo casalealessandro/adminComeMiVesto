@@ -6,12 +6,12 @@ import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anag
 import { outfitCategories, OutfitsService } from '../../services/outfit.service';
 import { Observable } from 'rxjs';
 import { PopUpService } from '../../services/popup.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-outfit-category',
   standalone: true,
-  imports: [DataGridComponent, CommonModule, AnagraficaWrapperComponent,],
+  imports: [DataGridComponent, CommonModule, AnagraficaWrapperComponent, RouterLink],
   templateUrl: './outfit-category.component.html',
   styleUrl: './outfit-category.component.scss'
 })
@@ -247,14 +247,10 @@ export class OutfitCategoryComponent {
         const formData = resulOutputComponent.formData;
         formData.parentCategory = !formData.parentCategory ? '' : formData.parentCategory
         let res;
-        let dateEdit = new Date();
         if (resulOutputComponent.inEdit) {
           
-          formData.editedAt = dateEdit.getTime();
          res = await this.outFitService.updateOutfitCategories(formData.id, formData)
         } else {
-          formData.editedAt = dateEdit.getTime();
-          formData.createdAt = dateEdit.getTime()
           res = await this.outFitService.saveOutfitCategories(formData)
         }
 

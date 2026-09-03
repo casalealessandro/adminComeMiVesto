@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, input, Input, Output,Signal } from '@angular/core';
-import { Router, Routes } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import { MenuService } from '../../services/menu.service';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports:[CommonModule],
+  imports:[CommonModule, RouterLink],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
@@ -40,6 +40,8 @@ export class MenuComponent {
       { path: 'form-list', label:'Gestione form e viste',icon:'mdi mdi-cog-outline' },
       { path: 'outfit-list', label:'Lista outfit ',icon:'mdi mdi-wardrobe-outline' },
       { path: 'outfit-category', label:'Lista categorie outfit ',icon:'mdi mdi-wardrobe-outline' },
+      { path: 'colors', label:'Colori outfit',icon:'mdi mdi-palette-outline' },
+      { path: 'reports', label:'Segnalazioni',icon:'mdi mdi-flag-outline' },
       { path: 'outfit-product-list', label:'Gestione prodotti e feed',icon:'mdi mdi-tshirt-v-outline' }, 
     ]; // }
     //Construttore : inietta il servvizio del menu e il breakpointObserver
@@ -64,4 +66,3 @@ export class MenuComponent {
     }
 
 }
-

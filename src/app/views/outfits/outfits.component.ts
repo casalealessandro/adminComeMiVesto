@@ -254,7 +254,6 @@ export class OutfitsComponent {
       default:
         break;
     }
-    //throw new Error('Method not implemented.');
   }
 
   editOutfit(event?: any) {

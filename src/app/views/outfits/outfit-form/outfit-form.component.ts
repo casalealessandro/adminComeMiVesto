@@ -85,7 +85,6 @@ export class OutfitFormComponent {
     
     // Salva o aggiorna il prodotto nel database  
     if (inEdit) {
-      formOutfit.editedAt = new Date().getTime()
       let awaitRes = await this.outFitService.updateInCollection(formOutfit.id, formOutfit);
       if(awaitRes){
         this.router.navigate(['/outfit-list']);
@@ -93,16 +92,13 @@ export class OutfitFormComponent {
        alert("Si è verificato un errore durante il salvataggio dell'outfit","Errore durante il salvataggio dell'outfit")
       }
     } else {
-      formOutfit.editedAt = new Date().getTime()
-      formOutfit.createdAt = new Date().getTime()
-      let awaitRes =await this.outFitService.saveOutfitCollection(undefined, formData);
+      let awaitRes =await this.outFitService.saveOutfitCollection(undefined, formOutfit);
       if(awaitRes){
         this.router.navigate(['/outfit-list']);
       }else{
        alert("Si è verificato un errore durante il salvataggio dell'outfit","Errore durante il salvataggio dell'outfit")
       }
     }
-    //throw new Error('Method not implemented.');
   }
 
   btnInputEvent(event: any) {

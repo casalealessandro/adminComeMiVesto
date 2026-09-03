@@ -1,5 +1,6 @@
 export const environment = {
     production:false,
+    apiBaseUrl: 'https://us-central1-comemivesto-5e5f9.cloudfunctions.net/apiDev',
     BASE_API_URL: '',
     firebase: {
         apiKey: "AIzaSyBNWYDp0fPgLU0npKMC0RoS6C14fHp2mpk",

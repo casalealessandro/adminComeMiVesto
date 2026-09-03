@@ -11,7 +11,7 @@
 
 <nav *ngIf="selectedCatOutfit" aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item " aria-current="page"><a href="/outfit-category">Elenco categorie</a></li>
+    <li class="breadcrumb-item " aria-current="page"><a routerLink="/outfit-category">Elenco categorie</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{selectedCatOutfit.categoryName}}</li>
   </ol>
 </nav>

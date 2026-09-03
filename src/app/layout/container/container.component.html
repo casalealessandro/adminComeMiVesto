@@ -9,8 +9,7 @@
   <ng-container>
     <app-header
       *ngIf="isLogin"
-      (showHidemMenu)="toggleMenu($event)"
-      [toggleMenu]="toggleMenu"
+      (toggleMenu)="toggleMenu($event)"
     ></app-header>
 
     <div
@@ -20,6 +19,7 @@
     >
       <app-menu></app-menu>
     </div>
+    <button *ngIf="isLogin && isMenuOpen && mode === 'over'" class="menu-backdrop" aria-label="Chiudi menu" (click)="toggleMenu($event)"></button>
   </ng-container>
 
   <div class="container no-padding ana-container">

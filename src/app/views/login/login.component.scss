@@ -1,6 +1,7 @@
 ::ng-deep.content-wrap {
     &.login-container {
         width: 600px;
+        max-width: calc(100vw - 2rem);
 
         .form-container{
             .badge {

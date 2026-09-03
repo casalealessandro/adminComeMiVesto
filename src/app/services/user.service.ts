@@ -1,266 +1,51 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs/internal/Observable';
-import { AngularFireFunctions } from '@angular/fire/compat/functions';
-import { firstValueFrom, lastValueFrom, map} from 'rxjs';
-import { UserProfile, Utente } from '../interface/app.interface';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
-import { FirebaseApp } from '@angular/fire/app';
-import { HttpsCallableResult } from '@angular/fire/functions';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { limitToLast } from 'firebase/firestore/lite';
-@Injectable({
-  providedIn: 'root'
-})
+import { UserProfile } from '../interface/app.interface';
 
+export type UserRole = 'admin' | 'editor' | 'creator';
+export interface UsersPage { data: UserProfile[]; nextPageToken: string | null; }
+export type UserProfileUpdate = Pick<UserProfile, 'displayName' | 'nome' | 'cognome' | 'bio' | 'photoURL' | 'gender'>;
+
+@Injectable({ providedIn: 'root' })
 export class UserService {
-  
+  private readonly http = inject(HttpClient);
+  private readonly base = environment.apiBaseUrl;
 
+  /** Compatibility for unused legacy layout widgets; authentication state lives in AuthService. */
+  get InfoUtenteConnesso(): any { return {}; }
 
-  api = environment.BASE_API_URL
-
-  isLoginUser = signal<boolean>(false); // set null initial value
-  TokenLoggato!: string;
-  sessionUserId: any;
-  firestore= inject(AngularFirestore);
-  angularFireAuth= inject(AngularFireAuth);
-  httpClient= inject(HttpClient)
-  auth = getAuth(inject(FirebaseApp));
-  functions=inject(AngularFireFunctions)
-  apiFire="https://us-central1-comemivesto-5e5f9.cloudfunctions.net/api"
-
-  get httpOptions() {
-    return {
-      headers: new HttpHeaders().set(
-        "Authorization", 'Bearer ' + this.token
-      ).set('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
-        .set('Content-Type', 'application/json; charset=utf-8'),
-      params: new HttpParams()
-    }
-  };
-  
-  set token(sToken:string) {
-    sessionStorage.setItem('token', sToken)
-    
+  getUsersPage(limit = 50, pageToken?: string): Observable<UsersPage> {
+    let params = new HttpParams().set('limit', limit);
+    if (pageToken) params = params.set('pageToken', pageToken);
+    return this.http.get<UsersPage>(`${this.base}/user/users`, { params }).pipe(
+      map(response => ({ data: response.data || [], nextPageToken: response.nextPageToken || null }))
+    );
   }
 
-  get token() {
-    return  sessionStorage.getItem('token') ?? '';
-    
+  getUsers(limit = 50, pageToken?: string): Observable<UserProfile[]> {
+    return this.getUsersPage(limit, pageToken).pipe(map(response => response.data));
   }
 
-  get InfoUtenteConnesso(): Utente {
-    let utenteConnesso: string = sessionStorage.getItem('utenteConnesso') ?? '';
-    return JSON.parse(utenteConnesso);
+  getUserProfile(uid: string): Observable<UserProfile> {
+    return this.http.get<any>(`${this.base}/user/user-profile/${encodeURIComponent(uid)}`).pipe(
+      map(response => response.data || response)
+    );
   }
 
-  
-  getUsers():Observable<UserProfile[]>{
-
-   
-    let EndPoint = `${this.apiFire}/user/all-users`
-
-    const HeaderOdata = this.httpOptions
-
-    const response = this.httpClient.get(EndPoint, HeaderOdata)
-
-    return response.pipe(map((res: any) => {
-      return res as UserProfile[];
-    }));
+  updateUserProfile(uid: string, value: Partial<UserProfileUpdate>): Observable<UserProfile> {
+    const body: Partial<UserProfileUpdate> = {};
+    const editable: (keyof UserProfileUpdate)[] = ['displayName', 'nome', 'cognome', 'bio', 'photoURL', 'gender'];
+    editable.forEach(key => { if (value[key] !== undefined) (body as any)[key] = value[key]; });
+    return this.http.put<UserProfile>(`${this.base}/user/update-user-profile/${encodeURIComponent(uid)}`, body);
   }
 
-  isLoggedUser(): boolean {
-    this.isLoginUser.set(this.token ? true : false);
-    return this.token ? true : false;
+  enableUser(uid: string): Observable<unknown> { return this.http.post(`${this.base}/user/enable/${encodeURIComponent(uid)}`, {}); }
+  disableUser(uid: string): Observable<unknown> { return this.http.post(`${this.base}/user/disable/${encodeURIComponent(uid)}`, {}); }
+  resetPassword(uid: string): Observable<unknown> { return this.http.post(`${this.base}/user/password-reset/${encodeURIComponent(uid)}`, {}); }
+  deleteUser(uid: string): Observable<unknown> { return this.http.delete(`${this.base}/user/delete/${encodeURIComponent(uid)}`); }
+  updateRole(uid: string, role: UserRole): Observable<unknown> {
+    return this.http.put(`${this.base}/admin/users/${encodeURIComponent(uid)}/role`, { role });
   }
-
-  isExistsUsers() {
-    const EndPoint = environment.BASE_API_URL + 'Account/GetUserInfo';
-    const HeaderOdata = this.httpOptions;
-    return this.httpClient.get<any>(EndPoint, HeaderOdata);
-  }
-
-  async loginUser(data: any): Promise<boolean> {
-    const EndPoint = `${this.apiFire}/user/login` //environment.BASE_API_URL + 'Token/login';
-    const HeaderOdata = this.httpOptions;
-    
-    try {
-
-      const resAuth = await this.authFirebase(data);
-      if(resAuth){
-        let res =  this.httpClient.post<any>(EndPoint, data, HeaderOdata);
-
-        const result = await lastValueFrom(res)
-
-        if (result){
-          this.token = result;
-          this.isLoginUser.set(true);
-          return true;
-        }  
-      }
-        
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-
-    return false;
-  }
-
-  async LogOut(uid:any): Promise<boolean> {
-
-    let EndPoint = `${this.apiFire}/user/logOuth/${uid}`;
-    const HeaderOdata = this.httpOptions;
-
-
-
-    const response = this.httpClient.get<any>(EndPoint, HeaderOdata);
-
-    const res =  await lastValueFrom(response)
-
-    if(res.success){
-      this.clearSessionStorage();
-      this.isLoginUser.set(false);
-      return true;
-    }
-    return false;
-  }
-
-
-  clearSessionStorage() {
-    let sessLength = sessionStorage.length
-
-
-    if (sessLength > 0)
-      for (let sessionKey in sessionStorage) {
-        sessionStorage.removeItem(sessionKey);
-
-
-
-      }
-
-
-  }
-
-  
-  async authFirebase(data: any):Promise<boolean> {
-    try {
-      // Effettua l'autenticazione con email e password
-      const credential = await this.angularFireAuth.signInWithEmailAndPassword(data.email, data.password);
-      sessionStorage.setItem('utenteConnesso', JSON.stringify(credential.user));
-  
-      // Ritorna true per indicare il successo
-      return true;
-    } catch (error) {
-      console.error('Errore durante l\'autenticazione:', error);
-  
-      // In caso di errore, ritorna false
-      return false;
-    }
-
-  }
-  async sendPasswordFirebase(email:string):Promise<boolean>{
-    
-    try {
-
-      await sendPasswordResetEmail(this.auth,email)
-      return true
-    } catch(err){
-      return false
-    }
-    
-   
-  }
-
-  async disabledUsersFirebase(uid: string): Promise<boolean> {
-    const api = `${this.apiFire}/users/disable/${uid}`
-    let data={
-      uid:uid
-    }
-     
-
-    try {
-      let call = this.httpClient.post(api,data)
-      const result = await lastValueFrom(call);
-      console.log(result);
-      return true;
-    } catch (error) {
-      console.error('Errore nella disabilitazione dell\'utente:', error);
-      return false;
-    }
-   
-  }
-
-  async deleteUsersFirebase(uid: string): Promise<boolean> {
-    const api = `${this.apiFire}/users/delete/${uid}`
-    let data={
-      uid:uid
-    }
-     
-
-    try {
-      let call = this.httpClient.delete(api)
-      const result = await lastValueFrom(call);
-      if(result){
-        let query: any = this.firestore.collection('users').ref;
-
-        // Applica questa condizione alla query
-        
-        query = query.where('uid','==', uid);
-
-        try {
-          const querySnapshot = await query.get();
-          // Elimina tutti i documenti che corrispondono alla query
-          const deletePromises = querySnapshot.docs.map((doc: any) => doc.ref.delete());
-          await Promise.all(deletePromises);
-          this.getUsers()
-          return true
-        } catch (error) {
-          console.error('Error deleting documents:', error);
-          return false
-        }
-      }
-      
-      return true;
-    } catch (error) {
-      console.error(`Errore nell'eliminazione dell\'utente:`, error);
-      return false;
-    }
-   
-  }
-
-  async RecuperaPassword(user: string) {
-    const EndPoint = environment.BASE_API_URL + "Account/RecuperaPassword?username=" + user;
-    const HeaderOdata = this.httpOptions;
-    const response = this.httpClient.get(EndPoint, HeaderOdata)
-    return await lastValueFrom(response)
-
-  }
-
-  
-  getUserProfile(uid: any):Observable<UserProfile>  {
-
-    let EndPoint = `${this.apiFire}/user/user-profile`
-
-
-    if (uid) {
-      EndPoint = `${EndPoint}/${uid}`
-    } 
-
-
-    const HeaderOdata = this.httpOptions
-
-    const response = this.httpClient.get(EndPoint, HeaderOdata)
-
-    return response.pipe(map((res: any) => {
-      return res as UserProfile;
-    }));
-      
-  }
-
- 
-
-  
 }
