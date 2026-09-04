@@ -5,24 +5,32 @@ import { Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { Colonne, ToolbarButton, UserProfile } from '../../interface/app.interface';
-import { outfit, OutfitsService } from '../../services/outfit.service';
+import { outfit, outfitCategories, OutfitsService } from '../../services/outfit.service';
 import { UserService } from '../../services/user.service';
+import { OutfitColor, TaxonomyService } from '../../services/taxonomy.service';
+import { FormService } from '../../services/form.service';
+import { DynamicFormField } from '../../interface/dynamic-form-field';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 
 @Component({ selector: 'app-outfits', standalone: true, imports: [CommonModule, FormsModule, DataGridComponent, AnagraficaWrapperComponent], templateUrl: './outfits.component.html', styleUrl: './outfits.component.scss' })
 export class OutfitsComponent {
   private readonly outfitService = inject(OutfitsService);
   private readonly usersService = inject(UserService);
+  private readonly taxonomyService = inject(TaxonomyService);
+  private readonly formService = inject(FormService);
   readonly router = inject(Router);
   outfits: outfit[] = [];
   creators: UserProfile[] = [];
+  categories: outfitCategories[] = [];
+  colors: OutfitColor[] = [];
+  taxonomyOptions: Record<'gender' | 'season' | 'style', Array<{ id: string; value: string }>> = { gender: [], season: [], style: [] };
   loading = false;
   error = '';
   filtersOpen = false;
   page = 1;
   limit = 10;
   total = 0;
-  filters = { status: '', userId: '', gender: '', category: '', season: '', style: '', search: '' };
+  filters = { status: '', userId: '', gender: '', category: '', season: '', style: '', color: '', search: '' };
   subtitle = `Elenco outfit creati nell'app`;
   colOutfitsGrid: Colonne[] = [{ itemType: 'group', groupDataField: '', data: [
     { type:'campo', colVisible:true, allowEditing:false, dataField:'title', colWidth:'280', colCaption:'Titolo', edit:false, groupDataField:undefined },
@@ -35,7 +43,7 @@ export class OutfitsComponent {
   ] }];
   customToolbarButtons: ToolbarButton[] = [{ id:'toJSON', name:'toJSON', text:'Importa da Jsn', disabled:false, visible:true, icon:'mdi mdi-database-import-outline', widget:'button' }];
 
-  ngOnInit(): void { this.loadCreators(); void this.loadOutfits(); }
+  ngOnInit(): void { this.loadCreators(); this.loadTaxonomies(); void this.loadOutfits(); }
   loadCreators(): void { this.usersService.getUsers(100).subscribe({ next: users => this.creators = users, error: () => this.error = 'Impossibile caricare i creator.' }); }
   creatorName(userId: string): string { const user = this.creators.find(item => item.uid === userId); return user?.displayName || user?.email || userId || '—'; }
   async loadOutfits(): Promise<void> {
@@ -49,7 +57,23 @@ export class OutfitsComponent {
     finally { this.loading = false; }
   }
   applyFilters(): void { this.page = 1; void this.loadOutfits(); }
-  resetFilters(): void { this.filters = { status:'', userId:'', gender:'', category:'', season:'', style:'', search:'' }; this.applyFilters(); }
+  resetFilters(): void { this.filters = { status:'', userId:'', gender:'', category:'', season:'', style:'', color:'', search:'' }; this.applyFilters(); }
+  private loadTaxonomies(): void {
+    this.taxonomyService.getColors().subscribe({ next: colors => this.colors = colors, error: () => this.error = 'Impossibile caricare la tassonomia colori.' });
+    this.outfitService.getOutFitCategories().subscribe({ next: categories => this.categories = categories, error: () => this.error = 'Impossibile caricare le categorie outfit.' });
+    this.formService.getFormFields('outfitForm').subscribe({
+      next: fields => void Promise.all((['gender', 'season', 'style'] as const).map(name => this.loadFieldOptions(fields, name))),
+      error: () => this.error = 'Impossibile caricare le tassonomie del form outfit.'
+    });
+  }
+  private async loadFieldOptions(fields: DynamicFormField[], name: 'gender' | 'season' | 'style'): Promise<void> {
+    const select = fields.find(field => field.name === name)?.selectOptions;
+    if (!select) return;
+    const values = select.remote && select.api ? await this.formService.getData(select.api) : (select.options || []);
+    this.taxonomyOptions[name] = (Array.isArray(values) ? values : values?.data || []).map((item: any) => ({
+      id: String(item[select.valueExp || 'id']), value: String(item[select.displayExp || 'value'])
+    }));
+  }
   previous(): void { if (this.page > 1) { this.page--; void this.loadOutfits(); } }
   next(): void { if (this.page * this.limit < this.total) { this.page++; void this.loadOutfits(); } }
   editOutfit(event: any): void { const value = event?.data || event; if (event?.cancel !== undefined) event.cancel = true; this.router.navigate(['/outfit-detail', value.id]); }

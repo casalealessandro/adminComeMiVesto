@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, AfterViewInit, SimpleChanges, ViewChildren, QueryList, ViewChild, AfterViewChecked, HostListener, inject, signal, input, effect, Renderer2 } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChildren, QueryList, ViewChild, HostListener, inject, signal, input, effect, NgZone, OnDestroy } from '@angular/core';
 
 
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -44,7 +44,7 @@ export interface tasto {
 })
 
 
-export class DataGridComponent {
+export class DataGridComponent implements OnDestroy {
   @ViewChild('dataGridWrapper', { static: false }) dataGridWrapper!: ElementRef<HTMLDivElement>;
 
   @ViewChildren('riga')
@@ -187,6 +187,12 @@ export class DataGridComponent {
   formservice: any;
   sortDirection: 'asc' | 'desc' = 'asc'; // fleg per l'ordinamento asc e desc
   sortedColumn: any; //  colonna orginatata
+  busyRows = new Set<number>();
+  private readonly busyRowTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private resizeObserver?: ResizeObserver;
+  private observedWidth = 0;
+  private hasExplicitTableWidth = false;
+  private readonly zone = inject(NgZone);
 
   constructor(
     //private formservice: FormsTemplateService,
@@ -254,7 +260,7 @@ export class DataGridComponent {
 
     const remInPixels = this.getBaseRemInPixels();
     const sizeInPixels = this.convertRemToPixels(paddingGrid, remInPixels);
-    console.log(`1.25rem in pixels: ${sizeInPixels}px`);
+    this.hasExplicitTableWidth = !!this.tableWidth;
 
     if (!this.tableWidth) {
       if (!this.dataGridWrapper) {
@@ -272,6 +278,7 @@ export class DataGridComponent {
     }
 
     this.tableWrapWidth = this.tableWidth
+    this.observeWrapper(sizeInPixels + scrollbarWidth);
 
 
     if (!this.idTable) {
@@ -284,6 +291,28 @@ export class DataGridComponent {
     }
 
 
+  }
+
+  private observeWrapper(horizontalSpace: number): void {
+    if (typeof ResizeObserver === 'undefined' || !this.dataGridWrapper) return;
+    this.resizeObserver = new ResizeObserver(entries => {
+      const width = Math.max(0, Math.floor(entries[0]?.contentRect.width ?? 0));
+      if (!width || width === this.observedWidth) return;
+      this.observedWidth = width;
+      if (this.hasExplicitTableWidth) return;
+      this.zone.run(() => {
+        this.tableWidth = Math.max(0, width - horizontalSpace);
+        this.tableWrapWidth = this.tableWidth;
+        void this.setStyleBody();
+      });
+    });
+    this.resizeObserver.observe(this.dataGridWrapper.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+    this.busyRowTimers.forEach(timer => clearTimeout(timer));
+    this.busyRowTimers.clear();
   }
 
   getBaseRemInPixels(): number {
@@ -1406,6 +1435,7 @@ export class DataGridComponent {
   }
 
   selectRow(event: any, index: any, row: any, selectRowIndex?: any) {
+    if (this.busyRows.has(index)) return;
 
     let prevIndex = index - 1
 
@@ -1507,6 +1537,13 @@ export class DataGridComponent {
 
   }
   dblRowClick(event: any, index: any, row: any, selectRowIndex?: any) {
+    if (this.busyRows.has(index)) return;
+    this.busyRows.add(index);
+    const timer = setTimeout(() => {
+      this.busyRows.delete(index);
+      this.busyRowTimers.delete(index);
+    }, 5000);
+    this.busyRowTimers.set(index, timer);
 
     let prevIndex = index - 1
 
@@ -1694,7 +1731,8 @@ export class DataGridComponent {
       'selected-row': this.rowSelected[rowIndex],
       'state-hover': this.isHovered[rowIndex],
       'select-have-detail': this.isHoveredDetatil[rowIndex],
-      'custom-class': this.rowcustomclass[rowIndex]
+      'custom-class': this.rowcustomclass[rowIndex],
+      'row-busy': this.busyRows.has(rowIndex)
     };
   }
 

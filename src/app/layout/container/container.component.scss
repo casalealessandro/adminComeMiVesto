@@ -22,17 +22,20 @@
         &.menu-side {
             .ana-container{
                margin-left: 100px;
+               width: calc(100% - 100px);
             }
           
         }
         &.menu-push {
             .ana-container{
                margin-left: 250px;
+               width: calc(100% - 250px);
             }
            
         }
         .ana-container {
-            // margin-left: 150px ;
+            max-width: none;
+            padding-inline: clamp(.75rem, 2vw, 2.5rem) !important;
         }
     .verticalMenucontainer {
 
