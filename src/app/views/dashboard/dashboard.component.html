@@ -50,12 +50,12 @@
 
         <div class="col-12 col-sm-6 col-xl-3">
           <app-dashboard-stat-card
-            label="Da controllare"
-            [value]="data.attention.total"
-            meta="Outfit pending + report aperti"
-            icon="mdi-alert-outline"
+            label="Report aperti"
+            [value]="data.reports.open"
+            meta="Segnalazioni ancora da gestire"
+            icon="mdi-flag-outline"
             route="/reports"
-            [tone]="data.attention.total > 0 ? 'warning' : 'success'">
+            [tone]="data.reports.open > 0 ? 'warning' : 'success'">
           </app-dashboard-stat-card>
         </div>
 
