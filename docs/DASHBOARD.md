@@ -16,9 +16,9 @@ tramite `DashboardService`. Il bearer token viene aggiunto dal normale intercept
 
 - KPI utenti totali + nuovi negli ultimi 7 giorni;
 - KPI outfit totali + nuovi negli ultimi 7 giorni;
-- KPI elementi da controllare;
+- KPI report aperti;
 - KPI outfit approvati;
-- pannello `Richiede attenzione` per outfit pending e report aperti;
+- pannello `Richiede attenzione` con totale aggregato, outfit pending e report aperti;
 - stato outfit con barre percentuali leggere, senza librerie chart aggiuntive;
 - attività recente aggregata da utenti, outfit e report;
 - azioni rapide verso utenti, outfit, report e categorie.
