@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { DashboardService, DashboardSummary } from '../../services/dashboard.service';
 import { DashboardComponent } from './dashboard.component';
@@ -24,7 +25,10 @@ describe('DashboardComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
-      providers: [{ provide: DashboardService, useValue: dashboardService }],
+      providers: [
+        provideRouter([]),
+        { provide: DashboardService, useValue: dashboardService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardComponent);
