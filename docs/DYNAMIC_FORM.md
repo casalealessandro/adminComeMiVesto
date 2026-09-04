@@ -28,15 +28,25 @@ Le select usano `selectOptions`. Con `remote: false`, `options` contiene la list
 
 ## Registrazione amministrativa
 
-La configurazione richiesta è `registerForm`, ad esempio:
+La creazione amministrativa usa una configurazione dedicata, `adminUserCreateForm`, perché il contratto è diverso da quello della registrazione pubblica:
 
 ```html
 <app-dynamic-form
-  [editData]="datiutente"
-  [service]="'registerForm'"
-  (submitFormEvent)="submitFormUser($event)"
-  (functionalInputFormEvent)="btnInputEvent($event)">
+  [service]="'adminUserCreateForm'"
+  [showBottomButtons]="true"
+  [inputBtnLeftName]="'Annulla'"
+  [inputBtnRightName]="'Crea utente'"
+  [loading]="createUserBusy"
+  (submitFormEvent)="handleCreateUserForm($event)">
 </app-dynamic-form>
 ```
 
-Il repository corrente non dichiara un endpoint protetto di creazione amministrativa. L'unico contratto `/admin/users` presente riguarda `PUT /admin/users/:uid/role`; perciò la UI di creazione non va esposta finché il backend non fornisce e documenta un endpoint dedicato (suggerito `POST /admin/users`) e il relativo DTO minimale. Non usare la registrazione pubblica e non impostare consensi Terms/Privacy per conto dell'utente.
+Il submit costruisce esplicitamente il DTO `{ email, displayName, nome, cognome, gender, role }` e lo invia al protetto `POST /admin/users`. `email` e `role` sono obbligatori; `role` ammette esclusivamente `creator`, `editor` e `admin`. Il form non include password né accettazioni Terms/Privacy: creazione account e invio best-effort dell'email di impostazione password sono gestiti dal backend. La risposta espone `passwordSetupEmailSent`, che consente alla UI di distinguere l'invio riuscito dall'account creato con email non inviata.
+
+La configurazione da salvare nel backend Forms con ID `adminUserCreateForm` è:
+
+```json
+[{"type":"textBox","label":"Email","typeInput":"email","name":"email","required":true},{"type":"textBox","label":"Display name","typeInput":"text","name":"displayName"},{"type":"textBox","label":"Nome","typeInput":"text","name":"nome"},{"type":"textBox","label":"Cognome","typeInput":"text","name":"cognome"},{"type":"selectBox","label":"Gender","typeInput":"selectBox","selectOptions":{"multiple":false,"displayExp":"value","valueExp":"id","options":[{"id":"U","value":"Uomo"},{"id":"D","value":"Donna"}],"parent":"","remote":false,"api":""},"name":"gender"},{"type":"selectBox","label":"Ruolo","typeInput":"selectBox","selectOptions":{"multiple":false,"displayExp":"value","valueExp":"id","options":[{"id":"creator","value":"Creator"},{"id":"editor","value":"Editor"},{"id":"admin","value":"Admin"}],"parent":"","remote":false,"api":""},"name":"role","required":true}]
+```
+
+La tassonomia gender replica la fonte locale canonica già impiegata dalle configurazioni Forms del progetto (`U`/`D`); i ruoli sono locali perché costituiscono un insieme RBAC chiuso.

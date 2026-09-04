@@ -7,6 +7,19 @@ import { UserProfile } from '../interface/app.interface';
 export type UserRole = 'admin' | 'editor' | 'creator';
 export interface UsersPage { data: UserProfile[]; nextPageToken: string | null; }
 export type UserProfileUpdate = Pick<UserProfile, 'displayName' | 'nome' | 'cognome' | 'bio' | 'photoURL' | 'gender'>;
+export interface AdminCreateUserRequest {
+  email: string;
+  displayName?: string;
+  nome?: string;
+  cognome?: string;
+  gender?: string;
+  role: UserRole;
+}
+export interface AdminCreateUserResponse extends AdminCreateUserRequest {
+  uid: string;
+  passwordSetupEmailSent: boolean;
+}
+interface AdminCreateUserEnvelope { message: string; data: AdminCreateUserResponse; }
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -47,5 +60,11 @@ export class UserService {
   deleteUser(uid: string): Observable<unknown> { return this.http.delete(`${this.base}/user/delete/${encodeURIComponent(uid)}`); }
   updateRole(uid: string, role: UserRole): Observable<unknown> {
     return this.http.put(`${this.base}/admin/users/${encodeURIComponent(uid)}/role`, { role });
+  }
+
+  createAdminUser(payload: AdminCreateUserRequest): Observable<AdminCreateUserResponse> {
+    return this.http.post<AdminCreateUserEnvelope>(`${this.base}/admin/users`, payload).pipe(
+      map(response => response.data)
+    );
   }
 }
