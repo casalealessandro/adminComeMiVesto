@@ -16,16 +16,13 @@ import { UserService } from './user.service';
 export class AnagraficaService {
 
   token: string = '';
-  userService=inject(UserService);
+
   private apiUrl: string = environment.BASE_API_URL
   constructor(private httpClient: HttpClient, private activatedRoute: ActivatedRoute) {
 
   }
 
-  get httpOptionCall() {
-    return this.userService.httpOptions
-  };
-  
+
   /**
    * Retrieves a list of items from a specified subject using the provided query string.
    *
@@ -46,12 +43,12 @@ export class AnagraficaService {
 
     if (queryString) {
       EndPoint = `${EndPoint}${queryString}`
-    } 
+    }
 
 
-    const HeaderOdata = this.httpOptionCall;
 
-    const response = this.httpClient.get(EndPoint, HeaderOdata)
+
+    const response = this.httpClient.get(EndPoint)
 
     return response.pipe(res=>{
       return res
@@ -93,9 +90,9 @@ export class AnagraficaService {
     try {
       const EndPoint = environment.BASE_API_URL + completeDataSource + query
       //console.log(EndPoint)
-      const HeaderOdata = this.httpOptionCall;
 
-      const response = this.httpClient.get(EndPoint, HeaderOdata);
+
+      const response = this.httpClient.get(EndPoint);
 
       return await lastValueFrom(response);
 
@@ -103,8 +100,8 @@ export class AnagraficaService {
             // Se l'errore è di tipo 401 (non autorizzato), ritorna false
       if (error.status === 401) {
         //this.router.navigate(['/login']);
-      } 
-      
+      }
+
     }
   }
 
@@ -114,13 +111,13 @@ export class AnagraficaService {
 
     const EndPoint = environment.BASE_API_URL + $subjectCalled + keyId;
 
-    const HeaderOdata = this.httpOptionCall;
-
-    const response = this.httpClient.put(EndPoint, data, HeaderOdata)
 
 
+    const response = this.httpClient.put(EndPoint, data)
 
-    ////console.log(response); 
+
+
+    ////console.log(response);
 
     return await lastValueFrom(response);
 
@@ -130,21 +127,21 @@ export class AnagraficaService {
 
   async actionInsert($subjectCalled: any, data: any, test = false) {
     let EndPointT
-    
+
       EndPointT = environment.BASE_API_URL
-   
+
     const EndPoint = EndPointT + $subjectCalled;
     //console.log(data)
-    const HeaderOdata = this.httpOptionCall;
 
-    const response = this.httpClient.post(EndPoint, data, HeaderOdata)
+
+    const response = this.httpClient.post(EndPoint, data)
     return await lastValueFrom(response);
   }
 
   actionDelete(subjectCalled: string, dataRefer: string) {
     const EndPoint = environment.BASE_API_URL + subjectCalled + '/' + dataRefer;;
-    const HeaderOdata = this.httpOptionCall;
-    const response = this.httpClient.delete(EndPoint, HeaderOdata)
+
+    const response = this.httpClient.delete(EndPoint)
     return lastValueFrom(response);
   }
 

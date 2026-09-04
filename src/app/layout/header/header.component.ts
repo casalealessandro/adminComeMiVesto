@@ -21,11 +21,11 @@ export class HeaderComponent {
   @ViewChild('dynamicContent', { static: false }) dynamicContent!: TemplateRef<any>;
 
   showProfileInfo = true;
-  userProfile !: UserProfile;
+  userProfile?: UserProfile;
 
 
   constructor(private menuService: MenuService, private router: Router, private userService: UserService, private auth: AuthService, private overlayService: OverlayService) {
-   
+
   }
 
   ngOnInit() {
@@ -42,19 +42,19 @@ export class HeaderComponent {
     });
   }
   onToggleMenu() {
-    this.menuService.toggleMenu(); 
+    this.menuService.toggleMenu();
   }
-  
- 
+
+
 
   toggleDropDown(event: any): void {
-    
+
     event.stopPropagation();
     //event.preventDefault();
-    
+
     const button = event.currentTarget as HTMLElement;
     const rect = button.getBoundingClientRect();
-    const position = { 
+    const position = {
       top: rect.bottom + window.scrollY, // Posiziona l'overlay sotto il bottone
       left: rect.left + window.scrollX
     };
@@ -75,8 +75,8 @@ export class HeaderComponent {
 
     }
     // Creazione dinamica dell'overlay
-    this.overlayService.openOverlay(data) 
-    
+    this.overlayService.openOverlay(data)
+
   }
 
   toggleDropDownF(event: any): void {
