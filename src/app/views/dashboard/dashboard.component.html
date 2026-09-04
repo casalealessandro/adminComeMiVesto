@@ -1,3 +1,213 @@
-<app-anagrafica-wrapper>
-   dddddd
+<app-anagrafica-wrapper
+  caption="Dashboard"
+  subTitle="Panoramica operativa"
+  tip="Qui trovi subito ciò che richiede attenzione e l'attività più recente del backoffice."
+  cssClass="dashboard-wrapper">
+
+  <section class="dashboard" aria-live="polite">
+    <div class="dashboard__topbar">
+      <div>
+        <p class="eyebrow">ComeMiVesto Admin</p>
+        <h1>Situazione attuale</h1>
+        <p class="dashboard__intro">Dati aggregati dal backend, senza letture Firestore dirette dal browser.</p>
+      </div>
+      <button class="refresh-button" type="button" (click)="loadDashboard()" [disabled]="loading()">
+        <span class="mdi mdi-refresh" [class.spin]="loading()" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+
+    <div *ngIf="error()" class="dashboard-error" role="alert">
+      <span class="mdi mdi-alert-circle-outline" aria-hidden="true"></span>
+      <div>
+        <strong>Dashboard non disponibile</strong>
+        <span>Il riepilogo non è stato caricato. Verifica che il nuovo endpoint backend sia deployato e riprova.</span>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-danger" (click)="loadDashboard()">Riprova</button>
+    </div>
+
+    <ng-container *ngIf="summary() as data; else loadingState">
+      <div class="row g-3 dashboard-kpis">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <app-dashboard-stat-card
+            label="Utenti"
+            [value]="data.users.total"
+            [meta]="'+' + data.users.newLast7Days + ' negli ultimi 7 giorni'"
+            icon="mdi-account-group-outline"
+            route="/utenti">
+          </app-dashboard-stat-card>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <app-dashboard-stat-card
+            label="Outfit"
+            [value]="data.outfits.total"
+            [meta]="'+' + data.outfits.newLast7Days + ' negli ultimi 7 giorni'"
+            icon="mdi-hanger"
+            route="/outfit-list">
+          </app-dashboard-stat-card>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <app-dashboard-stat-card
+            label="Da controllare"
+            [value]="data.attention.total"
+            meta="Outfit pending + report aperti"
+            icon="mdi-alert-outline"
+            route="/reports"
+            [tone]="data.attention.total > 0 ? 'warning' : 'success'">
+          </app-dashboard-stat-card>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <app-dashboard-stat-card
+            label="Outfit approvati"
+            [value]="data.outfits.approved"
+            [meta]="data.outfits.pending + ' ancora pending'"
+            icon="mdi-check-decagram-outline"
+            route="/outfit-list"
+            tone="success">
+          </app-dashboard-stat-card>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <section class="dashboard-panel attention-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Priorità</span>
+              <h2>Richiede attenzione</h2>
+            </div>
+            <span class="attention-count" [class.is-clear]="data.attention.total === 0">{{ data.attention.total }}</span>
+          </div>
+
+          <div *ngIf="data.attention.total > 0; else allClear" class="attention-list">
+            <a *ngIf="data.attention.pendingOutfits > 0" routerLink="/outfit-list" class="attention-item">
+              <span class="attention-icon warning"><span class="mdi mdi-hanger"></span></span>
+              <span class="attention-copy">
+                <strong>{{ data.attention.pendingOutfits }} outfit pending</strong>
+                <small>Controlla i contenuti non ancora approvati</small>
+              </span>
+              <span class="mdi mdi-chevron-right"></span>
+            </a>
+
+            <a *ngIf="data.attention.openReports > 0" routerLink="/reports" class="attention-item">
+              <span class="attention-icon danger"><span class="mdi mdi-flag-outline"></span></span>
+              <span class="attention-copy">
+                <strong>{{ data.attention.openReports }} report aperti</strong>
+                <small>Segnalazioni ancora da gestire</small>
+              </span>
+              <span class="mdi mdi-chevron-right"></span>
+            </a>
+          </div>
+
+          <ng-template #allClear>
+            <div class="all-clear">
+              <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
+              <div>
+                <strong>Nessuna urgenza</strong>
+                <span>Non risultano outfit pending o segnalazioni aperte.</span>
+              </div>
+            </div>
+          </ng-template>
+        </section>
+
+        <section class="dashboard-panel content-health">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Contenuti</span>
+              <h2>Stato outfit</h2>
+            </div>
+            <a routerLink="/outfit-list" class="panel-link">Gestisci <span class="mdi mdi-arrow-right"></span></a>
+          </div>
+
+          <div class="health-metric">
+            <div class="health-metric__row">
+              <span>Approvati</span>
+              <strong>{{ data.outfits.approved }}</strong>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <span
+                class="progress-fill success"
+                [style.width.%]="data.outfits.total ? (data.outfits.approved / data.outfits.total) * 100 : 0">
+              </span>
+            </div>
+          </div>
+
+          <div class="health-metric">
+            <div class="health-metric__row">
+              <span>Pending</span>
+              <strong>{{ data.outfits.pending }}</strong>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <span
+                class="progress-fill warning"
+                [style.width.%]="data.outfits.total ? (data.outfits.pending / data.outfits.total) * 100 : 0">
+              </span>
+            </div>
+          </div>
+
+          <div class="health-footer">
+            <span><strong>{{ data.reports.open }}</strong> report aperti</span>
+            <span>Aggiornato {{ data.generatedAt | date:'HH:mm' }}</span>
+          </div>
+        </section>
+      </div>
+
+      <div class="dashboard-grid dashboard-grid--lower">
+        <section class="dashboard-panel activity-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Live</span>
+              <h2>Attività recente</h2>
+            </div>
+          </div>
+
+          <div *ngIf="data.recentActivity.length; else noActivity" class="activity-list">
+            <a
+              *ngFor="let item of data.recentActivity"
+              class="activity-item"
+              [routerLink]="activityRoute(item.type)">
+              <span class="activity-icon"><span class="mdi" [class]="'mdi ' + activityIcon(item.type)"></span></span>
+              <span class="activity-copy">
+                <strong>{{ item.title }}</strong>
+                <small>{{ item.subtitle }}</small>
+              </span>
+              <time [attr.datetime]="(item.timestamp | date:'yyyy-MM-ddTHH:mm:ss') || ''">
+                {{ item.timestamp | date:'dd/MM HH:mm' }}
+              </time>
+            </a>
+          </div>
+
+          <ng-template #noActivity>
+            <div class="empty-state">Nessuna attività recente disponibile.</div>
+          </ng-template>
+        </section>
+
+        <aside class="dashboard-panel quick-actions">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Scorciatoie</span>
+              <h2>Azioni rapide</h2>
+            </div>
+          </div>
+
+          <nav class="quick-actions__list" aria-label="Azioni rapide dashboard">
+            <a routerLink="/utenti"><span class="mdi mdi-account-group-outline"></span><span>Gestisci utenti</span><span class="mdi mdi-chevron-right"></span></a>
+            <a routerLink="/outfit-list"><span class="mdi mdi-hanger"></span><span>Gestisci outfit</span><span class="mdi mdi-chevron-right"></span></a>
+            <a routerLink="/reports"><span class="mdi mdi-flag-outline"></span><span>Apri segnalazioni</span><span class="mdi mdi-chevron-right"></span></a>
+            <a routerLink="/outfit-category"><span class="mdi mdi-shape-outline"></span><span>Categorie outfit</span><span class="mdi mdi-chevron-right"></span></a>
+          </nav>
+        </aside>
+      </div>
+    </ng-container>
+
+    <ng-template #loadingState>
+      <div *ngIf="loading() && !error()" class="row g-3 dashboard-kpis" aria-label="Caricamento dashboard">
+        <div class="col-12 col-sm-6 col-xl-3" *ngFor="let item of [1,2,3,4]">
+          <div class="skeleton-card"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </ng-template>
+  </section>
 </app-anagrafica-wrapper>
