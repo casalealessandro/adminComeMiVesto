@@ -1,4 +1,4 @@
-import { Component, effect, EventEmitter, inject, Input, OnInit, Output, Signal, signal, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal, SimpleChanges } from '@angular/core';
 
 
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,6 +24,8 @@ export class DynamicFormComponent {
   @Input() service: string | undefined;
   @Input() editData: any | undefined;
   @Input() idData: any | undefined;
+  /** Generic pending state controlled by the form consumer. */
+  @Input() loading = false;
 
   /**Botton funzionali***/
   @Input() showBottomButtons: boolean = true;
@@ -71,9 +73,12 @@ export class DynamicFormComponent {
     if (typeof this.idData != 'undefined') {
       this.editData = this.idData
     }
-    this.templateService.getFormFields(this.service).subscribe(fields => {
-      this.fields = fields;
-      this.initializeForm();
+    this.templateService.getFormFields(this.service).subscribe({
+      next: fields => {
+        this.fields = fields;
+        this.initializeForm();
+      },
+      error: () => this.presentToast('Impossibile caricare la configurazione del form.')
     });
 
     if (this.inputBtnLeftName) {
@@ -100,7 +105,6 @@ export class DynamicFormComponent {
 
       // Recupera il valore dall'editData o imposta null come valore predefinito
       const value = this.editData[field.name] || null;
-      console.log(field.name)
       // Aggiungi il controllo al formGroup con i validatori come terzo argomento
       try {
         formGroup.addControl(field.name, new FormControl(value, validators));
@@ -126,7 +130,6 @@ export class DynamicFormComponent {
 
     this.form = formGroup;
 
-    console.log(this.form)
   }
 
   // Metodo separato per gestire i validatori
@@ -147,6 +150,9 @@ export class DynamicFormComponent {
     }
     if (field.typeInput === 'number' && typeof field.max !== 'undefined') {
       validators.push(Validators.max(field.max));
+    }
+    if (field.typeInput === 'email') {
+      validators.push(Validators.email);
     }
 
     return validators;
@@ -190,7 +196,6 @@ export class DynamicFormComponent {
 
       this.parentValues.set({ ...this.parentValues(), [fieldName]: event.selectedValue }); // Imposta il valore del parent
     }
-    console.log(this.parentValues())
   }
 
   getParentValues(parent: any) {
@@ -224,6 +229,7 @@ export class DynamicFormComponent {
   }
 
   submitForm() {
+    if (this.loading) return;
     if (this.form.valid) {
       let eventT = {
         name: 'submitForm',
@@ -233,6 +239,7 @@ export class DynamicFormComponent {
       }
       this.submitFormEvent.emit(eventT);
     } else {
+      this.form.markAllAsTouched();
       const invalidFields = this.getInvalidFields(this.form);
 
 
@@ -240,6 +247,7 @@ export class DynamicFormComponent {
     }
   }
   cancellForm() {
+    if (this.loading) return;
     let eventT = {
       name: 'cancelForm',
       formData: this.form.value,

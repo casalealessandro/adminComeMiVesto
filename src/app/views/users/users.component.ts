@@ -1,15 +1,52 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, of, switchMap } from 'rxjs';
 import { UserProfile } from '../../interface/app.interface';
 import { AuthService } from '../../services/auth.service';
-import { UserRole, UserService } from '../../services/user.service';
+import { AdminCreateUserRequest, UserRole, UserService } from '../../services/user.service';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { Colonne } from '../../interface/app.interface';
+import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
 
-@Component({ selector: 'app-users', standalone: true, imports: [CommonModule, FormsModule, DataGridComponent], templateUrl: './users.component.html', styleUrl: './users.component.scss' })
+export interface DynamicFormSubmitEvent {
+  name: 'submitForm' | 'cancelForm';
+  formData: Record<string, unknown>;
+}
+
+export function buildAdminCreateUserRequest(formData: Record<string, unknown>): AdminCreateUserRequest {
+  const optionalString = (value: unknown): string | undefined => {
+    const normalized = typeof value === 'string' ? value.trim() : '';
+    return normalized || undefined;
+  };
+  return {
+    email: String(formData['email'] || '').trim(),
+    displayName: optionalString(formData['displayName']),
+    nome: optionalString(formData['nome']),
+    cognome: optionalString(formData['cognome']),
+    gender: optionalString(formData['gender']),
+    role: formData['role'] as UserRole
+  };
+}
+
+export function adminCreateUserErrorMessage(status: number): string {
+  if (status === 400) return 'Controlla i dati inseriti.';
+  if (status === 401 || status === 403) return 'Non sei autorizzato a creare utenti.';
+  if (status === 409) return 'Esiste già un account associato a questa email.';
+  if (status === 422) return 'Il display name contiene contenuti non consentiti.';
+  if (status === 503) return 'Il servizio di moderazione non è temporaneamente disponibile.';
+  return 'Creazione utente non riuscita.';
+}
+
+export function adminCreateUserSuccessMessage(passwordSetupEmailSent: boolean): string {
+  return passwordSetupEmailSent
+    ? 'Utente creato correttamente. È stata inviata l’email per impostare la password.'
+    : 'Utente creato correttamente, ma non è stato possibile inviare l’email per impostare la password. Puoi utilizzare Reset password dalla lista utenti.';
+}
+
+@Component({ selector: 'app-users', standalone: true, imports: [CommonModule, FormsModule, DataGridComponent, DynamicFormComponent], templateUrl: './users.component.html', styleUrl: './users.component.scss' })
 export class UsersComponent {
   private usersService = inject(UserService);
   readonly auth = inject(AuthService);
@@ -22,6 +59,8 @@ export class UsersComponent {
   selected?: UserProfile;
   selectedOriginalRole?: UserRole;
   busyUid: string | null = null;
+  createUserOpen = false;
+  createUserBusy = false;
   readonly columns: Colonne[] = [{ itemType: 'group', groupDataField: '', data: [
     { type: 'campoImg', colVisible: true, allowEditing: false, dataField: 'photoURL', colWidth: '72', colCaption: 'Avatar', edit: false, groupDataField: undefined },
     { type: 'campo', colVisible: true, allowEditing: false, dataField: 'displayLabel', colWidth: '180', colCaption: 'Utente', edit: false, groupDataField: undefined },
@@ -37,6 +76,26 @@ export class UsersComponent {
   ] }];
 
   ngOnInit(): void { this.refresh(); }
+  openCreateUser(): void { if (this.auth.isAdmin()) this.createUserOpen = true; }
+  closeCreateUser(): void { if (!this.createUserBusy) this.createUserOpen = false; }
+  handleCreateUserForm(event: DynamicFormSubmitEvent): void {
+    if (event.name === 'cancelForm') { this.closeCreateUser(); return; }
+    if (event.name !== 'submitForm' || this.createUserBusy || !this.auth.isAdmin()) return;
+    const payload = buildAdminCreateUserRequest(event.formData);
+    this.createUserBusy = true;
+    this.error = '';
+    this.usersService.createAdminUser(payload).pipe(finalize(() => this.createUserBusy = false)).subscribe({
+      next: created => {
+        this.createUserOpen = false;
+        this.refresh();
+        alert(adminCreateUserSuccessMessage(created.passwordSetupEmailSent), 'Operazione completata');
+      },
+      error: (apiError: HttpErrorResponse) => {
+        this.error = adminCreateUserErrorMessage(apiError.status);
+        alert(this.error, 'Creazione utente non riuscita');
+      }
+    });
+  }
   refresh(): void { this.users = []; this.nextPageToken = null; this.loadPage(); }
   loadPage(): void {
     if (this.loading) return;

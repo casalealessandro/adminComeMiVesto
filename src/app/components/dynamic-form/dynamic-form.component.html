@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="submitForm()">
+<form [formGroup]="form" (ngSubmit)="submitForm()" [attr.aria-busy]="loading">
   <div class="form-container">
     <app-custom-scrollbar [scrollHeigth]="700">
       <ng-container *ngFor="let field of fields">
@@ -88,10 +88,10 @@
 
   <div class="form-footer" *ngIf="showBottomButtons">
 
-    <button *ngIf="showBottomButtonLeft" type="button" class="btn ana-button" (click)="cancellForm()">
+    <button *ngIf="showBottomButtonLeft" type="button" class="btn ana-button" (click)="cancellForm()" [disabled]="loading">
       <span class="mdi mdi-keyboard-return"></span><span class="bottom-button-name btn-cancel-form">{{closeButton}}</span>
     </button>
-    <button *ngIf="showBottomButtonRight" type="submit" class="btn ana-button btn-submit-form"> <span class="mdi" [ngClass]="iconSubmitButton" ></span><span class="bottom-button-name">{{submitButton}}</span></button>
+    <button *ngIf="showBottomButtonRight" type="submit" class="btn ana-button btn-submit-form" [disabled]="loading"> <span *ngIf="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span><span class="mdi" [ngClass]="iconSubmitButton" ></span><span class="bottom-button-name">{{loading ? 'Creazione…' : submitButton}}</span></button>
 
   </div>
 </form>
