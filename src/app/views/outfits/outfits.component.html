@@ -4,7 +4,12 @@
   <form class="filters" [class.open]="filtersOpen" (ngSubmit)="applyFilters()">
     <label>Stato<select class="form-select" name="status" [(ngModel)]="filters.status"><option value="">Tutti</option><option value="pending">pending</option><option value="approved">approved</option><option value="rifiutato">rifiutato</option></select></label>
     <label>Creator<select class="form-select" name="userId" [(ngModel)]="filters.userId"><option value="">Tutti</option><option *ngFor="let user of creators" [value]="user.uid">{{user.displayName||user.email}}</option></select></label>
-    <label>Gender<input class="form-control" name="gender" [(ngModel)]="filters.gender"></label><label>Categoria<input class="form-control" name="category" [(ngModel)]="filters.category"></label><label>Stagione<input class="form-control" name="season" [(ngModel)]="filters.season"></label><label>Stile<input class="form-control" name="style" [(ngModel)]="filters.style"></label><label class="search">Ricerca<input class="form-control" name="search" [(ngModel)]="filters.search"></label>
+    <label>Gender<select class="form-select" name="gender" [(ngModel)]="filters.gender"><option value="">Tutti</option><option *ngFor="let option of taxonomyOptions.gender" [value]="option.id">{{option.value}}</option></select></label>
+    <label>Categoria<select class="form-select" name="category" [(ngModel)]="filters.category"><option value="">Tutte</option><option *ngFor="let category of categories" [value]="category.id">{{category.categoryName}}</option></select></label>
+    <label>Stagione<select class="form-select" name="season" [(ngModel)]="filters.season"><option value="">Tutte</option><option *ngFor="let option of taxonomyOptions.season" [value]="option.id">{{option.value}}</option></select></label>
+    <label>Stile<select class="form-select" name="style" [(ngModel)]="filters.style"><option value="">Tutti</option><option *ngFor="let option of taxonomyOptions.style" [value]="option.id">{{option.value}}</option></select></label>
+    <label>Colore<select class="form-select" name="color" [(ngModel)]="filters.color"><option value="">Tutti</option><option *ngFor="let color of colors" [value]="color.id">{{color.value}}</option></select></label>
+    <label class="search">Ricerca<input class="form-control" name="search" [(ngModel)]="filters.search"></label>
     <div class="filter-actions"><button class="btn btn-primary" [disabled]="loading">Applica</button><button type="button" class="btn btn-outline-secondary" (click)="resetFilters()">Azzera</button></div>
   </form>
   <p *ngIf="!loading&&!outfits.length" class="empty">Nessun outfit trovato.</p>

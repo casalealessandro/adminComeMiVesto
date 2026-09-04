@@ -6,7 +6,8 @@
 ::ng-deep.content-wrap {
     position: relative;
   
-    width: var(--width_container);
+    width: 100%;
+    max-width: var(--width_container);
     margin: 25px auto;
 
     .anagrafica-wrap {
@@ -130,6 +131,12 @@
             }
         }
     }
+}
+
+@media (max-width: 767px) {
+    ::ng-deep.content-wrap { margin: .75rem auto; }
+    ::ng-deep.content-wrap .anagrafica-wrap .anagrafica-container .anagrafica-row { padding: .75rem; }
+    ::ng-deep.content-wrap .anagrafica-wrap .anagrafica-container .anagrafica-row .wrapForm { padding: .75rem; }
 }
 
 /****************Personalizzazioni****************/

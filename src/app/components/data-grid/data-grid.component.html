@@ -140,6 +140,7 @@
                 per il momento l'ho tolta da ngclass della riga selected-row || showDetailRow[rowIndex] 
             -->
                <tr #riga (dblclick)="dblRowClick($event,rowIndex,colRow)" (click)="selectRow($event,rowIndex,colRow)"
+                  [attr.aria-busy]="busyRows.has(rowIndex)"
                   (mouseenter)="setStateHover(rowIndex)" (mouseleave)="leaveStateHover($event,riga,rowIndex)"
                   [ngClass]="updateRowClasses(rowIndex)">
 

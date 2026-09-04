@@ -417,6 +417,28 @@
 
 /**Toolbar**/
 
+tr.row-busy {
+    position: relative;
+    pointer-events: none;
+    opacity: .72;
+}
+
+tr.row-busy::after {
+    content: '';
+    position: absolute;
+    right: .75rem;
+    top: 50%;
+    width: 1rem;
+    height: 1rem;
+    margin-top: -.5rem;
+    border: 2px solid rgba(100, 116, 139, .3);
+    border-top-color: var(--blueSoft);
+    border-radius: 50%;
+    animation: busy-row-spin .7s linear infinite;
+}
+
+@keyframes busy-row-spin { to { transform: rotate(360deg); } }
+
 .-data-grid-toolbar {
     margin-bottom: 5px;
     margin-top: 3px;
