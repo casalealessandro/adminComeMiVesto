@@ -1,0 +1,11 @@
+<a class="stat-card" [class]="'stat-card tone-' + tone" [routerLink]="route">
+  <div class="stat-card__icon" aria-hidden="true">
+    <span class="mdi" [class]="'mdi ' + icon"></span>
+  </div>
+  <div class="stat-card__content">
+    <span class="stat-card__label">{{ label }}</span>
+    <strong class="stat-card__value">{{ value }}</strong>
+    <span class="stat-card__meta">{{ meta }}</span>
+  </div>
+  <span class="mdi mdi-chevron-right stat-card__arrow" aria-hidden="true"></span>
+</a>
