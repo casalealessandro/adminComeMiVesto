@@ -7,7 +7,6 @@ import { CommonModule } from '@angular/common';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { AnagraficaService } from '../../services/anagrafica.service';
 import { TdItemComponent } from './td-item/td-item.component';
-import { ToolbarComponent } from '../../layout/toolbar/toolbar.component';
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { OverlayService } from '../../services/overlay.service';
 
@@ -168,7 +167,7 @@ export class DataGridComponent implements OnDestroy {
   searchText!: string
 
   isHovered: any[] = [false];
-  isHoveredDetatil: any[] = [false];
+  isHoveredDetatil: any[] = [];
   rowcustomclass: any[] = [];
   tableWidthDetail!: number;
   checkQueryStringError: boolean = false;
@@ -803,7 +802,6 @@ export class DataGridComponent implements OnDestroy {
 
       if (this.detailOptions['colonne'].length > 0) {
         let findItem = this.detailOptions['colonne'].find((ress: any) => ress['itemType'])
-
         if (typeof findItem == 'undefined') {
           let colSpan = this.detailOptions['colonne'].length
           colsDetail = [{
@@ -1037,7 +1035,6 @@ export class DataGridComponent implements OnDestroy {
         cellProperty = { ...cellProperty, [x]: colsHeaderProp[0] }
 
       }
-
 
     }
 
@@ -1278,7 +1275,6 @@ export class DataGridComponent implements OnDestroy {
         this.rowsData.update(res => res = []);
       }
 
-
     }
 
     this.rowsData.update(res => this.dataSource().splice(index, 1));
@@ -1446,7 +1442,6 @@ export class DataGridComponent implements OnDestroy {
       isRowDetail: false
     }
 
-
     let eventClickRow = {
       event: event,
       rowData: row,
@@ -1486,12 +1481,8 @@ export class DataGridComponent implements OnDestroy {
       this.rowSelectedDetail = [false]
 
       if (!this.rowSelectedDetail[index]) {
-
-        this.rowSelectedDetail[index] = true;
-
-
+        this.rowSelectedDetail[index] = true
       } else {
-
         this.rowSelectedDetail[index] = false;
       }
 
@@ -1564,13 +1555,6 @@ export class DataGridComponent implements OnDestroy {
     this.emittendDblRowClick.emit(eventDblClickRow);
 
 
-
-
-
-
-
-
-
   }
 
   selectRowDetail(event: any, index: number, row: any, selectRowIndex?: any) {
@@ -1585,23 +1569,14 @@ export class DataGridComponent implements OnDestroy {
     infoRows.isRowDetail = true;
 
     if (this.showDetailRow[selectRowIndex]) {
-
-
       this.rowSelectedDetail[index] = false;
     }
-
-
 
     if (!this.rowSelectedDetail[index]) {
-
       this.rowSelectedDetail[index] = true;
-
     } else {
-
       this.rowSelectedDetail[index] = false;
     }
-
-
 
     let eventSelectRowDetail = {
       event: event,
@@ -1614,20 +1589,15 @@ export class DataGridComponent implements OnDestroy {
     }
     this.emittendSelectionRow.emit(eventSelectRowDetail);
 
-
   }
 
   clickToSelectRowMultiple(event: any, index: any, checkBoxSelect: any) {
 
     let selRow = this.rowSelected[index];
     if (!selRow) {
-
       this.rowSelected[index] = true;
-
     } else {
-
       this.rowSelected[index] = false;
-
     }
     //this.selectRowMultiple(event, index)
     event.stopPropagation();
@@ -1645,13 +1615,9 @@ export class DataGridComponent implements OnDestroy {
     }
 
     if (event) {
-
       event.stopPropagation();
       event.preventDefault();
-
     }
-
-
 
     let eventSelectRow = {
       event: event,
@@ -1985,6 +1951,7 @@ export class DataGridComponent implements OnDestroy {
 
     let isMatchISO = dateString.match(regExpISO);
     let isMatchIT = dateString.match(regExpIT);
+
 
     //Se nessuno dei 2 formati è valido
     if (!isMatchISO && !isMatchIT) {
