@@ -49,6 +49,7 @@ describe('ProviderDataGridComponent remote loading', () => {
     component.tableWidth = 640;
     component.tableWrapWidth = 640;
     component.colonne = columns as any;
+    component.providerScrollLoadDelay = 0;
     anagraficaServiceStub.getElenco.calls.reset();
   });
 
@@ -161,5 +162,209 @@ describe('ProviderDataGridComponent remote loading', () => {
     expect(loaded).toBeFalse();
     expect(component.rowsData()).toEqual(existingRows);
     expect(component.isLoading).toBeFalse();
+  });
+
+  it('should request the next page with the opaque continuation and replace mock rows in place', async () => {
+    component.pageSize = 2;
+    component.remoteOperation = true;
+
+    const requests: GridLoadRequest[] = [];
+    const provider: GridDataProvider<any> = {
+      load: async request => {
+        requests.push(request);
+        if (requests.length === 1) {
+          return {
+            items: [
+              { id: 1, name: 'One' },
+              { id: 2, name: 'Two' },
+            ],
+            hasMore: true,
+            continuation: { token: 'page-2' },
+            totalCount: 4,
+          };
+        }
+
+        return {
+          items: [
+            { id: 3, name: 'Three' },
+            { id: 4, name: 'Four' },
+          ],
+          hasMore: false,
+          continuation: undefined,
+          totalCount: 4,
+        };
+      },
+    };
+
+    component.dataProvider = provider;
+    await component.loadRemoteRecords();
+    const loaded = await component.loadNextRemotePage();
+
+    expect(loaded).toBeTrue();
+    expect(requests).toEqual([
+      { pageSize: 2 },
+      { pageSize: 2, continuation: { token: 'page-2' } },
+    ]);
+    expect(component.rowsData()).toEqual([
+      { id: 1, name: 'One' },
+      { id: 2, name: 'Two' },
+      { id: 3, name: 'Three' },
+      { id: 4, name: 'Four' },
+    ]);
+    expect(component.currentPage).toBe(1);
+    expect(component.latestSkipLoaded).toBe(2);
+    expect(component.remoteHasMore).toBeFalse();
+  });
+
+  it('should expose historic mock rows while the next remote page is loading', async () => {
+    component.pageSize = 2;
+    component.remoteOperation = true;
+
+    let resolveSecondPage!: (page: GridPage<any>) => void;
+    let requestCount = 0;
+    const provider: GridDataProvider<any> = {
+      load: request => {
+        requestCount++;
+        if (requestCount === 1) {
+          return Promise.resolve({
+            items: [
+              { id: 1, name: 'One' },
+              { id: 2, name: 'Two' },
+            ],
+            hasMore: true,
+            continuation: 'next',
+            totalCount: 4,
+          });
+        }
+
+        return new Promise(resolve => {
+          resolveSecondPage = resolve;
+        });
+      },
+    };
+
+    component.dataProvider = provider;
+    await component.loadRemoteRecords();
+
+    const nextPagePromise = component.loadNextRemotePage();
+
+    expect(component.isLoading).toBeTrue();
+    expect(component.rowsData()).toEqual([
+      { id: 1, name: 'One' },
+      { id: 2, name: 'Two' },
+      { id: null, name: null },
+      { id: null, name: null },
+    ]);
+
+    resolveSecondPage({
+      items: [
+        { id: 3, name: 'Three' },
+        { id: 4, name: 'Four' },
+      ],
+      hasMore: false,
+      totalCount: 4,
+    });
+
+    await nextPagePromise;
+    expect(component.rowsData().map(row => row.id)).toEqual([1, 2, 3, 4]);
+    expect(component.isLoading).toBeFalse();
+  });
+
+  it('should remove mock rows and keep loaded data if the next page fails', async () => {
+    component.pageSize = 2;
+    component.remoteOperation = true;
+
+    let requestCount = 0;
+    component.dataProvider = {
+      load: async () => {
+        requestCount++;
+        if (requestCount === 1) {
+          return {
+            items: [
+              { id: 1, name: 'One' },
+              { id: 2, name: 'Two' },
+            ],
+            hasMore: true,
+            continuation: 'next',
+            totalCount: 4,
+          };
+        }
+        throw new Error('next page failed');
+      },
+    };
+
+    await component.loadRemoteRecords();
+    const loaded = await component.loadNextRemotePage();
+
+    expect(loaded).toBeFalse();
+    expect(component.rowsData()).toEqual([
+      { id: 1, name: 'One' },
+      { id: 2, name: 'Two' },
+    ]);
+    expect(component.isLoading).toBeFalse();
+  });
+
+  it('should trigger loading only when scrolling near the bottom and moving forward', async () => {
+    component.pageSize = 2;
+    component.remoteOperation = true;
+    component.remoteHasMore = true;
+    component.rowsData.set([
+      { id: 1, name: 'One' },
+      { id: 2, name: 'Two' },
+    ]);
+    component.dataProvider = {
+      load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
+    };
+    spyOn(component, 'loadNextRemotePage').and.resolveTo(true);
+
+    const scrollTarget = {
+      scrollTop: 80,
+      scrollHeight: 100,
+      clientHeight: 20,
+    } as HTMLElement;
+
+    await component.onScroll({ target: scrollTarget } as unknown as Event);
+
+    expect(component.loadNextRemotePage).toHaveBeenCalledTimes(1);
+    expect(component.latestScrollTopPosition).toBe(80);
+    expect(scrollTarget.scrollTop).toBe(70);
+  });
+
+  it('should keep the scrollbar slightly above the bottom while a page is loading', async () => {
+    component.dataProvider = {
+      load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
+    };
+    component.isLoading = true;
+
+    const scrollTarget = {
+      scrollTop: 80,
+      scrollHeight: 100,
+      clientHeight: 20,
+    } as HTMLElement;
+
+    await component.onScroll({ target: scrollTarget } as unknown as Event);
+
+    expect(scrollTarget.scrollTop).toBe(70);
+  });
+
+  it('should not request another page after the provider reports the end', async () => {
+    component.pageSize = 2;
+    component.remoteOperation = true;
+    component.remoteHasMore = false;
+    component.rowsData.set([{ id: 1 }, { id: 2 }]);
+    component.dataProvider = {
+      load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
+    };
+    spyOn(component, 'loadNextRemotePage').and.resolveTo(true);
+
+    const scrollTarget = {
+      scrollTop: 80,
+      scrollHeight: 100,
+      clientHeight: 20,
+    } as HTMLElement;
+
+    await component.onScroll({ target: scrollTarget } as unknown as Event);
+
+    expect(component.loadNextRemotePage).not.toHaveBeenCalled();
   });
 });
