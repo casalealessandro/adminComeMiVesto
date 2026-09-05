@@ -151,6 +151,84 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   }
 
   /**
+   * Recover the historic remote-create capability behind the provider contract.
+   * As before, a successful mutation is followed by a fresh grid load; unlike
+   * the legacy path, the grid does not need to know any endpoint details.
+   */
+  async createProviderRow(data: Partial<T>): Promise<T | undefined> {
+    if (!this.dataProvider?.create || !this.remoteOperation || this.isLoading) {
+      return undefined;
+    }
+
+    this.isLoading = true;
+    this.setProgressCursor(true);
+
+    try {
+      const created = await this.dataProvider.create(data);
+      this.isLoading = false;
+      await this.loadRemoteRecords();
+      return created;
+    } catch {
+      return undefined;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
+  }
+
+  /**
+   * Recover the historic remote-update capability without `api`, `id` or
+   * `isKeyID` assumptions. The concrete provider owns its update identity and
+   * transport rules; the grid only passes the row data through.
+   */
+  async updateProviderRow(data: T): Promise<T | undefined> {
+    if (!this.dataProvider?.update || !this.remoteOperation || this.isLoading) {
+      return undefined;
+    }
+
+    this.isLoading = true;
+    this.setProgressCursor(true);
+
+    try {
+      const updated = await this.dataProvider.update(data);
+      this.isLoading = false;
+      await this.loadRemoteRecords();
+      return updated;
+    } catch {
+      return undefined;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
+  }
+
+  /**
+   * Recover the historic remote-delete capability without assuming that a row
+   * has an `id` field. The provider receives the whole row and decides how the
+   * backend identifies and removes it.
+   */
+  async deleteProviderRow(data: T): Promise<boolean> {
+    if (!this.dataProvider?.delete || !this.remoteOperation || this.isLoading) {
+      return false;
+    }
+
+    this.isLoading = true;
+    this.setProgressCursor(true);
+
+    try {
+      await this.dataProvider.delete(data);
+      this.isLoading = false;
+      await this.loadRemoteRecords();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
+  }
+
+  /**
    * Keep the original local sort implementation untouched. Only the explicit
    * provider + remoteOperation path turns the same column click into a remote
    * GridSort request.
