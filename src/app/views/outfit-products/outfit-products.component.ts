@@ -5,7 +5,7 @@ import { DataGridComponent } from '../../components/data-grid/data-grid.componen
 import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
 import { Colonne } from '../../interface/app.interface';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
-import { OutfitsService, wardrobesItem } from '../../services/outfit.service';
+import { LegacyCatalogProduct, ProductCatalogService } from '../../services/product-catalog.service';
 import { PopUpService } from '../../services/popup.service';
 
 @Component({
@@ -16,13 +16,13 @@ import { PopUpService } from '../../services/popup.service';
   styleUrl: './outfit-products.component.scss'
 })
 export class OutfitProductsComponent {
-  @Output() selectProduct = new EventEmitter<wardrobesItem>();
+  @Output() selectProduct = new EventEmitter<LegacyCatalogProduct>();
 
-  private readonly outFitService = inject(OutfitsService);
+  private readonly productCatalog = inject(ProductCatalogService);
   private readonly popupModal = inject(PopUpService);
 
-  readonly products$: Observable<wardrobesItem[]> = this.outFitService.getProducts();
-  products: wardrobesItem[] = [];
+  readonly products$: Observable<LegacyCatalogProduct[]> = this.productCatalog.getProducts();
+  products: LegacyCatalogProduct[] = [];
   subtitle = "Elenco dei prodotti disponibili nell'app";
   showGrid = false;
 
@@ -128,13 +128,13 @@ export class OutfitProductsComponent {
 
   editProduct(event: any): void {
     event.cancel = true;
-    this.createOrEditCategories({
+    this.createOrEditProduct({
       service: 'outfitProducts',
       editData: event.data
     });
   }
 
-  private createOrEditCategories(instanceData: any): void {
+  private createOrEditProduct(instanceData: any): void {
     const guid = Math.random().toString().replace('0.', '');
     this.popupModal.setNewPopUp(
       guid,
@@ -158,7 +158,7 @@ export class OutfitProductsComponent {
         if (result.inEdit) {
           formData.createdAt = formData.createdAt || now;
           formData.editedAt = now;
-          const saved = this.outFitService.updateProductOutfit(formData.id, formData);
+          const saved = await this.productCatalog.updateProduct(formData.id, formData);
           if (saved) {
             this.popupModal.destroyCurrentOpenPopUpByGuid(guid);
             this.loadProduct();
@@ -178,7 +178,7 @@ export class OutfitProductsComponent {
     }
 
     if (event.name === 'delRows') {
-      const removed = await this.outFitService.removeProductOutfit(event.rowData.id);
+      const removed = await this.productCatalog.removeProduct(event.rowData.id);
       if (removed) this.loadProduct();
     }
   }
@@ -190,7 +190,7 @@ export class OutfitProductsComponent {
       return;
     }
 
-    const formData = event.formData as wardrobesItem;
+    const formData = event.formData as LegacyCatalogProduct;
     let filtered = [...this.products];
 
     if (formData.gender) {

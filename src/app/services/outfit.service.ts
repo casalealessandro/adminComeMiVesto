@@ -1,6 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { lastValueFrom, map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { UserProfile } from '../interface/app.interface';
@@ -54,27 +53,9 @@ export interface Tag {
   images?: string[];
 }
 
-export interface wardrobesItem {
-  id: number;
-  userId: string;
-  name: string;
-  outfitCategory: string;
-  outfitSubCategory: string;
-  brend: string;
-  color: string;
-  link?: string;
-  images: string[];
-  ImageUrl?: string;
-  imageUrl?: string;
-  price?: number;
-  prezzo?: number;
-  gender?: any;
-}
-
 @Injectable({ providedIn: 'root' })
 export class OutfitsService {
   private readonly httpClient = inject(HttpClient);
-  private readonly firestore = inject(AngularFirestore);
   private readonly backendBase = environment.apiBaseUrl;
 
   readonly pagination = signal({ page: 1, limit: 10, total: 0 });
@@ -244,35 +225,5 @@ export class OutfitsService {
       )
     );
     return true;
-  }
-
-  // TODO affiliate-catalog migration:
-  // These three methods still support the legacy product catalog screen through Firestore.
-  // Move them behind firebase-api before extracting the reusable admin core.
-  getProducts(): Observable<wardrobesItem[]> {
-    return this.firestore
-      .collection('outfitsProducts')
-      .valueChanges()
-      .pipe(map((products: any[]) => products));
-  }
-
-  updateProductOutfit(nameDoc: any, data: any): boolean {
-    try {
-      void this.firestore.collection('outfitsProducts').doc(nameDoc).update(data);
-      return true;
-    } catch (error) {
-      console.error('Error updating product:', error);
-      return false;
-    }
-  }
-
-  async removeProductOutfit(id: any): Promise<boolean> {
-    try {
-      await this.firestore.collection('outfitsProducts').doc(id).ref.delete();
-      return true;
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      return false;
-    }
   }
 }
