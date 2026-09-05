@@ -43,6 +43,7 @@ describe('TdItemComponent', () => {
   });
 
   it('should prepare image cells without a remote lookup', () => {
+    component.colType = 'campoImg';
     const result = component.renderHtmlColumn('https://example.test/image.jpg', '');
 
     expect(component.toolTipImg).toBe('https://example.test/image.jpg');
