@@ -109,6 +109,27 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     return super.buildAndTestQueryString();
   }
 
+  /**
+   * Keep the historic header builder untouched and only refine the recovered
+   * provider filter-row visibility after the original columns are built.
+   * `showFilter=true` enables the row, while `allowFiltering=false` can still
+   * explicitly disable one column as in the original column configuration.
+   */
+  override async buildHeaderColumns(hCol: any): Promise<boolean> {
+    const built = await super.buildHeaderColumns(hCol);
+
+    this.colsHeader.forEach(column => {
+      if (!column.dataField) return;
+
+      const originalColumn = this.getProviderOriginalColumn(column.dataField);
+      if (originalColumn?.allowFiltering === false) {
+        column.search = false;
+      }
+    });
+
+    return built;
+  }
+
   override async loadRemoteRecords(): Promise<boolean> {
     if (!this.dataProvider) {
       return super.loadRemoteRecords();
