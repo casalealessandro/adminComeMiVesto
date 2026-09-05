@@ -1,30 +1,30 @@
-<div [ngStyle]="{'display': isPanelVisible ? 'block' : 'none', 'z-index': zIndexModalDialog }" class="modal popup"
-    [ngClass]="{'position-bottom':position == 'bottom'}" [ngClass]="classFade" tabindex="-1" [id]="idPopUp"
-    role="dialog" >
+<div
+  class="modal popup"
+  role="dialog"
+  tabindex="-1"
+  [id]="infoPopup.id"
+  [ngStyle]="{ display: isPanelVisible ? 'block' : 'none', 'z-index': zIndexModalDialog }"
+  [ngClass]="[infoPopup.position === 'bottom' ? 'position-bottom' : '', infoPopup.class || '']"
+>
+  <div
+    class="modal-dialog formEditPopup"
+    [ngStyle]="{ 'max-width': popupWidth, width: popupWidth }"
+  >
+    <app-caption
+      *ngIf="infoPopup.showCaptionHeader"
+      [caption]="infoPopup.title || ''"
+      [isClosable]="!!infoPopup.isClosablePopUp"
+      [cssClass]="'modal'"
+      [help]="''"
+      (emitChiusura)="close()"
+    ></app-caption>
 
-    <div [id]="idPopUp" class="modal-dialog formEditPopup "
-        [ngStyle]="{'max-width':popUpWidth ? popUpWidth : '','width': popUpWidth ? popUpWidth : '' }">
+    <div #containerComponent class="modal-content"></div>
 
-        <app-caption 
-            *ngIf="showCaptionHeader" 
-            [caption]="titlePopUp" 
-            [isClosable]="isClosablePopUp"
-            [cssClass]="'modal'"
-            (emitChiusura)="emettiChiusura($event)" 
-            [help]="''">
-        </app-caption>
-
-
-        <div #containerComponent class="modal-content">
-
-
-
-
-        </div>
-
-        <app-caption *ngIf="showCaptionFooter"  [isFooter]="showCaptionFooter" (emitChiusura)="emettiChiusura($event)">
-        </app-caption>
-
-
-    </div>
+    <app-caption
+      *ngIf="infoPopup.showCaptionFooter"
+      [isFooter]="true"
+      (emitChiusura)="close()"
+    ></app-caption>
+  </div>
 </div>

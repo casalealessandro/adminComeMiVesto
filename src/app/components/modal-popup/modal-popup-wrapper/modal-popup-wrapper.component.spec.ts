@@ -1,20 +1,16 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { PopupWrapperComponent } from './modal-popup-wrapper.component';
 
-import { NicaPopupWrapperComponent } from './modal-popup-wrapper.component';
+describe('PopupWrapperComponent', () => {
+  let component: PopupWrapperComponent;
+  let fixture: ComponentFixture<PopupWrapperComponent>;
 
-describe('NicaPopupWrapperComponent', () => {
-  let component: NicaPopupWrapperComponent;
-  let fixture: ComponentFixture<NicaPopupWrapperComponent>;
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PopupWrapperComponent]
+    }).compileComponents();
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ NicaPopupWrapperComponent ]
-    })
-    .compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(NicaPopupWrapperComponent);
+    fixture = TestBed.createComponent(PopupWrapperComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
