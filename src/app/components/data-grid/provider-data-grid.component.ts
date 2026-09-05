@@ -2,6 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
+import { confirm } from '../../widgets/ui-dialogs';
+import {
+  buildGridCreateEvent,
+  buildGridDeleteEvent,
+  buildGridUpdateEvent,
+} from './data-grid-crud-event';
 import {
   buildGridColumnFilter,
   buildGridSearch,
@@ -148,6 +154,93 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       this.isLoading = false;
       this.setProgressCursor(false);
     }
+  }
+
+  /**
+   * Keep the historic create event flow and order, changing only the event
+   * construction so create/edit/delete use the same typed CRUD contract.
+   */
+  override buttonEmitted(event: any): void {
+    if (!this.dataProvider || event != 'addRow') {
+      super.buttonEmitted(event);
+      return;
+    }
+
+    console.log('buttonEmitted-->', event)
+
+    let eventRowClick = buildGridCreateEvent({
+      idTable: this.idTable,
+      service: this.service,
+      component: this
+    }, event)
+
+    this.emittendToolbarClick.emit(eventRowClick)
+    this.emittendStartEdit.emit(eventRowClick)
+
+    if (!eventRowClick.cancel) {
+      this.addRow()
+    }
+  }
+
+  /**
+   * Keep the historic external edit flow intact. The provider bridge only
+   * normalizes the emitted payload; it does not move editing back inside the
+   * grid and does not call provider.update from the edit button.
+   */
+  override startEdit(index: any, event: any): void {
+    if (!this.dataProvider) {
+      super.startEdit(index, event);
+      return;
+    }
+
+    let eventEditor = buildGridUpdateEvent({
+      idTable: this.idTable,
+      service: this.service,
+      component: this
+    }, index, this.rowsData()[index], event)
+
+    this.emittendStartEdit.emit(eventEditor)
+
+    if (eventEditor.cancel) {
+      return
+    }
+  }
+
+  /**
+   * Preserve the historic local event flow, while the explicit provider remote
+   * path owns the mutation directly as agreed: local emits `delRows`, provider
+   * remote mode does not emit it and calls provider.delete instead.
+   */
+  override async removeRowData(index: any, event: any): Promise<void> {
+    if (!this.dataProvider) {
+      await super.removeRowData(index, event);
+      return;
+    }
+
+    confirm('Sei certo di voler eliminare questo record?', 'Attenzione!', res => {
+      if (!res) {
+        return
+      }
+
+      let delEvent = buildGridDeleteEvent({
+        idTable: this.idTable,
+        service: this.service,
+        component: this
+      }, index, this.rowsData()[index] as T)
+
+      if (!this.remoteOperation) {
+        this.emittendGridEvent.emit(delEvent)
+
+        if (delEvent.cancel) {
+          return
+        }
+
+        this.deleteRow(index)
+        return
+      }
+
+      void this.deleteProviderRow(delEvent.rowData as T)
+    })
   }
 
   /**
