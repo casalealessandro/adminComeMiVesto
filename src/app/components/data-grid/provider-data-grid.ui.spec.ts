@@ -66,6 +66,43 @@ describe('ProviderDataGridComponent search and filter UI', () => {
     expect(filterRow.querySelector('select[data-grid-filter-field="active"]')).not.toBeNull();
   });
 
+  it('should leave the filter cell empty when the original column disables filtering', async () => {
+    const columns = [
+      {
+        itemType: 'group',
+        caption: '',
+        colSpan: 2,
+        groupDataField: '',
+        data: [
+          {
+            dataField: 'name',
+            type: 'campo',
+            caption: 'Nome',
+            colWidth: 180,
+            allowFiltering: false,
+            validation: [],
+          },
+          {
+            dataField: 'age',
+            type: 'campoNumber',
+            caption: 'Età',
+            colWidth: 100,
+            allowFiltering: true,
+            validation: [],
+          },
+        ],
+      },
+    ] as any;
+
+    component.colonne = columns;
+    await component.buildHeaderColumns(columns);
+    fixture.detectChanges();
+
+    const filterRow = fixture.nativeElement.querySelector('thead > tr.-data-grid-filter-row');
+    expect(filterRow.querySelector('[data-grid-filter-field="name"]')).toBeNull();
+    expect(filterRow.querySelector('input[data-grid-filter-field="age"]')).not.toBeNull();
+  });
+
   it('should hide only the column filter row when showFilter is disabled', () => {
     component.showFilter = false;
     fixture.detectChanges();
