@@ -1,7 +1,15 @@
-node_modules
-functions
-firebase-api
+node_modules/
+.angular/
+.vscode/
+dist/
+documentation/
+.firebase/
+coverage/
+*.log
+
+# Local/backend worktrees not part of this frontend repository
+functions/
+firebase-api/
+
+# Environment files may contain local or project-specific configuration
 src/environments/*
-.angular
-.vscode
-.angular/cache/17.3.8/Admin/.tsbuildinfo
