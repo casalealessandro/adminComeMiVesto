@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { PopupInfo } from '../../../core/popup/popup.models';
 import { PopUpService } from '../../../services/popup.service';
-import { PopupContentComponent, PopupInfo } from '../modal-popup-content/modal-popup-content.component';
+import { PopupContentComponent } from '../modal-popup-content/modal-popup-content.component';
 
 @Component({
   selector: 'app-modal-popup-wrapper',

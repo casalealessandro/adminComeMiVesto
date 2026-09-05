@@ -1,22 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { CaptionComponent } from '../../caption/caption.component';
+import { PopupInfo } from '../../../core/popup/popup.models';
 import { PopUpService } from '../../../services/popup.service';
-
-export interface PopupInfo {
-  id: string;
-  componentName: string;
-  dataToSend?: unknown;
-  instancedData?: Record<string, unknown>;
-  popUpWidth?: string | number;
-  showCaptionFooter?: boolean;
-  showCaptionHeader?: boolean;
-  accessoringData?: unknown;
-  title?: string;
-  position?: string;
-  isClosablePopUp?: boolean;
-  class?: string;
-}
 
 @Component({
   selector: 'app-modal-popup-content',
@@ -45,7 +31,8 @@ export class PopupContentComponent implements OnInit {
   get popupWidth(): string {
     const width = this.infoPopup.popUpWidth;
     if (width === undefined || width === null || width === '') return '';
-    return typeof width === 'number' ? `${width}px` : width.endsWith('px') || width.endsWith('vw') || width.endsWith('%') ? width : `${width}px`;
+    if (typeof width === 'number') return `${width}px`;
+    return width.endsWith('px') || width.endsWith('vw') || width.endsWith('%') ? width : `${width}px`;
   }
 
   close(): void {
