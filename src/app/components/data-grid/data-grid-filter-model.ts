@@ -1,4 +1,4 @@
-import { GridFilterOperator } from './data-grid-provider';
+import { GridFilter, GridFilterOperator, GridSearch } from './data-grid-provider';
 
 /**
  * Minimal filtering metadata understood by the DataGrid core.
@@ -11,6 +11,7 @@ import { GridFilterOperator } from './data-grid-provider';
 export interface GridFilterColumnMetadata {
   field: string;
   type: string;
+  searchable?: boolean;
   searchOperator?: GridFilterOperator;
   filterOperator?: GridFilterOperator;
 }
@@ -66,4 +67,92 @@ export function resolveDefaultFilterOperator(
   if (LIST_TYPES.has(columnType)) return 'eq';
 
   return undefined;
+}
+
+/**
+ * Normalize the date formats historically accepted by the DataGrid search
+ * (`yyyy-MM-dd`, `yyyy/MM/dd`, `dd-MM-yyyy`, `dd/MM/yyyy`) to `yyyy-MM-dd`.
+ */
+export function normalizeGridSearchDate(value: string): string | undefined {
+  const input = value.trim();
+
+  let year: number;
+  let month: number;
+  let day: number;
+
+  const isoMatch = /^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/.exec(input);
+  const italianMatch = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/.exec(input);
+
+  if (isoMatch) {
+    year = Number(isoMatch[1]);
+    month = Number(isoMatch[2]);
+    day = Number(isoMatch[3]);
+  } else if (italianMatch) {
+    day = Number(italianMatch[1]);
+    month = Number(italianMatch[2]);
+    year = Number(italianMatch[3]);
+  } else {
+    return undefined;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year
+    || date.getUTCMonth() !== month - 1
+    || date.getUTCDate() !== day
+  ) {
+    return undefined;
+  }
+
+  return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Build the typed OR conditions used by provider-neutral global search.
+ *
+ * The same raw text may produce different typed values per column, matching the
+ * historic DataGrid behavior. Example: `"35"` becomes `contains("35")` for a
+ * text column and `eq(35)` for a numeric column. Unsupported conversions are
+ * skipped rather than invalidating the whole search.
+ */
+export function buildGridSearch(
+  value: string,
+  columns: GridFilterColumnMetadata[],
+): GridSearch | undefined {
+  const searchValue = value?.trim();
+  if (!searchValue) return undefined;
+
+  const conditions: GridFilter[] = [];
+
+  columns.forEach(column => {
+    if (!column.field || column.searchable === false) return;
+
+    const operator = resolveDefaultSearchOperator(column.type, column.searchOperator);
+    if (!operator) return;
+
+    let typedValue: unknown = searchValue;
+
+    if (NUMBER_TYPES.has(column.type)) {
+      const numericValue = Number(searchValue);
+      if (Number.isNaN(numericValue)) return;
+      typedValue = numericValue;
+    } else if (DATE_TYPES.has(column.type) || DATETIME_TYPES.has(column.type)) {
+      const normalizedDate = normalizeGridSearchDate(searchValue);
+      if (!normalizedDate) return;
+      typedValue = normalizedDate;
+    }
+
+    conditions.push({
+      field: column.field,
+      operator,
+      value: typedValue,
+    });
+  });
+
+  if (conditions.length === 0) return undefined;
+
+  return {
+    value: searchValue,
+    conditions,
+  };
 }
