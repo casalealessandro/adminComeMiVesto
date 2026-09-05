@@ -1,12 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { Colonne } from '../../interface/app.interface';
-import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Observable } from 'rxjs';
+import { DataGridComponent } from '../../components/data-grid/data-grid.component';
+import { Colonne } from '../../interface/app.interface';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { outfitCategories, OutfitsService } from '../../services/outfit.service';
-import { Observable } from 'rxjs';
 import { PopUpService } from '../../services/popup.service';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { confirm } from '../../widgets/ui-dialogs';
 
 @Component({
@@ -19,281 +19,274 @@ import { confirm } from '../../widgets/ui-dialogs';
 export class OutfitCategoryComponent {
   colOutfitsCategory: Colonne[] = [
     {
-      itemType: "group",
+      itemType: 'group',
+      groupDataField: '',
       data: [
         {
           type: 'campo',
           colVisible: true,
           allowEditing: true,
-          dataField: "id",
+          dataField: 'id',
           colWidth: '50',
-          caption: "",
+          caption: '',
           colCaption: '',
           class: '',
           edit: false,
-          groupDataField: undefined,
-
+          groupDataField: undefined
         },
-
         {
           type: 'campoImg',
           colVisible: true,
           allowEditing: true,
-          dataField: "imageUrl",
+          dataField: 'imageUrl',
           colWidth: '77',
           class: 'outfit-image',
           colCaption: 'Immagine',
           allowFiltering: undefined,
           edit: undefined,
-          groupDataField: undefined,
-
+          groupDataField: undefined
         },
-
         {
           type: 'campo',
           colVisible: true,
           allowEditing: true,
-          dataField: "categoryName",
+          dataField: 'categoryName',
           colWidth: '200',
           colCaption: 'Categoria',
           edit: undefined,
-          groupDataField: undefined,
-
+          groupDataField: undefined
         },
         {
           type: 'campo',
           colVisible: true,
           allowEditing: true,
-          dataField: "parentCategory",
+          dataField: 'parentCategory',
           colWidth: '90',
           colCaption: 'Parent',
-
-
           edit: undefined,
-          groupDataField: undefined,
-
+          groupDataField: undefined
         },
-
         {
           type: 'campoLista',
           colVisible: true,
           allowEditing: true,
-          dataField: "status",
+          dataField: 'status',
           colWidth: '110',
           colCaption: 'Stato',
           allowFiltering: undefined,
-          
           edit: undefined,
           groupDataField: undefined,
-          lista:{
-              valueExp:'id',
-              displayExp:'value',
-              multiple: false,
-              parent: null,
-              remote:false,
-              options: [
-                {
-                  id:'1',
-                  value:'Attivo'
-                },
-                {
-                  id:'0',
-                  value:'Non attivo'
-                }
-              ]
+          lista: {
+            valueExp: 'id',
+            displayExp: 'value',
+            multiple: false,
+            parent: null,
+            remote: false,
+            options: [
+              { id: '1', value: 'Attivo' },
+              { id: '0', value: 'Non attivo' }
+            ]
           }
         },
         {
           type: 'campoNumber',
           colVisible: true,
           allowEditing: true,
-          dataField: "order",
+          dataField: 'order',
           colWidth: '70',
-
           colCaption: 'Ordine',
           edit: undefined,
-          groupDataField: undefined,
-
-
+          groupDataField: undefined
         },
         {
           type: 'campoDateTime',
           colVisible: true,
           allowEditing: true,
-          dataField: "createdAt",
+          dataField: 'createdAt',
           colWidth: '110',
-          caption: "Creazione",
+          caption: 'Creazione',
           colCaption: 'Creazione',
           edit: undefined,
-          groupDataField: undefined,
-
+          groupDataField: undefined
         },
         {
           type: 'campoDateTime',
           colVisible: true,
           allowEditing: true,
-          dataField: "editedAt",
+          dataField: 'editedAt',
           colWidth: '110',
           colCaption: 'Ultima modifica',
           allowFiltering: undefined,
           labelAlignment: undefined,
           edit: undefined,
-          groupDataField: undefined,
-
+          groupDataField: undefined
         },
-
         {
           type: 'campo',
           colVisible: true,
           allowEditing: true,
-          dataField: "gender",
+          dataField: 'gender',
           colWidth: '90',
           colCaption: 'Genere',
-
-
           edit: undefined,
-          groupDataField: undefined,
-
-        },
-      ],
-      groupDataField: ''
+          groupDataField: undefined
+        }
+      ]
     }
-  ]
-  outFitService = inject(OutfitsService);
-  private route =inject(ActivatedRoute);
-  private router=inject(Router);
-  outFitCategories$!: Observable<outfitCategories[]>;
-  outFitCategories: outfitCategories[] = []
-  showGrid: boolean = false;
-  showSpinner: boolean = false
-  title: string = "Elenco Categorie degli outifi da mostrare nell'app";
-  subTitle: string = '';
-  selectedCatOutfit: outfitCategories | undefined | any
-  propertiesModal= inject ( PopUpService ); 
-  categoryId:any=null;
+  ];
 
-  async ngOnInit() {
+  private readonly outFitService = inject(OutfitsService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly propertiesModal = inject(PopUpService);
+
+  outFitCategories$!: Observable<outfitCategories[]>;
+  outFitCategories: outfitCategories[] = [];
+  showGrid = false;
+  title = "Elenco categorie outfit da mostrare nell'app";
+  subTitle = '';
+  selectedCatOutfit?: outfitCategories;
+  categoryId: string | null = null;
+
+  ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.categoryId = params.get('id');
+      this.selectedCatOutfit = this.readNavigationCategory();
+
       if (this.categoryId) {
-        // Usare il segnale per ottenere il valore quando cambia
-        
-          this.selectedCatOutfit = this.outFitService.mySignal();
-          //parentCategory
-
-        this.title = `Elenco delle Sotto Categorie della Categoria:${this.selectedCatOutfit.categoryName}`
-
+        this.title = this.selectedCatOutfit?.categoryName
+          ? `Elenco delle sottocategorie di: ${this.selectedCatOutfit.categoryName}`
+          : 'Elenco sottocategorie';
         this.outFitCategories$ = this.outFitService.getOutFitCategories(this.categoryId);
-      }else{
+      } else {
+        this.selectedCatOutfit = undefined;
+        this.title = "Elenco categorie outfit da mostrare nell'app";
         this.outFitCategories$ = this.outFitService.getOutFitCategories();
       }
+
+      this.loadOutFitCategories();
     });
-    
-
-    await this.loadOutFitCategories()
-    // Carica gli utenti dalla collezione 'users' di Firestore
-
-
   }
 
-  async loadOutFitCategories() {
-    this.showGrid = false
-    this.outFitCategories$.subscribe((categories: outfitCategories[]) => {
-      this.outFitCategories = categories;
-      this.showGrid = true
-    })
+  private readNavigationCategory(): outfitCategories | undefined {
+    const state = history.state as { category?: outfitCategories };
+    return state?.category;
   }
 
+  loadOutFitCategories(): void {
+    this.showGrid = false;
+    this.outFitCategories$.subscribe({
+      next: categories => {
+        this.outFitCategories = categories;
+        this.showGrid = true;
+      },
+      error: () => {
+        this.outFitCategories = [];
+        this.showGrid = true;
+      }
+    });
+  }
 
-  addCategoryOutfit(event: any) {
-    //this.selectedCatOutfit =undefined
-    let editData 
-    if(this.categoryId){
-        editData ={
-          parentCategory: this.categoryId
-        }
-    }
-    let InstanceData = {
+  addCategoryOutfit(_event: any): void {
+    const editData = this.categoryId
+      ? { parentCategory: this.categoryId }
+      : undefined;
+
+    this.createOrEditCategories({
       service: 'outfitCategories',
-      idData:editData
-    }
-
-    this.createOrEditCategories(InstanceData)
+      idData: editData
+    });
   }
 
-  editCategoryOutfit(event: any) {
+  editCategoryOutfit(event: any): void {
+    event.cancel = true;
+    this.selectedCatOutfit = event.data as outfitCategories;
 
-    event.cancel = true
-
-    this.selectedCatOutfit = event.data as  outfitCategories;
-
-    
-    let InstanceData = {
+    this.createOrEditCategories({
       service: 'outfitCategories',
       editData: this.selectedCatOutfit
+    });
+  }
+
+  editCategoryCard(category: outfitCategories): void {
+    this.editCategoryOutfit({ data: category, cancel: false });
+  }
+
+  openSubcategories(category: outfitCategories): void {
+    void this.navigateToSubcategories(category);
+  }
+
+  private navigateToSubcategories(category: outfitCategories): Promise<boolean> {
+    return this.router.navigate(
+      ['/outfit-category', category.id],
+      { state: { category } }
+    );
+  }
+
+  deleteCategory(category: outfitCategories): void {
+    confirm(
+      `Eliminare la categoria “${category.categoryName}”?`,
+      'Conferma',
+      yes => {
+        if (yes) void this.deleteCategoryConfirmed(category.id);
+      }
+    );
+  }
+
+  private async deleteCategoryConfirmed(id: string): Promise<void> {
+    try {
+      await this.outFitService.removeOutfitCategories(id);
+      this.outFitCategories = this.outFitCategories.filter(item => item.id !== id);
+    } catch {
+      // Error details are handled by the shared HTTP/UI layer.
     }
+  }
 
-    this.createOrEditCategories(InstanceData)
-  }  
-  editCategoryCard(category: outfitCategories): void { this.editCategoryOutfit({ data: category, cancel: false }); }
-  openSubcategories(category: outfitCategories): void { this.outFitService.mySignal.set(category as any); this.router.navigate(['/outfit-category', category.id]); }
-  deleteCategory(category: outfitCategories): void { confirm(`Eliminare la categoria “${category.categoryName}”?`, 'Conferma', yes => { if (yes) void this.deleteCategoryConfirmed(category.id); }); }
-  private async deleteCategoryConfirmed(id: string): Promise<void> { try { await this.outFitService.removeOutfitCategories(id); this.outFitCategories = this.outFitCategories.filter(item => item.id !== id); } catch { /* interceptor/UI API mantiene il dettaglio tecnico nascosto */ } }
+  createOrEditCategories(instanceData: any): void {
+    const guid = Math.random().toString().replace('0.', '');
+    this.propertiesModal.setNewPopUp(
+      guid,
+      'DynamicFormComponent',
+      null,
+      800,
+      null,
+      instanceData,
+      false,
+      true,
+      'Modifica Outfit',
+      '',
+      false
+    );
 
-  createOrEditCategories(InstanceData:any){
+    this.propertiesModal.outputComponent.subscribe(async result => {
+      if (result.guid === guid && result.name === 'submitForm') {
+        const formData = result.formData;
+        formData.parentCategory = formData.parentCategory || '';
 
-    let guid = Math.random().toString().replace("0.", "");
-    this.propertiesModal.setNewPopUp(guid, 'DynamicFormComponent', null, 800, null, InstanceData, false, true, "Modifica Outfit", '', false)
+        const saved = result.inEdit
+          ? await this.outFitService.updateOutfitCategories(formData.id, formData)
+          : await this.outFitService.saveOutfitCategories(formData);
 
-
-    this.propertiesModal.outputComponent.subscribe(async resulOutputComponent => {
-      if (resulOutputComponent.guid == guid && resulOutputComponent.name == 'submitForm') {
-
-        const formData = resulOutputComponent.formData;
-        formData.parentCategory = !formData.parentCategory ? '' : formData.parentCategory
-        let res;
-        if (resulOutputComponent.inEdit) {
-          
-         res = await this.outFitService.updateOutfitCategories(formData.id, formData)
-        } else {
-          res = await this.outFitService.saveOutfitCategories(formData)
-        }
-
-        if (res) {
-          this.selectedCatOutfit = !this.categoryId ? undefined : this.selectedCatOutfit
+        if (saved) {
           this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
-         
-          this.outFitCategories$ = this.outFitService.getOutFitCategories(this.categoryId);
-          this.loadOutFitCategories()
+          this.outFitCategories$ = this.outFitService.getOutFitCategories(this.categoryId || undefined);
+          this.loadOutFitCategories();
         }
       }
 
-      if (resulOutputComponent.guid == guid && resulOutputComponent.name == 'cancelForm') {
-        this.selectedCatOutfit = !this.categoryId ? undefined : this.selectedCatOutfit
+      if (result.guid === guid && result.name === 'cancelForm') {
         this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
       }
-    })
+    });
   }
 
-  async gridEvent(event: any) {
-    console.log('gridEvent-->', event);
-
-    const eventName = event.name;
-    const rowData: outfitCategories = event.rowData
-    switch (eventName) {
-      case "delRows":
-        this.deleteCategory(rowData);
-        break;
-
-      default:
-        break;
+  gridEvent(event: any): void {
+    if (event.name === 'delRows') {
+      this.deleteCategory(event.rowData as outfitCategories);
     }
   }
 
-  dblClickRow(event:any){
-    const rowData = event.rowData;
-    this.outFitService.mySignal.set(event.rowData);
-    this.router.navigate(['/outfit-category', rowData.id]) 
+  dblClickRow(event: any): void {
+    void this.navigateToSubcategories(event.rowData as outfitCategories);
   }
-
 }
