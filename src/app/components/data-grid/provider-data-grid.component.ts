@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
-import { GridDataProvider, GridPage } from './data-grid-provider';
+import { GridDataProvider, GridLoadRequest, GridPage, GridSort } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
 import { TdItemComponent } from './td-item/td-item.component';
 
@@ -39,6 +39,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
   private providerMockItem?: T;
   private remoteTotalCountKnown = false;
+  private providerSort: GridSort[] = [];
   private providerScrollElement?: HTMLElement;
   private readonly providerScrollListener = (event: Event) => {
     void this.onScroll(event);
@@ -79,9 +80,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.isLoading = true;
 
     try {
-      const page = await this.dataProvider.load({
-        pageSize: this.pageSize,
-      });
+      const page = await this.dataProvider.load(this.buildProviderLoadRequest());
 
       this.applyInitialProviderPage(page);
       return true;
@@ -91,6 +90,38 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       this.isLoading = false;
       this.setProgressCursor(false);
     }
+  }
+
+  /**
+   * Keep the original local sort implementation untouched. Only the explicit
+   * provider + remoteOperation path turns the same column click into a remote
+   * GridSort request.
+   */
+  override sortColumn(column: string): void {
+    if (!this.dataProvider || !this.remoteOperation) {
+      super.sortColumn(column);
+      return;
+    }
+
+    if (this.isLoading) return;
+
+    const previousColumn = this.sortedColumn;
+    const previousDirection = this.sortDirection;
+    const previousSort = this.providerSort.map(sort => ({ ...sort }));
+
+    if (this.sortedColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortedColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.providerSort = [{
+      field: column,
+      direction: this.sortDirection,
+    }];
+
+    void this.reloadAfterProviderSort(previousColumn, previousDirection, previousSort);
   }
 
   /**
@@ -135,10 +166,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
         await new Promise(resolve => setTimeout(resolve, this.providerScrollLoadDelay));
       }
 
-      const page = await this.dataProvider.load({
-        pageSize: this.pageSize,
-        continuation: this.remoteContinuation,
-      });
+      const page = await this.dataProvider.load(this.buildProviderLoadRequest(this.remoteContinuation));
 
       this.replaceProviderPlaceholders(insertionIndex, placeholderCount, page.items);
       this.currentPage++;
@@ -163,6 +191,43 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     } finally {
       this.isLoading = false;
       this.setProgressCursor(false);
+    }
+  }
+
+  private buildProviderLoadRequest(continuation?: unknown): GridLoadRequest {
+    const request: GridLoadRequest = {
+      pageSize: this.pageSize,
+    };
+
+    if (continuation !== undefined) {
+      request.continuation = continuation;
+    }
+
+    if (this.providerSort.length > 0) {
+      request.sort = this.providerSort.map(sort => ({ ...sort }));
+    }
+
+    return request;
+  }
+
+  private async reloadAfterProviderSort(
+    previousColumn: any,
+    previousDirection: 'asc' | 'desc',
+    previousSort: GridSort[],
+  ): Promise<void> {
+    const loaded = await this.loadRemoteRecords();
+
+    if (!loaded) {
+      this.sortedColumn = previousColumn;
+      this.sortDirection = previousDirection;
+      this.providerSort = previousSort;
+      return;
+    }
+
+    // Sorting starts a fresh remote result set, so also return the visual
+    // viewport to the first row when the current scrollbar is available.
+    if (this.providerScrollElement) {
+      this.providerScrollElement.scrollTop = 0;
     }
   }
 
