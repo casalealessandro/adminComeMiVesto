@@ -12,6 +12,7 @@ export interface GridFilterColumnMetadata {
   field: string;
   type: string;
   searchable?: boolean;
+  filterable?: boolean;
   searchOperator?: GridFilterOperator;
   filterOperator?: GridFilterOperator;
 }
@@ -154,5 +155,61 @@ export function buildGridSearch(
   return {
     value: searchValue,
     conditions,
+  };
+}
+
+/**
+ * Build one explicit column filter. Column filters are kept as independent
+ * conditions by the DataGrid and concrete providers combine them with AND.
+ *
+ * Empty or invalid values remove the filter instead of producing a malformed
+ * backend request. This keeps conversion rules close to the same column types
+ * already used by the DataGrid renderer/editor.
+ */
+export function buildGridColumnFilter(
+  value: unknown,
+  column: GridFilterColumnMetadata,
+): GridFilter | undefined {
+  if (!column.field || column.filterable === false) return undefined;
+
+  const operator = resolveDefaultFilterOperator(column.type, column.filterOperator);
+  if (!operator) return undefined;
+
+  if (value === null || value === undefined) return undefined;
+
+  let typedValue: unknown = value;
+
+  if (typeof value === 'string') {
+    const filterValue = value.trim();
+    if (!filterValue) return undefined;
+    typedValue = filterValue;
+  }
+
+  if (NUMBER_TYPES.has(column.type)) {
+    const numericValue = Number(typedValue);
+    if (Number.isNaN(numericValue)) return undefined;
+    typedValue = numericValue;
+  } else if (DATE_TYPES.has(column.type) || DATETIME_TYPES.has(column.type)) {
+    const normalizedDate = normalizeGridSearchDate(String(typedValue));
+    if (!normalizedDate) return undefined;
+    typedValue = normalizedDate;
+  } else if (BOOLEAN_TYPES.has(column.type)) {
+    if (typeof typedValue === 'string') {
+      if (typedValue === 'true') {
+        typedValue = true;
+      } else if (typedValue === 'false') {
+        typedValue = false;
+      } else {
+        return undefined;
+      }
+    }
+
+    if (typeof typedValue !== 'boolean') return undefined;
+  }
+
+  return {
+    field: column.field,
+    operator,
+    value: typedValue,
   };
 }
