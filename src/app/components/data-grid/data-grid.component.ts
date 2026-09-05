@@ -167,7 +167,7 @@ export class DataGridComponent implements OnDestroy {
   searchText!: string
 
   isHovered: any[] = [false];
-  isHoveredDetatil: any[] = [];
+  isHoveredDetatil: any[] = [false];
   rowcustomclass: any[] = [];
   tableWidthDetail!: number;
   checkQueryStringError: boolean = false;
