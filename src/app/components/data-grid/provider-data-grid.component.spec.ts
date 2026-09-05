@@ -35,6 +35,10 @@ describe('ProviderDataGridComponent remote loading', () => {
     },
   ];
 
+  const flushAsyncWork = async () => {
+    await new Promise(resolve => setTimeout(resolve, 0));
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProviderDataGridComponent],
@@ -162,6 +166,182 @@ describe('ProviderDataGridComponent remote loading', () => {
     expect(loaded).toBeFalse();
     expect(component.rowsData()).toEqual(existingRows);
     expect(component.isLoading).toBeFalse();
+  });
+
+  it('should keep inherited local sorting when a provider exists but remote mode is disabled', () => {
+    component.dataProvider = {
+      load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
+    };
+    component.remoteOperation = false;
+    component.rowsData.set([
+      { name: 'Carlo' },
+      { name: 'Anna' },
+      { name: 'Bruno' },
+    ]);
+
+    component.sortColumn('name');
+
+    expect(component.rowsData().map(row => row.name)).toEqual(['Anna', 'Bruno', 'Carlo']);
+    expect(component.sortDirection).toBe('asc');
+    expect(component.dataProvider.load).not.toHaveBeenCalled();
+  });
+
+  it('should request an ascending remote sort and replace rows with the provider result', async () => {
+    const load = jasmine.createSpy('load').and.resolveTo({
+      items: [
+        { id: 2, name: 'Anna' },
+        { id: 1, name: 'Carlo' },
+      ],
+      hasMore: false,
+      totalCount: 2,
+    });
+
+    component.dataProvider = { load };
+    component.remoteOperation = true;
+    component.rowsData.set([
+      { id: 1, name: 'Carlo' },
+      { id: 2, name: 'Anna' },
+    ]);
+
+    component.sortColumn('name');
+    await flushAsyncWork();
+
+    expect(load).toHaveBeenCalledOnceWith({
+      pageSize: 20,
+      sort: [{ field: 'name', direction: 'asc' }],
+    });
+    expect(component.rowsData()).toEqual([
+      { id: 2, name: 'Anna' },
+      { id: 1, name: 'Carlo' },
+    ]);
+    expect(component.sortedColumn).toBe('name');
+    expect(component.sortDirection).toBe('asc');
+  });
+
+  it('should toggle remote sorting direction on repeated column clicks', async () => {
+    const requests: GridLoadRequest[] = [];
+    component.dataProvider = {
+      load: async request => {
+        requests.push(request);
+        return { items: [{ id: 1, name: 'Row' }], hasMore: false };
+      },
+    };
+    component.remoteOperation = true;
+
+    component.sortColumn('name');
+    await flushAsyncWork();
+    component.sortColumn('name');
+    await flushAsyncWork();
+
+    expect(requests).toEqual([
+      {
+        pageSize: 20,
+        sort: [{ field: 'name', direction: 'asc' }],
+      },
+      {
+        pageSize: 20,
+        sort: [{ field: 'name', direction: 'desc' }],
+      },
+    ]);
+    expect(component.sortDirection).toBe('desc');
+  });
+
+  it('should keep the active remote sort when requesting continuation pages', async () => {
+    component.pageSize = 2;
+    component.remoteOperation = true;
+
+    const requests: GridLoadRequest[] = [];
+    component.dataProvider = {
+      load: async request => {
+        requests.push(request);
+        if (requests.length === 1) {
+          return {
+            items: [
+              { id: 1, name: 'Alpha' },
+              { id: 2, name: 'Beta' },
+            ],
+            hasMore: true,
+            continuation: 'sorted-page-2',
+            totalCount: 4,
+          };
+        }
+
+        return {
+          items: [
+            { id: 3, name: 'Gamma' },
+            { id: 4, name: 'Omega' },
+          ],
+          hasMore: false,
+          totalCount: 4,
+        };
+      },
+    };
+
+    component.sortColumn('name');
+    await flushAsyncWork();
+    await component.loadNextRemotePage();
+
+    expect(requests).toEqual([
+      {
+        pageSize: 2,
+        sort: [{ field: 'name', direction: 'asc' }],
+      },
+      {
+        pageSize: 2,
+        continuation: 'sorted-page-2',
+        sort: [{ field: 'name', direction: 'asc' }],
+      },
+    ]);
+  });
+
+  it('should restart remote paging from the first page when the sort changes', async () => {
+    component.pageSize = 2;
+    component.remoteOperation = true;
+    component.currentPage = 3;
+    component.latestSkipLoaded = 6;
+    component.remoteContinuation = 'old-page-token';
+    component.remoteHasMore = true;
+    component.latestScrollTopPosition = 120;
+
+    const load = jasmine.createSpy('load').and.resolveTo({
+      items: [
+        { id: 1, name: 'Alpha' },
+        { id: 2, name: 'Beta' },
+      ],
+      hasMore: true,
+      continuation: 'new-page-token',
+      totalCount: 8,
+    });
+    component.dataProvider = { load };
+
+    component.sortColumn('name');
+    await flushAsyncWork();
+
+    expect(load).toHaveBeenCalledOnceWith({
+      pageSize: 2,
+      sort: [{ field: 'name', direction: 'asc' }],
+    });
+    expect(component.currentPage).toBe(0);
+    expect(component.latestSkipLoaded).toBe(0);
+    expect(component.latestScrollTopPosition).toBe(0);
+    expect(component.remoteContinuation).toBe('new-page-token');
+  });
+
+  it('should restore the previous sort indicator if the remote sort request fails', async () => {
+    component.dataProvider = {
+      load: jasmine.createSpy('load').and.rejectWith(new Error('sort failed')),
+    };
+    component.remoteOperation = true;
+    component.sortedColumn = 'age';
+    component.sortDirection = 'desc';
+    component.rowsData.set([{ id: 1, age: 42, name: 'Existing' }]);
+
+    component.sortColumn('name');
+    await flushAsyncWork();
+
+    expect(component.sortedColumn).toBe('age');
+    expect(component.sortDirection).toBe('desc');
+    expect(component.rowsData()).toEqual([{ id: 1, age: 42, name: 'Existing' }]);
   });
 
   it('should request the next page with the opaque continuation and replace mock rows in place', async () => {
