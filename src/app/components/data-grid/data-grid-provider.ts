@@ -10,12 +10,27 @@ export type GridFilterOperator =
   | 'gte'
   | 'lt'
   | 'lte'
-  | 'in';
+  | 'in'
+  | 'sameDay';
 
 export interface GridFilter {
   field: string;
   operator: GridFilterOperator;
   value: unknown;
+}
+
+/**
+ * Global-search request produced by the DataGrid.
+ *
+ * `conditions` are OR-ed together. This preserves the historic DataGrid
+ * behavior where the same search text was translated per searchable column
+ * (for example: string contains OR numeric equality).
+ *
+ * Column filters remain separate in `GridLoadRequest.filters` and are AND-ed.
+ */
+export interface GridSearch {
+  value: string;
+  conditions: GridFilter[];
 }
 
 export interface GridSort {
@@ -28,11 +43,14 @@ export interface GridSort {
  *
  * `continuation` is intentionally opaque: a provider may use an offset,
  * cursor, page token or any other backend-specific continuation state.
+ *
+ * `search.conditions` represent one global OR group.
+ * `filters` represent explicit column/base filters combined with AND semantics.
  */
 export interface GridLoadRequest {
   pageSize: number;
   continuation?: unknown;
-  search?: string;
+  search?: GridSearch;
   filters?: GridFilter[];
   sort?: GridSort[];
 }
