@@ -90,7 +90,7 @@ describe('TdItemComponent lookup safety net', () => {
   it('should not automatically start a remote lookup only because customizedOptions exists', () => {
     getValue.and.resolveTo({ id: 'CAT-1', name: 'Categoria 1' });
 
-    fixture.detectChanges();
+    component.ngAfterViewInit();
 
     expect(getValue).not.toHaveBeenCalled();
     expect(component.staticData).toBe('CAT-1');
