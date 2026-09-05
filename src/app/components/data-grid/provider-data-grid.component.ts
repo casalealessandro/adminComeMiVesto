@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
-import { GridDataProvider, GridLoadRequest, GridPage, GridSort } from './data-grid-provider';
+import { buildGridSearch, GridFilterColumnMetadata } from './data-grid-filter-model';
+import { GridDataProvider, GridLoadRequest, GridPage, GridSearch, GridSort } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
 import { TdItemComponent } from './td-item/td-item.component';
 
@@ -37,9 +38,17 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
    */
   providerScrollLoadDelay = 800;
 
+  /**
+   * Preserve the historic 500 ms search delay while allowing isolated tests to
+   * set it to 0. The original DataGrid search methods remain untouched.
+   */
+  providerSearchDebounce = 500;
+
   private providerMockItem?: T;
   private remoteTotalCountKnown = false;
   private providerSort: GridSort[] = [];
+  private providerSearch?: GridSearch;
+  private providerSearchTimer?: ReturnType<typeof setTimeout>;
   private providerScrollElement?: HTMLElement;
   private readonly providerScrollListener = (event: Event) => {
     void this.onScroll(event);
@@ -59,6 +68,11 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   }
 
   override ngOnDestroy(): void {
+    if (this.providerSearchTimer !== undefined) {
+      clearTimeout(this.providerSearchTimer);
+      this.providerSearchTimer = undefined;
+    }
+
     this.providerScrollElement?.removeEventListener('scroll', this.providerScrollListener);
     this.providerScrollElement = undefined;
     super.ngOnDestroy();
@@ -122,6 +136,47 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     }];
 
     void this.reloadAfterProviderSort(previousColumn, previousDirection, previousSort);
+  }
+
+  /**
+   * Preserve the old toolbar search entry point. Local/legacy behavior still
+   * delegates to DataGridComponent; only provider remote mode uses the new
+   * typed global-search request.
+   */
+  override toolbarValueChanged(event: { value: any; event: any; }): void {
+    if (!this.dataProvider || !this.remoteOperation) {
+      super.toolbarValueChanged(event);
+      return;
+    }
+
+    this.searchText = event?.value == null ? '' : String(event.value);
+    this.textEmpty = 'Sto cercando...';
+    this.scheduleProviderSearch(this.searchText);
+  }
+
+  /**
+   * Apply global search immediately. This method is intentionally public so the
+   * provider path is usable independently from the currently-commented toolbar
+   * markup and can be tested without timers.
+   */
+  async applyProviderSearch(value: string): Promise<boolean> {
+    if (!this.dataProvider || !this.remoteOperation) return false;
+
+    const previousSearch = this.cloneProviderSearch(this.providerSearch);
+    this.searchText = value ?? '';
+    this.providerSearch = buildGridSearch(this.searchText, this.getProviderSearchColumns());
+
+    const loaded = await this.loadRemoteRecords();
+    if (!loaded) {
+      this.providerSearch = previousSearch;
+      return false;
+    }
+
+    if (this.providerScrollElement) {
+      this.providerScrollElement.scrollTop = 0;
+    }
+
+    return true;
   }
 
   /**
@@ -203,6 +258,10 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       request.continuation = continuation;
     }
 
+    if (this.providerSearch) {
+      request.search = this.cloneProviderSearch(this.providerSearch);
+    }
+
     if (this.providerSort.length > 0) {
       request.sort = this.providerSort.map(sort => ({ ...sort }));
     }
@@ -229,6 +288,42 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     if (this.providerScrollElement) {
       this.providerScrollElement.scrollTop = 0;
     }
+  }
+
+  private scheduleProviderSearch(value: string): void {
+    if (this.providerSearchTimer !== undefined) {
+      clearTimeout(this.providerSearchTimer);
+      this.providerSearchTimer = undefined;
+    }
+
+    if (this.providerSearchDebounce <= 0) {
+      void this.applyProviderSearch(value);
+      return;
+    }
+
+    this.providerSearchTimer = setTimeout(() => {
+      this.providerSearchTimer = undefined;
+      void this.applyProviderSearch(value);
+    }, this.providerSearchDebounce);
+  }
+
+  private getProviderSearchColumns(): GridFilterColumnMetadata[] {
+    return this.colsHeader
+      .filter(column => !!column.dataField)
+      .map(column => ({
+        field: column.dataField,
+        type: column.type,
+        searchable: column.search === false ? false : undefined,
+      }));
+  }
+
+  private cloneProviderSearch(search?: GridSearch): GridSearch | undefined {
+    if (!search) return undefined;
+
+    return {
+      value: search.value,
+      conditions: search.conditions.map(condition => ({ ...condition })),
+    };
   }
 
   private applyInitialProviderPage(page: GridPage<T>): void {
