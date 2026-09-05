@@ -1,61 +1,26 @@
-<div id="cWrap" class="content-wrap" [ngClass]="cssClass">
-  <div class="anagrafica-wrap" [ngStyle]="{ 'height.px': anaHeight }">
-    <app-caption
-      [caption]="caption"
-      [showBreadcrumb]="false"
-      [addButtonShow]="addButtonShow"
-      [showSearchInput]="showSearchInput"
-      [showButtonInput]="showButtonInput"
-      [customToolbarButtons]="customToolbarButtons"
-      [help]="helpDoc"
-      [breadcrumbNavigation]="breadcrumbNavigation"
-      [isClosable]="false"
-      (emettiChiusura)="onCrocettaClick($event)"
-      (emitToolbarButtonClick)="onButtonToolbarClick($event)"
-      (emitAddEvent)="onAddClick($event)"
-      (emitToolbarSearchInputChange)="onSearchInputChange($event)"
-      (emitToolbarButtonInput)="onButtonInputChange($event)"
-      [isFooter]="false"
-    ></app-caption>
+<section class="admin-page-wrapper" [ngClass]="cssClass">
+  <app-caption
+    [caption]="caption"
+    [addButtonShow]="addButtonShow"
+    (emitAddEvent)="onAddClick()"
+  ></app-caption>
 
-    <div class="anagrafica-container">
-      <div class="anagrafica-row">
-        <div class="col-lg-12 wrapForm">
-          <div class="text">
-            <h2 *ngIf="subTitle">
-              <span class="mdi mdi-database"></span>{{ subTitle }}
-            </h2>
-          </div>
-
-          <div
-            *ngIf="tip"
-            class="alert alert-primary d-flex align-items-center alert-dismissible fade show"
-            role="alert"
-          >
-            <span class="mdi mdi-lightbulb-alert-outline me-2"></span>
-            {{ tip }}
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"
-              aria-label="Close"
-            ></button>
-          </div>
-
-          <ng-container *ngIf="showSpinner">
-            <p>Caricamento in corso...</p>
-          </ng-container>
-
-          <ng-content></ng-content>
-        </div>
-      </div>
+  <div class="admin-page-content">
+    <div *ngIf="subTitle" class="page-subtitle">
+      <span class="mdi mdi-database" aria-hidden="true"></span>
+      <h3>{{ subTitle }}</h3>
     </div>
 
-    <app-caption
-      [showBreadcrumb]="false"
-      [isClosable]="false"
-      (emettiChiusura)="onCrocettaClick($event)"
-      [isFooter]="true"
-    ></app-caption>
+    <div *ngIf="tip" class="alert alert-primary d-flex align-items-center" role="status">
+      <span class="mdi mdi-lightbulb-alert-outline me-2" aria-hidden="true"></span>
+      {{ tip }}
+    </div>
+
+    <div *ngIf="showSpinner" class="loading-state" aria-live="polite">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      Caricamento in corso...
+    </div>
+
+    <ng-content></ng-content>
   </div>
-</div>
+</section>

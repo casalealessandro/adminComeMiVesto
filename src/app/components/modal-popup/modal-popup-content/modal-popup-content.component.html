@@ -15,16 +15,9 @@
       [caption]="infoPopup.title || ''"
       [isClosable]="!!infoPopup.isClosablePopUp"
       [cssClass]="'modal'"
-      [help]="''"
       (emitChiusura)="close()"
     ></app-caption>
 
     <div #containerComponent class="modal-content"></div>
-
-    <app-caption
-      *ngIf="infoPopup.showCaptionFooter"
-      [isFooter]="true"
-      (emitChiusura)="close()"
-    ></app-caption>
   </div>
 </div>

@@ -1,174 +1,27 @@
-import { Component,Input, Output, EventEmitter } from '@angular/core';
-import { Router, ActivatedRoute, NavigationExtras } from '@angular/router';
-
-import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
-import { ToolbarButton } from '../../interface/app.interface';
-import { FormsModule } from '@angular/forms';
-
-
-
-class _tasto{
-  id:any;
-  text?:string;
-  icon?:string;
-  disabled?:boolean;
-  image?:string;
-  separator?:boolean;
-  visible?:boolean | Function;
-  hint?:string;
-  name?:string
-  location?:'before' | 'center' | 'after';
-  widget:string = 'button' 
-}
-
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-caption',
-  standalone:true,
-  imports:[CommonModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './caption.component.html',
   styleUrls: ['./caption.component.scss']
 })
 export class CaptionComponent {
+  @Input() caption = '';
+  @Input() cssClass = '';
+  @Input() isClosable = false;
+  @Input() addButtonShow = false;
 
+  @Output() emitChiusura = new EventEmitter<void>();
+  @Output() emitAddEvent = new EventEmitter<void>();
 
-  /** Titolo da mostrare */
-  @Input() caption: string='';
-  @Input() cssClass: string='';
-
-  @Input() showBreadcrumb?:boolean=false;
-  @Input() breadcrumbNavigation?:any;
-
-
-
-  /** Specifica che si tratta solo del footer e ne altera lo stile */
-  @Input() isFooter: boolean = false;
- 
- 
-
-
-  /** Di default si può chiudere (true) */
- @Input() isClosable: boolean = true;
-  
- //Mostra i bottone aggiungi
- @Input() addButtonShow: boolean = false;
- @Input() showSearchInput: boolean = false;
- @Input() showButtonInput: boolean = false;
- 
- //Buttoni aggiuntivi
- @Input() customToolbarButtons!:ToolbarButton[]
- 
-  /** URL HELPER */
-  @Input() help: string = "";
-  @Input() idHelper: number = 0;
-
-
-  @Output() emitHelperClick: EventEmitter<any> = new EventEmitter<any>();
-  
-  @Output() emitChiusura: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitAddEvent: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitToolbarButtonClick: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitToolbarSearchInputChange: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitToolbarButtonInput: EventEmitter<any> = new EventEmitter<any>();
-  
-  
-  
-  @Output() emitBreadCrumbClick : EventEmitter<any> = new EventEmitter<any>();
-  
-
-  addButton:ToolbarButton =
-    {
-      id: 'addButton',
-      name: 'addButton',
-      text: 'Aggiungi',
-      disabled: false,
-      visible: this.addButtonShow,
-      icon:'mdi mdi-pencil-outline',
-      widget: 'button'
-    }
-    
-    inputValue: string = '';
-  
-
-  hideShowToolbarMenu(ev: any){
-
-    this.emitChiusura.emit('closeToolbar')
+  close(): void {
+    this.emitChiusura.emit();
   }
 
-  
-  
-  onClickCrocetta(ev:any) {
-  
-    this.emitChiusura.emit(ev);
-    
+  add(): void {
+    this.emitAddEvent.emit();
   }
-
-  onClickAddButton(ev:any) {
-    
-   
-    this.emitAddEvent.emit(ev);
-    
-  }
-
-
-  showDropdownMenu(ev: any, id: any) {
-    
-    
-    let elememt = document.getElementById(id);
-
-    if(elememt != null){
-      if (!elememt.classList.contains('show')) {
-        elememt.classList.add('show')
-      }
-    }
-
-    
-
-  }
- 
-  hideDropdownMenu(ev: any, id: string) {
-    let elememt = document.getElementById(id);
-    if(elememt != null){
-      elememt.classList.remove('show')
-    }
-  }
-
-  onBreadCrumbClick(event: any, item: { [x: string]: any; params: { service: any; }; idGroup: any; }, i:number = 0) {
-    
-
-    
-
-  }
-
-   onBreadCrumbRemoveClick(event: any,item: { id: any; params: { currentTabId: any; }; },i: number){
-    
-   
-  }
-
-  emitHelpClick(evt: any) {
-    // if(this.help>""){
-    
-
-  }
-
-  toolbarButtonClick(ev: any) {
-
-    this.emitToolbarButtonClick.emit(ev)
-  }
-  
-onInputChange(event: Event): void {
-  const inputValue = (event.target as HTMLInputElement).value;
-  console.log('VALORE CAMBIATO ', inputValue);
-  this.emitToolbarSearchInputChange.emit(inputValue);
 }
-
-onButtonChange(event: Event): void {
-  const buttonValue = this.inputValue;
-  this.emitToolbarSearchInputChange.emit(buttonValue);
-  console.log('VALORE CAMBIATO valueeee', buttonValue);
-}
-  
-}
-
-
