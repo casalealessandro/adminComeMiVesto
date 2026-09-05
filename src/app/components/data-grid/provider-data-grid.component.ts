@@ -8,6 +8,7 @@ import {
   buildGridDeleteEvent,
   buildGridUpdateEvent,
 } from './data-grid-crud-event';
+import { GridDetailDataProvider } from './data-grid-detail-provider';
 import {
   buildGridColumnFilter,
   buildGridSearch,
@@ -46,6 +47,7 @@ import { TdItemComponent } from './td-item/td-item.component';
 })
 export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   @Input() dataProvider?: GridDataProvider<T>;
+  @Input() detailDataProvider?: GridDetailDataProvider<T, any>;
 
   remoteContinuation?: unknown;
   remoteHasMore = false;
@@ -153,6 +155,43 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     } finally {
       this.isLoading = false;
       this.setProgressCursor(false);
+    }
+  }
+
+  /**
+   * Keep the historic master/detail UX untouched and replace only the remote
+   * transport when a detail provider is supplied. `collapse()` still owns the
+   * expand/collapse behavior, CSS classes and the decision to load remotely.
+   */
+  override async renderGridDetailData(detailOptions: any, row: any, index: any): Promise<void> {
+    if (!this.detailDataProvider) {
+      await super.renderGridDetailData(detailOptions, row, index);
+      return;
+    }
+
+    const previousShowNullDataDetail = this.showNullDataDetail;
+    this.showNullDataDetail = false;
+
+    try {
+      const details = await this.detailDataProvider.load({
+        parentRow: row as T
+      })
+
+      this.colsRowDetail[index] = details
+      this.showNullDataDetail = details.length == 0
+      this.showDetailRow[index] = true
+
+      let eventExpandingRow = {
+        cancel: false,
+        data: row,
+        rowIndex: index,
+        expandedData: this.colsRowDetail[index],
+        name: 'onRowExpanded'
+      }
+
+      this.emittendGridEvent.emit(eventExpandingRow)
+    } catch {
+      this.showNullDataDetail = previousShowNullDataDetail;
     }
   }
 
