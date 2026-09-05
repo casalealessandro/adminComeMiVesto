@@ -1,7 +1,7 @@
 import { Component, EventEmitter, inject, Output, signal, Signal } from '@angular/core';
 import { AnagraficaWrapperComponent } from "../../layout/anagrafica-wrapper/anagrafica-wrapper.component";
 import { DataGridComponent } from "../../components/data-grid/data-grid.component";
-import { Colonne, ToolbarButton } from '../../interface/app.interface';
+import { Colonne } from '../../interface/app.interface';
 import { Observable } from 'rxjs';
 import { OutfitsService, wardrobesItem } from '../../services/outfit.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -115,17 +115,6 @@ export class OutfitProductsComponent {
  
   subtitle: string="Elenco dei prodotti disponibili nell'app";
   showGrid: boolean = false;
-  customToolbarButtons: ToolbarButton[] = [
-    {
-      id: 'toFeed',
-      name: 'toFeed',
-      text: 'Mostra prodotti da feed',
-      disabled: false,
-      visible: true,
-      icon:'mdi mdi-database-import-outline',
-      widget: 'button'
-    }
-  ];
   selectedProdOutfit: any;
 
 
@@ -240,35 +229,6 @@ export class OutfitProductsComponent {
         this.loadProduct()
     }
 
-  }
-
-  async eventToolbarProduct(evt: any) {
-    const name = evt.name || evt.id
-    switch (name) {
-      case 'toFeed':
-        this.showFeedProductComponent()
-        break;
-    
-      default:
-        break;
-    }
-  }
-
-  showFeedProductComponent(){
-    let guid = Math.random().toString().replace("0.", "");
-      let InstanceData = {}
-      
-      this.popupModal.setNewPopUp(guid, 'ProductFromFeedComponent', null, 1000, null, InstanceData, true, true, "Importa Prodotti",'',true)
-      
-  
-      this.popupModal.outputComponent.subscribe(async resulOutputComponent=>{
-        if(resulOutputComponent.guid == guid && resulOutputComponent.name == 'stochiudendo'){
-
-          this.loadProduct()
-        }
-
-      })
-           
   }
 
   filterProduct(evt:any){

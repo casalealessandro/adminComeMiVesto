@@ -26,9 +26,6 @@ export class UserService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiBaseUrl;
 
-  /** Compatibility for unused legacy layout widgets; authentication state lives in AuthService. */
-  get InfoUtenteConnesso(): any { return {}; }
-
   getUsersPage(limit = 50, pageToken?: string): Observable<UsersPage> {
     let params = new HttpParams().set('limit', limit);
     if (pageToken) params = params.set('pageToken', pageToken);
