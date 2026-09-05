@@ -1,6 +1,6 @@
 <div class="menu-container" [class.open]="getIsMenuOpenObservable | async">
   <ul class="nav nav-pills nav-flush flex-column mb-auto text-center menu-list">
-    <li class="nav-item menu-item" *ngFor="let menuItem of allMenu">
+    <li class="nav-item menu-item" *ngFor="let menuItem of menuItems">
       <a
         [routerLink]="['/', menuItem.path]"
         class="nav-link"
@@ -9,7 +9,7 @@
         data-bs-placement="right"
         [attr.aria-label]="menuItem.label"
         [attr.data-bs-original-title]="menuItem.label"
-        (click)="navigateTo(menuItem.path)"
+        (click)="navigateTo()"
       >
         <span [ngClass]="menuItem.icon" class="menu-icon"></span>
         <span class="menu-label text">{{ menuItem.label }}</span>
