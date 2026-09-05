@@ -66,14 +66,9 @@ export interface wardrobesItem {
   images: string[];
   ImageUrl?: string;
   imageUrl?: string;
+  price?: number;
   prezzo?: number;
   gender?: any;
-}
-
-export interface FireBaseConditions {
-  field: string;
-  operator: string;
-  value: any;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -82,7 +77,6 @@ export class OutfitsService {
   private readonly firestore = inject(AngularFirestore);
   private readonly backendBase = environment.apiBaseUrl;
 
-  readonly resultsSignal = signal<any[]>([]);
   readonly pagination = signal({ page: 1, limit: 10, total: 0 });
 
   async getAdminOutfits(
@@ -101,7 +95,6 @@ export class OutfitsService {
     const results = response.data || [];
 
     this.pagination.set(response.pagination || { page, limit, total: results.length });
-    this.resultsSignal.set(results);
     return results;
   }
 
@@ -254,8 +247,8 @@ export class OutfitsService {
   }
 
   // TODO affiliate-catalog migration:
-  // The methods below still support the legacy product/feed screens.
-  // They must move behind firebase-api before this code is extracted to the reusable admin core.
+  // These three methods still support the legacy product catalog screen through Firestore.
+  // Move them behind firebase-api before extracting the reusable admin core.
   getProducts(): Observable<wardrobesItem[]> {
     return this.firestore
       .collection('outfitsProducts')
@@ -279,49 +272,6 @@ export class OutfitsService {
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);
-      return false;
-    }
-  }
-
-  async getFilteredCollection(
-    collection: string,
-    conditions?: FireBaseConditions[],
-    orderBy?: Array<{ field: string; by: 'asc' | 'desc' }>
-  ): Promise<any[]> {
-    let query: any = this.firestore.collection(collection).ref;
-
-    conditions?.forEach(condition => {
-      query = query.where(condition.field, condition.operator, condition.value);
-    });
-    orderBy?.forEach(order => {
-      query = query.orderBy(order.field, order.by);
-    });
-
-    try {
-      const querySnapshot = await query.get();
-      const results = querySnapshot.docs.map((doc: any) => doc.data());
-      this.resultsSignal.set(results);
-      return results;
-    } catch (error) {
-      console.error('Error getting filtered collection:', error);
-      return [];
-    }
-  }
-
-  async saveOutfitsProducts(
-    nameDoc: string | undefined,
-    data: any
-  ): Promise<boolean> {
-    try {
-      const collection = this.firestore.collection('outfitsProducts');
-      if (!nameDoc) {
-        await collection.add(data);
-      } else {
-        await collection.doc(nameDoc).set(data);
-      }
-      return true;
-    } catch (error) {
-      console.error('Error saving product:', error);
       return false;
     }
   }
