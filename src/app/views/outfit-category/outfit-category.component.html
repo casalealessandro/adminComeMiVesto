@@ -1,43 +1,38 @@
-
 <app-anagrafica-wrapper
   [caption]="title"
   [subTitle]="subTitle"
   [tip]="'Gestisci le categorie:crea,cancella,modifica....'"
   [addButtonShow]="true"
-  
   [showSpinner]="!showGrid"
   (emittEventButton)="addCategoryOutfit($event)"
 >
+  <nav *ngIf="selectedCatOutfit" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page"><a routerLink="/outfit-category">Elenco categorie</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{selectedCatOutfit.categoryName}}</li>
+    </ol>
+  </nav>
 
-<nav *ngIf="selectedCatOutfit" aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item " aria-current="page"><a routerLink="/outfit-category">Elenco categorie</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{selectedCatOutfit.categoryName}}</li>
-  </ol>
-</nav>
-<div class="desktop-categories"><app-data-grid
-    *ngIf="showGrid"        
-    [colonne]="colOutfitsCategory"
-    [idTable]="0002"
-    [dataSource]="outFitCategories"
-    [remoteOperation]="false"
-    [isEditable]="true"
-    [isEditableEditRow]="true"
-    [showToolbarBottom]="false"
-    [showToolbarTop]="false"
-    [isSearchable]="false"
-    (emittendStartEdit)="editCategoryOutfit($event)"
-    (emittendGridEvent)="gridEvent($event)"
-    (emittendDblRowClick)="dblClickRow($event)"
-    >
+  <div class="desktop-categories">
+    <app-data-grid
+      *ngIf="showGrid"
+      [colonne]="colOutfitsCategory"
+      [idTable]="2"
+      [dataSource]="outFitCategories"
+      [isEditable]="true"
+      [isEditableEditRow]="true"
+      (emittendStartEdit)="editCategoryOutfit($event)"
+      (emittendGridEvent)="gridEvent($event)"
+      (emittendDblRowClick)="dblClickRow($event)"
+    ></app-data-grid>
+  </div>
 
-    </app-data-grid></div>
-<div class="mobile-categories" *ngIf="showGrid">
-  <p *ngIf="!outFitCategories.length" class="empty">Nessuna categoria disponibile.</p>
-  <article *ngFor="let category of outFitCategories">
-    <h2>{{category.categoryName}}</h2><span class="badge text-bg-secondary">{{category.status}}</span>
-    <dl><div><dt>Parent</dt><dd>{{category.parentCategory || 'Root'}}</dd></div><div><dt>Ordine</dt><dd>{{category.order}}</dd></div><div><dt>Genere</dt><dd>{{category.gender || '—'}}</dd></div></dl>
-    <div class="category-actions"><button class="btn btn-sm btn-primary" (click)="editCategoryCard(category)">Modifica</button><button *ngIf="!categoryId" class="btn btn-sm btn-outline-primary" (click)="openSubcategories(category)">Sottocategorie</button><button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(category)">Elimina</button></div>
-  </article>
-</div>
+  <div class="mobile-categories" *ngIf="showGrid">
+    <p *ngIf="!outFitCategories.length" class="empty">Nessuna categoria disponibile.</p>
+    <article *ngFor="let category of outFitCategories">
+      <h2>{{category.categoryName}}</h2><span class="badge text-bg-secondary">{{category.status}}</span>
+      <dl><div><dt>Parent</dt><dd>{{category.parentCategory || 'Root'}}</dd></div><div><dt>Ordine</dt><dd>{{category.order}}</dd></div><div><dt>Genere</dt><dd>{{category.gender || '—'}}</dd></div></dl>
+      <div class="category-actions"><button class="btn btn-sm btn-primary" (click)="editCategoryCard(category)">Modifica</button><button *ngIf="!categoryId" class="btn btn-sm btn-outline-primary" (click)="openSubcategories(category)">Sottocategorie</button><button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(category)">Elimina</button></div>
+    </article>
+  </div>
 </app-anagrafica-wrapper>

@@ -3,7 +3,7 @@
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
   <label class="search">Cerca utenti<input class="form-control" [(ngModel)]="search" (ngModelChange)="applySearch()" placeholder="Email, display name, nome o cognome"></label>
   <div *ngIf="!loading && !filteredUsers.length" class="empty">Nessun utente trovato.</div>
-  <div class="desktop-grid" *ngIf="filteredUsers.length"><app-data-grid [colonne]="columns" [idTable]="'users-grid'" [dataSource]="filteredUsers" [remoteOperation]="false" [isEditable]="true" [isEditableNewRow]="false" [isEditableDeleteRow]="false" [showToolbarTop]="false" [showToolbarBottom]="false" [isSearchable]="false" (emittendStartEdit)="gridEdit($event)" (emittendDblRowClick)="gridEdit($event)" (emittendBttonCellClick)="gridAction($event)"></app-data-grid></div>
+  <div class="desktop-grid" *ngIf="filteredUsers.length"><app-data-grid [colonne]="columns" [idTable]="'users-grid'" [dataSource]="filteredUsers" [isEditable]="true" [isEditableDeleteRow]="false" (emittendStartEdit)="gridEdit($event)" (emittendDblRowClick)="gridEdit($event)" (emittendBttonCellClick)="gridAction($event)"></app-data-grid></div>
   <div class="user-grid mobile-cards">
     <article class="user-card" *ngFor="let user of filteredUsers">
       <div class="identity"><img [src]="user.photoURL || 'https://ionicframework.com/docs/img/demos/avatar.svg'" [alt]="user.displayName || user.email"><div><h2>{{ user.displayName || ((user.nome || '') + ' ' + (user.cognome || '')) || 'Utente' }}</h2><p>{{ user.email }}</p></div></div>

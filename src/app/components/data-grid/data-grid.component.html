@@ -1,289 +1,90 @@
-<!--{'width.px':tableWidth ,'height.px':tableHeightWrapper}-->
-
-<div id="dataGridWrapper" class="-data-grid-wrapper table-responsive">
-   <div class="-data-grid-toolbar" *ngIf="showToolbarTop">
-
-      <!-- <app-toolbar 
-         [background]="'#fff'"
-         [textColor]="'#303e67'" 
-         class="-toolbar-items-container"
-         [position]="'horizontal'" 
-         [buttonCustomBottom]="buttonDXToolbar" 
-         [buttonCustomUp]="buttonSXToolbar" 
-         [tastiBottom]="toolbarButtonsTopRight"
-         [tastiUp]="toolbarButtonsTopLeft"
-         (valueChangeEvent)="toolbarValueChanged($event)"
-         (risposta)="buttonEmitted($event)"
-         [hoverMode]="false" 
-         [isDx]="false"
-         [disabled]="false"
-         >
-      </app-toolbar> -->
-   </div>
-
-
-   <table #tableRef [id]="idTable" class="table -data-grid  grid-line" [ngStyle]="tableStyle"
-      (keydown)="handleKeyboardEvents($event)">
-      <colgroup *ngIf="colsGroupShow">
-         <col *ngFor="let colGroup of colsGroup" [span]="colGroup.span" [class]="colGroup.class">
-      </colgroup>
-      <thead [ngStyle]="theadStyle">
-         <tr class="no-events" *ngIf="colsGroupShow">
-            <th *ngFor="let colGroup of colsGroup" [colSpan]="colGroup.span">
-               {{colGroup.caption}}
-            </th>
-         </tr>
-         <tr>
-
-            <th scope="col" *ngFor="let colHeader of colsHeader" [align]="colHeader.colAlignment"
-               [ngStyle]="{'width.px':colHeader.colWidth, 'min-width.px':colHeader.colWidth,'max-width.px':colHeader.colWidth}">
-
-               <ng-template [ngIf]="colHeader.type == 'selection' && isSelIconMultipleVisible"
-                  [ngIfElse]="normalCaption">
-
-                  <div *ngIf="isSelIconMultipleVisible" name="selRowMAll" title="seleziona tutte le righe" icon=""
-                     class="editor-content-checkbox-table"
-                     style="display: inline-block;vertical-align: middle;line-height: 1em;margin-bottom: 0!important;text-align: center;">
-                     <input #checkBoxSelectAll type="checkbox" class="checkbox-input" [checked]="rowSelectedAll"
-                        (click)="clickToSelectAllRows()">
-
-
-                  </div>
-
-               </ng-template>
-               <ng-template #normalCaption >
-
-                  <span (click)="sortColumn(colHeader.dataField)" *ngIf="colHeader.type != 'editorButtons'">
-                     {{ colHeader.caption }}
-                     <ng-container *ngIf="sortedColumn === colHeader.dataField;else templateName"  >
-                        <!-- Mostra un'icona di ordinamento -->
-                        <ng-container [ngSwitch]="sortDirection">
-                           <ng-container *ngSwitchCase="'asc'">
-                              <i class="mdi mdi-menu-up"></i>
-                           </ng-container>
-                           <ng-container *ngSwitchCase="'desc'">
-                              <i class="mdi mdi-menu-down"></i>
-                           </ng-container>
-                           <ng-container *ngSwitchDefault>
-                              <i class="mdi mdi-menu-down"></i>
-
-                           </ng-container>
-                        </ng-container>
-                        
-                     </ng-container>
-
-                     <ng-template #templateName >
-                        <ng-container >
-                           <i class="mdi mdi-menu-down"></i>
-                        </ng-container>
-                        
-
-                     </ng-template>
-                
-                  </span>
-                  <!-- <div class="editor   border-top ps-0 pe-1" *ngIf="colHeader.search"
-                     [ngStyle]="{'width.px':colHeader.colWidth}">
-                     <div class="editor-content  no-border">
-                        <div class="input-container no-border d-flex">
-                           <div class="search-icon">
-                              <i class="icon-filter-operation-default dx-icon dx-icon-filter-operation-default"></i>
-
-                           </div>
-                           <div class="input" [ngStyle]="{'width.px':colHeader.colWidth, 'padding-left':'32px'}">
-                              <input #inputFilter style="width: 100%;display: block;position: relative;" type="text"
-                                 [name]="'searchData-' + colHeader.dataField" class="texteditor-input no-border"
-                                 (change)="filterValueChange($event)"
-                                 (keyup)="searchData($event,colHeader.dataField,inputFilter)" />
-                           </div>
-                        </div>
-
-                     </div>
-                  </div> -->
-               </ng-template>
-
-
-            </th>
-
-         </tr>
+<div class="data-grid-shell" [attr.data-grid-id]="idTable">
+  <div class="table-responsive">
+    <table class="table data-grid-table mb-0" [id]="idTable.toString()">
+      <thead>
+        <tr>
+          <th
+            *ngFor="let column of columns"
+            scope="col"
+            [style.width]="width(column)"
+            [class.sortable]="column.dataField && column.type !== 'campoButton' && column.type !== 'campoImg'"
+            (click)="sort(column)"
+          >
+            <span>{{ caption(column) }}</span>
+            <span *ngIf="sortField === column.dataField" class="sort-indicator" aria-hidden="true">
+              {{ sortDirection === 'asc' ? '▲' : '▼' }}
+            </span>
+          </th>
+          <th *ngIf="isEditable" scope="col" class="actions-column">Azioni</th>
+        </tr>
       </thead>
-      <tbody *ngIf="showNullData" [ngStyle]="bodyStyle" class="t-body">
-         <tr class="row-no-data">
-            <td [colSpan]="colsHeader.length" [width]="tableWidth"
-               [ngStyle]="{'width.px': tableWidth,'min-width.px':tableWidth,'max-width.px':tableWidth}">
-               <p style="text-align: center;">{{textEmpty}}</p>
-            </td>
 
-         </tr>
+      <tbody>
+        <tr
+          *ngFor="let row of rows; let rowIndex = index; trackBy: trackRow"
+          [class.selected-row]="selectedRowIndex === rowIndex"
+          (click)="selectRow($event, row, rowIndex)"
+          (dblclick)="doubleClickRow($event, row, rowIndex)"
+        >
+          <td
+            *ngFor="let column of columns"
+            [class]="column.class || ''"
+            [style.text-align]="column.colAlignment || (column.type === 'campoNumber' ? 'right' : 'left')"
+          >
+            <ng-container [ngSwitch]="column.type">
+              <img
+                *ngSwitchCase="'campoImg'"
+                class="cell-image"
+                [src]="row?.[column.dataField] || 'https://ionicframework.com/docs/img/demos/avatar.svg'"
+                [alt]="caption(column) || 'Immagine'"
+                loading="lazy"
+              >
 
+              <button
+                *ngSwitchCase="'campoButton'"
+                type="button"
+                class="btn btn-sm btn-outline-secondary cell-action"
+                [attr.title]="column.button?.hint || column.button?.name || caption(column)"
+                (click)="cellButtonClick($event, column, row, rowIndex)"
+              >
+                <span *ngIf="column.button?.icon" [class]="column.button.icon" aria-hidden="true"></span>
+                <span *ngIf="column.button?.text">{{ column.button.text }}</span>
+              </button>
 
-      </tbody>
-
-      <tbody #tbody *ngIf="!showNullData" [ngStyle]="bodyStyle" class="scroll-bottom" id="scrollBarCustom">
-         <app-custom-scrollbar>
-
-            <ng-container *ngFor="let colRow of rowsData(); let rowIndex = index">
-               <ng-container
-                  *ngIf="groupIndexCol && (rowIndex === 0 || colRow[groupIndexCol.dataField] !== rowsData()[rowIndex - 1][groupIndexCol.dataField])">
-                  <tr class="group-row">
-
-                     <td [colSpan]="groupIndexCol.colSpan" style="border-left: 0;">
-
-                        <app-td-item [colProperty]="groupIndexCol" [rowIndex]="rowIndex"
-                           [value]="colRow[groupIndexCol.dataField]">
-                        </app-td-item>
-                     </td>
-                  </tr>
-               </ng-container>
-               <!--'alternate': alternateRowColor(rowIndex + 1,rowAlternate) 
-                (dblclick)="selectRow($event,rowIndex,colRow)"
-
-                per il momento l'ho tolta da ngclass della riga selected-row || showDetailRow[rowIndex] 
-            -->
-               <tr #riga (dblclick)="dblRowClick($event,rowIndex,colRow)" (click)="selectRow($event,rowIndex,colRow)"
-                  [attr.aria-busy]="busyRows.has(rowIndex)"
-                  (mouseenter)="setStateHover(rowIndex)" (mouseleave)="leaveStateHover($event,riga,rowIndex)"
-                  [ngClass]="updateRowClasses(rowIndex)">
-
-                  <!--[innerText]="renderHtmlColumn(colRow[col.dataField],col.format)"-->
-                  <td *ngFor="let col of colsHeader; let i=index" [id]="col.dataField +'_'+ rowIndex"
-                     [class]="col.class" [colSpan]="col.colSpan" [align]="'center'"
-                     [title]="colRow[col.dataField] ? colRow[col.dataField] : '' "
-                     [ngStyle]="{'width.px':col.colWidth, 'min-width.px':col.colWidth,'max-width.px':col.colWidth}"
-                     (click)="tdClick($event,col,i,rowIndex)">
-                     <ng-container>
-
-                        <app-td-item [colProperty]="col" [searchText]="searchText" [rowIndex]="rowIndex"
-                           [value]="colRow[col.dataField]" [colType]="col.type"
-                           (btnActionClick)="btnActionClick($event)">
-                        </app-td-item>
-
-                     </ng-container>
-
-                  </td>
-
-
-
-
-               </tr>
-
-
-               <tr *ngIf="showDetailRow[rowIndex]" class="no-event-hover">
-                  <td [colSpan]="colsHeader.length" style="padding:0">
-                     <div class="col-sm-offset-1 p-2">
-                        <ng-container *ngFor="let colsCaption of colsGroupCaption">
-                           <caption>{{colsCaption.caption}} </caption>
-                        </ng-container>
-                        <table [width]="tableWidthDetail " *ngIf="showNullDataDetail"
-                           class="detail--data-grid -data-grid grid-line">
-                           <tr class="row-no-data">
-                              <td [colSpan]="colsDetail.length">
-                                 <p style="text-align: center;">Nessun dato da mostrare</p>
-                              </td>
-
-                           </tr>
-
-
-                        </table>
-                        <table *ngIf="!showNullDataDetail" class="detail--data-grid  grid-line"
-                           [width]="tableWidthDetail ">
-
-                           <thead>
-
-                              <tr class="no-events">
-
-
-                                 <th scope="col" *ngFor="let colHeadeD of colsDetail" [align]="colHeadeD.captionAlign"
-                                    [ngStyle]="{'width.px':colHeadeD.colWidth, 'min-width.px':colHeadeD.colWidth,'max-width.px':colHeadeD.colWidth}">
-                                    <span>{{colHeadeD.caption}}</span>
-                                 </th>
-
-                              </tr>
-                           </thead>
-                           <!--,  'alternate': alternateRowColor(rowIndex + 1,rowAlternate)  -->
-                           <tr *ngFor="let colRowDetail of colsRowDetail[rowIndex]; let i = index"
-                              (click)="selectRowDetail($event,i,colRowDetail,rowIndex)"
-                              [ngClass]="{ 'selected-row' : rowSelectedDetail[i],'state-hover-detail' : isSelectedSubRow(rowIndex, i)   }">
-
-
-                              <td *ngFor="let cold of colsDetail; let i=index" [width]="cold.colWidth"
-                                 [class]="cold.class" [colSpan]="cold.colSpan" [align]="cold.colAlignment"
-                                 [ngStyle]="{'width.px':cold.colWidth, 'min-width.px':cold.colWidth,'max-width.px':cold.colWidth}">
-
-                                 <ng-container *ngIf="cold.type == 'selection-detail'">
-
-
-                                    <div *ngIf="isSelIconDetailVisible" [id]="'selection-' + colRow.dataField"
-                                       class="selection-icon" name="selRow" hint="importa dati" icon=""
-                                       (click)="selectRow($event,i,colRow,rowIndex)">
-                                       <i class="glyphicon mdi mdi mdi-export"></i>
-                                    </div>
-
-
-                                 </ng-container>
-
-
-                                 <ng-container *ngIf="cold.type == 'data-detail'">
-                                    <app-td-item [colProperty]="cold" [rowIndex]="i"
-                                       [value]="colRowDetail[cold.dataField]">
-                                    </app-td-item>
-                                 </ng-container>
-                              </td>
-
-                           </tr>
-                        </table>
-                     </div>
-                  </td>
-               </tr>
+              <span *ngSwitchDefault>{{ displayValue(row, column) }}</span>
             </ng-container>
-            <ng-container *ngIf="showEmptyRow">
-               <tr class="empty-row" [ngStyle]="emptyRowStyleClass">
-                  <td *ngFor="let col of colsHeader; let i=index" [id]="col.dataField" [width]="col.colWidth"
-                     [class]="col.class" [colSpan]="col.colSpan" [align]="col.colAlignment"
-                     [ngStyle]="{'width.px':col.colWidth, 'min-width.px':col.colWidth,'max-width.px':col.colWidth}"
-                     [width]="col.colWidth">
-                  </td>
-               </tr>
-            </ng-container>
-         </app-custom-scrollbar>
-         <!--  *ngIf="tableHeightForEmptyRow>0"
-            class="dx-row dx-freespace-row dx-column-lines no-events" role="presentation" [ngStyle]="{'height.px': tableHeightForEmptyRow, background: '#fff' }"<td *ngFor="let colE of colsHeader; let x=index" ></td>-->
+          </td>
+
+          <td *ngIf="isEditable" class="row-actions">
+            <button
+              *ngIf="isEditableEditRow"
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              title="Modifica"
+              aria-label="Modifica"
+              (click)="editRow($event, row, rowIndex)"
+            >
+              <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+            </button>
+            <button
+              *ngIf="isEditableDeleteRow"
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              title="Elimina"
+              aria-label="Elimina"
+              (click)="deleteRow($event, row, rowIndex)"
+            >
+              <span class="mdi mdi-trash-can-outline" aria-hidden="true"></span>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="!rows.length">
+          <td [attr.colspan]="columns.length + (isEditable ? 1 : 0)" class="empty-state">
+            Nessun dato disponibile.
+          </td>
+        </tr>
       </tbody>
-
-
-      <tfoot *ngIf="enableTfoot" class="tableFooter">
-         <tr>
-
-            <td *ngFor="let colHeader of colsHeader">
-               <div class="sumWrap" [ngStyle]="{'width.px':colHeader.width}">
-                  <app-td-item [colProperty]="colHeader" [showSummaryText]="true"
-                     [value]="valueSumm[colHeader.dataField]">
-                  </app-td-item>
-               </div>
-
-            </td>
-         </tr>
-      </tfoot>
-   </table>
-
-
-
-
-
-</div>
-
-<div class="-data-grid-toolbar-bottom" *ngIf="showToolbarBottom">
-   <!-- <app-toolbar  
-      [textColor]="'#023957'" 
-      class="-toolbar-items-container"
-      [position]="'horizontal'" 
-      [background]="'#d1e0ed'"
-      [height]="35"
-      [tastiBottom]="toolbarButtonsBottomRight"
-      [tastiUp]="toolbarButtonsBottomLeft"
-      [buttonCustomBottom]="buttonBottomToolbar" 
-      (risposta)="buttonEmitted($event)"
-      [hoverMode]="false" 
-      [isDx]="false"
-   >
-   </app-toolbar> -->
+    </table>
+  </div>
 </div>
