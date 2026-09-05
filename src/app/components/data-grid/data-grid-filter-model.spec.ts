@@ -1,4 +1,6 @@
 import {
+  buildGridSearch,
+  normalizeGridSearchDate,
   resolveDefaultFilterOperator,
   resolveDefaultSearchOperator,
 } from './data-grid-filter-model';
@@ -55,6 +57,84 @@ describe('DataGrid filter model', () => {
     it('should respect an explicit filter operator override', () => {
       expect(resolveDefaultFilterOperator('campo', 'startsWith')).toBe('startsWith');
       expect(resolveDefaultFilterOperator('campoNumber', 'gte')).toBe('gte');
+    });
+  });
+
+  describe('date normalization', () => {
+    it('should preserve the historic Italian and ISO date input formats', () => {
+      expect(normalizeGridSearchDate('05/09/2026')).toBe('2026-09-05');
+      expect(normalizeGridSearchDate('5-9-2026')).toBe('2026-09-05');
+      expect(normalizeGridSearchDate('2026/09/05')).toBe('2026-09-05');
+      expect(normalizeGridSearchDate('2026-9-5')).toBe('2026-09-05');
+    });
+
+    it('should reject invalid calendar dates and unrelated text', () => {
+      expect(normalizeGridSearchDate('31/02/2026')).toBeUndefined();
+      expect(normalizeGridSearchDate('not-a-date')).toBeUndefined();
+    });
+  });
+
+  describe('typed global search conditions', () => {
+    it('should build one OR-search condition per compatible column', () => {
+      expect(buildGridSearch('35', [
+        { field: 'name', type: 'campo' },
+        { field: 'age', type: 'campoNumber' },
+        { field: 'active', type: 'campoBoolean' },
+      ])).toEqual({
+        value: '35',
+        conditions: [
+          { field: 'name', operator: 'contains', value: '35' },
+          { field: 'age', operator: 'eq', value: 35 },
+        ],
+      });
+    });
+
+    it('should skip numeric and date conditions when the search text cannot be converted', () => {
+      expect(buildGridSearch('Alessandro', [
+        { field: 'name', type: 'campoTesto' },
+        { field: 'age', type: 'campoNumber' },
+        { field: 'createdAt', type: 'campoDateTime' },
+      ])).toEqual({
+        value: 'Alessandro',
+        conditions: [
+          { field: 'name', operator: 'contains', value: 'Alessandro' },
+        ],
+      });
+    });
+
+    it('should normalize date-only and datetime values while preserving their different operators', () => {
+      expect(buildGridSearch('05/09/2026', [
+        { field: 'birthDate', type: 'campoData' },
+        { field: 'createdAt', type: 'campoDateTime' },
+      ])).toEqual({
+        value: '05/09/2026',
+        conditions: [
+          { field: 'birthDate', operator: 'eq', value: '2026-09-05' },
+          { field: 'createdAt', operator: 'sameDay', value: '2026-09-05' },
+        ],
+      });
+    });
+
+    it('should honor searchability and explicit operator overrides', () => {
+      expect(buildGridSearch('ABC', [
+        { field: 'name', type: 'campo', searchable: false },
+        { field: 'sku', type: 'campo', searchOperator: 'eq' },
+        { field: 'category', type: 'campoLista', searchOperator: 'contains' },
+      ])).toEqual({
+        value: 'ABC',
+        conditions: [
+          { field: 'sku', operator: 'eq', value: 'ABC' },
+          { field: 'category', operator: 'contains', value: 'ABC' },
+        ],
+      });
+    });
+
+    it('should return no global search for blank text or when no compatible columns exist', () => {
+      expect(buildGridSearch('   ', [{ field: 'name', type: 'campo' }])).toBeUndefined();
+      expect(buildGridSearch('yes', [
+        { field: 'active', type: 'campoBoolean' },
+        { field: 'category', type: 'campoLista' },
+      ])).toBeUndefined();
     });
   });
 });
