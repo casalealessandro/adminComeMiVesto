@@ -1,95 +1,83 @@
-import { Component, EventEmitter, Input, Output, output, TemplateRef, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
-import { MenuService } from '../../services/menu.service';
 import { CommonModule } from '@angular/common';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { UserProfile } from '../../interface/app.interface';
-import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { MenuService } from '../../services/menu.service';
 import { OverlayService } from '../../services/overlay.service';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-header',
-  standalone:true,
+  standalone: true,
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
   imports: [CommonModule]
 })
-
-
 export class HeaderComponent {
-
   @ViewChild('dynamicContent', { static: false }) dynamicContent!: TemplateRef<any>;
 
   showProfileInfo = true;
   userProfile?: UserProfile;
 
+  constructor(
+    private menuService: MenuService,
+    private router: Router,
+    private userService: UserService,
+    private auth: AuthService,
+    private overlayService: OverlayService
+  ) {}
 
-  constructor(private menuService: MenuService, private router: Router, private userService: UserService, private auth: AuthService, private overlayService: OverlayService) {
-
-  }
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.renderHeader();
     this.checkRoute();
-
   }
-  renderHeader() {
+
+  renderHeader(): void {
     const user = this.auth.currentUser();
     if (!user) return;
+
     this.userService.getUserProfile(user.uid).subscribe((userProfile: UserProfile) => {
       this.userProfile = userProfile;
-      console.log('userProfile', userProfile);
     });
   }
-  onToggleMenu() {
+
+  onToggleMenu(): void {
     this.menuService.toggleMenu();
   }
 
-
-
   toggleDropDown(event: any): void {
-
     event.stopPropagation();
-    //event.preventDefault();
 
     const button = event.currentTarget as HTMLElement;
     const rect = button.getBoundingClientRect();
     const position = {
-      top: rect.bottom + window.scrollY, // Posiziona l'overlay sotto il bottone
+      top: rect.bottom + window.scrollY,
       left: rect.left + window.scrollX
     };
-    // Calcola la larghezza della finestra e controlla che l'overlay non esca dal lato destro
-    const windowWidth = window.innerWidth;
-    const overlayWidth = 220; // Imposta la larghezza dell'overlay (può essere dinamica se necessario)
 
-    // Se l'overlay va fuori dalla finestra, correggiamo la posizione
-    if (position.left + overlayWidth > windowWidth) {
-      position.left = windowWidth - overlayWidth - 10; // Imposta un piccolo margine
+    const overlayWidth = 220;
+    if (position.left + overlayWidth > window.innerWidth) {
+      position.left = window.innerWidth - overlayWidth - 10;
     }
 
-    const data = {
-      position: position,
-      contentTemplate:this.dynamicContent,
-      showBgOverlay:false,
-      index:0
-
-    }
-    // Creazione dinamica dell'overlay
-    this.overlayService.openOverlay(data)
-
+    this.overlayService.openOverlay({
+      position,
+      contentTemplate: this.dynamicContent,
+      showBgOverlay: false,
+      index: 0
+    });
   }
 
-  toggleDropDownF(event: any): void {
-    this.overlayService.closeOverlay()
+  toggleDropDownF(_event: any): void {
+    this.overlayService.closeOverlay();
   }
 
-  async logout() {
-    console.log('LOGOUT');
+  async logout(): Promise<void> {
     await this.auth.logout();
   }
 
-  checkRoute() {
-    const currentRoute = this.router.url;
-    this.showProfileInfo = currentRoute !== '/login';
+  checkRoute(): void {
+    this.showProfileInfo = this.router.url !== '/login';
   }
 }

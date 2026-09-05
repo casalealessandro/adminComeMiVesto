@@ -16,34 +16,17 @@
       (emitToolbarSearchInputChange)="onSearchInputChange($event)"
       (emitToolbarButtonInput)="onButtonInputChange($event)"
       [isFooter]="false"
-    >
-    </app-caption>
+    ></app-caption>
 
     <div class="anagrafica-container">
       <div class="anagrafica-row">
-        <!--Tab funzionale-->
-
-        <!-- <app-toolbar 
-                    
-                    #toolbarTab 
-                    
-                    [textColor]="'#023957'" 
-                    [height]="27"
-                    class="nav-tab nav-tabs" 
-                    [bootstrapClass]="" 
-                    [buttonCustomUp]="itemTabs"
-                    position="horizontal" 
-                    [isDx]="false"
-                    (risposta)="buttonToolbarLeft($event)" 
-                    >
-                </app-toolbar> -->
-
         <div class="col-lg-12 wrapForm">
           <div class="text">
             <h2 *ngIf="subTitle">
               <span class="mdi mdi-database"></span>{{ subTitle }}
             </h2>
           </div>
+
           <div
             *ngIf="tip"
             class="alert alert-primary d-flex align-items-center alert-dismissible fade show"
@@ -58,10 +41,12 @@
               aria-label="Close"
             ></button>
           </div>
+
           <ng-container *ngIf="showSpinner">
-            <p>Carimento in corso...</p>
+            <p>Caricamento in corso...</p>
           </ng-container>
-          <ng-content id="ng-content"> </ng-content>
+
+          <ng-content></ng-content>
         </div>
       </div>
     </div>
@@ -71,7 +56,6 @@
       [isClosable]="false"
       (emettiChiusura)="onCrocettaClick($event)"
       [isFooter]="true"
-    >
-    </app-caption>
+    ></app-caption>
   </div>
 </div>
