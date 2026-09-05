@@ -21,5 +21,8 @@ export interface PopupOutputEvent {
   name?: string;
   componentName?: string;
   accessoringData?: unknown;
-  [key: string]: unknown;
+  formData?: any;
+  formField?: any;
+  inEdit?: boolean;
+  [key: string]: any;
 }

@@ -8,7 +8,7 @@ export class PopUpService {
   private readonly popupsSubject = new BehaviorSubject<PopupInfo[]>([]);
   readonly popupsSet = this.popupsSubject.asObservable();
 
-  private readonly outputComponentSubject = new BehaviorSubject<PopupOutputEvent | null>(null);
+  private readonly outputComponentSubject = new BehaviorSubject<PopupOutputEvent>({});
   readonly outputComponent = this.outputComponentSubject.asObservable();
 
   private currentPopups: PopupInfo[] = [];
@@ -94,14 +94,12 @@ export class PopUpService {
   }
 
   destroyOutputComponent(): void {
-    this.outputComponentSubject.next(null);
+    this.outputComponentSubject.next({});
   }
 
   getOutputComponent(guid: string): Promise<PopupOutputEvent> {
     return firstValueFrom(
-      this.outputComponent.pipe(
-        filter((event): event is PopupOutputEvent => !!event && event.guid === guid)
-      )
+      this.outputComponent.pipe(filter(event => event.guid === guid))
     );
   }
 
