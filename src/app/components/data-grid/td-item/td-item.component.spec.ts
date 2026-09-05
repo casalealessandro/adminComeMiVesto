@@ -32,7 +32,6 @@ describe('TdItemComponent', () => {
     };
     component.colType = 'campo';
     component.value = 'Test value';
-    fixture.detectChanges();
   });
 
   it('should create', () => {
