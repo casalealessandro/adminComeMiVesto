@@ -1,4 +1,5 @@
 import {
+  buildGridColumnFilter,
   buildGridSearch,
   normalizeGridSearchDate,
   resolveDefaultFilterOperator,
@@ -135,6 +136,71 @@ describe('DataGrid filter model', () => {
         { field: 'active', type: 'campoBoolean' },
         { field: 'category', type: 'campoLista' },
       ])).toBeUndefined();
+    });
+  });
+
+  describe('typed column filters', () => {
+    it('should build contains for text and equality for numbers', () => {
+      expect(buildGridColumnFilter(' ale ', { field: 'name', type: 'campo' })).toEqual({
+        field: 'name',
+        operator: 'contains',
+        value: 'ale',
+      });
+
+      expect(buildGridColumnFilter('35', { field: 'age', type: 'campoNumber' })).toEqual({
+        field: 'age',
+        operator: 'eq',
+        value: 35,
+      });
+    });
+
+    it('should normalize dates and use sameDay for datetime columns', () => {
+      expect(buildGridColumnFilter('05/09/2026', { field: 'createdAt', type: 'campoDateTime' })).toEqual({
+        field: 'createdAt',
+        operator: 'sameDay',
+        value: '2026-09-05',
+      });
+    });
+
+    it('should convert boolean select values to booleans', () => {
+      expect(buildGridColumnFilter('true', { field: 'active', type: 'campoBoolean' })).toEqual({
+        field: 'active',
+        operator: 'eq',
+        value: true,
+      });
+
+      expect(buildGridColumnFilter('false', { field: 'active', type: 'campoBoolean' })).toEqual({
+        field: 'active',
+        operator: 'eq',
+        value: false,
+      });
+    });
+
+    it('should preserve typed list values and respect an operator override', () => {
+      expect(buildGridColumnFilter(12, {
+        field: 'categoryId',
+        type: 'campoLista',
+        filterOperator: 'in',
+      })).toEqual({
+        field: 'categoryId',
+        operator: 'in',
+        value: 12,
+      });
+    });
+
+    it('should remove empty or invalid filters', () => {
+      expect(buildGridColumnFilter('', { field: 'name', type: 'campo' })).toBeUndefined();
+      expect(buildGridColumnFilter('abc', { field: 'age', type: 'campoNumber' })).toBeUndefined();
+      expect(buildGridColumnFilter('maybe', { field: 'active', type: 'campoBoolean' })).toBeUndefined();
+      expect(buildGridColumnFilter('2026-99-99', { field: 'createdAt', type: 'campoDateTime' })).toBeUndefined();
+    });
+
+    it('should honor an explicit non-filterable column', () => {
+      expect(buildGridColumnFilter('ale', {
+        field: 'name',
+        type: 'campo',
+        filterable: false,
+      })).toBeUndefined();
     });
   });
 });
