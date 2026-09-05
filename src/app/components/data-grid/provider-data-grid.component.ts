@@ -143,9 +143,9 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
    * delegates to DataGridComponent; only provider remote mode uses the new
    * typed global-search request.
    */
-  override toolbarValueChanged(event: { value: any; event: any; }): void {
+  override async toolbarValueChanged(event: { value: any; event: any; }): Promise<void> {
     if (!this.dataProvider || !this.remoteOperation) {
-      super.toolbarValueChanged(event);
+      await super.toolbarValueChanged(event);
       return;
     }
 
