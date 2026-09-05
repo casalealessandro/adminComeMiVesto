@@ -2,8 +2,20 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
-import { buildGridSearch, GridFilterColumnMetadata } from './data-grid-filter-model';
-import { GridDataProvider, GridLoadRequest, GridPage, GridSearch, GridSort } from './data-grid-provider';
+import {
+  buildGridColumnFilter,
+  buildGridSearch,
+  GridFilterColumnMetadata,
+} from './data-grid-filter-model';
+import {
+  GridDataProvider,
+  GridFilter,
+  GridFilterOperator,
+  GridLoadRequest,
+  GridPage,
+  GridSearch,
+  GridSort,
+} from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
 import { TdItemComponent } from './td-item/td-item.component';
 
@@ -44,11 +56,19 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
    */
   providerSearchDebounce = 500;
 
+  /**
+   * Column text/number/date filters follow the same short delay historically
+   * used by the old filter inputs. Select filters are applied immediately.
+   */
+  providerFilterDebounce = 500;
+
   private providerMockItem?: T;
   private remoteTotalCountKnown = false;
   private providerSort: GridSort[] = [];
   private providerSearch?: GridSearch;
+  private providerFilters: GridFilter[] = [];
   private providerSearchTimer?: ReturnType<typeof setTimeout>;
+  private providerFilterTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private providerScrollElement?: HTMLElement;
   private readonly providerScrollListener = (event: Event) => {
     void this.onScroll(event);
@@ -72,6 +92,9 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       clearTimeout(this.providerSearchTimer);
       this.providerSearchTimer = undefined;
     }
+
+    this.providerFilterTimers.forEach(timer => clearTimeout(timer));
+    this.providerFilterTimers.clear();
 
     this.providerScrollElement?.removeEventListener('scroll', this.providerScrollListener);
     this.providerScrollElement = undefined;
@@ -155,6 +178,31 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   }
 
   /**
+   * Recover the historic per-column input entry point without changing the
+   * original DataGrid method. Provider mode reads the field/type metadata from
+   * the filter-row control and keeps one typed filter per column.
+   */
+  override async searchData(event: any): Promise<void> {
+    if (!this.dataProvider || !this.remoteOperation) {
+      await super.searchData(event);
+      return;
+    }
+
+    const target = event?.target as HTMLInputElement | HTMLSelectElement | null;
+    const field = target?.dataset?.['gridFilterField'];
+    if (!target || !field) return;
+
+    const value = this.resolveProviderFilterInputValue(field, target.value);
+
+    if (target.tagName === 'SELECT') {
+      await this.applyProviderColumnFilter(field, value);
+      return;
+    }
+
+    this.scheduleProviderColumnFilter(field, value);
+  }
+
+  /**
    * Apply global search immediately. This method is intentionally public so the
    * provider path is usable independently from the currently-commented toolbar
    * markup and can be tested without timers.
@@ -169,6 +217,37 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     const loaded = await this.loadRemoteRecords();
     if (!loaded) {
       this.providerSearch = previousSearch;
+      return false;
+    }
+
+    if (this.providerScrollElement) {
+      this.providerScrollElement.scrollTop = 0;
+    }
+
+    return true;
+  }
+
+  /**
+   * Apply or remove one explicit column filter. The request keeps active global
+   * search and sorting, while column filters themselves are sent as an AND list.
+   */
+  async applyProviderColumnFilter(field: string, value: unknown): Promise<boolean> {
+    if (!this.dataProvider || !this.remoteOperation || !field) return false;
+
+    const column = this.getProviderFilterColumn(field);
+    if (!column) return false;
+
+    const previousFilters = this.cloneProviderFilters(this.providerFilters);
+    const filter = buildGridColumnFilter(value, column);
+
+    this.providerFilters = this.providerFilters.filter(currentFilter => currentFilter.field !== field);
+    if (filter) {
+      this.providerFilters.push(filter);
+    }
+
+    const loaded = await this.loadRemoteRecords();
+    if (!loaded) {
+      this.providerFilters = previousFilters;
       return false;
     }
 
@@ -262,6 +341,10 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       request.search = this.cloneProviderSearch(this.providerSearch);
     }
 
+    if (this.providerFilters.length > 0) {
+      request.filters = this.cloneProviderFilters(this.providerFilters);
+    }
+
     if (this.providerSort.length > 0) {
       request.sort = this.providerSort.map(sort => ({ ...sort }));
     }
@@ -307,14 +390,86 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     }, this.providerSearchDebounce);
   }
 
+  private scheduleProviderColumnFilter(field: string, value: unknown): void {
+    const currentTimer = this.providerFilterTimers.get(field);
+    if (currentTimer !== undefined) {
+      clearTimeout(currentTimer);
+      this.providerFilterTimers.delete(field);
+    }
+
+    if (this.providerFilterDebounce <= 0) {
+      void this.applyProviderColumnFilter(field, value);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      this.providerFilterTimers.delete(field);
+      void this.applyProviderColumnFilter(field, value);
+    }, this.providerFilterDebounce);
+
+    this.providerFilterTimers.set(field, timer);
+  }
+
   private getProviderSearchColumns(): GridFilterColumnMetadata[] {
     return this.colsHeader
       .filter(column => !!column.dataField)
-      .map(column => ({
-        field: column.dataField,
-        type: column.type,
-        searchable: column.search === false ? false : undefined,
-      }));
+      .map(column => {
+        const originalColumn = this.getProviderOriginalColumn(column.dataField);
+
+        return {
+          field: column.dataField,
+          type: column.type,
+          searchable: originalColumn?.search === false ? false : undefined,
+          searchOperator: originalColumn?.searchOperator as GridFilterOperator | undefined,
+        };
+      });
+  }
+
+  private getProviderFilterColumn(field: string): GridFilterColumnMetadata | undefined {
+    const column = this.colsHeader.find(currentColumn => currentColumn.dataField === field);
+    if (!column) return undefined;
+
+    const originalColumn = this.getProviderOriginalColumn(field);
+
+    return {
+      field,
+      type: column.type,
+      filterable: originalColumn?.allowFiltering === false ? false : undefined,
+      filterOperator: originalColumn?.filterOperator as GridFilterOperator | undefined,
+    };
+  }
+
+  private getProviderOriginalColumn(field: string): any {
+    for (const group of this.colonne ?? []) {
+      if ((group as any)?.dataField === field) {
+        return group;
+      }
+
+      const data = (group as any)?.data;
+      if (!Array.isArray(data)) continue;
+
+      const column = data.find((currentColumn: any) => currentColumn?.dataField === field);
+      if (column) return column;
+    }
+
+    return undefined;
+  }
+
+  private resolveProviderFilterInputValue(field: string, value: string): unknown {
+    if (value === '') return '';
+
+    const column = this.colsHeader.find(currentColumn => currentColumn.dataField === field);
+    if (column?.type !== 'campoLista') return value;
+
+    const originalColumn = this.getProviderOriginalColumn(field);
+    const listOptions = originalColumn?.lista ?? column.customizedOptions;
+    const options = listOptions?.options;
+    const valueExp = listOptions?.valueExp;
+
+    if (!Array.isArray(options) || !valueExp) return value;
+
+    const selectedOption = options.find((option: any) => String(option?.[valueExp]) === String(value));
+    return selectedOption ? selectedOption[valueExp] : value;
   }
 
   private cloneProviderSearch(search?: GridSearch): GridSearch | undefined {
@@ -324,6 +479,10 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       value: search.value,
       conditions: search.conditions.map(condition => ({ ...condition })),
     };
+  }
+
+  private cloneProviderFilters(filters: GridFilter[]): GridFilter[] {
+    return filters.map(filter => ({ ...filter }));
   }
 
   private applyInitialProviderPage(page: GridPage<T>): void {
