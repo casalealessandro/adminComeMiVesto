@@ -2264,7 +2264,11 @@ export class DataGridComponent implements OnDestroy {
         }
 
         if (this.selectedRowIndex == 0) {
-          if (this.selectionRowMode != 'detail' || (this.showDetailRow[0] && currentDetailRows.length > 0)) {
+          const selectedDetailRows = Array.isArray(this.colsRowDetail?.[this.selectedRowIndex])
+            ? this.colsRowDetail[this.selectedRowIndex]
+            : [];
+
+          if (this.selectionRowMode != 'detail' || (this.showDetailRow[0] && selectedDetailRows.length > 0)) {
             this.selectedSubRowIndex = 0;
           }
         }
