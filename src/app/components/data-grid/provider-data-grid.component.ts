@@ -59,6 +59,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   set lookupProviders(providers: GridLookupProviderMap | undefined) {
     this.registeredLookupProviders = providers ?? {};
     this.providerLookupRegistry.setProviders(this.registeredLookupProviders);
+    this.providerLookupRegistry.setRowResolver(rowIndex => this.rowsData()[rowIndex]);
   }
 
   get lookupProviders(): GridLookupProviderMap {
@@ -103,13 +104,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   private providerSearchTimer?: ReturnType<typeof setTimeout>;
   private providerFilterTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private providerScrollElement?: HTMLElement;
-
-  override ngAfterViewInit(): void {
-    super.ngAfterViewInit();
-
-    this.providerLookupRegistry.setProviders(this.registeredLookupProviders);
-    this.providerLookupRegistry.setRowResolver(rowIndex => this.rowsData()[rowIndex]);
-  }
 
   override ngOnDestroy(): void {
     if (this.providerSearchTimer !== undefined) {
