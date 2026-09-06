@@ -12,7 +12,6 @@ import { GridDetailDataProvider } from './data-grid-detail-provider';
 import {
   buildGridColumnFilter,
   buildGridSearch,
-  GridFilterColumnMetadata,
 } from './data-grid-filter-model';
 import {
   GridLookupProviderMap,
@@ -21,13 +20,13 @@ import {
 import {
   GridDataProvider,
   GridFilter,
-  GridFilterOperator,
   GridLoadRequest,
   GridPage,
   GridSearch,
   GridSort,
 } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
+import { DataGridUtils } from './data-grid-utils';
 import { ProviderTdItemComponent } from './td-item/provider-td-item.component';
 
 /**
@@ -151,7 +150,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.colsHeader.forEach(column => {
       if (!column.dataField) return;
 
-      const originalColumn = this.getProviderOriginalColumn(column.dataField);
+      const originalColumn = DataGridUtils.getOriginalColumn(this.colonne, column.dataField);
       if (originalColumn?.allowFiltering === false) {
         column.search = false;
       }
@@ -405,7 +404,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
     const previousColumn = this.sortedColumn;
     const previousDirection = this.sortDirection;
-    const previousSort = this.providerSort.map(sort => ({ ...sort }));
+    const previousSort = DataGridUtils.cloneSorts(this.providerSort);
 
     if (this.sortedColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -453,7 +452,12 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     const field = target?.dataset?.['gridFilterField'];
     if (!target || !field) return;
 
-    const value = this.resolveProviderFilterInputValue(field, target.value);
+    const value = DataGridUtils.resolveProviderFilterInputValue(
+      this.colsHeader,
+      this.colonne,
+      field,
+      target.value,
+    );
 
     if (target.tagName === 'SELECT') {
       await this.applyProviderColumnFilter(field, value);
@@ -471,9 +475,12 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   async applyProviderSearch(value: string): Promise<boolean> {
     if (!this.dataProvider || !this.remoteOperation) return false;
 
-    const previousSearch = this.cloneProviderSearch(this.providerSearch);
+    const previousSearch = DataGridUtils.cloneSearch(this.providerSearch);
     this.searchText = value ?? '';
-    this.providerSearch = buildGridSearch(this.searchText, this.getProviderSearchColumns());
+    this.providerSearch = buildGridSearch(
+      this.searchText,
+      DataGridUtils.getProviderSearchColumns(this.colsHeader, this.colonne),
+    );
 
     const loaded = await this.loadRemoteRecords();
     if (!loaded) {
@@ -495,10 +502,10 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   async applyProviderColumnFilter(field: string, value: unknown): Promise<boolean> {
     if (!this.dataProvider || !this.remoteOperation || !field) return false;
 
-    const column = this.getProviderFilterColumn(field);
+    const column = DataGridUtils.getProviderFilterColumn(this.colsHeader, this.colonne, field);
     if (!column) return false;
 
-    const previousFilters = this.cloneProviderFilters(this.providerFilters);
+    const previousFilters = DataGridUtils.cloneFilters(this.providerFilters);
     const filter = buildGridColumnFilter(value, column);
 
     this.providerFilters = this.providerFilters.filter(currentFilter => currentFilter.field !== field);
@@ -599,15 +606,15 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     }
 
     if (this.providerSearch) {
-      request.search = this.cloneProviderSearch(this.providerSearch);
+      request.search = DataGridUtils.cloneSearch(this.providerSearch);
     }
 
     if (this.providerFilters.length > 0) {
-      request.filters = this.cloneProviderFilters(this.providerFilters);
+      request.filters = DataGridUtils.cloneFilters(this.providerFilters);
     }
 
     if (this.providerSort.length > 0) {
-      request.sort = this.providerSort.map(sort => ({ ...sort }));
+      request.sort = DataGridUtils.cloneSorts(this.providerSort);
     }
 
     return request;
@@ -671,81 +678,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.providerFilterTimers.set(field, timer);
   }
 
-  private getProviderSearchColumns(): GridFilterColumnMetadata[] {
-    return this.colsHeader
-      .filter(column => !!column.dataField)
-      .map(column => {
-        const originalColumn = this.getProviderOriginalColumn(column.dataField);
-
-        return {
-          field: column.dataField,
-          type: column.type,
-          searchable: originalColumn?.search === false ? false : undefined,
-          searchOperator: originalColumn?.searchOperator as GridFilterOperator | undefined,
-        };
-      });
-  }
-
-  private getProviderFilterColumn(field: string): GridFilterColumnMetadata | undefined {
-    const column = this.colsHeader.find(currentColumn => currentColumn.dataField === field);
-    if (!column) return undefined;
-
-    const originalColumn = this.getProviderOriginalColumn(field);
-
-    return {
-      field,
-      type: column.type,
-      filterable: originalColumn?.allowFiltering === false ? false : undefined,
-      filterOperator: originalColumn?.filterOperator as GridFilterOperator | undefined,
-    };
-  }
-
-  private getProviderOriginalColumn(field: string): any {
-    for (const group of this.colonne ?? []) {
-      if ((group as any)?.dataField === field) {
-        return group;
-      }
-
-      const data = (group as any)?.data;
-      if (!Array.isArray(data)) continue;
-
-      const column = data.find((currentColumn: any) => currentColumn?.dataField === field);
-      if (column) return column;
-    }
-
-    return undefined;
-  }
-
-  private resolveProviderFilterInputValue(field: string, value: string): unknown {
-    if (value === '') return '';
-
-    const column = this.colsHeader.find(currentColumn => currentColumn.dataField === field);
-    if (column?.type !== 'campoLista') return value;
-
-    const originalColumn = this.getProviderOriginalColumn(field);
-    const listOptions = originalColumn?.lista ?? column.customizedOptions;
-    const options = listOptions?.options;
-    const valueExp = listOptions?.valueExp;
-
-    if (!Array.isArray(options) || !valueExp) return value;
-
-    const selectedOption = options.find((option: any) => String(option?.[valueExp]) === String(value));
-    return selectedOption ? selectedOption[valueExp] : value;
-  }
-
-  private cloneProviderSearch(search?: GridSearch): GridSearch | undefined {
-    if (!search) return undefined;
-
-    return {
-      value: search.value,
-      conditions: search.conditions.map(condition => ({ ...condition })),
-    };
-  }
-
-  private cloneProviderFilters(filters: GridFilter[]): GridFilter[] {
-    return filters.map(filter => ({ ...filter }));
-  }
-
   private applyInitialProviderPage(page: GridPage<T>): void {
     this.rowsData.set([...page.items]);
     this.remoteContinuation = page.continuation;
@@ -756,18 +688,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.latestSkipLoaded = 0;
     this.latestScrollTopPosition = 0;
     this.showNullData = page.items.length === 0;
-    this.providerMockItem = this.createProviderMockItem(page.items[0]);
-  }
-
-  private createProviderMockItem(item?: T): T | undefined {
-    if (!item || typeof item !== 'object') return undefined;
-
-    const mock = { ...(item as Record<string, unknown>) };
-    Object.keys(mock).forEach(key => {
-      mock[key] = null;
-    });
-
-    return mock as T;
+    this.providerMockItem = DataGridUtils.createMockItem(page.items[0]);
   }
 
   private appendProviderPlaceholders(): number {
