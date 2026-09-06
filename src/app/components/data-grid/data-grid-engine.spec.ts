@@ -192,6 +192,26 @@ describe('DataGridEngine query state', () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
+  it('should load detail rows from the exact parent row and return the provider result unchanged', async () => {
+    const engine = new DataGridEngine<{ code: string }>();
+    const parentRow = { code: 'PARENT-1' };
+    const details = [{ code: 'DETAIL-1' }, { code: 'DETAIL-2' }];
+    const load = jasmine.createSpy('load').and.resolveTo(details);
+
+    const result = await engine.loadDetailRows({ load }, parentRow);
+
+    expect(load).toHaveBeenCalledOnceWith({ parentRow });
+    expect(result).toBe(details);
+  });
+
+  it('should propagate detail provider failures without changing them', async () => {
+    const engine = new DataGridEngine<{ code: string }>();
+    const failure = new Error('detail failed');
+    const load = jasmine.createSpy('load').and.rejectWith(failure);
+
+    await expectAsync(engine.loadDetailRows({ load }, { code: 'PARENT-FAIL' })).toBeRejectedWith(failure);
+  });
+
   it('should build a provider-neutral load request from the current engine state', () => {
     const engine = new DataGridEngine();
     engine.providerSort = [{ field: 'name', direction: 'asc' }];
