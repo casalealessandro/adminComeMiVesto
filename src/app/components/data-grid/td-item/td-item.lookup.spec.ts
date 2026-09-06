@@ -3,12 +3,18 @@ import { of } from 'rxjs';
 
 import { AnagraficaService } from '../../../services/anagrafica.service';
 import { GridLookupDataProvider } from '../data-grid-lookup-provider';
+import { GridLookupRegistry } from '../data-grid-lookup-registry';
 import { TdItemComponent } from './td-item.component';
 
 describe('TdItemComponent lookup safety net', () => {
   let component: TdItemComponent;
   let fixture: ComponentFixture<TdItemComponent>;
   let getValue: jasmine.Spy;
+  let registry: GridLookupRegistry;
+
+  const flushAsyncWork = async () => {
+    await new Promise(resolve => setTimeout(resolve, 0));
+  };
 
   beforeEach(async () => {
     getValue = jasmine.createSpy('getValue');
@@ -16,6 +22,7 @@ describe('TdItemComponent lookup safety net', () => {
     await TestBed.configureTestingModule({
       imports: [TdItemComponent],
       providers: [
+        GridLookupRegistry,
         {
           provide: AnagraficaService,
           useValue: {
@@ -28,6 +35,7 @@ describe('TdItemComponent lookup safety net', () => {
 
     fixture = TestBed.createComponent(TdItemComponent);
     component = fixture.componentInstance;
+    registry = TestBed.inject(GridLookupRegistry);
     component.colProperty = {
       colAlignment: 'left',
       dataField: 'categoryId',
@@ -41,6 +49,7 @@ describe('TdItemComponent lookup safety net', () => {
     };
     component.colType = 'campo';
     component.value = 'CAT-1';
+    component.rowIndex = 0;
     component.dataRow = [{ categoryId: 'CAT-1' }] as any;
   });
 
@@ -94,5 +103,71 @@ describe('TdItemComponent lookup safety net', () => {
 
     expect(getValue).not.toHaveBeenCalled();
     expect(component.staticData).toBe('CAT-1');
+  });
+
+  it('should keep the raw value when the column does not explicitly opt in to a registry lookup', async () => {
+    const load = jasmine.createSpy('load').and.resolveTo({ id: 'CAT-1', name: 'Categoria 1' });
+    registry.setProviders({ categoryId: { load } });
+
+    component.ngAfterViewInit();
+    await flushAsyncWork();
+
+    expect(load).not.toHaveBeenCalled();
+    expect(component.staticData).toBe('CAT-1');
+  });
+
+  it('should resolve an opted-in registry lookup and preserve displayExpr rendering', async () => {
+    const row = { categoryId: 'CAT-1', productName: 'Giacca' };
+    const load = jasmine.createSpy('load').and.resolveTo({ id: 'CAT-1', name: 'Categoria 1' });
+
+    component.colProperty.customizedOptions.lookup = true;
+    registry.setProviders({ categoryId: { load } });
+    registry.setRowResolver(() => row);
+
+    component.ngAfterViewInit();
+    await flushAsyncWork();
+
+    expect(load).toHaveBeenCalledOnceWith({
+      value: 'CAT-1',
+      rowData: row,
+      dataField: 'categoryId',
+    });
+    expect(component.remoteData).toEqual({ id: 'CAT-1', name: 'Categoria 1' });
+    expect(component.displayExpr).toBe('name');
+    expect(component.staticData).toBe('Categoria 1');
+  });
+
+  it('should allow an explicit registry provider key without tying the cell to a backend', async () => {
+    const load = jasmine.createSpy('load').and.resolveTo({ code: 'CAT-1', description: 'Categoria condivisa' });
+
+    component.colProperty.customizedOptions.lookup = {
+      providerKey: 'categories',
+      displayExpr: 'description',
+    };
+    registry.setProviders({ categories: { load } });
+
+    component.ngAfterViewInit();
+    await flushAsyncWork();
+
+    expect(load).toHaveBeenCalledOnceWith({
+      value: 'CAT-1',
+      rowData: undefined,
+      dataField: 'categoryId',
+    });
+    expect(component.staticData).toBe('Categoria condivisa');
+  });
+
+  it('should preserve the already-rendered raw value when a registry provider fails', async () => {
+    const load = jasmine.createSpy('load').and.rejectWith(new Error('lookup failed'));
+
+    component.colProperty.customizedOptions.lookup = true;
+    registry.setProviders({ categoryId: { load } });
+
+    component.ngAfterViewInit();
+    await flushAsyncWork();
+
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(component.staticData).toBe('CAT-1');
+    expect(component.remoteData).toBeUndefined();
   });
 });
