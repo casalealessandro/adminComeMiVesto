@@ -480,16 +480,16 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   async applyProviderSearch(value: string): Promise<boolean> {
     if (!this.dataProvider || !this.remoteOperation) return false;
 
-    const previousSearch = DataGridUtils.cloneSearch(this.gridEngine.providerSearch);
+    const previousSearch = this.gridEngine.snapshotProviderSearch();
     this.searchText = value ?? '';
-    this.gridEngine.providerSearch = buildGridSearch(
+    this.gridEngine.setProviderSearch(buildGridSearch(
       this.searchText,
       DataGridUtils.getProviderSearchColumns(this.colsHeader, this.colonne),
-    );
+    ));
 
     const loaded = await this.loadRemoteRecords();
     if (!loaded) {
-      this.gridEngine.providerSearch = previousSearch;
+      this.gridEngine.restoreProviderSearch(previousSearch);
       return false;
     }
 
@@ -510,17 +510,14 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     const column = DataGridUtils.getProviderFilterColumn(this.colsHeader, this.colonne, field);
     if (!column) return false;
 
-    const previousFilters = DataGridUtils.cloneFilters(this.gridEngine.providerFilters);
+    const previousFilters = this.gridEngine.snapshotProviderFilters();
     const filter = buildGridColumnFilter(value, column);
 
-    this.gridEngine.providerFilters = this.gridEngine.providerFilters.filter(currentFilter => currentFilter.field !== field);
-    if (filter) {
-      this.gridEngine.providerFilters.push(filter);
-    }
+    this.gridEngine.setProviderColumnFilter(field, filter);
 
     const loaded = await this.loadRemoteRecords();
     if (!loaded) {
-      this.gridEngine.providerFilters = previousFilters;
+      this.gridEngine.restoreProviderFilters(previousFilters);
       return false;
     }
 
