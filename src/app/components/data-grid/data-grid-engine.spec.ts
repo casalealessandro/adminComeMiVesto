@@ -50,6 +50,64 @@ describe('DataGridEngine query state', () => {
     expect(engine.providerSort).toEqual([{ field: 'age', direction: 'desc' }]);
   });
 
+  it('should snapshot, set and restore provider search state without sharing the snapshot', () => {
+    const engine = new DataGridEngine();
+    engine.providerSearch = {
+      value: 'anna',
+      conditions: [{ field: 'name', operator: 'contains', value: 'anna' }],
+    };
+
+    const previousSearch = engine.snapshotProviderSearch();
+
+    expect(previousSearch).toEqual({
+      value: 'anna',
+      conditions: [{ field: 'name', operator: 'contains', value: 'anna' }],
+    });
+    expect(previousSearch).not.toBe(engine.providerSearch);
+    expect(previousSearch?.conditions).not.toBe(engine.providerSearch?.conditions);
+
+    engine.setProviderSearch({
+      value: 'mario',
+      conditions: [{ field: 'name', operator: 'contains', value: 'mario' }],
+    });
+    expect(engine.providerSearch?.value).toBe('mario');
+
+    engine.restoreProviderSearch(previousSearch);
+    expect(engine.providerSearch).toEqual({
+      value: 'anna',
+      conditions: [{ field: 'name', operator: 'contains', value: 'anna' }],
+    });
+  });
+
+  it('should replace or remove one provider column filter and restore the previous filter list', () => {
+    const engine = new DataGridEngine();
+    engine.providerFilters = [
+      { field: 'active', operator: 'eq', value: true },
+      { field: 'age', operator: 'eq', value: 42 },
+    ];
+
+    const previousFilters = engine.snapshotProviderFilters();
+
+    expect(previousFilters).not.toBe(engine.providerFilters);
+
+    engine.setProviderColumnFilter('age', { field: 'age', operator: 'eq', value: 30 });
+    expect(engine.providerFilters).toEqual([
+      { field: 'active', operator: 'eq', value: true },
+      { field: 'age', operator: 'eq', value: 30 },
+    ]);
+
+    engine.setProviderColumnFilter('age', undefined);
+    expect(engine.providerFilters).toEqual([
+      { field: 'active', operator: 'eq', value: true },
+    ]);
+
+    engine.restoreProviderFilters(previousFilters);
+    expect(engine.providerFilters).toEqual([
+      { field: 'active', operator: 'eq', value: true },
+      { field: 'age', operator: 'eq', value: 42 },
+    ]);
+  });
+
   it('should build a provider-neutral load request from the current engine state', () => {
     const engine = new DataGridEngine();
     engine.providerSort = [{ field: 'name', direction: 'asc' }];
