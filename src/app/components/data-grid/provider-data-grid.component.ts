@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, Input } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { confirm } from '../../widgets/ui-dialogs';
@@ -12,10 +12,7 @@ import {
   buildGridColumnFilter,
   buildGridSearch,
 } from './data-grid-filter-model';
-import {
-  GridLookupProviderMap,
-  GridLookupRegistry,
-} from './data-grid-lookup-registry';
+import { GridLookupRegistry } from './data-grid-lookup-registry';
 import { GridSort } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
 import { DataGridUtils } from './data-grid-utils';
@@ -42,20 +39,7 @@ import { TdItemComponent } from './td-item/td-item.component';
   providers: [GridLookupRegistry],
 })
 export class ProviderDataGridComponent<T = any> extends DataGridComponent<T> {
-  private readonly providerLookupRegistry = inject(GridLookupRegistry);
   private readonly providerDestroyRef = inject(DestroyRef);
-  private registeredLookupProviders: GridLookupProviderMap = {};
-
-  @Input()
-  set lookupProviders(providers: GridLookupProviderMap | undefined) {
-    this.registeredLookupProviders = providers ?? {};
-    this.providerLookupRegistry.setProviders(this.registeredLookupProviders);
-    this.providerLookupRegistry.setRowResolver(rowIndex => this.rowsData()[rowIndex]);
-  }
-
-  get lookupProviders(): GridLookupProviderMap {
-    return this.registeredLookupProviders;
-  }
 
   /**
    * Keeps the historic short virtual-loading pause used by the old remote
@@ -81,6 +65,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent<T> {
 
   constructor() {
     super();
+    this.providerFacadeActive = true;
 
     this.providerDestroyRef.onDestroy(() => {
       if (this.providerSearchTimer !== undefined) {
@@ -91,73 +76,8 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent<T> {
       this.providerFilterTimers.forEach(timer => clearTimeout(timer));
       this.providerFilterTimers.clear();
 
-      this.providerLookupRegistry.clear();
       this.providerScrollElement = undefined;
     });
-  }
-
-  /**
-   * Keep the historic header builder untouched and only refine the recovered
-   * provider filter-row visibility after the original columns are built.
-   * `showFilter=true` enables the row, while `allowFiltering=false` can still
-   * explicitly disable one column as in the original column configuration.
-   */
-  override async buildHeaderColumns(hCol: any): Promise<boolean> {
-    const built = await super.buildHeaderColumns(hCol);
-
-    this.colsHeader.forEach(column => {
-      if (!column.dataField) return;
-
-      const originalColumn = DataGridUtils.getOriginalColumn(this.colonne, column.dataField);
-      if (originalColumn?.allowFiltering === false) {
-        column.search = false;
-      }
-
-      const lookup = originalColumn?.customizedOptions?.lookup;
-      if (lookup !== undefined) {
-        column.customizedOptions = {
-          ...(column.customizedOptions ?? {}),
-          lookup,
-        };
-      }
-    });
-
-    return built;
-  }
-
-  /**
-   * Keep the historic master/detail UX untouched and replace only the remote
-   * transport when a detail provider is supplied. `collapse()` still owns the
-   * expand/collapse behavior, CSS classes and the decision to load remotely.
-   */
-  override async renderGridDetailData(detailOptions: any, row: any, index: any): Promise<void> {
-    if (!this.detailDataProvider) {
-      await super.renderGridDetailData(detailOptions, row, index);
-      return;
-    }
-
-    const previousShowNullDataDetail = this.showNullDataDetail;
-    this.showNullDataDetail = false;
-
-    try {
-      const details = await this.gridEngine.loadDetailRows(this.detailDataProvider, row as T)
-
-      this.colsRowDetail[index] = details
-      this.showNullDataDetail = details.length == 0
-      this.showDetailRow[index] = true
-
-      let eventExpandingRow = {
-        cancel: false,
-        data: row,
-        rowIndex: index,
-        expandedData: this.colsRowDetail[index],
-        name: 'onRowExpanded'
-      }
-
-      this.emittendGridEvent.emit(eventExpandingRow)
-    } catch {
-      this.showNullDataDetail = previousShowNullDataDetail;
-    }
   }
 
   /**
