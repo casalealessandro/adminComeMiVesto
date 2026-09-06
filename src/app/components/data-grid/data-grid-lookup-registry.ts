@@ -29,6 +29,8 @@ export class GridLookupRegistry {
   private rowResolver?: (rowIndex: number) => unknown;
   private cache = new Map<string, unknown>();
   private pendingLoads = new Map<string, Promise<unknown>>();
+  private cacheVersion = 0;
+  private providerCacheVersions = new Map<string, number>();
 
   setProviders(providers?: GridLookupProviderMap): void {
     this.providers = providers ?? {};
@@ -70,15 +72,23 @@ export class GridLookupRegistry {
       return pendingLoad;
     }
 
+    const currentCacheVersion = this.cacheVersion;
+    const currentProviderCacheVersion = this.providerCacheVersions.get(providerKey) ?? 0;
+
     const loadPromise = provider.load(request)
       .then(result => {
-        if (result !== undefined && result !== null) {
+        const sameCacheVersion = currentCacheVersion === this.cacheVersion;
+        const sameProviderCacheVersion = currentProviderCacheVersion === (this.providerCacheVersions.get(providerKey) ?? 0);
+
+        if (sameCacheVersion && sameProviderCacheVersion && result !== undefined && result !== null) {
           this.cache.set(cacheKey, result);
         }
         return result;
       })
       .finally(() => {
-        this.pendingLoads.delete(cacheKey);
+        if (this.pendingLoads.get(cacheKey) === loadPromise) {
+          this.pendingLoads.delete(cacheKey);
+        }
       });
 
     this.pendingLoads.set(cacheKey, loadPromise);
@@ -92,10 +102,17 @@ export class GridLookupRegistry {
 
   clearCache(providerKey?: string): void {
     if (!providerKey) {
+      this.cacheVersion++;
+      this.providerCacheVersions.clear();
       this.cache.clear();
       this.pendingLoads.clear();
       return;
     }
+
+    this.providerCacheVersions.set(
+      providerKey,
+      (this.providerCacheVersions.get(providerKey) ?? 0) + 1,
+    );
 
     const prefix = `${providerKey}|`;
 
