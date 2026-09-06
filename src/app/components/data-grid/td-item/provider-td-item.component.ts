@@ -45,8 +45,7 @@ export class ProviderTdItemComponent extends TdItemComponent {
       return false;
     }
 
-    const provider = this.lookupRegistry.getProvider(dataField, lookup);
-    if (!provider) {
+    if (!this.lookupRegistry.getProvider(dataField, lookup)) {
       return false;
     }
 
@@ -55,7 +54,7 @@ export class ProviderTdItemComponent extends TdItemComponent {
     const previousDisplayExpr = this.displayExpr;
 
     try {
-      const resolvedData = await provider.load({
+      const resolvedData = await this.lookupRegistry.load(dataField, lookup, {
         value: this.value,
         rowData: this.lookupRegistry.resolveRow(this.rowIndex),
         dataField,
