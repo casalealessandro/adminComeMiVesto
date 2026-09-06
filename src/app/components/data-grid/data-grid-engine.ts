@@ -1,18 +1,31 @@
+import { GridFilter, GridSearch, GridSort } from './data-grid-provider';
+
 /**
  * Stateful orchestration layer for DataGrid behavior.
  *
- * Architecture placeholder only: no existing DataGrid runtime method has been
- * moved or rewritten yet. The migration will be performed incrementally after
- * the ownership map is approved.
+ * Phase 2 starts moving provider-neutral query state here without changing the
+ * existing DataGrid loading, rendering or public runtime contracts.
  *
- * Intended ownership:
- * - provider-neutral loading and refresh orchestration
- * - paging / continuation state
- * - sorting state and execution
- * - global search and column-filter state
- * - CRUD orchestration
- * - remote detail loading orchestration
- * - loading / query state that is independent from Angular rendering
+ * Current ownership:
+ * - provider sorting request state
+ * - provider global-search request state
+ * - provider column-filter request state
+ * - opaque continuation / has-more paging state
+ * - whether the remote total count is authoritative
+ *
+ * Still intentionally owned by the components in this phase:
+ * - Angular / DOM state
+ * - loading flags and timers
+ * - visible rows and selection state
+ * - local UI sort/search indicators
+ * - provider calls and mutation orchestration
  */
 export class DataGridEngine<T = any> {
+  providerSort: GridSort[] = [];
+  providerSearch?: GridSearch;
+  providerFilters: GridFilter[] = [];
+
+  remoteContinuation?: unknown;
+  remoteHasMore = false;
+  remoteTotalCountKnown = false;
 }
