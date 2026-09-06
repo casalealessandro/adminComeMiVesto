@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { confirm } from '../../widgets/ui-dialogs';
@@ -15,6 +15,10 @@ import {
   GridFilterColumnMetadata,
 } from './data-grid-filter-model';
 import {
+  GridLookupProviderMap,
+  GridLookupRegistry,
+} from './data-grid-lookup-registry';
+import {
   GridDataProvider,
   GridFilter,
   GridFilterOperator,
@@ -24,7 +28,7 @@ import {
   GridSort,
 } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
-import { TdItemComponent } from './td-item/td-item.component';
+import { ProviderTdItemComponent } from './td-item/provider-td-item.component';
 
 /**
  * Conservative bridge for recovering provider-neutral remote behavior without
@@ -41,13 +45,27 @@ import { TdItemComponent } from './td-item/td-item.component';
   standalone: true,
   imports: [
     CommonModule,
-    TdItemComponent,
+    ProviderTdItemComponent,
     CustomScrollbarComponent,
   ],
+  providers: [GridLookupRegistry],
 })
 export class ProviderDataGridComponent<T = any> extends DataGridComponent {
+  private readonly providerLookupRegistry = inject(GridLookupRegistry);
+  private registeredLookupProviders: GridLookupProviderMap = {};
+
   @Input() dataProvider?: GridDataProvider<T>;
   @Input() detailDataProvider?: GridDetailDataProvider<T, any>;
+
+  @Input()
+  set lookupProviders(providers: GridLookupProviderMap | undefined) {
+    this.registeredLookupProviders = providers ?? {};
+    this.providerLookupRegistry.setProviders(this.registeredLookupProviders);
+  }
+
+  get lookupProviders(): GridLookupProviderMap {
+    return this.registeredLookupProviders;
+  }
 
   remoteContinuation?: unknown;
   remoteHasMore = false;
@@ -85,6 +103,9 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
 
+    this.providerLookupRegistry.setProviders(this.registeredLookupProviders);
+    this.providerLookupRegistry.setRowResolver(rowIndex => this.rowsData()[rowIndex]);
+
     // The current markup delegates the real scrolling surface to
     // CustomScrollbarComponent. Listen there without changing the original
     // DataGrid template or the reusable scrollbar component.
@@ -104,6 +125,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.providerFilterTimers.forEach(timer => clearTimeout(timer));
     this.providerFilterTimers.clear();
 
+    this.providerLookupRegistry.clear();
     this.providerScrollElement?.removeEventListener('scroll', this.providerScrollListener);
     this.providerScrollElement = undefined;
     super.ngOnDestroy();
@@ -132,6 +154,14 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       const originalColumn = this.getProviderOriginalColumn(column.dataField);
       if (originalColumn?.allowFiltering === false) {
         column.search = false;
+      }
+
+      const lookup = originalColumn?.customizedOptions?.lookup;
+      if (lookup !== undefined) {
+        column.customizedOptions = {
+          ...(column.customizedOptions ?? {}),
+          lookup,
+        };
       }
     });
 
