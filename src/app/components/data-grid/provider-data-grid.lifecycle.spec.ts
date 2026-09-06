@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { AnagraficaService } from '../../services/anagrafica.service';
@@ -43,4 +43,28 @@ describe('ProviderDataGridComponent lookup lifecycle bridge', () => {
     expect(registry.getProvider('categoryId', true)).toBe(lookupProvider);
     expect(registry.resolveRow(0)).toBe(row);
   });
+
+  it('should keep provider cleanup while inheriting the base destroy lifecycle', fakeAsync(() => {
+    const lookupProvider = {
+      load: jasmine.createSpy('lookupLoad').and.resolveTo({ id: 'CAT-1', name: 'Categoria 1' }),
+    };
+    const providerLoad = jasmine.createSpy('providerLoad').and.resolveTo({ items: [], hasMore: false });
+    const disconnect = jasmine.createSpy('disconnect');
+    const registry = fixture.debugElement.injector.get(GridLookupRegistry);
+
+    component.lookupProviders = { categoryId: lookupProvider };
+    component.dataProvider = { load: providerLoad };
+    component.remoteOperation = true;
+    component.providerSearchDebounce = 10;
+    (component as any).resizeObserver = { disconnect };
+
+    void component.toolbarValueChanged({ value: 'pending-search', event: null });
+
+    fixture.destroy();
+    tick(20);
+
+    expect(providerLoad).not.toHaveBeenCalled();
+    expect(registry.getProvider('categoryId', true)).toBeUndefined();
+    expect(disconnect).toHaveBeenCalledTimes(1);
+  }));
 });
