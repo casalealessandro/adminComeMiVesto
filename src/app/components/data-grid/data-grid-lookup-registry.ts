@@ -5,11 +5,19 @@ import {
   GridLookupRequest,
 } from './data-grid-lookup-provider';
 
+/**
+ * Configuration accepted by a column that opts into provider-managed lookup.
+ */
 export interface GridLookupCellOptions {
+  /** Provider registry key. Defaults to the column `dataField`. */
   providerKey?: string;
+  /** Property displayed when the provider returns an object. */
   displayExpr?: string;
+  /** Optional value property retained for compatibility with existing lookup metadata. */
   valueExpr?: string;
+  /** Enables registry caching and in-flight request deduplication. */
   cache?: boolean;
+  /** Optional stable key used instead of serializing the raw lookup value. */
   cacheKey?: (request: GridLookupRequest<any, any>) => string;
 }
 
@@ -17,11 +25,16 @@ export type GridLookupCellConfig = true | string | GridLookupCellOptions;
 export type GridLookupProviderMap = Record<string, GridLookupDataProvider<any, any, any>>;
 
 /**
- * Provider-scoped registry used only by the provider DataGrid path.
+ * Registry that connects explicit DataGrid lookup metadata to lookup providers.
  *
- * The original TdItem/DataGrid components stay unaware of provider lookup
- * details. A lookup exists only when the provider grid explicitly registers a
- * provider and the column explicitly opts in through `customizedOptions.lookup`.
+ * The registry owns provider registration, row-context resolution, optional
+ * result caching, concurrent-request deduplication and cache invalidation.
+ * Lookup remains opt-in: a cell is resolved remotely only when its column has
+ * `customizedOptions.lookup` and the matching provider has been registered.
+ *
+ * Backend details stay inside `GridLookupDataProvider` implementations; the
+ * registry never assumes Firebase, REST endpoints, database keys or transport
+ * syntax.
  */
 @Injectable()
 export class GridLookupRegistry {
@@ -32,6 +45,10 @@ export class GridLookupRegistry {
   private cacheVersion = 0;
   private providerCacheVersions = new Map<string, number>();
 
+  /**
+   * Replaces the provider map. Changing the map invalidates all cached values
+   * so results from a previous provider configuration cannot leak forward.
+   */
   setProviders(providers?: GridLookupProviderMap): void {
     const nextProviders = providers ?? {};
 
@@ -42,14 +59,28 @@ export class GridLookupRegistry {
     this.providers = nextProviders;
   }
 
+  /**
+   * Registers the callback used to recover the complete grid row from a visual
+   * row index before invoking a lookup provider.
+   */
   setRowResolver(resolver?: (rowIndex: number) => unknown): void {
     this.rowResolver = resolver;
   }
 
+  /**
+   * Resolves the provider selected by column lookup metadata.
+   */
   getProvider(dataField: string, lookup: GridLookupCellConfig): GridLookupDataProvider<any, any, any> | undefined {
     return this.providers[this.resolveProviderKey(dataField, lookup)];
   }
 
+  /**
+   * Loads one lookup value through the configured provider.
+   *
+   * With caching disabled, the request is forwarded directly. With caching
+   * enabled, resolved values are reused and concurrent requests for the same
+   * cache key share one provider promise.
+   */
   async load(
     dataField: string,
     lookup: GridLookupCellConfig,
@@ -101,11 +132,20 @@ export class GridLookupRegistry {
     return loadPromise;
   }
 
+  /**
+   * Resolves the current row context for a numeric grid row index.
+   */
   resolveRow(rowIndex: any): unknown {
     if (typeof rowIndex !== 'number') return undefined;
     return this.rowResolver?.(rowIndex);
   }
 
+  /**
+   * Invalidates cached lookup values globally or only for one provider key.
+   *
+   * Version counters prevent an in-flight request started before invalidation
+   * from repopulating a cache that has already been cleared.
+   */
   clearCache(providerKey?: string): void {
     if (!providerKey) {
       this.cacheVersion++;
@@ -131,6 +171,10 @@ export class GridLookupRegistry {
       .forEach(key => this.pendingLoads.delete(key));
   }
 
+  /**
+   * Releases providers, row resolver and all cache state when the owning grid
+   * is destroyed or reset.
+   */
   clear(): void {
     this.providers = {};
     this.rowResolver = undefined;
