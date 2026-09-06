@@ -15,12 +15,22 @@ import {
  * return values without mutating the DataGrid runtime.
  */
 export class DataGridUtils {
+  /**
+   * Compares two values using the historical DataGrid ascending/descending
+   * semantics. Equality always returns `0`.
+   */
   static compareValues(valueA: any, valueB: any, direction: 'asc' | 'desc'): number {
     if (valueA < valueB) return direction === 'asc' ? -1 : 1;
     if (valueA > valueB) return direction === 'asc' ? 1 : -1;
     return 0;
   }
 
+  /**
+   * Normalizes the date formats historically accepted by the grid and returns
+   * the requested English or Italian display format.
+   *
+   * Invalid or unsupported input returns an empty string.
+   */
   static formatDate(dateString: string, type: 'EN' | 'it' = 'EN'): string {
     const regExpISO: RegExp = /(\d{4})([\/-])(\d{1,2})\2(\d{1,2})/;
     const regExpIT: RegExp = /(\d{1,2})([\/-])(\d{1,2})\2(\d{4})/;
@@ -56,6 +66,13 @@ export class DataGridUtils {
     return finallyData;
   }
 
+  /**
+   * Evaluates one cell value against the historical local-search rules.
+   *
+   * Arrays and nullish values never match. Exact mode accepts strings, numbers
+   * and booleans; non-exact mode supports string/number `contains` or
+   * `startsWith` matching.
+   */
   static matchesLocalSearch(
     value: any,
     searchText: string,
@@ -88,6 +105,10 @@ export class DataGridUtils {
     return itemValue.includes(valueToSearch);
   }
 
+  /**
+   * Filters a local data source by applying `matchesLocalSearch` to one field.
+   * The source array and row objects are not mutated.
+   */
   static filterNonRemoteDataSource(
     array: any[],
     dataField: string | number,
@@ -100,6 +121,10 @@ export class DataGridUtils {
     });
   }
 
+  /**
+   * Calculates the historical numeric footer summary for a configured column.
+   * Columns without `dataField` or `showInSummary` return `0`.
+   */
   static calculateColumnSummary(rows: any[], cols: ColData): number {
     if (!cols.dataField) {
       return 0;
@@ -113,6 +138,10 @@ export class DataGridUtils {
     return rows.reduce((acc, curr) => acc + curr[dataField], 0);
   }
 
+  /**
+   * Recovers the original column metadata from either a top-level column or a
+   * historical grouped `Colonne.data` definition.
+   */
   static getOriginalColumn(columns: Colonne[] | undefined, field: string): any {
     for (const group of columns ?? []) {
       if ((group as any)?.dataField === field) {
@@ -129,6 +158,10 @@ export class DataGridUtils {
     return undefined;
   }
 
+  /**
+   * Projects rendered header columns into provider-neutral global-search
+   * metadata while preserving explicit historical search configuration.
+   */
   static getProviderSearchColumns(
     colsHeader: ColData[],
     columns: Colonne[] | undefined,
@@ -147,6 +180,10 @@ export class DataGridUtils {
       });
   }
 
+  /**
+   * Builds provider-neutral metadata for one explicit column filter.
+   * Returns `undefined` when the rendered column does not exist.
+   */
   static getProviderFilterColumn(
     colsHeader: ColData[],
     columns: Colonne[] | undefined,
@@ -165,6 +202,10 @@ export class DataGridUtils {
     };
   }
 
+  /**
+   * Restores the typed value represented by a historical static list filter.
+   * Non-list columns and unresolved list metadata keep the raw input value.
+   */
   static resolveProviderFilterInputValue(
     colsHeader: ColData[],
     columns: Colonne[] | undefined,
@@ -187,6 +228,10 @@ export class DataGridUtils {
     return selectedOption ? selectedOption[valueExp] : value;
   }
 
+  /**
+   * Clones global-search state, including independent condition objects, so a
+   * provider request cannot mutate the engine snapshot by reference.
+   */
   static cloneSearch(search?: GridSearch): GridSearch | undefined {
     if (!search) return undefined;
 
@@ -196,14 +241,24 @@ export class DataGridUtils {
     };
   }
 
+  /**
+   * Clones provider filter objects without changing their values.
+   */
   static cloneFilters(filters: GridFilter[]): GridFilter[] {
     return filters.map(filter => ({ ...filter }));
   }
 
+  /**
+   * Clones provider sort objects without changing their order.
+   */
   static cloneSorts(sorts: GridSort[]): GridSort[] {
     return sorts.map(sort => ({ ...sort }));
   }
 
+  /**
+   * Creates the historical placeholder row used while continuation pages load.
+   * The source row remains unchanged and every copied property is set to null.
+   */
   static createMockItem<T>(item?: T): T | undefined {
     if (!item || typeof item !== 'object') return undefined;
 
