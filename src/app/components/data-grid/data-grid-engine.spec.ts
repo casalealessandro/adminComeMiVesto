@@ -60,6 +60,48 @@ describe('DataGridEngine query state', () => {
     expect(request.sort).not.toBe(engine.providerSort);
   });
 
+  it('should delegate the initial provider load with the same engine request', async () => {
+    const engine = new DataGridEngine<{ id: number }>();
+    engine.providerSort = [{ field: 'id', direction: 'asc' }];
+
+    const page = {
+      items: [{ id: 1 }],
+      hasMore: true,
+      continuation: 'page-2',
+      totalCount: 2,
+    };
+    const load = jasmine.createSpy('load').and.resolveTo(page);
+
+    const result = await engine.loadInitialPage({ load }, 20);
+
+    expect(load).toHaveBeenCalledOnceWith({
+      pageSize: 20,
+      sort: [{ field: 'id', direction: 'asc' }],
+    });
+    expect(result).toBe(page);
+  });
+
+  it('should delegate the continuation provider load with the current opaque continuation', async () => {
+    const engine = new DataGridEngine<{ id: number }>();
+    engine.remoteContinuation = { token: 'page-2' };
+    engine.providerFilters = [{ field: 'active', operator: 'eq', value: true }];
+
+    const page = {
+      items: [{ id: 2 }],
+      hasMore: false,
+    };
+    const load = jasmine.createSpy('load').and.resolveTo(page);
+
+    const result = await engine.loadContinuationPage({ load }, 10);
+
+    expect(load).toHaveBeenCalledOnceWith({
+      pageSize: 10,
+      continuation: { token: 'page-2' },
+      filters: [{ field: 'active', operator: 'eq', value: true }],
+    });
+    expect(result).toBe(page);
+  });
+
   it('should apply initial remote page state and return the effective total records', () => {
     const engine = new DataGridEngine<{ id: number }>();
 
