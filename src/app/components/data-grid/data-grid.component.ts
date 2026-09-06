@@ -1198,7 +1198,6 @@ export class DataGridComponent implements OnDestroy {
   /**Fine funzione di dataRourceRemote **/
   buildAndTestQueryString(): Promise<boolean> {
 
-
     if (this.queryString != '') {
 
       let queryString = this.queryString;
@@ -1944,7 +1943,7 @@ export class DataGridComponent implements OnDestroy {
         name: 'onRowExpanded'
       }
 
-      this.emittendGridEvent.emit(eventExpandingRow)
+      this.emittendGridEvent.emit(eventExpandingRow);
 
 
     })
