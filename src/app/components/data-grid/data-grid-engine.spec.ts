@@ -34,6 +34,22 @@ describe('DataGridEngine query state', () => {
     expect(second.remoteTotalCountKnown).toBeFalse();
   });
 
+  it('should snapshot, set and restore provider sort state without sharing the snapshot', () => {
+    const engine = new DataGridEngine();
+    engine.providerSort = [{ field: 'age', direction: 'desc' }];
+
+    const previousSort = engine.snapshotProviderSort();
+
+    expect(previousSort).toEqual([{ field: 'age', direction: 'desc' }]);
+    expect(previousSort).not.toBe(engine.providerSort);
+
+    engine.setProviderSort('name', 'asc');
+    expect(engine.providerSort).toEqual([{ field: 'name', direction: 'asc' }]);
+
+    engine.restoreProviderSort(previousSort);
+    expect(engine.providerSort).toEqual([{ field: 'age', direction: 'desc' }]);
+  });
+
   it('should build a provider-neutral load request from the current engine state', () => {
     const engine = new DataGridEngine();
     engine.providerSort = [{ field: 'name', direction: 'asc' }];
