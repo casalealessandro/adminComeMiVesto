@@ -12,6 +12,10 @@ import { OverlayService } from '../../services/overlay.service';
 import { DataGridUtils } from './data-grid-utils';
 import { DataGridEngine } from './data-grid-engine';
 import { GridDetailDataProvider } from './data-grid-detail-provider';
+import {
+  GridLookupProviderMap,
+  GridLookupRegistry,
+} from './data-grid-lookup-registry';
 import { GridDataProvider, GridPage } from './data-grid-provider';
 
 
@@ -42,6 +46,7 @@ export interface tasto {
 
     CustomScrollbarComponent
   ],
+  providers: [GridLookupRegistry],
 
   styleUrls: ['./data-grid.component.scss']
 })
@@ -66,6 +71,18 @@ export class DataGridComponent<T = any> implements OnDestroy {
   @Input() remoteOperation: boolean = false;
   @Input() dataProvider?: GridDataProvider<T>;
   @Input() detailDataProvider?: GridDetailDataProvider<T, any>;
+  private registeredLookupProviders: GridLookupProviderMap = {};
+
+  @Input()
+  set lookupProviders(providers: GridLookupProviderMap | undefined) {
+    this.registeredLookupProviders = providers ?? {};
+    this.gridLookupRegistry.setProviders(this.registeredLookupProviders);
+    this.gridLookupRegistry.setRowResolver(rowIndex => this.rowsData()[rowIndex]);
+  }
+
+  get lookupProviders(): GridLookupProviderMap {
+    return this.registeredLookupProviders;
+  }
 
   dataSource = input<any[]>([]);
   rowsData = signal<any[]>([])
@@ -194,7 +211,9 @@ export class DataGridComponent<T = any> implements OnDestroy {
   sortedColumn: any; //  colonna orginatata
   busyRows = new Set<number>();
   protected readonly gridEngine = new DataGridEngine<T>();
+  protected readonly gridLookupRegistry = inject(GridLookupRegistry);
   protected providerMockItem?: T;
+  protected providerFacadeActive = false;
   private readonly busyRowTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private localSearchTimer?: ReturnType<typeof setTimeout>;
   private readonly localColumnFilters = new Map<string, { value: string; exact: boolean }>();
@@ -342,6 +361,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
       clearTimeout(this.localSearchTimer);
       this.localSearchTimer = undefined;
     }
+    this.gridLookupRegistry.clear();
   }
 
   getBaseRemInPixels(): number {
@@ -796,6 +816,25 @@ export class DataGridComponent<T = any> implements OnDestroy {
           }
         ]
       })
+
+    if (this.providerFacadeActive || this.dataProvider || this.detailDataProvider || Object.keys(this.registeredLookupProviders).length > 0) {
+      this.colsHeader.forEach(column => {
+        if (!column.dataField) return;
+
+        const originalColumn = DataGridUtils.getOriginalColumn(this.colonne, column.dataField);
+        if (originalColumn?.allowFiltering === false) {
+          column.search = false;
+        }
+
+        const lookup = originalColumn?.customizedOptions?.lookup;
+        if (lookup !== undefined) {
+          column.customizedOptions = {
+            ...(column.customizedOptions ?? {}),
+            lookup,
+          };
+        }
+      });
+    }
 
 
 
@@ -1905,6 +1944,11 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
   async renderGridDetailData(detailOptions: detailOptions, row: any, index: any) {
 
+    if (this.detailDataProvider) {
+      await this.renderProviderGridDetailData(row, index);
+      return;
+    }
+
 
     let cols
     this.showNullDataDetail = false;
@@ -2009,6 +2053,35 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
     })
 
+  }
+
+  protected async renderProviderGridDetailData(row: any, index: any): Promise<void> {
+    if (!this.detailDataProvider) {
+      return;
+    }
+
+    const previousShowNullDataDetail = this.showNullDataDetail;
+    this.showNullDataDetail = false;
+
+    try {
+      const details = await this.gridEngine.loadDetailRows(this.detailDataProvider, row as T)
+
+      this.colsRowDetail[index] = details
+      this.showNullDataDetail = details.length == 0
+      this.showDetailRow[index] = true
+
+      let eventExpandingRow = {
+        cancel: false,
+        data: row,
+        rowIndex: index,
+        expandedData: this.colsRowDetail[index],
+        name: 'onRowExpanded'
+      }
+
+      this.emittendGridEvent.emit(eventExpandingRow)
+    } catch {
+      this.showNullDataDetail = previousShowNullDataDetail;
+    }
   }
 
 
