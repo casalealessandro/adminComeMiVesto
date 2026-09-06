@@ -315,8 +315,8 @@ export class DataGridComponent implements OnDestroy {
     this.busyRowTimers.forEach(timer => clearTimeout(timer));
     this.busyRowTimers.clear();
     if (this.localSearchTimer !== undefined) {
-      clearTimeout(this.localSearchTimer)
-      this.localSearchTimer = undefined
+      clearTimeout(this.localSearchTimer);
+      this.localSearchTimer = undefined;
     }
   }
 
