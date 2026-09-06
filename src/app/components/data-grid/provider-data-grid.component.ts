@@ -103,24 +103,12 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   private providerSearchTimer?: ReturnType<typeof setTimeout>;
   private providerFilterTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private providerScrollElement?: HTMLElement;
-  private readonly providerScrollListener = (event: Event) => {
-    void this.onScroll(event);
-  };
 
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
 
     this.providerLookupRegistry.setProviders(this.registeredLookupProviders);
     this.providerLookupRegistry.setRowResolver(rowIndex => this.rowsData()[rowIndex]);
-
-    // The current markup delegates the real scrolling surface to
-    // CustomScrollbarComponent. Listen there without changing the original
-    // DataGrid template or the reusable scrollbar component.
-    const scrollElement = this.dataGridWrapper?.nativeElement.querySelector<HTMLElement>('.scrollbar-container');
-    if (scrollElement) {
-      this.providerScrollElement = scrollElement;
-      scrollElement.addEventListener('scroll', this.providerScrollListener);
-    }
   }
 
   override ngOnDestroy(): void {
@@ -133,7 +121,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.providerFilterTimers.clear();
 
     this.providerLookupRegistry.clear();
-    this.providerScrollElement?.removeEventListener('scroll', this.providerScrollListener);
     this.providerScrollElement = undefined;
     super.ngOnDestroy();
   }
@@ -540,6 +527,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
     const element = event.target as HTMLElement | null;
     if (!element) return;
+    this.providerScrollElement = element;
 
     if (this.isLoading) {
       this.keepScrollPositionWhileLoading(element);
