@@ -315,8 +315,8 @@ export class DataGridComponent implements OnDestroy {
     this.busyRowTimers.forEach(timer => clearTimeout(timer));
     this.busyRowTimers.clear();
     if (this.localSearchTimer !== undefined) {
-      clearTimeout(this.localSearchTimer);
-      this.localSearchTimer = undefined;
+      clearTimeout(this.localSearchTimer)
+      this.localSearchTimer = undefined
     }
   }
 
@@ -363,6 +363,7 @@ export class DataGridComponent implements OnDestroy {
       this.rowsData.set(this.dataSource())
  
       this.totalRecords = this.rowsData().length
+      this.showNullData = this.rowsData().length == 0
     }
 
     this.selectRowByData()
@@ -1169,6 +1170,7 @@ export class DataGridComponent implements OnDestroy {
         this.dataSource = data;
 
         this.rowsData.set(data)
+        this.showNullData = this.rowsData().length == 0
         if (data.totalCount) {
           this.totalRecords = data.totalCount;
         }
@@ -2347,8 +2349,6 @@ export class DataGridComponent implements OnDestroy {
 
   /** Da richiamare dopo evento KeyUp barra di ricerca per il refresh di OData  */
   async resetPageInfo() {
-
-    this.showNullData = true;
 
     this.latestSkipLoaded = 0;
     this.latestScrollTopPosition = 0;
