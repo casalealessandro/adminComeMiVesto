@@ -94,6 +94,9 @@ describe('ProviderDataGridComponent search and filter UI', () => {
       },
     ] as any;
 
+    component.dataProvider = {
+      load: async () => ({ items: [], hasMore: false }),
+    };
     component.colonne = columns;
     await component.buildHeaderColumns(columns);
     fixture.detectChanges();
