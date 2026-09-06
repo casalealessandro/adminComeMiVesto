@@ -20,4 +20,16 @@ describe('CustomScrollbarComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should preserve overlay cleanup and emit the original scroll event', () => {
+    const event = new Event('scroll');
+    const emitted: Event[] = [];
+    const closeOverlay = spyOn(component.overlayService, 'closeOverlay');
+    component.scrollEvent.subscribe(currentEvent => emitted.push(currentEvent));
+
+    component.onScroll(event);
+
+    expect(closeOverlay).toHaveBeenCalledTimes(1);
+    expect(emitted).toEqual([event]);
+  });
 });
