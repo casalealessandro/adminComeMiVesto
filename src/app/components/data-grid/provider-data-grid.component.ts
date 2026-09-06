@@ -9,6 +9,7 @@ import {
   buildGridUpdateEvent,
 } from './data-grid-crud-event';
 import { GridDetailDataProvider } from './data-grid-detail-provider';
+import { DataGridEngine } from './data-grid-engine';
 import {
   buildGridColumnFilter,
   buildGridSearch,
@@ -19,10 +20,8 @@ import {
 } from './data-grid-lookup-registry';
 import {
   GridDataProvider,
-  GridFilter,
   GridLoadRequest,
   GridPage,
-  GridSearch,
   GridSort,
 } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
@@ -51,6 +50,7 @@ import { ProviderTdItemComponent } from './td-item/provider-td-item.component';
 })
 export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   private readonly providerLookupRegistry = inject(GridLookupRegistry);
+  private readonly gridEngine = new DataGridEngine<T>();
   private registeredLookupProviders: GridLookupProviderMap = {};
 
   @Input() dataProvider?: GridDataProvider<T>;
@@ -66,8 +66,21 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     return this.registeredLookupProviders;
   }
 
-  remoteContinuation?: unknown;
-  remoteHasMore = false;
+  get remoteContinuation(): unknown {
+    return this.gridEngine.remoteContinuation;
+  }
+
+  set remoteContinuation(value: unknown) {
+    this.gridEngine.remoteContinuation = value;
+  }
+
+  get remoteHasMore(): boolean {
+    return this.gridEngine.remoteHasMore;
+  }
+
+  set remoteHasMore(value: boolean) {
+    this.gridEngine.remoteHasMore = value;
+  }
 
   /**
    * Keeps the historic short virtual-loading pause used by the old remote
@@ -88,10 +101,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   providerFilterDebounce = 500;
 
   private providerMockItem?: T;
-  private remoteTotalCountKnown = false;
-  private providerSort: GridSort[] = [];
-  private providerSearch?: GridSearch;
-  private providerFilters: GridFilter[] = [];
   private providerSearchTimer?: ReturnType<typeof setTimeout>;
   private providerFilterTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private providerScrollElement?: HTMLElement;
@@ -404,7 +413,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
     const previousColumn = this.sortedColumn;
     const previousDirection = this.sortDirection;
-    const previousSort = DataGridUtils.cloneSorts(this.providerSort);
+    const previousSort = DataGridUtils.cloneSorts(this.gridEngine.providerSort);
 
     if (this.sortedColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -413,7 +422,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       this.sortDirection = 'asc';
     }
 
-    this.providerSort = [{
+    this.gridEngine.providerSort = [{
       field: column,
       direction: this.sortDirection,
     }];
@@ -475,16 +484,16 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
   async applyProviderSearch(value: string): Promise<boolean> {
     if (!this.dataProvider || !this.remoteOperation) return false;
 
-    const previousSearch = DataGridUtils.cloneSearch(this.providerSearch);
+    const previousSearch = DataGridUtils.cloneSearch(this.gridEngine.providerSearch);
     this.searchText = value ?? '';
-    this.providerSearch = buildGridSearch(
+    this.gridEngine.providerSearch = buildGridSearch(
       this.searchText,
       DataGridUtils.getProviderSearchColumns(this.colsHeader, this.colonne),
     );
 
     const loaded = await this.loadRemoteRecords();
     if (!loaded) {
-      this.providerSearch = previousSearch;
+      this.gridEngine.providerSearch = previousSearch;
       return false;
     }
 
@@ -505,17 +514,17 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     const column = DataGridUtils.getProviderFilterColumn(this.colsHeader, this.colonne, field);
     if (!column) return false;
 
-    const previousFilters = DataGridUtils.cloneFilters(this.providerFilters);
+    const previousFilters = DataGridUtils.cloneFilters(this.gridEngine.providerFilters);
     const filter = buildGridColumnFilter(value, column);
 
-    this.providerFilters = this.providerFilters.filter(currentFilter => currentFilter.field !== field);
+    this.gridEngine.providerFilters = this.gridEngine.providerFilters.filter(currentFilter => currentFilter.field !== field);
     if (filter) {
-      this.providerFilters.push(filter);
+      this.gridEngine.providerFilters.push(filter);
     }
 
     const loaded = await this.loadRemoteRecords();
     if (!loaded) {
-      this.providerFilters = previousFilters;
+      this.gridEngine.providerFilters = previousFilters;
       return false;
     }
 
@@ -578,7 +587,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
       if (page.totalCount !== undefined) {
         this.totalRecords = page.totalCount;
-        this.remoteTotalCountKnown = true;
+        this.gridEngine.remoteTotalCountKnown = true;
       } else if (!page.hasMore) {
         this.totalRecords = this.rowsData().length;
       } else {
@@ -605,16 +614,16 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       request.continuation = continuation;
     }
 
-    if (this.providerSearch) {
-      request.search = DataGridUtils.cloneSearch(this.providerSearch);
+    if (this.gridEngine.providerSearch) {
+      request.search = DataGridUtils.cloneSearch(this.gridEngine.providerSearch);
     }
 
-    if (this.providerFilters.length > 0) {
-      request.filters = DataGridUtils.cloneFilters(this.providerFilters);
+    if (this.gridEngine.providerFilters.length > 0) {
+      request.filters = DataGridUtils.cloneFilters(this.gridEngine.providerFilters);
     }
 
-    if (this.providerSort.length > 0) {
-      request.sort = DataGridUtils.cloneSorts(this.providerSort);
+    if (this.gridEngine.providerSort.length > 0) {
+      request.sort = DataGridUtils.cloneSorts(this.gridEngine.providerSort);
     }
 
     return request;
@@ -630,7 +639,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     if (!loaded) {
       this.sortedColumn = previousColumn;
       this.sortDirection = previousDirection;
-      this.providerSort = previousSort;
+      this.gridEngine.providerSort = previousSort;
       return;
     }
 
@@ -682,7 +691,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.rowsData.set([...page.items]);
     this.remoteContinuation = page.continuation;
     this.remoteHasMore = page.hasMore;
-    this.remoteTotalCountKnown = page.totalCount !== undefined;
+    this.gridEngine.remoteTotalCountKnown = page.totalCount !== undefined;
     this.totalRecords = page.totalCount ?? page.items.length;
     this.currentPage = 0;
     this.latestSkipLoaded = 0;
@@ -695,7 +704,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     if (!this.providerMockItem) return 0;
 
     let count = this.pageSize;
-    if (this.remoteTotalCountKnown) {
+    if (this.gridEngine.remoteTotalCountKnown) {
       count = Math.min(this.pageSize, Math.max(0, this.totalRecords - this.rowsData().length));
     }
 
