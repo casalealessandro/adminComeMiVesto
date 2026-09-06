@@ -6,14 +6,15 @@ import {
   GridSearch,
   GridSort,
 } from './data-grid-provider';
+import { GridDetailDataProvider } from './data-grid-detail-provider';
 import { DataGridUtils } from './data-grid-utils';
 
 /**
  * Stateful orchestration layer for DataGrid behavior.
  *
- * Phase 7 keeps provider-neutral query and paging state here and centralizes
- * provider sort/search/filter state transitions and CRUD orchestration without
- * changing DataGrid UI behavior.
+ * Phase 8 keeps provider-neutral query and paging state here and centralizes
+ * provider sort/search/filter state transitions, CRUD orchestration and detail
+ * loading without changing DataGrid UI behavior.
  *
  * Current ownership:
  * - provider sorting request state
@@ -26,6 +27,7 @@ import { DataGridUtils } from './data-grid-utils';
  * - provider-neutral initial / continuation load calls
  * - provider sort/search/filter snapshot / set / restore operations
  * - provider create / update / delete orchestration with caller-owned reload
+ * - provider-neutral detail loading from the exact parent row
  *
  * Still intentionally owned by the components in this phase:
  * - Angular / DOM state
@@ -34,6 +36,7 @@ import { DataGridUtils } from './data-grid-utils';
  * - local UI sort/search indicators
  * - visual paging state and placeholder rendering
  * - CRUD confirmation and emitted UI events
+ * - detail expansion state, rendering and emitted UI events
  */
 export class DataGridEngine<T = any> {
   providerSort: GridSort[] = [];
@@ -113,6 +116,13 @@ export class DataGridEngine<T = any> {
   ): Promise<void> {
     await provider.delete!(data);
     await reload();
+  }
+
+  loadDetailRows<TDetail = unknown>(
+    provider: GridDetailDataProvider<T, TDetail>,
+    parentRow: T,
+  ): Promise<TDetail[]> {
+    return provider.load({ parentRow });
   }
 
   buildLoadRequest(pageSize: number, continuation?: unknown): GridLoadRequest {
