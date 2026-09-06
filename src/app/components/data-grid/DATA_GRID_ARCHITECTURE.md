@@ -136,7 +136,16 @@ The component keeps `collapse()`, detail CSS, row expansion and `onRowExpanded` 
 
 ### Lookup orchestration
 
-Keep the existing provider-neutral lookup contracts/files. `GridLookupRegistry` remains a dedicated service unless later analysis proves it belongs inside the engine. Do not duplicate lookup logic in `DataGridEngine`.
+Phase 9 decision: lookup remains a dedicated responsibility and does **not** move into `DataGridEngine`.
+
+Ownership stays separated as follows:
+
+- `data-grid-lookup-provider.ts` owns the provider-neutral lookup request/provider contract.
+- `GridLookupRegistry` owns provider registration, provider-key resolution, row resolution, cache, concurrent-request deduplication and cache invalidation.
+- `ProviderTdItemComponent` owns the provider-only cell rendering bridge: explicit `customizedOptions.lookup` opt-in, `displayExpr`/`valueExpr` resolution and fallback to the already-rendered raw value when lookup is absent or fails.
+- `ProviderDataGridComponent` currently wires the lookup provider map and row resolver into the registry only because it is the migration bridge. This wiring must eventually be consumed by the single `DataGridComponent`; the lookup algorithms themselves must not be duplicated in the component or Engine.
+
+Existing characterization tests already protect uncached behavior, cache reuse, concurrent deduplication, custom cache keys, invalidation, explicit lookup opt-in, row context, display rendering and failure fallback. Therefore Phase 9 requires no runtime method move or rewrite.
 
 ## 3. DataGridUtils — pure/stateless helpers
 
