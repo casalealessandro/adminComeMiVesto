@@ -20,7 +20,6 @@ import {
 } from './data-grid-lookup-registry';
 import {
   GridDataProvider,
-  GridLoadRequest,
   GridPage,
   GridSort,
 } from './data-grid-provider';
@@ -184,7 +183,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.isLoading = true;
 
     try {
-      const page = await this.dataProvider.load(this.buildProviderLoadRequest());
+      const page = await this.dataProvider.load(this.gridEngine.buildLoadRequest(this.pageSize));
 
       this.applyInitialProviderPage(page);
       return true;
@@ -577,22 +576,16 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
         await new Promise(resolve => setTimeout(resolve, this.providerScrollLoadDelay));
       }
 
-      const page = await this.dataProvider.load(this.buildProviderLoadRequest(this.remoteContinuation));
+      const page = await this.dataProvider.load(this.gridEngine.buildLoadRequest(this.pageSize, this.remoteContinuation));
 
       this.replaceProviderPlaceholders(insertionIndex, placeholderCount, page.items);
       this.currentPage++;
       this.latestSkipLoaded = this.currentPage * this.pageSize;
-      this.remoteContinuation = page.continuation;
-      this.remoteHasMore = page.hasMore;
-
-      if (page.totalCount !== undefined) {
-        this.totalRecords = page.totalCount;
-        this.gridEngine.remoteTotalCountKnown = true;
-      } else if (!page.hasMore) {
-        this.totalRecords = this.rowsData().length;
-      } else {
-        this.totalRecords = Math.max(this.totalRecords, this.rowsData().length);
-      }
+      this.totalRecords = this.gridEngine.applyContinuationPageState(
+        page,
+        this.totalRecords,
+        this.rowsData().length,
+      );
 
       this.showNullData = false;
       return true;
@@ -603,30 +596,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       this.isLoading = false;
       this.setProgressCursor(false);
     }
-  }
-
-  private buildProviderLoadRequest(continuation?: unknown): GridLoadRequest {
-    const request: GridLoadRequest = {
-      pageSize: this.pageSize,
-    };
-
-    if (continuation !== undefined) {
-      request.continuation = continuation;
-    }
-
-    if (this.gridEngine.providerSearch) {
-      request.search = DataGridUtils.cloneSearch(this.gridEngine.providerSearch);
-    }
-
-    if (this.gridEngine.providerFilters.length > 0) {
-      request.filters = DataGridUtils.cloneFilters(this.gridEngine.providerFilters);
-    }
-
-    if (this.gridEngine.providerSort.length > 0) {
-      request.sort = DataGridUtils.cloneSorts(this.gridEngine.providerSort);
-    }
-
-    return request;
   }
 
   private async reloadAfterProviderSort(
@@ -689,10 +658,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
   private applyInitialProviderPage(page: GridPage<T>): void {
     this.rowsData.set([...page.items]);
-    this.remoteContinuation = page.continuation;
-    this.remoteHasMore = page.hasMore;
-    this.gridEngine.remoteTotalCountKnown = page.totalCount !== undefined;
-    this.totalRecords = page.totalCount ?? page.items.length;
+    this.totalRecords = this.gridEngine.applyInitialPageState(page);
     this.currentPage = 0;
     this.latestSkipLoaded = 0;
     this.latestScrollTopPosition = 0;
