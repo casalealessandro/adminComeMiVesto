@@ -1198,6 +1198,7 @@ export class DataGridComponent implements OnDestroy {
   /**Fine funzione di dataRourceRemote **/
   buildAndTestQueryString(): Promise<boolean> {
 
+
     if (this.queryString != '') {
 
       let queryString = this.queryString;
@@ -1943,7 +1944,7 @@ export class DataGridComponent implements OnDestroy {
         name: 'onRowExpanded'
       }
 
-      this.emittendGridEvent.emit(eventExpandingRow);
+      this.emittendGridEvent.emit(eventExpandingRow)
 
 
     })
@@ -2399,7 +2400,7 @@ export class DataGridComponent implements OnDestroy {
     }
 
     // Applica l'ordinamento ai dati
-    this.rowsData().sort((a, b) => {
+    const sortedRows = [...this.rowsData()].sort((a, b) => {
       const valueA = a[column];
       const valueB = b[column];
 
@@ -2407,5 +2408,7 @@ export class DataGridComponent implements OnDestroy {
       if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
+
+    this.rowsData.set(sortedRows);
   }
 }
