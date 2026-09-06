@@ -1026,6 +1026,17 @@ export class DataGridComponent implements OnDestroy {
 
 
 
+  /**
+   * Supporto storico per l'editor inline della DataGrid.
+   *
+   * Dato un item associa ogni campo della riga alla configurazione della relativa
+   * colonna presente in colsHeader. Questo permette all'editor inline di recuperare
+   * per ogni cella i metadati già definiti nella colonna, ad esempio tipo editor,
+   * editabilità, validazioni, min/max e le altre proprietà utili alla gestione del campo.
+   *
+   * Al momento l'editor inline non è attivo, ma il metodo viene mantenuto per poter
+   * recuperare in futuro quella modalità di editing senza perdere la logica già prevista.
+   */
   setCellProperty(item: any) {
     let cellProperty: any[] = [];
 
