@@ -26,8 +26,8 @@ describe('DataGridComponent provider facade', () => {
   });
 
   it('should load a GridDataProvider directly from DataGridComponent', async () => {
-    const fixture = TestBed.createComponent(DataGridComponent<any>);
-    const component = fixture.componentInstance;
+    const fixture = TestBed.createComponent(DataGridComponent);
+    const component = fixture.componentInstance as DataGridComponent<any>;
     const localRows = [{ id: 'local', name: 'Local' }];
     const continuation = { token: 'next' };
     const remoteRows = [{ id: 'remote', name: 'Remote' }];
@@ -57,8 +57,8 @@ describe('DataGridComponent provider facade', () => {
   });
 
   it('should bypass legacy query-string validation when a provider is configured', async () => {
-    const fixture = TestBed.createComponent(DataGridComponent<any>);
-    const component = fixture.componentInstance;
+    const fixture = TestBed.createComponent(DataGridComponent);
+    const component = fixture.componentInstance as DataGridComponent<any>;
 
     component.dataProvider = {
       load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
