@@ -11,8 +11,8 @@ import { DataGridUtils } from './data-grid-utils';
 /**
  * Stateful orchestration layer for DataGrid behavior.
  *
- * Phase 5 keeps provider-neutral query and paging state here and centralizes
- * the provider sort-state transitions without changing the DataGrid UI flow.
+ * Phase 6 keeps provider-neutral query and paging state here and centralizes
+ * provider sort/search/filter state transitions without changing DataGrid UI.
  *
  * Current ownership:
  * - provider sorting request state
@@ -23,7 +23,7 @@ import { DataGridUtils } from './data-grid-utils';
  * - provider-neutral GridLoadRequest construction
  * - provider-neutral page-state transitions
  * - provider-neutral initial / continuation load calls
- * - provider sort snapshot / set / restore operations
+ * - provider sort/search/filter snapshot / set / restore operations
  *
  * Still intentionally owned by the components in this phase:
  * - Angular / DOM state
@@ -55,6 +55,33 @@ export class DataGridEngine<T = any> {
 
   restoreProviderSort(previousSort: GridSort[]): void {
     this.providerSort = previousSort;
+  }
+
+  snapshotProviderSearch(): GridSearch | undefined {
+    return DataGridUtils.cloneSearch(this.providerSearch);
+  }
+
+  setProviderSearch(search: GridSearch | undefined): void {
+    this.providerSearch = search;
+  }
+
+  restoreProviderSearch(previousSearch: GridSearch | undefined): void {
+    this.providerSearch = previousSearch;
+  }
+
+  snapshotProviderFilters(): GridFilter[] {
+    return DataGridUtils.cloneFilters(this.providerFilters);
+  }
+
+  setProviderColumnFilter(field: string, filter: GridFilter | undefined): void {
+    this.providerFilters = this.providerFilters.filter(currentFilter => currentFilter.field !== field);
+    if (filter) {
+      this.providerFilters.push(filter);
+    }
+  }
+
+  restoreProviderFilters(previousFilters: GridFilter[]): void {
+    this.providerFilters = previousFilters;
   }
 
   buildLoadRequest(pageSize: number, continuation?: unknown): GridLoadRequest {
