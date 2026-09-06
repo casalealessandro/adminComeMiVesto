@@ -2230,15 +2230,20 @@ export class DataGridComponent implements OnDestroy {
   public navigateByKeyboard(key: string) {
 
     this.isHoveredDetatil = [false]
+    const rowsLength = this.rowsData().length;
+    const currentDetailRows = Array.isArray(this.colsRowDetail?.[this.selectedRowIndex])
+      ? this.colsRowDetail[this.selectedRowIndex]
+      : [];
+
     switch (key) {
       case 'ArrowDown':
 
-        if (this.showDetailRow[this.selectedRowIndex] && this.selectedSubRowIndex < this.colsRowDetail[this.selectedRowIndex].length - 1) {
+        if (this.showDetailRow[this.selectedRowIndex] && this.selectedSubRowIndex < currentDetailRows.length - 1) {
 
           this.selectedSubRowIndex++;
 
           //this.selectedSubRowIndex = -1;
-        } else if (this.selectedRowIndex < this.dataSource.length - 1) {
+        } else if (this.selectedRowIndex < rowsLength - 1) {
 
           this.selectedRowIndex++;
           this.selectedSubRowIndex = -1;
@@ -2259,7 +2264,9 @@ export class DataGridComponent implements OnDestroy {
         }
 
         if (this.selectedRowIndex == 0) {
-          this.selectedSubRowIndex = 0;
+          if (this.selectionRowMode != 'detail' || (this.showDetailRow[0] && currentDetailRows.length > 0)) {
+            this.selectedSubRowIndex = 0;
+          }
         }
 
 
@@ -2284,7 +2291,15 @@ export class DataGridComponent implements OnDestroy {
     let index = 0;
 
     if (this.selectionRowMode == 'detail') {
-      data = this.colsRowDetail[this.selectedRowIndex][this.selectedSubRowIndex];
+      const detailRows = Array.isArray(this.colsRowDetail?.[this.selectedRowIndex])
+        ? this.colsRowDetail[this.selectedRowIndex]
+        : [];
+
+      if (this.selectedSubRowIndex < 0 || this.selectedSubRowIndex >= detailRows.length) {
+        return
+      }
+
+      data = detailRows[this.selectedSubRowIndex];
       infoRows.isRowDetail = true;
       index = this.selectedSubRowIndex;
 
@@ -2294,7 +2309,7 @@ export class DataGridComponent implements OnDestroy {
       index = this.selectedSubRowIndex
     }
 
-    if (Object.keys(data).length > 0) {
+    if (data && Object.keys(data).length > 0) {
       let eventSelectRow = {
         event: null,
         data: data,
