@@ -19,7 +19,7 @@ import {
 import { GridSort } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
 import { DataGridUtils } from './data-grid-utils';
-import { ProviderTdItemComponent } from './td-item/provider-td-item.component';
+import { TdItemComponent } from './td-item/td-item.component';
 
 /**
  * Conservative bridge for recovering provider-neutral remote behavior without
@@ -36,7 +36,7 @@ import { ProviderTdItemComponent } from './td-item/provider-td-item.component';
   standalone: true,
   imports: [
     CommonModule,
-    ProviderTdItemComponent,
+    TdItemComponent,
     CustomScrollbarComponent,
   ],
   providers: [GridLookupRegistry],
