@@ -333,10 +333,10 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.setProgressCursor(true);
 
     try {
-      const created = await this.dataProvider.create(data);
-      this.isLoading = false;
-      await this.loadRemoteRecords();
-      return created;
+      return await this.gridEngine.createProviderRow(this.dataProvider, data, async () => {
+        this.isLoading = false;
+        await this.loadRemoteRecords();
+      });
     } catch {
       return undefined;
     } finally {
@@ -359,10 +359,10 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.setProgressCursor(true);
 
     try {
-      const updated = await this.dataProvider.update(data);
-      this.isLoading = false;
-      await this.loadRemoteRecords();
-      return updated;
+      return await this.gridEngine.updateProviderRow(this.dataProvider, data, async () => {
+        this.isLoading = false;
+        await this.loadRemoteRecords();
+      });
     } catch {
       return undefined;
     } finally {
@@ -385,9 +385,10 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.setProgressCursor(true);
 
     try {
-      await this.dataProvider.delete(data);
-      this.isLoading = false;
-      await this.loadRemoteRecords();
+      await this.gridEngine.deleteProviderRow(this.dataProvider, data, async () => {
+        this.isLoading = false;
+        await this.loadRemoteRecords();
+      });
       return true;
     } catch {
       return false;
