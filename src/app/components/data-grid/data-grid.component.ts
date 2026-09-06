@@ -2021,47 +2021,6 @@ export class DataGridComponent implements OnDestroy {
 
 
 
-  builderOdataSearchString(dataField: any, tipoCampo: any, searchType?: 'contains' | 'startsWith') {
-    if (!this.searchText) {
-      return ''; // Restituisci una stringa vuota o null
-    }
-
-    switch (tipoCampo.toLowerCase()) {
-      case 'text':
-      case 'string':
-        if (typeof searchType === 'undefined' || searchType === 'contains') {
-          return `(contains(tolower(${dataField}),'${this.searchText.toLowerCase()}'))`;
-        } else {
-          return `(startswith(tolower(${dataField}),'${this.searchText.toLowerCase()}'))`;
-        }
-
-      case 'number':
-        let strToNumber = Number(this.searchText);
-        if (!isNaN(strToNumber)) {
-          return `(${dataField} eq ${strToNumber})`;
-        }
-        return ''; // Restituisci una stringa vuota se la conversione non è valida
-
-      case 'date':
-      case 'dateTime':
-        let dataFormattata = this.formatDate(this.searchText);
-        if (typeof dataFormattata !== 'undefined') {
-          return `(${dataField} eq ${dataFormattata})`;
-        }
-        return ''; // Restituisci una stringa vuota se la data non è valida
-
-      case 'boolean':
-        return ''; // Restituisci una stringa vuota per booleani
-
-      default:
-        if (typeof searchType === 'undefined' || searchType === 'contains') {
-          return `(contains(tolower(${dataField}),'${this.searchText.toLowerCase()}'))`;
-        } else {
-          return `(startswith(tolower(${dataField}),'${this.searchText.toLowerCase()}'))`;
-        }
-    }
-  }
-
 
   async searchData(event: any) {
 
