@@ -108,6 +108,90 @@ describe('DataGridEngine query state', () => {
     ]);
   });
 
+  it('should create through the provider and reload after the mutation', async () => {
+    const engine = new DataGridEngine<{ id: number; name: string }>();
+    const created = { id: 1, name: 'Nuova' };
+    const sequence: string[] = [];
+    const create = jasmine.createSpy('create').and.callFake(async () => {
+      sequence.push('create');
+      return created;
+    });
+    const reload = jasmine.createSpy('reload').and.callFake(async () => {
+      sequence.push('reload');
+    });
+    const provider = {
+      load: jasmine.createSpy('load'),
+      create,
+    };
+
+    const result = await engine.createProviderRow(provider as any, { name: 'Nuova' }, reload);
+
+    expect(result).toBe(created);
+    expect(create).toHaveBeenCalledOnceWith({ name: 'Nuova' });
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(sequence).toEqual(['create', 'reload']);
+  });
+
+  it('should update through the provider and reload after the mutation', async () => {
+    const engine = new DataGridEngine<{ id: number; name: string }>();
+    const row = { id: 1, name: 'Prima' };
+    const updated = { id: 1, name: 'Aggiornata' };
+    const sequence: string[] = [];
+    const update = jasmine.createSpy('update').and.callFake(async () => {
+      sequence.push('update');
+      return updated;
+    });
+    const reload = jasmine.createSpy('reload').and.callFake(async () => {
+      sequence.push('reload');
+    });
+    const provider = {
+      load: jasmine.createSpy('load'),
+      update,
+    };
+
+    const result = await engine.updateProviderRow(provider as any, row, reload);
+
+    expect(result).toBe(updated);
+    expect(update).toHaveBeenCalledOnceWith(row);
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(sequence).toEqual(['update', 'reload']);
+  });
+
+  it('should delete through the provider and reload after the mutation', async () => {
+    const engine = new DataGridEngine<{ id: number }>();
+    const row = { id: 1 };
+    const sequence: string[] = [];
+    const deleteRow = jasmine.createSpy('delete').and.callFake(async () => {
+      sequence.push('delete');
+    });
+    const reload = jasmine.createSpy('reload').and.callFake(async () => {
+      sequence.push('reload');
+    });
+    const provider = {
+      load: jasmine.createSpy('load'),
+      delete: deleteRow,
+    };
+
+    await engine.deleteProviderRow(provider as any, row, reload);
+
+    expect(deleteRow).toHaveBeenCalledOnceWith(row);
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(sequence).toEqual(['delete', 'reload']);
+  });
+
+  it('should not reload when a provider mutation rejects', async () => {
+    const engine = new DataGridEngine<{ id: number }>();
+    const reload = jasmine.createSpy('reload');
+    const provider = {
+      load: jasmine.createSpy('load'),
+      create: jasmine.createSpy('create').and.rejectWith(new Error('create failed')),
+    };
+
+    await expectAsync(engine.createProviderRow(provider as any, {}, reload)).toBeRejected();
+
+    expect(reload).not.toHaveBeenCalled();
+  });
+
   it('should build a provider-neutral load request from the current engine state', () => {
     const engine = new DataGridEngine();
     engine.providerSort = [{ field: 'name', direction: 'asc' }];
