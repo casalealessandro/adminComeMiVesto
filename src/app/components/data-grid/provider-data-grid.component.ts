@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { Component, DestroyRef, inject, Input } from '@angular/core';
 
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { confirm } from '../../widgets/ui-dialogs';
@@ -43,6 +43,7 @@ import { TdItemComponent } from './td-item/td-item.component';
 })
 export class ProviderDataGridComponent<T = any> extends DataGridComponent<T> {
   private readonly providerLookupRegistry = inject(GridLookupRegistry);
+  private readonly providerDestroyRef = inject(DestroyRef);
   private registeredLookupProviders: GridLookupProviderMap = {};
 
   @Input()
@@ -78,18 +79,21 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent<T> {
   private providerFilterTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private providerScrollElement?: HTMLElement;
 
-  override ngOnDestroy(): void {
-    if (this.providerSearchTimer !== undefined) {
-      clearTimeout(this.providerSearchTimer);
-      this.providerSearchTimer = undefined;
-    }
+  constructor() {
+    super();
 
-    this.providerFilterTimers.forEach(timer => clearTimeout(timer));
-    this.providerFilterTimers.clear();
+    this.providerDestroyRef.onDestroy(() => {
+      if (this.providerSearchTimer !== undefined) {
+        clearTimeout(this.providerSearchTimer);
+        this.providerSearchTimer = undefined;
+      }
 
-    this.providerLookupRegistry.clear();
-    this.providerScrollElement = undefined;
-    super.ngOnDestroy();
+      this.providerFilterTimers.forEach(timer => clearTimeout(timer));
+      this.providerFilterTimers.clear();
+
+      this.providerLookupRegistry.clear();
+      this.providerScrollElement = undefined;
+    });
   }
 
   /**
