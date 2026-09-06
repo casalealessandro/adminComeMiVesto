@@ -210,9 +210,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.showNullDataDetail = false;
 
     try {
-      const details = await this.detailDataProvider.load({
-        parentRow: row as T
-      })
+      const details = await this.gridEngine.loadDetailRows(this.detailDataProvider, row as T)
 
       this.colsRowDetail[index] = details
       this.showNullDataDetail = details.length == 0
