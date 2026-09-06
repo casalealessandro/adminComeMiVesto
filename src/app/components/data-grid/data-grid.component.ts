@@ -1312,7 +1312,6 @@ export class DataGridComponent implements OnDestroy {
 
   startEdit(index: any, event: any) {
 
-
     let eventEditor = {
       infoEvent: event,
       rowIndex: index,
@@ -1413,7 +1412,6 @@ export class DataGridComponent implements OnDestroy {
     let eventSelectRows = {
       component: this,
       dataSelected: dataSourceRowSelected,
-
 
       name: 'onRowMultipleSelectionChange'
     }
@@ -2378,6 +2376,10 @@ export class DataGridComponent implements OnDestroy {
   }
 
   public hideColumn(colIndex: number) {
+    if (colIndex < 0 || colIndex >= this.colsHeader.length) {
+      return
+    }
+
     this.colsHeader.splice(colIndex, 1)
     this.resizeCols(this.colsHeader);
 
