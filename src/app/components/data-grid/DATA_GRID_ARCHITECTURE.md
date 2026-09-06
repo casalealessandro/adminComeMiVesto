@@ -1,6 +1,6 @@
 # DataGrid architecture map
 
-Status: planning only. No existing DataGrid runtime method has been moved or rewritten in this phase.
+Status: migration in progress. Phases 1-10 have progressively moved pure helpers, provider-neutral state/orchestration, CRUD/detail loading and scrollbar wiring into their target owners without rewriting the historical DataGrid behavior. Phase 11 is reducing only overrides that have become genuinely redundant.
 
 ## Target structure
 
@@ -56,8 +56,6 @@ These methods remain public/component entry points, but their data orchestration
 - `searchData()`
 - `onScroll()`
 - `renderGridDetailData()`
-
-No body is changed during the mapping phase.
 
 ## 2. DataGridEngine — stateful grid orchestration
 
@@ -145,7 +143,7 @@ Ownership stays separated as follows:
 - `ProviderTdItemComponent` owns the provider-only cell rendering bridge: explicit `customizedOptions.lookup` opt-in, `displayExpr`/`valueExpr` resolution and fallback to the already-rendered raw value when lookup is absent or fails.
 - `ProviderDataGridComponent` currently wires the lookup provider map and row resolver into the registry only because it is the migration bridge. This wiring must eventually be consumed by the single `DataGridComponent`; the lookup algorithms themselves must not be duplicated in the component or Engine.
 
-Existing characterization tests already protect uncached behavior, cache reuse, concurrent deduplication, custom cache keys, invalidation, explicit lookup opt-in, row context, display rendering and failure fallback. Therefore Phase 9 requires no runtime method move or rewrite.
+Existing characterization tests already protect uncached behavior, cache reuse, concurrent deduplication, custom cache keys, invalidation, explicit lookup opt-in, row context, display rendering and failure fallback.
 
 ## 3. DataGridUtils — pure/stateless helpers
 
@@ -178,25 +176,31 @@ Do not duplicate these responsibilities in the new classes:
 - `data-grid-lookup-registry.ts` — lookup provider registry/cache behavior.
 - `data-grid-crud-event.ts` — typed CRUD event contract/builders.
 
-## 5. Mapping of the 13 current ProviderDataGridComponent overrides
+## 5. ProviderDataGridComponent override recount — Phase 11
 
-| Current override | Final owner / direction |
+Phase 11 starts from the original 13 overrides. `ngAfterViewInit()` is now removed because Phase 10 eliminated the manual scrollbar listener and the remaining lookup row-resolver can be configured directly when `lookupProviders` is set. The base `DataGridComponent.ngAfterViewInit()` remains the only view-lifecycle owner.
+
+**Residual override count: 12.**
+
+| Override | Phase 11 status / reason |
 | --- | --- |
-| `ngAfterViewInit()` | remove provider override; base `DataGridComponent` owns lifecycle. Scroll bridge must disappear. |
-| `ngOnDestroy()` | remove provider override; Engine/service cleanup must not require a second component lifecycle. |
-| `buildAndTestQueryString()` | remove provider override; legacy query-string validation stays only in legacy transport path. |
-| `buildHeaderColumns()` | remove provider override; visual build stays component, pure metadata lookup/normalization moves to Utils. |
-| `loadRemoteRecords()` | Engine. Component uses one loading entry point. |
-| `renderGridDetailData()` | split ownership: component UX facade, Engine remote data load. |
-| `buttonEmitted()` | component UX/event facade; provider CRUD orchestration goes to Engine. |
-| `startEdit()` | component UX/event facade; no provider component override. |
-| `removeRowData()` | component confirmation/event facade; provider delete orchestration goes to Engine. |
-| `sortColumn()` | component public/UI facade; Engine owns remote sort state/load; Utils owns pure local comparator. |
-| `toolbarValueChanged()` | component input UX; Engine owns provider search state/load. |
-| `searchData()` | component filter-input UX; Engine owns provider filter state/load; Utils owns pure parsing/metadata helpers. |
-| `onScroll()` | component scroll UX trigger; Engine owns continuation/load-next orchestration. |
+| `ngAfterViewInit()` | **Removed in Phase 11.** No provider-specific view lifecycle remains. |
+| `ngOnDestroy()` | Keep for now: provider debounce timers, lookup-registry cleanup and transient provider scroll reference are still bridge-owned. |
+| `buildAndTestQueryString()` | Keep for now: a configured `GridDataProvider` must bypass the legacy `queryString`/`dataJson` validation path. |
+| `buildHeaderColumns()` | Keep for now: provider columns still need explicit `allowFiltering=false` handling and lookup metadata propagation after the historical base builder. |
+| `loadRemoteRecords()` | Keep as component facade: provider load is delegated to Engine, but rows/loading/cursor state is still component-owned. |
+| `renderGridDetailData()` | Keep as UX facade: Engine loads detail rows; component still owns detail state and `onRowExpanded`. |
+| `buttonEmitted()` | Keep: provider path still uses typed create-event construction while preserving historical toolbar/start-edit flow. |
+| `startEdit()` | Keep: provider path still emits the typed update-event contract without performing inline update. |
+| `removeRowData()` | Keep: confirmation/local-event/provider-delete branching is still UX/component behavior. |
+| `sortColumn()` | Keep as public/UI facade: Engine owns provider sort state but component still owns asc/desc indicator and visual rollback. |
+| `toolbarValueChanged()` | Keep: input/debounce UX still distinguishes local and provider search paths. |
+| `searchData()` | Keep: DOM filter input decoding/debounce remains component UX; typed filter state is delegated. |
+| `onScroll()` | Keep: Angular scroll event and viewport behavior remain component UX; Engine owns continuation request/state. |
 
-Target result: zero provider-specific Angular overrides and, if the migration succeeds as expected, deletion of `ProviderDataGridComponent` in favor of one `DataGridComponent` using `DataGridEngine` plus the existing provider contracts.
+The rule is unchanged: an override disappears only when its current provider-specific behavior has a shared owner. Phase 11 deliberately does **not** rewrite base methods merely to reduce the count.
+
+Target result remains zero provider-specific Angular overrides and, if the migration succeeds as expected, deletion of `ProviderDataGridComponent` in favor of one `DataGridComponent` using `DataGridEngine` plus the existing provider contracts.
 
 ## 6. Migration rule
 
