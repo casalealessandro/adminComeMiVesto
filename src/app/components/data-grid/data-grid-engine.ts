@@ -11,8 +11,9 @@ import { DataGridUtils } from './data-grid-utils';
 /**
  * Stateful orchestration layer for DataGrid behavior.
  *
- * Phase 6 keeps provider-neutral query and paging state here and centralizes
- * provider sort/search/filter state transitions without changing DataGrid UI.
+ * Phase 7 keeps provider-neutral query and paging state here and centralizes
+ * provider sort/search/filter state transitions and CRUD orchestration without
+ * changing DataGrid UI behavior.
  *
  * Current ownership:
  * - provider sorting request state
@@ -24,6 +25,7 @@ import { DataGridUtils } from './data-grid-utils';
  * - provider-neutral page-state transitions
  * - provider-neutral initial / continuation load calls
  * - provider sort/search/filter snapshot / set / restore operations
+ * - provider create / update / delete orchestration with caller-owned reload
  *
  * Still intentionally owned by the components in this phase:
  * - Angular / DOM state
@@ -31,7 +33,7 @@ import { DataGridUtils } from './data-grid-utils';
  * - visible rows and selection state
  * - local UI sort/search indicators
  * - visual paging state and placeholder rendering
- * - mutation orchestration
+ * - CRUD confirmation and emitted UI events
  */
 export class DataGridEngine<T = any> {
   providerSort: GridSort[] = [];
@@ -82,6 +84,35 @@ export class DataGridEngine<T = any> {
 
   restoreProviderFilters(previousFilters: GridFilter[]): void {
     this.providerFilters = previousFilters;
+  }
+
+  async createProviderRow(
+    provider: GridDataProvider<T>,
+    data: Partial<T>,
+    reload: () => Promise<void>,
+  ): Promise<T> {
+    const created = await provider.create!(data);
+    await reload();
+    return created;
+  }
+
+  async updateProviderRow(
+    provider: GridDataProvider<T>,
+    data: T,
+    reload: () => Promise<void>,
+  ): Promise<T> {
+    const updated = await provider.update!(data);
+    await reload();
+    return updated;
+  }
+
+  async deleteProviderRow(
+    provider: GridDataProvider<T>,
+    data: T,
+    reload: () => Promise<void>,
+  ): Promise<void> {
+    await provider.delete!(data);
+    await reload();
   }
 
   buildLoadRequest(pageSize: number, continuation?: unknown): GridLoadRequest {
