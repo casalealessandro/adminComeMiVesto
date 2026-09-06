@@ -7,6 +7,11 @@ import { alert, showPopover } from '../../../widgets/ui-dialogs';
 import { OverlayComponent } from '../../overlay-component/overlay.component';
 import { OverlayService } from '../../../services/overlay.service';
 import { button } from '../../../interface/app.interface';
+import {
+  GridLookupCellConfig,
+  GridLookupCellOptions,
+  GridLookupRegistry,
+} from '../data-grid-lookup-registry';
 
 
 registerLocaleData(localeFit);
@@ -22,6 +27,7 @@ export class TdItemComponent {
   @ViewChild('dynamicContent', { static: false }) dynamicContent!: TemplateRef<any>;
   
   private overlayService = inject(OverlayService);
+  private readonly lookupRegistry = inject(GridLookupRegistry, { optional: true });
 
   @Input() colProperty: any;
   @Input() colType: any;
@@ -80,6 +86,68 @@ export class TdItemComponent {
       default:
         break;
     }
+
+    void this.resolveProviderLookup();
+  }
+
+  async resolveProviderLookup(): Promise<boolean> {
+    const lookup = this.colProperty?.customizedOptions?.lookup as GridLookupCellConfig | undefined;
+
+    if (!lookup || !this.lookupRegistry || !this.value) {
+      return false;
+    }
+
+    const dataField = this.colProperty?.dataField ?? this.dataField;
+    if (!dataField) {
+      return false;
+    }
+
+    if (!this.lookupRegistry.getProvider(dataField, lookup)) {
+      return false;
+    }
+
+    const previousRemoteData = this.remoteData;
+    const previousStaticData = this.staticData;
+    const previousDisplayExpr = this.displayExpr;
+
+    try {
+      const resolvedData = await this.lookupRegistry.load(dataField, lookup, {
+        value: this.value,
+        rowData: this.lookupRegistry.resolveRow(this.rowIndex),
+        dataField,
+      });
+
+      if (resolvedData === undefined || resolvedData === null) {
+        return false;
+      }
+
+      const lookupOptions = typeof lookup === 'object'
+        ? lookup as GridLookupCellOptions
+        : undefined;
+
+      this.remoteData = resolvedData;
+      this.displayExpr = lookupOptions?.displayExpr
+        ?? this.colProperty?.customizedOptions?.displayExpr
+        ?? lookupOptions?.valueExpr
+        ?? this.colProperty?.customizedOptions?.valueExpr;
+
+      const displayValue = this.resolveProviderDisplayValue(resolvedData, this.displayExpr);
+      this.staticData = this.renderHtmlColumn(displayValue, '');
+      return true;
+    } catch {
+      this.remoteData = previousRemoteData;
+      this.staticData = previousStaticData;
+      this.displayExpr = previousDisplayExpr;
+      return false;
+    }
+  }
+
+  private resolveProviderDisplayValue(data: any, displayExpr?: string): any {
+    if (displayExpr && data !== null && typeof data === 'object') {
+      return data[displayExpr];
+    }
+
+    return data;
   }
 
   async renderDataColumn(data: any, colData: any, items?: any) {

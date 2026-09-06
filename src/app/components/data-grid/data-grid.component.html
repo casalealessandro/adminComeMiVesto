@@ -2,23 +2,37 @@
 
 <div id="dataGridWrapper" class="-data-grid-wrapper table-responsive">
    <div class="-data-grid-toolbar" *ngIf="showToolbarTop">
+      <div class="-data-grid-toolbar-content">
+         <div class="-data-grid-global-search" *ngIf="isSearchable">
+            <i class="mdi mdi-magnify" aria-hidden="true"></i>
+            <input #globalSearch
+               type="search"
+               class="texteditor-input"
+               [value]="searchText || ''"
+               placeholder="Cerca in tutti i campi..."
+               aria-label="Ricerca globale nella griglia"
+               (input)="toolbarValueChanged({ value: globalSearch.value, event: $event })" />
+         </div>
 
-      <!-- <app-toolbar 
-         [background]="'#fff'"
-         [textColor]="'#303e67'" 
-         class="-toolbar-items-container"
-         [position]="'horizontal'" 
-         [buttonCustomBottom]="buttonDXToolbar" 
-         [buttonCustomUp]="buttonSXToolbar" 
-         [tastiBottom]="toolbarButtonsTopRight"
-         [tastiUp]="toolbarButtonsTopLeft"
-         (valueChangeEvent)="toolbarValueChanged($event)"
-         (risposta)="buttonEmitted($event)"
-         [hoverMode]="false" 
-         [isDx]="false"
-         [disabled]="false"
-         >
-      </app-toolbar> -->
+         <div class="-data-grid-toolbar-actions">
+            <!-- <app-toolbar 
+               [background]="'#fff'"
+               [textColor]="'#303e67'" 
+               class="-toolbar-items-container"
+               [position]="'horizontal'" 
+               [buttonCustomBottom]="buttonDXToolbar" 
+               [buttonCustomUp]="buttonSXToolbar" 
+               [tastiBottom]="toolbarButtonsTopRight"
+               [tastiUp]="toolbarButtonsTopLeft"
+               (valueChangeEvent)="toolbarValueChanged($event)"
+               (risposta)="buttonEmitted($event)"
+               [hoverMode]="false" 
+               [isDx]="false"
+               [disabled]="false" 
+               >
+            </app-toolbar> -->
+         </div>
+      </div>
    </div>
 
 
@@ -81,7 +95,9 @@
                      </ng-template>
                 
                   </span>
-                  <!-- <div class="editor   border-top ps-0 pe-1" *ngIf="colHeader.search"
+                  <!-- Storico: il filtro era originariamente renderizzato sotto la caption nello stesso TH.
+                     La nuova filter-row separata mantiene la stessa feature senza mescolare header e input.
+                  <div class="editor   border-top ps-0 pe-1" *ngIf="colHeader.search"
                      [ngStyle]="{'width.px':colHeader.colWidth}">
                      <div class="editor-content  no-border">
                         <div class="input-container no-border d-flex">
@@ -105,6 +121,113 @@
             </th>
 
          </tr>
+
+         <tr class="-data-grid-filter-row" *ngIf="showFilter">
+            <th scope="col" *ngFor="let colHeader of colsHeader"
+               [ngStyle]="{'width.px':colHeader.colWidth, 'min-width.px':colHeader.colWidth,'max-width.px':colHeader.colWidth}">
+
+               <ng-container *ngIf="colHeader.search && colHeader.dataField">
+                  <ng-container [ngSwitch]="colHeader.type">
+                     <div *ngSwitchCase="'campo'" class="editor no-border">
+                        <div class="editor-content no-border">
+                           <div class="input-container no-border d-flex">
+                              <div class="search-icon">
+                                 <i class="mdi mdi-filter-outline"></i>
+                              </div>
+                              <input type="text"
+                                 class="texteditor-input no-border"
+                                 placeholder="Filtra..."
+                                 [attr.data-grid-filter-field]="colHeader.dataField"
+                                 [attr.data-grid-filter-type]="colHeader.type"
+                                 (input)="searchData($event)" />
+                           </div>
+                        </div>
+                     </div>
+
+                     <div *ngSwitchCase="'campoTesto'" class="editor no-border">
+                        <div class="editor-content no-border">
+                           <div class="input-container no-border d-flex">
+                              <div class="search-icon">
+                                 <i class="mdi mdi-filter-outline"></i>
+                              </div>
+                              <input type="text"
+                                 class="texteditor-input no-border"
+                                 placeholder="Filtra..."
+                                 [attr.data-grid-filter-field]="colHeader.dataField"
+                                 [attr.data-grid-filter-type]="colHeader.type"
+                                 (input)="searchData($event)" />
+                           </div>
+                        </div>
+                     </div>
+
+                     <div *ngSwitchCase="'campoNumber'" class="editor no-border">
+                        <div class="editor-content no-border">
+                           <div class="input-container no-border d-flex">
+                              <input type="number"
+                                 class="texteditor-input no-border"
+                                 placeholder="Numero"
+                                 [attr.data-grid-filter-field]="colHeader.dataField"
+                                 [attr.data-grid-filter-type]="colHeader.type"
+                                 (input)="searchData($event)" />
+                           </div>
+                        </div>
+                     </div>
+
+                     <div *ngSwitchCase="'campoData'" class="editor no-border">
+                        <div class="editor-content no-border">
+                           <div class="input-container no-border d-flex">
+                              <input type="date"
+                                 class="texteditor-input no-border"
+                                 [attr.data-grid-filter-field]="colHeader.dataField"
+                                 [attr.data-grid-filter-type]="colHeader.type"
+                                 (input)="searchData($event)" />
+                           </div>
+                        </div>
+                     </div>
+
+                     <div *ngSwitchCase="'campoDateTime'" class="editor no-border">
+                        <div class="editor-content no-border">
+                           <div class="input-container no-border d-flex">
+                              <input type="date"
+                                 class="texteditor-input no-border"
+                                 [attr.data-grid-filter-field]="colHeader.dataField"
+                                 [attr.data-grid-filter-type]="colHeader.type"
+                                 (input)="searchData($event)" />
+                           </div>
+                        </div>
+                     </div>
+
+                     <div *ngSwitchCase="'campoBoolean'" class="editor no-border">
+                        <div class="editor-content no-border">
+                           <select class="texteditor-input no-border"
+                              [attr.data-grid-filter-field]="colHeader.dataField"
+                              [attr.data-grid-filter-type]="colHeader.type"
+                              (change)="searchData($event)">
+                              <option value="">Tutti</option>
+                              <option value="true">Sì</option>
+                              <option value="false">No</option>
+                           </select>
+                        </div>
+                     </div>
+
+                     <div *ngSwitchCase="'campoLista'" class="editor no-border">
+                        <div class="editor-content no-border">
+                           <select class="texteditor-input no-border"
+                              [attr.data-grid-filter-field]="colHeader.dataField"
+                              [attr.data-grid-filter-type]="colHeader.type"
+                              (change)="searchData($event)">
+                              <option value="">Tutti</option>
+                              <option *ngFor="let option of colHeader.customizedOptions?.options"
+                                 [value]="option[colHeader.customizedOptions.valueExp]">
+                                 {{ option[colHeader.customizedOptions.displayExp] }}
+                              </option>
+                           </select>
+                        </div>
+                     </div>
+                  </ng-container>
+               </ng-container>
+            </th>
+         </tr>
       </thead>
       <tbody *ngIf="showNullData" [ngStyle]="bodyStyle" class="t-body">
          <tr class="row-no-data">
@@ -119,7 +242,7 @@
       </tbody>
 
       <tbody #tbody *ngIf="!showNullData" [ngStyle]="bodyStyle" class="scroll-bottom" id="scrollBarCustom">
-         <app-custom-scrollbar>
+         <app-custom-scrollbar (scrollEvent)="onScroll($event)">
 
             <ng-container *ngFor="let colRow of rowsData(); let rowIndex = index">
                <ng-container
