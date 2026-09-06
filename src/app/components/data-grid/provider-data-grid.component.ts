@@ -412,7 +412,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
     const previousColumn = this.sortedColumn;
     const previousDirection = this.sortDirection;
-    const previousSort = DataGridUtils.cloneSorts(this.gridEngine.providerSort);
+    const previousSort = this.gridEngine.snapshotProviderSort();
 
     if (this.sortedColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -421,10 +421,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       this.sortDirection = 'asc';
     }
 
-    this.gridEngine.providerSort = [{
-      field: column,
-      direction: this.sortDirection,
-    }];
+    this.gridEngine.setProviderSort(column, this.sortDirection);
 
     void this.reloadAfterProviderSort(previousColumn, previousDirection, previousSort);
   }
@@ -608,7 +605,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     if (!loaded) {
       this.sortedColumn = previousColumn;
       this.sortDirection = previousDirection;
-      this.gridEngine.providerSort = previousSort;
+      this.gridEngine.restoreProviderSort(previousSort);
       return;
     }
 
