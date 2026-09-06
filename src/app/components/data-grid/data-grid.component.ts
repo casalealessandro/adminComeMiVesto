@@ -156,7 +156,6 @@ export class DataGridComponent implements OnDestroy {
   groupIndexCol: any = null;
   groupedData: { [key: string]: any[] } | null = null;
   isSelIconDetailVisible: boolean = false;
-  isOddRow: boolean = true;
   showEmptyRow: boolean = false;
   emptyRowStyleClass!: { height: string; backgroundColor: string; };
   pageSize: number = 20; // Imposta la dimensione della pagina desiderata
@@ -1106,14 +1105,6 @@ export class DataGridComponent implements OnDestroy {
   }
 
   /**Funzioni di render**/
-  alternateRowColor(rowIndex: any, rowAlternate: any) {
-    if (rowAlternate) {
-
-      this.isOddRow = !this.isOddRow;
-
-    }
-  }
-
   calcSommaryCells() {
 
     this.colsHeader.forEach(col => {
@@ -1496,8 +1487,10 @@ export class DataGridComponent implements OnDestroy {
       this.rowSelectedDetail = [false]
 
       if (!this.rowSelectedDetail[index]) {
+
         this.rowSelectedDetail[index] = true
       } else {
+
         this.rowSelectedDetail[index] = false;
       }
 
@@ -1728,6 +1721,7 @@ export class DataGridComponent implements OnDestroy {
       'state-hover': this.isHovered[rowIndex],
       'select-have-detail': this.isHoveredDetatil[rowIndex],
       'custom-class': this.rowcustomclass[rowIndex],
+      'alternate': this.rowAlternate && rowIndex % 2 !== 0,
       'row-busy': this.busyRows.has(rowIndex)
     };
   }
