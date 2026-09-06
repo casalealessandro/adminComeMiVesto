@@ -242,7 +242,7 @@
       </tbody>
 
       <tbody #tbody *ngIf="!showNullData" [ngStyle]="bodyStyle" class="scroll-bottom" id="scrollBarCustom">
-         <app-custom-scrollbar>
+         <app-custom-scrollbar (scrollEvent)="onScroll($event)">
 
             <ng-container *ngFor="let colRow of rowsData(); let rowIndex = index">
                <ng-container
