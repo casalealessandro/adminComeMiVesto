@@ -1,6 +1,6 @@
 # DataGrid architecture map
 
-Status: migration in progress. Phases 1-10 progressively moved pure helpers, provider-neutral state/orchestration, CRUD/detail loading and scrollbar wiring into their target owners without rewriting the historical DataGrid behavior. Phase 11 removed the first genuinely redundant provider override. Phase 12 has now started moving the provider facade itself into the single `DataGridComponent`.
+Status: migration in progress. Phases 1-10 progressively moved pure helpers, provider-neutral state/orchestration, CRUD/detail loading and scrollbar wiring into their target owners without rewriting the historical DataGrid behavior. Phase 11 removed the first genuinely redundant provider override. Phase 12 has started moving the provider facade itself into the single `DataGridComponent` and has now unified provider lookup rendering into the shared `TdItemComponent`.
 
 ## Target structure
 
@@ -144,13 +144,16 @@ Engine owns `GridDetailDataProvider.load({ parentRow })`; the component keeps de
 
 Phase 9 decision remains unchanged: lookup is a dedicated responsibility and does **not** move into `DataGridEngine`.
 
-Ownership remains:
+Ownership is now:
 
 - `data-grid-lookup-provider.ts` — provider-neutral lookup contract.
 - `GridLookupRegistry` — provider registration, row resolution, cache, concurrent-request deduplication and invalidation.
-- `ProviderTdItemComponent` — provider-only cell-rendering bridge and explicit `customizedOptions.lookup` behavior.
+- `TdItemComponent` — both historical/manual cell rendering and explicit provider-neutral `customizedOptions.lookup` rendering. The Registry injection is optional, so a local/legacy grid without a registry keeps the historical behavior.
+- `ProviderDataGridComponent` — temporary owner only of the Registry scope and `lookupProviders`/row-resolver wiring.
 
-The remaining important Phase 12 blocker is that `DataGridComponent` imports the historical `TdItemComponent`, while `ProviderDataGridComponent` imports `ProviderTdItemComponent`, which intentionally uses the same `app-td-item` selector. Lookup therefore cannot simply be copied into the base imports. This must be unified deliberately before the provider subclass can be deleted.
+`ProviderTdItemComponent` and its dedicated spec have been removed. `ProviderDataGridComponent` now imports the same `TdItemComponent` as the base grid, and the shared `td-item.lookup.spec.ts` protects both the historical manual lookup path and the provider Registry path.
+
+The former same-selector rendering blocker is therefore closed. The remaining lookup migration work is only to move the `GridLookupRegistry` component scope and `lookupProviders` wiring into the shared `DataGridComponent`; the lookup algorithms must stay in the Registry/TdItem owners above.
 
 ## 3. DataGridUtils — pure/stateless helpers
 
@@ -207,7 +210,7 @@ Phase 12 moved `buildAndTestQueryString()` and `loadRemoteRecords()` into the sh
 
 The bridge also no longer owns duplicate `dataProvider`, `detailDataProvider`, `DataGridEngine`, `remoteContinuation`, `remoteHasMore`, provider mock-row state, initial-page application or progress-cursor implementation; these are inherited from the base.
 
-The target remains zero provider-specific Angular overrides followed by deletion of `ProviderDataGridComponent`, but only after each remaining behavior has a shared owner and lookup rendering is unified safely.
+The target remains zero provider-specific Angular overrides followed by deletion of `ProviderDataGridComponent`, but only after each remaining behavior has a shared owner and the remaining lookup Registry wiring has moved safely into the base.
 
 ## 6. Migration rule
 
