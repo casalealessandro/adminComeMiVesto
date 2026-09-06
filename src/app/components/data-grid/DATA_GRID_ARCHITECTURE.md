@@ -1,52 +1,60 @@
 # DataGrid architecture map
 
-Status: migration in progress. Phases 1-10 progressively moved pure helpers, provider-neutral state/orchestration, CRUD/detail loading and scrollbar wiring into their target owners without rewriting the historical DataGrid behavior. Phase 11 removed the first genuinely redundant provider override. Phase 12 has started moving the provider facade itself into the single `DataGridComponent` and has now unified provider lookup rendering into the shared `TdItemComponent`.
+Status: **provider-neutral core migration completed**.
 
-## Target structure
+The historical `DataGridComponent` behavior has been reorganized progressively without replacing its working algorithms. Provider-neutral state/orchestration now lives in `DataGridEngine`, pure helpers live in `DataGridUtils`, and the Angular/UX/runtime facade is the single `DataGridComponent`.
+
+## Final structure
 
 ```text
-DataGridComponent
+DataGridComponent<T>
   Angular / UX / DOM / public runtime facade
         |
         v
-DataGridEngine
-  stateful grid orchestration
+DataGridEngine<T>
+  provider-neutral state and orchestration
         |
         v
-GridDataProvider and the existing provider-neutral contracts
+GridDataProvider<T>
+  and the existing provider-neutral contracts
 
 DataGridUtils
   pure/stateless helpers shared by component and engine
+
+GridLookupRegistry
+  lookup registration/cache/dedup/row resolution
 ```
 
-The goal is one real `DataGridComponent`. `ProviderDataGridComponent` is migration material, not the final architecture.
+There is one real grid component: `DataGridComponent<T>` / `<app-data-grid>`.
 
-## 1. DataGridComponent — UX and public component facade
+`provider-data-grid.component.ts` is no longer an Angular component and no longer defines a subclass or selector. It currently contains only a TypeScript compatibility re-export:
 
-These responsibilities remain owned by the Angular component because they build or manipulate the visual grid, DOM, focus, emitted UI events or public runtime surface.
+```ts
+export { DataGridComponent as ProviderDataGridComponent } from './data-grid.component';
+```
 
-### Keep in the component
+This keeps the historical provider safety-net tests source-compatible while they exercise the exact same `DataGridComponent` class. It owns no runtime behavior and can be deleted once those legacy test imports are renamed.
 
-- `ngAfterViewInit()` — DOM sizing / wrapper initialization.
-- `observeWrapper()` — `ResizeObserver` and responsive width handling.
-- `ngOnDestroy()` — component/DOM cleanup; provider-specific cleanup will disappear with the bridge.
-- `renderToolBarGrid()` — toolbar UX construction.
-- `buildHeaderColumns()` — visual column/header model construction. Provider-specific metadata patches must be removed from the bridge and resolved before/through shared metadata helpers.
-- `builDetailGrid()` — detail-grid visual structure.
-- `resizeCols()` — visual column sizing.
-- `setStyleBody()` — visual body/table styles.
-- `setCellProperty()` — editor/cell visual metadata support.
-- `handleKeyboardEvents()` / `navigateByKeyboard()` — keyboard UX.
-- `selectRow*`, `clickToSelect*`, `chooseRow`, `isSelectedSubRow`, `clearSelectedRows`, `confirmSelectedRows` — selection UX/public component API.
-- `tdClick()`, `buttonClick()`, `btnActionClick()` — cell/button UX entry points.
-- `updateRowClasses()` — row CSS state.
-- `collapse()` — expand/collapse UX and CSS ownership.
-- `refresh()`, `hideColumn()`, `sortColumn()` — public runtime facade.
-- future recovered `focusRow()` / `selectContent()` — public runtime/UX API.
+## 1. DataGridComponent — Angular, UX and public facade
 
-### Facade methods that mix UX and data
+`DataGridComponent<T>` owns the visual/runtime responsibilities that belong to the component:
 
-These remain component entry points while provider-neutral data work is delegated to `DataGridEngine`:
+- Angular lifecycle and DOM sizing;
+- responsive wrapper handling / `ResizeObserver`;
+- rendering/template/CSS state;
+- toolbar UX;
+- column/header visual model;
+- detail-grid visual structure;
+- column sizing and body styles;
+- keyboard/focus/selection UX;
+- cell/button UX;
+- row CSS state;
+- expand/collapse UX;
+- public runtime methods such as `refresh()`, `hideColumn()` and `sortColumn()`;
+- loading/cursor presentation;
+- debounce timers and scroll viewport behavior.
+
+Mixed UX/data entry points remain component facades and delegate provider-neutral work to the Engine:
 
 - `renderGrid()`
 - `loadRemoteRecords()`
@@ -58,165 +66,214 @@ These remain component entry points while provider-neutral data work is delegate
 - `onScroll()`
 - `renderGridDetailData()`
 
-### Phase 12 provider facade now owned by DataGridComponent
+### Provider-aware inputs and runtime surface
 
-`DataGridComponent<T>` now directly owns:
+The shared component directly owns:
 
 - `@Input() dataProvider?: GridDataProvider<T>`
 - `@Input() detailDataProvider?: GridDetailDataProvider<T, any>`
-- one protected `DataGridEngine<T>` instance
-- `remoteContinuation` facade
-- `remoteHasMore` facade
-- provider mock-row state needed by paging
-- the provider branch of `loadRemoteRecords()`
-- provider initial-page application
-- provider bypass of the legacy `queryString` / `dataJson` validation path
-- the shared progress-cursor helper used by provider mutations and paging.
+- `@Input() lookupProviders`
+- one `DataGridEngine<T>` instance
+- one component-scoped `GridLookupRegistry`
+- remote continuation/hasMore facades
+- provider mock-row state used by visual paging
+- provider search/filter debounce state
+- provider scroll state needed by the historical infinite-scroll UX.
 
-The legacy `AnagraficaService` path inside `loadRemoteRecords()` and `buildAndTestQueryString()` remains intact. A configured provider selects the new branch; absence of a provider preserves the historical path.
+The legacy `AnagraficaService` path is still present as a compatibility fallback. If no provider is configured, the historical `api` / `queryString` path remains available.
 
-## 2. DataGridEngine — stateful grid orchestration
+## 2. DataGridEngine — provider-neutral state/orchestration
 
-`DataGridEngine<T>` owns behavior independent from Angular rendering and from a concrete backend protocol.
+`DataGridEngine<T>` is independent from Angular rendering and from backend protocols.
 
-### Data loading / refresh
+It owns:
 
-Current Engine ownership includes:
+### Query state
 
-- provider-neutral initial and continuation requests
-- request construction
-- initial/continuation page-state transitions
-- query-state cloning/snapshot/restore
-- authoritative reload orchestration after mutations
-- remote detail provider loading.
+- provider sort state;
+- provider global-search state;
+- provider column-filter state;
+- snapshot/set/restore operations used for rollback.
 
-The component still owns visual `rowsData`, cursor and loading presentation around those operations.
+### Loading and paging
 
-Legacy `AnagraficaService`, `api` and `queryString` are not Engine concepts. They remain the legacy fallback until a dedicated adapter is introduced or that path is retired separately.
+- provider request construction;
+- initial provider load delegation;
+- continuation provider load delegation;
+- opaque continuation state;
+- `hasMore` state;
+- known/unknown total-count state;
+- initial/continuation page-state transitions.
 
-### Paging / continuation
+### CRUD orchestration
 
-Engine ownership:
-
-- `remoteContinuation`
-- `remoteHasMore`
-- `remoteTotalCountKnown`
-- continuation request construction
-- initial/continuation total-record state transitions.
-
-Component/bridge ownership still includes visual mock-row insertion/replacement and scroll behavior.
-
-### Sorting
-
-Engine ownership:
-
-- normalized provider sort state
-- snapshot/set/restore of provider sort
-- provider request execution through the common load path.
-
-`sortColumn()` remains UI/public facade and local comparison remains in `DataGridUtils`.
-
-### Global search and column filters
-
-Engine ownership:
-
-- provider search state
-- provider filter state
-- snapshot/set/restore operations
-- preservation of query state across loads, continuation and CRUD reloads.
-
-Typed model construction remains in `data-grid-filter-model.ts`; DOM input/debounce behavior remains component UX.
-
-### CRUD
-
-Engine ownership:
-
-- create/update/delete provider calls
+- provider `create` calls;
+- provider `update` calls;
+- provider `delete` calls;
 - mutation -> authoritative reload orchestration.
 
-The component keeps dialogs, event contracts and loading/cursor presentation.
+The component continues to own confirmation dialogs, external event contracts and visual loading state.
 
-### Remote detail data
+### Detail loading
 
-Engine owns `GridDetailDataProvider.load({ parentRow })`; the component keeps detail visual state, expansion and `onRowExpanded`.
+The Engine owns the provider-neutral call:
 
-### Lookup orchestration
+```text
+GridDetailDataProvider.load({ parentRow })
+```
 
-Phase 9 decision remains unchanged: lookup is a dedicated responsibility and does **not** move into `DataGridEngine`.
+The component owns expansion state, detail rows and the historical `onRowExpanded` event.
 
-Ownership is now:
+### Forbidden Engine dependencies
 
-- `data-grid-lookup-provider.ts` — provider-neutral lookup contract.
-- `GridLookupRegistry` — provider registration, row resolution, cache, concurrent-request deduplication and invalidation.
-- `TdItemComponent` — both historical/manual cell rendering and explicit provider-neutral `customizedOptions.lookup` rendering. The Registry injection is optional, so a local/legacy grid without a registry keeps the historical behavior.
-- `ProviderDataGridComponent` — temporary owner only of the Registry scope and `lookupProviders`/row-resolver wiring.
+The Engine must not know about:
 
-`ProviderTdItemComponent` and its dedicated spec have been removed. `ProviderDataGridComponent` now imports the same `TdItemComponent` as the base grid, and the shared `td-item.lookup.spec.ts` protects both the historical manual lookup path and the provider Registry path.
-
-The former same-selector rendering blocker is therefore closed. The remaining lookup migration work is only to move the `GridLookupRegistry` component scope and `lookupProviders` wiring into the shared `DataGridComponent`; the lookup algorithms must stay in the Registry/TdItem owners above.
+- `AnagraficaService`;
+- Firebase / Firestore;
+- REST/OData/GraphQL syntax;
+- endpoint URLs;
+- DOM / `ElementRef`;
+- Angular `EventEmitter`;
+- ComeMiVesto-specific domain objects.
 
 ## 3. DataGridUtils — pure/stateless helpers
 
-Current ownership includes pure/stateless behavior such as:
+`DataGridUtils` contains only deterministic helpers, including:
 
-- local sort comparison
-- local search matching/filtering
-- date formatting
-- summary calculation
-- provider column metadata lookup
-- provider search/filter metadata helpers
-- provider filter input normalization
-- search/filter/sort clone helpers
-- mock-row creation.
+- local comparison for sorting;
+- local search matching;
+- local filtering;
+- date formatting;
+- summary calculation;
+- original-column lookup;
+- provider search-column discovery;
+- provider filter-column lookup;
+- provider filter input normalization;
+- search/filter/sort cloning;
+- provider mock-row creation.
 
-Utilities must not contain `EventEmitter`, `ElementRef`, Angular component state, backend transport calls, dialogs or DOM queries.
+Utilities must remain free of component state, DOM, EventEmitters, dialogs and transport calls.
 
-## 4. Existing files that remain separate
+## 4. Lookup architecture
+
+Lookup is intentionally separate from `DataGridEngine`.
+
+Ownership:
+
+- `data-grid-lookup-provider.ts` — provider-neutral lookup contract;
+- `GridLookupRegistry` — provider registration, row resolution, cache, concurrent-request deduplication and invalidation;
+- `TdItemComponent` — visual rendering for both historical/manual lookup behavior and explicit provider-neutral `customizedOptions.lookup`;
+- `DataGridComponent` — Registry scope plus `lookupProviders` / row-resolver wiring.
+
+The former provider-specific TdItem path has been removed. The shared `TdItemComponent` is the only cell renderer.
+
+## 5. Search and filters
+
+Provider remote mode supports:
+
+- global OR search through typed conditions;
+- explicit per-column filters as an AND list;
+- typed text/number/date/dateTime/boolean/list values;
+- existing debounce timings;
+- paging reset after query changes;
+- rollback of the previous query state when a reload fails;
+- preservation of active search/filter/sort state across continuation pages and CRUD reloads.
+
+Local/non-remote search continues through the historical component path and pure `DataGridUtils` helpers.
+
+## 6. Sorting
+
+`sortColumn()` remains the public component API.
+
+Local mode:
+
+- preserves the historical column/direction toggle;
+- sorts a copy of `rowsData()`;
+- delegates only value comparison to `DataGridUtils`.
+
+Provider remote mode:
+
+- keeps the same visual sort indicator behavior;
+- stores normalized `GridSort` in `DataGridEngine`;
+- reloads the first provider page;
+- preserves rollback when the provider load fails;
+- preserves the sort on continuation pages.
+
+## 7. CRUD
+
+The public/editor event flow remains in `DataGridComponent`.
+
+Typed CRUD payload builders remain in `data-grid-crud-event.ts`:
+
+- create -> `buttonNewRowEvent`;
+- update -> `buttonEditRowEvent`;
+- delete -> `delRows` for the historical local event flow.
+
+Provider remote delete continues to call the provider directly instead of assuming an `id` field or backend URL shape.
+
+## 8. Paging / historical scroll UX
+
+The historical provider infinite-scroll behavior is preserved in the component:
+
+- near-bottom trigger;
+- loading lock;
+- temporary mock rows;
+- configurable historical short loading delay;
+- 10px visual pull-back while loading;
+- replacement/removal of placeholders;
+- continuation paging;
+- page counters and scroll-position reset.
+
+The backend paging token is opaque to the grid.
+
+## 9. ProviderDataGridComponent migration result
+
+Original provider override count: **13**.
+
+Final provider override count: **0**.
+
+The Angular subclass and `app-provider-data-grid` selector have been removed.
+
+The remaining `ProviderDataGridComponent` identifier is only a TypeScript re-export name used by historical provider tests. Those tests therefore instantiate the exact shared `DataGridComponent` implementation.
+
+Runtime application views should use:
+
+```html
+<app-data-grid ...></app-data-grid>
+```
+
+and import `DataGridComponent` directly.
+
+## 10. Existing provider-neutral contracts that remain separate
 
 Do not duplicate these responsibilities:
 
-- `data-grid-provider.ts` — provider-neutral contracts and request/page/sort/filter/search models.
-- `data-grid-filter-model.ts` — typed search/filter model builders.
-- `data-grid-detail-provider.ts` — remote detail provider contract.
-- `data-grid-lookup-provider.ts` — lookup provider contract.
-- `data-grid-lookup-registry.ts` — lookup registry/cache behavior.
-- `data-grid-crud-event.ts` — typed CRUD event contract/builders.
+- `data-grid-provider.ts` — provider/request/page/sort/filter/search contracts;
+- `data-grid-filter-model.ts` — typed search/filter model builders;
+- `data-grid-detail-provider.ts` — remote detail provider contract;
+- `data-grid-lookup-provider.ts` — lookup provider contract;
+- `data-grid-lookup-registry.ts` — lookup registry/cache behavior;
+- `data-grid-crud-event.ts` — typed CRUD event contracts/builders.
 
-## 5. ProviderDataGridComponent override recount — Phase 12
+## 11. Migration rules preserved
 
-Original override count: **13**.
-
-Phase 11 removed `ngAfterViewInit()`.
-
-Phase 12 moved `buildAndTestQueryString()` and `loadRemoteRecords()` into the shared `DataGridComponent`, so those provider overrides have also been deleted.
-
-**Residual override count: 10.**
-
-| Override | Phase 12 status / reason |
-| --- | --- |
-| `ngAfterViewInit()` | **Removed in Phase 11.** Base component is the only view-lifecycle owner. |
-| `buildAndTestQueryString()` | **Removed in Phase 12.** Base method now bypasses legacy validation when `dataProvider` is configured. |
-| `loadRemoteRecords()` | **Removed in Phase 12.** Base method now selects provider or legacy transport without changing either branch. |
-| `ngOnDestroy()` | Keep for now: provider debounce timers, lookup-registry cleanup and transient scroll reference are still bridge-owned. |
-| `buildHeaderColumns()` | Keep for now: provider filterability and lookup metadata are still patched after the historical builder. |
-| `renderGridDetailData()` | Keep as UX facade: Engine loads detail rows, bridge still applies provider-specific visual result handling. |
-| `buttonEmitted()` | Keep: typed provider create-event behavior is not yet in the shared facade. |
-| `startEdit()` | Keep: typed provider update-event behavior is not yet in the shared facade. |
-| `removeRowData()` | Keep: confirmation/local-event/provider-delete branching still lives in the bridge. |
-| `sortColumn()` | Keep: provider remote sort UX/rollback still differs from the base local facade. |
-| `toolbarValueChanged()` | Keep: provider search debounce/input path is still bridge-owned. |
-| `searchData()` | Keep: provider filter DOM decoding/debounce is still bridge-owned. |
-| `onScroll()` | Keep: provider viewport paging behavior is still bridge-owned. |
-
-The bridge also no longer owns duplicate `dataProvider`, `detailDataProvider`, `DataGridEngine`, `remoteContinuation`, `remoteHasMore`, provider mock-row state, initial-page application or progress-cursor implementation; these are inherited from the base.
-
-The target remains zero provider-specific Angular overrides followed by deletion of `ProviderDataGridComponent`, but only after each remaining behavior has a shared owner and the remaining lookup Registry wiring has moved safely into the base.
-
-## 6. Migration rule
-
-1. Do not rewrite behavior while moving it.
+1. Do not rewrite working behavior while moving ownership.
 2. Move one ownership group at a time.
-3. Preserve existing tests and add characterization tests before each move when coverage is missing.
-4. Keep `DataGridComponent` public inputs/outputs/runtime methods compatible.
-5. Never introduce Firebase, Firestore, REST, OData, GraphQL or ComeMiVesto assumptions into Engine or Utils.
-6. Delete an override only after its behavior is demonstrably provided through the shared architecture.
+3. Preserve characterization tests before removing duplicate paths.
+4. Keep the `DataGridComponent` public API compatible.
+5. Keep Engine and Utils backend-neutral.
+6. Delete an override only after equivalent behavior exists in the shared architecture.
+7. Do not remove historical fallback behavior merely because a provider path now exists.
+
+## 12. Remaining cleanup only
+
+No provider-specific runtime architecture remains.
+
+Optional non-functional cleanup for a later commit:
+
+- rename the historical `provider-data-grid*.spec.ts` files to `data-grid.provider*.spec.ts`;
+- change their imports from the compatibility `ProviderDataGridComponent` re-export to `DataGridComponent`;
+- then delete `provider-data-grid.component.ts` completely;
+- remove the now-unused transitional `providerFacadeActive` field when a surgical patch path is available.
+
+These items do not block the single-grid architecture and must not be mixed with functional changes.
