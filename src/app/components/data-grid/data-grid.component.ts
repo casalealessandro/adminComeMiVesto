@@ -9,6 +9,11 @@ import { AnagraficaService } from '../../services/anagrafica.service';
 import { TdItemComponent } from './td-item/td-item.component';
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { OverlayService } from '../../services/overlay.service';
+import {
+  buildGridCreateEvent,
+  buildGridDeleteEvent,
+  buildGridUpdateEvent,
+} from './data-grid-crud-event';
 import { DataGridUtils } from './data-grid-utils';
 import { DataGridEngine } from './data-grid-engine';
 import { GridDetailDataProvider } from './data-grid-detail-provider';
@@ -1412,6 +1417,21 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
   startEdit(index: any, event: any) {
 
+    if (this.dataProvider) {
+      let eventEditor = buildGridUpdateEvent({
+        idTable: this.idTable,
+        service: this.service,
+        component: this
+      }, index, this.rowsData()[index] as T, event)
+
+      this.emittendStartEdit.emit(eventEditor)
+
+      if (eventEditor.cancel) {
+        return
+      }
+      return
+    }
+
 
     let eventEditor = {
       infoEvent: event,
@@ -1434,6 +1454,34 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
 
   async removeRowData(index: any, event: any) {
+
+    if (this.dataProvider) {
+      confirm('Sei certo di voler eliminare questo record?', 'Attenzione!', res => {
+        if (!res) {
+          return
+        }
+
+        let delEvent = buildGridDeleteEvent({
+          idTable: this.idTable,
+          service: this.service,
+          component: this
+        }, index, this.rowsData()[index] as T)
+
+        if (!this.remoteOperation) {
+          this.emittendGridEvent.emit(delEvent)
+
+          if (delEvent.cancel) {
+            return
+          }
+
+          this.deleteRow(index)
+          return
+        }
+
+        void this.deleteProviderRow(delEvent.rowData as T)
+      })
+      return
+    }
 
 
     confirm('Sei certo di voler eliminare questo record?', 'Attenzione!', res => {
@@ -1467,6 +1515,70 @@ export class DataGridComponent<T = any> implements OnDestroy {
       }
     })
 
+  }
+
+  async createProviderRow(data: Partial<T>): Promise<T | undefined> {
+    if (!this.dataProvider?.create || !this.remoteOperation || this.isLoading) {
+      return undefined;
+    }
+
+    this.isLoading = true;
+    this.setProgressCursor(true);
+
+    try {
+      return await this.gridEngine.createProviderRow(this.dataProvider, data, async () => {
+        this.isLoading = false;
+        await this.loadRemoteRecords();
+      });
+    } catch {
+      return undefined;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
+  }
+
+  async updateProviderRow(data: T): Promise<T | undefined> {
+    if (!this.dataProvider?.update || !this.remoteOperation || this.isLoading) {
+      return undefined;
+    }
+
+    this.isLoading = true;
+    this.setProgressCursor(true);
+
+    try {
+      return await this.gridEngine.updateProviderRow(this.dataProvider, data, async () => {
+        this.isLoading = false;
+        await this.loadRemoteRecords();
+      });
+    } catch {
+      return undefined;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
+  }
+
+  async deleteProviderRow(data: T): Promise<boolean> {
+    if (!this.dataProvider?.delete || !this.remoteOperation || this.isLoading) {
+      return false;
+    }
+
+    this.isLoading = true;
+    this.setProgressCursor(true);
+
+    try {
+      await this.gridEngine.deleteProviderRow(this.dataProvider, data, async () => {
+        this.isLoading = false;
+        await this.loadRemoteRecords();
+      });
+      return true;
+    } catch {
+      return false;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
   }
 
 
@@ -2194,6 +2306,24 @@ export class DataGridComponent<T = any> implements OnDestroy {
   }
 
   buttonEmitted(event: any) {
+    if (this.dataProvider && event == 'addRow') {
+      console.log('buttonEmitted-->', event)
+
+      let eventRowClick = buildGridCreateEvent({
+        idTable: this.idTable,
+        service: this.service,
+        component: this
+      }, event)
+
+      this.emittendToolbarClick.emit(eventRowClick)
+      this.emittendStartEdit.emit(eventRowClick)
+
+      if (!eventRowClick.cancel) {
+        this.addRow()
+      }
+      return
+    }
+
     console.log('buttonEmitted-->', event)
     switch (event) {
       case 'addRow':
