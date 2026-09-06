@@ -1388,7 +1388,7 @@ export class DataGridComponent implements OnDestroy {
 
   }
 
-  saveAndExit() {
+  confirmSelectedRows() {
 
 
     let dataSourceRowSelected: any[] = []
@@ -1420,6 +1420,10 @@ export class DataGridComponent implements OnDestroy {
     }
   
     this.emittendSelectionRow.emit(eventSelectRow); */
+  }
+
+  saveAndExit() {
+    this.confirmSelectedRows()
   }
 
   /***Funzioni di selezione riga***/
@@ -1659,8 +1663,23 @@ export class DataGridComponent implements OnDestroy {
 
 
 
-  removeSelAndExit(event: any) {
+  clearSelectedRows(event?: any) {
 
+    this.rowSelected = [false];
+    this.rowSelectedAll = false;
+
+    let eventClearRows = {
+      event: event,
+      component: this,
+      dataSelected: [],
+      name: 'onRowMultipleSelectionClear'
+    }
+
+    this.emittendSelectionRow.emit(eventClearRows);
+  }
+
+  removeSelAndExit(event: any) {
+    this.clearSelectedRows(event)
   }
 
   chooseRow(event: any, i: any, colRow: any) {
@@ -2078,7 +2097,7 @@ export class DataGridComponent implements OnDestroy {
         break;
 
       case 22:
-        this.saveAndExit()
+        this.confirmSelectedRows()
         break;
       case 23:
         let eventOutput = {
@@ -2088,7 +2107,6 @@ export class DataGridComponent implements OnDestroy {
         }
         this.emittendButtonExit.emit(eventOutput)
         break;
-
       case 0:
         let eventOutputZero = {
           event: event,
