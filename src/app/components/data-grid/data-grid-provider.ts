@@ -1,5 +1,14 @@
+/**
+ * Sort direction understood by the provider-neutral DataGrid contract.
+ */
 export type GridSortDirection = 'asc' | 'desc';
 
+/**
+ * Backend-neutral operators used by global search and explicit column filters.
+ *
+ * Concrete providers translate these semantic operators into their own query
+ * language; the DataGrid core must not introduce transport-specific syntax.
+ */
 export type GridFilterOperator =
   | 'eq'
   | 'ne'
@@ -13,6 +22,9 @@ export type GridFilterOperator =
   | 'in'
   | 'sameDay';
 
+/**
+ * One typed provider-neutral filter condition.
+ */
 export interface GridFilter {
   field: string;
   operator: GridFilterOperator;
@@ -33,6 +45,9 @@ export interface GridSearch {
   conditions: GridFilter[];
 }
 
+/**
+ * One normalized provider sort instruction.
+ */
 export interface GridSort {
   field: string;
   direction: GridSortDirection;
@@ -57,6 +72,9 @@ export interface GridLoadRequest {
 
 /**
  * Provider-neutral page returned to the DataGrid.
+ *
+ * `totalCount` is optional. When omitted, the grid derives the visual total
+ * from the rows loaded so far and `hasMore`.
  */
 export interface GridPage<T> {
   items: T[];
@@ -66,13 +84,41 @@ export interface GridPage<T> {
 }
 
 /**
- * Minimal contract required by a remote DataGrid data source.
- * Backend and transport details belong to concrete provider implementations.
+ * Backend-neutral data source consumed by `DataGridComponent`.
+ *
+ * Implementations own transport details, authentication, endpoint selection,
+ * row identity and backend-specific query translation. The grid passes complete
+ * rows to mutations and must not assume an `id`, URL or database technology.
  */
 export interface GridDataProvider<T> {
+  /**
+   * Loads one page using the normalized request produced by the grid engine.
+   *
+   * @param request Page size, opaque continuation and active query state.
+   * @returns The rows plus provider-owned continuation metadata.
+   */
   load(request: GridLoadRequest): Promise<GridPage<T>>;
 
+  /**
+   * Creates one row when the provider supports mutations.
+   *
+   * @param data Partial row supplied by the grid consumer.
+   * @returns The authoritative row returned by the provider.
+   */
   create?(data: Partial<T>): Promise<T>;
+
+  /**
+   * Updates one row without imposing any identity convention on `T`.
+   *
+   * @param data Complete row whose identity is interpreted by the provider.
+   * @returns The authoritative updated row returned by the provider.
+   */
   update?(data: T): Promise<T>;
+
+  /**
+   * Deletes one row without assuming a specific key field.
+   *
+   * @param data Complete row whose identity is interpreted by the provider.
+   */
   delete?(data: T): Promise<void>;
 }
