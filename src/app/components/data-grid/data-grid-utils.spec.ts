@@ -85,7 +85,7 @@ describe('DataGridUtils', () => {
   });
 
   it('should build a null-valued provider mock item without mutating the source row', () => {
-    const row = { id: 1, name: 'Anna' };
+    const row: Record<string, unknown> = { id: 1, name: 'Anna' };
 
     expect(DataGridUtils.createMockItem(row)).toEqual({ id: null, name: null });
     expect(row).toEqual({ id: 1, name: 'Anna' });
