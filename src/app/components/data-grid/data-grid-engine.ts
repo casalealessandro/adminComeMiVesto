@@ -10,33 +10,15 @@ import { GridDetailDataProvider } from './data-grid-detail-provider';
 import { DataGridUtils } from './data-grid-utils';
 
 /**
- * Stateful orchestration layer for DataGrid behavior.
+ * Provider-neutral state and orchestration layer used by `DataGridComponent`.
  *
- * Phase 8 keeps provider-neutral query and paging state here and centralizes
- * provider sort/search/filter state transitions, CRUD orchestration and detail
- * loading without changing DataGrid UI behavior.
+ * The engine owns normalized remote query state, continuation paging state,
+ * provider calls and rollback-friendly snapshots. It intentionally knows
+ * nothing about Angular templates, DOM state, emitted UI events or concrete
+ * backend technologies such as Firebase, REST, OData or GraphQL.
  *
- * Current ownership:
- * - provider sorting request state
- * - provider global-search request state
- * - provider column-filter request state
- * - opaque continuation / has-more paging state
- * - whether the remote total count is authoritative
- * - provider-neutral GridLoadRequest construction
- * - provider-neutral page-state transitions
- * - provider-neutral initial / continuation load calls
- * - provider sort/search/filter snapshot / set / restore operations
- * - provider create / update / delete orchestration with caller-owned reload
- * - provider-neutral detail loading from the exact parent row
- *
- * Still intentionally owned by the components in this phase:
- * - Angular / DOM state
- * - loading flags and timers
- * - visible rows and selection state
- * - local UI sort/search indicators
- * - visual paging state and placeholder rendering
- * - CRUD confirmation and emitted UI events
- * - detail expansion state, rendering and emitted UI events
+ * UI concerns such as loading indicators, visible rows, selection, dialogs,
+ * scroll positioning and detail expansion remain owned by `DataGridComponent`.
  */
 export class DataGridEngine<T = any> {
   providerSort: GridSort[] = [];
@@ -47,10 +29,16 @@ export class DataGridEngine<T = any> {
   remoteHasMore = false;
   remoteTotalCountKnown = false;
 
+  /**
+   * Returns an isolated copy of the active remote sort state for rollback.
+   */
   snapshotProviderSort(): GridSort[] {
     return DataGridUtils.cloneSorts(this.providerSort);
   }
 
+  /**
+   * Replaces the provider sort state with one normalized sort instruction.
+   */
   setProviderSort(field: string, direction: 'asc' | 'desc'): void {
     this.providerSort = [{
       field,
@@ -58,26 +46,45 @@ export class DataGridEngine<T = any> {
     }];
   }
 
+  /**
+   * Restores a sort snapshot after a failed provider reload.
+   */
   restoreProviderSort(previousSort: GridSort[]): void {
     this.providerSort = previousSort;
   }
 
+  /**
+   * Returns an isolated copy of the active global-search state for rollback.
+   */
   snapshotProviderSearch(): GridSearch | undefined {
     return DataGridUtils.cloneSearch(this.providerSearch);
   }
 
+  /**
+   * Replaces or clears the active provider global-search state.
+   */
   setProviderSearch(search: GridSearch | undefined): void {
     this.providerSearch = search;
   }
 
+  /**
+   * Restores a global-search snapshot after a failed provider reload.
+   */
   restoreProviderSearch(previousSearch: GridSearch | undefined): void {
     this.providerSearch = previousSearch;
   }
 
+  /**
+   * Returns isolated copies of the active explicit column filters for rollback.
+   */
   snapshotProviderFilters(): GridFilter[] {
     return DataGridUtils.cloneFilters(this.providerFilters);
   }
 
+  /**
+   * Replaces the filter for one field while preserving filters for other fields.
+   * Passing `undefined` removes the filter for the selected field.
+   */
   setProviderColumnFilter(field: string, filter: GridFilter | undefined): void {
     this.providerFilters = this.providerFilters.filter(currentFilter => currentFilter.field !== field);
     if (filter) {
@@ -85,10 +92,17 @@ export class DataGridEngine<T = any> {
     }
   }
 
+  /**
+   * Restores a column-filter snapshot after a failed provider reload.
+   */
   restoreProviderFilters(previousFilters: GridFilter[]): void {
     this.providerFilters = previousFilters;
   }
 
+  /**
+   * Creates a row through the provider and then performs the caller-owned
+   * authoritative reload. A mutation failure prevents the reload from running.
+   */
   async createProviderRow(
     provider: GridDataProvider<T>,
     data: Partial<T>,
@@ -99,6 +113,10 @@ export class DataGridEngine<T = any> {
     return created;
   }
 
+  /**
+   * Updates a complete row through the provider and then performs the
+   * caller-owned authoritative reload. Row identity remains provider-owned.
+   */
   async updateProviderRow(
     provider: GridDataProvider<T>,
     data: T,
@@ -109,6 +127,10 @@ export class DataGridEngine<T = any> {
     return updated;
   }
 
+  /**
+   * Deletes a complete row through the provider and then performs the
+   * caller-owned authoritative reload. No key-field convention is assumed.
+   */
   async deleteProviderRow(
     provider: GridDataProvider<T>,
     data: T,
@@ -118,6 +140,10 @@ export class DataGridEngine<T = any> {
     await reload();
   }
 
+  /**
+   * Loads provider-managed detail rows for the exact parent row supplied by
+   * the component. Visual expansion state remains component-owned.
+   */
   loadDetailRows<TDetail = unknown>(
     provider: GridDetailDataProvider<T, TDetail>,
     parentRow: T,
@@ -125,6 +151,12 @@ export class DataGridEngine<T = any> {
     return provider.load({ parentRow });
   }
 
+  /**
+   * Builds one immutable provider request from the current query state.
+   *
+   * Search, filters and sort arrays are cloned so provider implementations
+   * cannot mutate the engine's active state through the request object.
+   */
   buildLoadRequest(pageSize: number, continuation?: unknown): GridLoadRequest {
     const request: GridLoadRequest = {
       pageSize,
@@ -149,14 +181,26 @@ export class DataGridEngine<T = any> {
     return request;
   }
 
+  /**
+   * Loads the first remote page using the active search/filter/sort state and
+   * no continuation token.
+   */
   loadInitialPage(provider: GridDataProvider<T>, pageSize: number): Promise<GridPage<T>> {
     return provider.load(this.buildLoadRequest(pageSize));
   }
 
+  /**
+   * Loads the next remote page using the current opaque continuation token and
+   * preserving the active search/filter/sort state.
+   */
   loadContinuationPage(provider: GridDataProvider<T>, pageSize: number): Promise<GridPage<T>> {
     return provider.load(this.buildLoadRequest(pageSize, this.remoteContinuation));
   }
 
+  /**
+   * Applies provider paging metadata after the first page and returns the
+   * effective total used by the component for visual paging state.
+   */
   applyInitialPageState(page: GridPage<T>): number {
     this.remoteContinuation = page.continuation;
     this.remoteHasMore = page.hasMore;
@@ -165,6 +209,13 @@ export class DataGridEngine<T = any> {
     return page.totalCount ?? page.items.length;
   }
 
+  /**
+   * Applies continuation metadata and returns the effective visual total.
+   *
+   * An explicit provider `totalCount` is authoritative. Without one, the final
+   * page total is the number of loaded rows; while more pages remain, the total
+   * never moves backwards below the already known value.
+   */
   applyContinuationPageState(
     page: GridPage<T>,
     currentTotalRecords: number,
