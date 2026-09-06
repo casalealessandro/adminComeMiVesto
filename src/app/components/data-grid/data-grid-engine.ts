@@ -11,8 +11,8 @@ import { DataGridUtils } from './data-grid-utils';
 /**
  * Stateful orchestration layer for DataGrid behavior.
  *
- * Phase 4 keeps provider-neutral query and paging state here and moves the
- * provider load calls that do not depend on Angular rendering.
+ * Phase 5 keeps provider-neutral query and paging state here and centralizes
+ * the provider sort-state transitions without changing the DataGrid UI flow.
  *
  * Current ownership:
  * - provider sorting request state
@@ -23,6 +23,7 @@ import { DataGridUtils } from './data-grid-utils';
  * - provider-neutral GridLoadRequest construction
  * - provider-neutral page-state transitions
  * - provider-neutral initial / continuation load calls
+ * - provider sort snapshot / set / restore operations
  *
  * Still intentionally owned by the components in this phase:
  * - Angular / DOM state
@@ -40,6 +41,21 @@ export class DataGridEngine<T = any> {
   remoteContinuation?: unknown;
   remoteHasMore = false;
   remoteTotalCountKnown = false;
+
+  snapshotProviderSort(): GridSort[] {
+    return DataGridUtils.cloneSorts(this.providerSort);
+  }
+
+  setProviderSort(field: string, direction: 'asc' | 'desc'): void {
+    this.providerSort = [{
+      field,
+      direction,
+    }];
+  }
+
+  restoreProviderSort(previousSort: GridSort[]): void {
+    this.providerSort = previousSort;
+  }
 
   buildLoadRequest(pageSize: number, continuation?: unknown): GridLoadRequest {
     const request: GridLoadRequest = {
