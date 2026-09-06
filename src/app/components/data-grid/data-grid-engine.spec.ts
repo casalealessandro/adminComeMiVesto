@@ -33,4 +33,71 @@ describe('DataGridEngine query state', () => {
     expect(second.remoteHasMore).toBeFalse();
     expect(second.remoteTotalCountKnown).toBeFalse();
   });
+
+  it('should build a provider-neutral load request from the current engine state', () => {
+    const engine = new DataGridEngine();
+    engine.providerSort = [{ field: 'name', direction: 'asc' }];
+    engine.providerSearch = {
+      value: 'anna',
+      conditions: [{ field: 'name', operator: 'contains', value: 'anna' }],
+    };
+    engine.providerFilters = [{ field: 'active', operator: 'eq', value: true }];
+
+    const request = engine.buildLoadRequest(20, { token: 'page-2' });
+
+    expect(request).toEqual({
+      pageSize: 20,
+      continuation: { token: 'page-2' },
+      search: {
+        value: 'anna',
+        conditions: [{ field: 'name', operator: 'contains', value: 'anna' }],
+      },
+      filters: [{ field: 'active', operator: 'eq', value: true }],
+      sort: [{ field: 'name', direction: 'asc' }],
+    });
+    expect(request.search).not.toBe(engine.providerSearch);
+    expect(request.filters).not.toBe(engine.providerFilters);
+    expect(request.sort).not.toBe(engine.providerSort);
+  });
+
+  it('should apply initial remote page state and return the effective total records', () => {
+    const engine = new DataGridEngine<{ id: number }>();
+
+    const totalRecords = engine.applyInitialPageState({
+      items: [{ id: 1 }, { id: 2 }],
+      hasMore: true,
+      continuation: 'page-2',
+      totalCount: 7,
+    });
+
+    expect(totalRecords).toBe(7);
+    expect(engine.remoteContinuation).toBe('page-2');
+    expect(engine.remoteHasMore).toBeTrue();
+    expect(engine.remoteTotalCountKnown).toBeTrue();
+  });
+
+  it('should preserve historic continuation total-count fallback semantics', () => {
+    const engine = new DataGridEngine<{ id: number }>();
+    engine.remoteTotalCountKnown = true;
+
+    const runningTotal = engine.applyContinuationPageState({
+      items: [{ id: 3 }, { id: 4 }],
+      hasMore: true,
+      continuation: 'page-3',
+    }, 7, 4);
+
+    expect(runningTotal).toBe(7);
+    expect(engine.remoteContinuation).toBe('page-3');
+    expect(engine.remoteHasMore).toBeTrue();
+    expect(engine.remoteTotalCountKnown).toBeTrue();
+
+    const finalTotal = engine.applyContinuationPageState({
+      items: [{ id: 5 }],
+      hasMore: false,
+    }, runningTotal, 5);
+
+    expect(finalTotal).toBe(5);
+    expect(engine.remoteContinuation).toBeUndefined();
+    expect(engine.remoteHasMore).toBeFalse();
+  });
 });
