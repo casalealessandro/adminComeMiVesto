@@ -9,6 +9,7 @@ import { AnagraficaService } from '../../services/anagrafica.service';
 import { TdItemComponent } from './td-item/td-item.component';
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { OverlayService } from '../../services/overlay.service';
+import { DataGridUtils } from './data-grid-utils';
 
 
 
@@ -1943,7 +1944,7 @@ export class DataGridComponent implements OnDestroy {
         name: 'onRowExpanded'
       }
 
-      this.emittendGridEvent.emit(eventExpandingRow);
+      this.emittendGridEvent.emit(eventExpandingRow)
 
 
     })
@@ -1959,63 +1960,13 @@ export class DataGridComponent implements OnDestroy {
 
   // Funzione per calcolare la somma di una colonna specifica
   calcolaSomma(cols: ColData): number {
+    const value = DataGridUtils.calculateColumnSummary(this.rowsData(), cols);
 
-
-    if (!cols.dataField) {
-      return 0
+    if (!cols.dataField || !cols.showInSummary) {
+      return value
     }
 
-    if (!cols.showInSummary) {
-      return 0
-    }
-    let dataField = cols.dataField;
-
-    let value = this.rowsData().reduce((acc, curr) => acc + curr[dataField], 0);
-
-    return this.valueSumm[dataField] = value
-  }
-
-  // Funzione di utilità per formattare le date
-  private formatDate(dateString: string, type: 'EN' | 'it' = 'EN'): string {
-
-    const regExpISO: RegExp = /(\d{4})([\/-])(\d{1,2})\2(\d{1,2})/;
-    const regExpIT: RegExp = /(\d{1,2})([\/-])(\d{1,2})\2(\d{4})/;
-
-
-    let isMatchISO = dateString.match(regExpISO);
-    let isMatchIT = dateString.match(regExpIT);
-
-
-    //Se nessuno dei 2 formati è valido
-    if (!isMatchISO && !isMatchIT) {
-      return '';
-    }
-
-    if (isMatchIT) {
-
-      if (dateString.includes('-'))
-        dateString = `${dateString.split('-')[2]}-${dateString.split('-')[1]}-${dateString.split('-')[0]}`;
-      else if (dateString.includes('/'))
-        dateString = `${dateString.split('/')[2]}-${dateString.split('/')[1]}-${dateString.split('/')[0]}`;
-    }
-
-    const date = new Date(dateString);
-
-    // Formatta la data come necessario
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Mese è 0-based
-    const day = date.getDate().toString().padStart(2, '0');
-
-    let finallyData = ''
-    if (type == 'EN') {
-      finallyData = `${year}-${month}-${day}`;
-    }
-
-    if (type == 'it') {
-      finallyData = `${day}-${month}-${year} `;
-    }
-
-    return finallyData
+    return this.valueSumm[cols.dataField] = value
   }
 
 
@@ -2052,10 +2003,7 @@ export class DataGridComponent implements OnDestroy {
 
   /** Data Source filtrato NON REMOTO */
   filterNonRemoteDataSource(array: any[], dataField: string | number, sText: string, exact: boolean = false) {
-
-    return array.filter((item) => {
-      return this.matchesLocalSearch(item?.[dataField], sText, exact)
-    })
+    return DataGridUtils.filterNonRemoteDataSource(array, dataField, sText, exact, this.searchType)
   }
 
   private scheduleLocalSearch() {
@@ -2084,7 +2032,7 @@ export class DataGridComponent implements OnDestroy {
       const dataFields = this.colsHeader.filter(res => res.dataField).map(res => res.dataField)
 
       dataFiltered = dataFiltered.filter(item => {
-        return dataFields.some(dataField => this.matchesLocalSearch(item?.[dataField], searchText))
+        return dataFields.some(dataField => DataGridUtils.matchesLocalSearch(item?.[dataField], searchText, false, this.searchType))
       })
     }
 
@@ -2096,33 +2044,6 @@ export class DataGridComponent implements OnDestroy {
     this.totalRecords = dataFiltered.length
     this.showNullData = dataFiltered.length == 0
     this.textEmpty = this.showNullData ? 'Nessun dato da mostrare ' : '...'
-  }
-
-  private matchesLocalSearch(value: any, searchText: string, exact: boolean = false): boolean {
-    if (value === null || typeof value == 'undefined' || Array.isArray(value)) {
-      return false
-    }
-
-    if (exact) {
-      if (typeof value != 'string' && typeof value != 'number' && typeof value != 'boolean') {
-        return false
-      }
-
-      return value.toString().toLowerCase() == searchText.toLowerCase()
-    }
-
-    if (typeof value != 'string' && typeof value != 'number') {
-      return false
-    }
-
-    const itemValue = value.toString().toLowerCase();
-    const valueToSearch = searchText.toLowerCase();
-
-    if (this.searchType == 'startsWith') {
-      return itemValue.startsWith(valueToSearch)
-    }
-
-    return itemValue.includes(valueToSearch)
   }
 
 
@@ -2400,12 +2321,7 @@ export class DataGridComponent implements OnDestroy {
 
     // Applica l'ordinamento ai dati
     const sortedRows = [...this.rowsData()].sort((a, b) => {
-      const valueA = a[column];
-      const valueB = b[column];
-
-      if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
-      if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
-      return 0;
+      return DataGridUtils.compareValues(a[column], b[column], this.sortDirection);
     });
 
     this.rowsData.set(sortedRows);
