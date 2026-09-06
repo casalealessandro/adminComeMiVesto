@@ -257,6 +257,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       this.addRow()
     }
   }
+
   /**
    * Keep the historic external edit flow intact. The provider bridge only
    * normalizes the emitted payload; it does not move editing back inside the
