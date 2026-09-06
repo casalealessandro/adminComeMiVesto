@@ -164,6 +164,7 @@ export class DataGridComponent implements OnDestroy {
   isLoading: boolean = false;
   tableStyle!: { 'width.px'?: number; 'height.px'?: number; 'overflow-y'?: string; display?: string; 'table-layout'?: string; };
   searchText!: string
+  localSearchDebounce = 500;
 
   isHovered: any[] = [false];
   isHoveredDetatil: any[] = [false];
@@ -187,6 +188,8 @@ export class DataGridComponent implements OnDestroy {
   sortedColumn: any; //  colonna orginatata
   busyRows = new Set<number>();
   private readonly busyRowTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private localSearchTimer?: ReturnType<typeof setTimeout>;
+  private readonly localColumnFilters = new Map<string, { value: string; exact: boolean }>();
   private resizeObserver?: ResizeObserver;
   private observedWidth = 0;
   private hasExplicitTableWidth = false;
@@ -311,6 +314,10 @@ export class DataGridComponent implements OnDestroy {
     this.resizeObserver?.disconnect();
     this.busyRowTimers.forEach(timer => clearTimeout(timer));
     this.busyRowTimers.clear();
+    if (this.localSearchTimer !== undefined) {
+      clearTimeout(this.localSearchTimer);
+      this.localSearchTimer = undefined;
+    }
   }
 
   getBaseRemInPixels(): number {
@@ -2058,9 +2065,103 @@ export class DataGridComponent implements OnDestroy {
 
   async searchData(event: any) {
 
-    return;
+    if (this.remoteOperation) {
+      return
+    }
 
+    const target = (event?.target ?? event?.event?.target) as HTMLInputElement | HTMLSelectElement | null;
+    const dataField = target?.dataset?.['gridFilterField'];
 
+    if (dataField) {
+      const value = target?.value == null ? '' : String(target.value);
+      if (value == '') {
+        this.localColumnFilters.delete(dataField)
+      } else {
+        this.localColumnFilters.set(dataField, {
+          value: value,
+          exact: target?.tagName == 'SELECT'
+        })
+      }
+    } else if (typeof event?.value != 'undefined') {
+      this.searchText = event.value == null ? '' : String(event.value)
+    }
+
+    this.scheduleLocalSearch()
+  }
+
+  /** Data Source filtrato NON REMOTO */
+  filterNonRemoteDataSource(array: any[], dataField: string | number, sText: string, exact: boolean = false) {
+
+    return array.filter((item) => {
+      return this.matchesLocalSearch(item?.[dataField], sText, exact)
+    })
+  }
+
+  private scheduleLocalSearch() {
+    if (this.localSearchTimer !== undefined) {
+      clearTimeout(this.localSearchTimer)
+      this.localSearchTimer = undefined
+    }
+
+    if (this.localSearchDebounce <= 0) {
+      this.applyLocalSearch()
+      return
+    }
+
+    this.localSearchTimer = setTimeout(() => {
+      this.localSearchTimer = undefined
+      this.applyLocalSearch()
+    }, this.localSearchDebounce)
+  }
+
+  private applyLocalSearch() {
+    const dataSourceInput = this.dataSource() ?? [];
+    let dataFiltered = [...dataSourceInput]
+    const searchText = this.searchText == null ? '' : String(this.searchText).trim();
+
+    if (searchText != '') {
+      const dataFields = this.colsHeader.filter(res => res.dataField).map(res => res.dataField)
+
+      dataFiltered = dataFiltered.filter(item => {
+        return dataFields.some(dataField => this.matchesLocalSearch(item?.[dataField], searchText))
+      })
+    }
+
+    this.localColumnFilters.forEach((filter, dataField) => {
+      dataFiltered = this.filterNonRemoteDataSource(dataFiltered, dataField, filter.value, filter.exact)
+    })
+
+    this.rowsData.set(dataFiltered)
+    this.totalRecords = dataFiltered.length
+    this.showNullData = dataFiltered.length == 0
+    this.textEmpty = this.showNullData ? 'Nessun dato da mostrare ' : '...'
+  }
+
+  private matchesLocalSearch(value: any, searchText: string, exact: boolean = false): boolean {
+    if (value === null || typeof value == 'undefined' || Array.isArray(value)) {
+      return false
+    }
+
+    if (exact) {
+      if (typeof value != 'string' && typeof value != 'number' && typeof value != 'boolean') {
+        return false
+      }
+
+      return value.toString().toLowerCase() == searchText.toLowerCase()
+    }
+
+    if (typeof value != 'string' && typeof value != 'number') {
+      return false
+    }
+
+    const itemValue = value.toString().toLowerCase();
+    const valueToSearch = searchText.toLowerCase();
+
+    if (this.searchType == 'startsWith') {
+      return itemValue.startsWith(valueToSearch)
+    }
+
+    return itemValue.includes(valueToSearch)
   }
 
 
@@ -2072,8 +2173,7 @@ export class DataGridComponent implements OnDestroy {
     this.searchText = value;
     this.textEmpty = 'Sto cercando...'
 
-    //da finire
-    this.searchData(event)
+    await this.searchData(event)
 
 
   }
