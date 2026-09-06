@@ -10,6 +10,9 @@ import { TdItemComponent } from './td-item/td-item.component';
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { OverlayService } from '../../services/overlay.service';
 import { DataGridUtils } from './data-grid-utils';
+import { DataGridEngine } from './data-grid-engine';
+import { GridDetailDataProvider } from './data-grid-detail-provider';
+import { GridDataProvider, GridPage } from './data-grid-provider';
 
 
 
@@ -44,7 +47,7 @@ export interface tasto {
 })
 
 
-export class DataGridComponent implements OnDestroy {
+export class DataGridComponent<T = any> implements OnDestroy {
   @ViewChild('dataGridWrapper', { static: false }) dataGridWrapper!: ElementRef<HTMLDivElement>;
 
   @ViewChildren('riga')
@@ -61,6 +64,8 @@ export class DataGridComponent implements OnDestroy {
   @Input() isKeyID: boolean = true; //se false l'api in put sarà senza /id  ES:api-->/CampoRichiestoDocRifiuti
 
   @Input() remoteOperation: boolean = false;
+  @Input() dataProvider?: GridDataProvider<T>;
+  @Input() detailDataProvider?: GridDetailDataProvider<T, any>;
 
   dataSource = input<any[]>([]);
   rowsData = signal<any[]>([])
@@ -188,6 +193,8 @@ export class DataGridComponent implements OnDestroy {
   sortDirection: 'asc' | 'desc' = 'asc'; // fleg per l'ordinamento asc e desc
   sortedColumn: any; //  colonna orginatata
   busyRows = new Set<number>();
+  protected readonly gridEngine = new DataGridEngine<T>();
+  protected providerMockItem?: T;
   private readonly busyRowTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private localSearchTimer?: ReturnType<typeof setTimeout>;
   private readonly localColumnFilters = new Map<string, { value: string; exact: boolean }>();
@@ -195,6 +202,22 @@ export class DataGridComponent implements OnDestroy {
   private observedWidth = 0;
   private hasExplicitTableWidth = false;
   private readonly zone = inject(NgZone);
+
+  get remoteContinuation(): unknown {
+    return this.gridEngine.remoteContinuation;
+  }
+
+  set remoteContinuation(value: unknown) {
+    this.gridEngine.remoteContinuation = value;
+  }
+
+  get remoteHasMore(): boolean {
+    return this.gridEngine.remoteHasMore;
+  }
+
+  set remoteHasMore(value: boolean) {
+    this.gridEngine.remoteHasMore = value;
+  }
 
   constructor(
     //private formservice: FormsTemplateService,
@@ -1162,6 +1185,9 @@ export class DataGridComponent implements OnDestroy {
   /**Funzione di dataRourceRemote **/
   loadRemoteRecords(): Promise<boolean> {
 
+    if (this.dataProvider) {
+      return this.loadProviderRemoteRecords();
+    }
 
     try {
 
@@ -1196,8 +1222,42 @@ export class DataGridComponent implements OnDestroy {
 
   }
 
+  protected async loadProviderRemoteRecords(): Promise<boolean> {
+    if (!this.dataProvider) {
+      return false;
+    }
+
+    this.isLoading = true;
+
+    try {
+      const page = await this.gridEngine.loadInitialPage(this.dataProvider, this.pageSize);
+
+      this.applyInitialProviderPage(page);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
+  }
+
+  protected applyInitialProviderPage(page: GridPage<T>): void {
+    this.rowsData.set([...page.items]);
+    this.totalRecords = this.gridEngine.applyInitialPageState(page);
+    this.currentPage = 0;
+    this.latestSkipLoaded = 0;
+    this.latestScrollTopPosition = 0;
+    this.showNullData = page.items.length === 0;
+    this.providerMockItem = DataGridUtils.createMockItem(page.items[0]);
+  }
+
   /**Fine funzione di dataRourceRemote **/
   buildAndTestQueryString(): Promise<boolean> {
+
+    if (this.dataProvider) {
+      return Promise.resolve(true);
+    }
 
     if (this.queryString != '') {
 
@@ -2325,5 +2385,13 @@ export class DataGridComponent implements OnDestroy {
     });
 
     this.rowsData.set(sortedRows);
+  }
+
+  protected setProgressCursor(loading: boolean): void {
+    if (typeof document === 'undefined') return;
+    const body = document.getElementsByTagName('body').item(0) as HTMLBodyElement | null;
+    if (body) {
+      body.style.cursor = loading ? 'progress' : 'auto';
+    }
   }
 }
