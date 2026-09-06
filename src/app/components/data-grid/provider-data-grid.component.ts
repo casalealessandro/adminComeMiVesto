@@ -183,7 +183,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.isLoading = true;
 
     try {
-      const page = await this.dataProvider.load(this.gridEngine.buildLoadRequest(this.pageSize));
+      const page = await this.gridEngine.loadInitialPage(this.dataProvider, this.pageSize);
 
       this.applyInitialProviderPage(page);
       return true;
@@ -257,7 +257,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
       this.addRow()
     }
   }
-
   /**
    * Keep the historic external edit flow intact. The provider bridge only
    * normalizes the emitted payload; it does not move editing back inside the
@@ -576,7 +575,7 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
         await new Promise(resolve => setTimeout(resolve, this.providerScrollLoadDelay));
       }
 
-      const page = await this.dataProvider.load(this.gridEngine.buildLoadRequest(this.pageSize, this.remoteContinuation));
+      const page = await this.gridEngine.loadContinuationPage(this.dataProvider, this.pageSize);
 
       this.replaceProviderPlaceholders(insertionIndex, placeholderCount, page.items);
       this.currentPage++;
