@@ -33,7 +33,13 @@ export class GridLookupRegistry {
   private providerCacheVersions = new Map<string, number>();
 
   setProviders(providers?: GridLookupProviderMap): void {
-    this.providers = providers ?? {};
+    const nextProviders = providers ?? {};
+
+    if (this.providers !== nextProviders) {
+      this.clearCache();
+    }
+
+    this.providers = nextProviders;
   }
 
   setRowResolver(resolver?: (rowIndex: number) => unknown): void {
