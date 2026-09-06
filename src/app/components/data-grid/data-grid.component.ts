@@ -112,7 +112,7 @@ export class DataGridComponent implements OnDestroy {
   @Output() emittendButtonExit: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittendCellValueChange: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittendToolbarClick: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emittendBttonCellClick: EventEmitter<any> = new EventEmitter<any>();
+  @Output() emittendButtonCellClick: EventEmitter<any> = new EventEmitter<any>();
 
   @Input() continuousEditing: boolean = false;
 
@@ -2332,14 +2332,14 @@ export class DataGridComponent implements OnDestroy {
 
 
   buttonClick(event: any, button: any, col: any, rowIndex: any) {
-    let eventToEmit = button;
-    eventToEmit.dataSource = this.dataSource;
+    let eventToEmit = { ...button };
+    eventToEmit.dataSource = this.dataSource();
     eventToEmit.rowData = this.rowsData()[rowIndex];
     eventToEmit.col = col;
     eventToEmit.rowIndex = rowIndex
     eventToEmit.component = this;
     eventToEmit.event = event
-    this.emittendBttonCellClick.emit(eventToEmit);
+    this.emittendButtonCellClick.emit(eventToEmit);
 
     event.stopPropagation()
     event.preventDefault()
