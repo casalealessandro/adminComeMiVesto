@@ -1,4 +1,5 @@
 import {
+  GridDataProvider,
   GridFilter,
   GridLoadRequest,
   GridPage,
@@ -10,8 +11,8 @@ import { DataGridUtils } from './data-grid-utils';
 /**
  * Stateful orchestration layer for DataGrid behavior.
  *
- * Phase 3 keeps provider-neutral query and paging state here and moves the
- * request/page-state operations that do not depend on Angular rendering.
+ * Phase 4 keeps provider-neutral query and paging state here and moves the
+ * provider load calls that do not depend on Angular rendering.
  *
  * Current ownership:
  * - provider sorting request state
@@ -21,13 +22,15 @@ import { DataGridUtils } from './data-grid-utils';
  * - whether the remote total count is authoritative
  * - provider-neutral GridLoadRequest construction
  * - provider-neutral page-state transitions
+ * - provider-neutral initial / continuation load calls
  *
  * Still intentionally owned by the components in this phase:
  * - Angular / DOM state
  * - loading flags and timers
  * - visible rows and selection state
  * - local UI sort/search indicators
- * - provider calls and mutation orchestration
+ * - visual paging state and placeholder rendering
+ * - mutation orchestration
  */
 export class DataGridEngine<T = any> {
   providerSort: GridSort[] = [];
@@ -60,6 +63,14 @@ export class DataGridEngine<T = any> {
     }
 
     return request;
+  }
+
+  loadInitialPage(provider: GridDataProvider<T>, pageSize: number): Promise<GridPage<T>> {
+    return provider.load(this.buildLoadRequest(pageSize));
+  }
+
+  loadContinuationPage(provider: GridDataProvider<T>, pageSize: number): Promise<GridPage<T>> {
+    return provider.load(this.buildLoadRequest(pageSize, this.remoteContinuation));
   }
 
   applyInitialPageState(page: GridPage<T>): number {
