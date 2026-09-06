@@ -8,8 +8,6 @@ import {
   buildGridDeleteEvent,
   buildGridUpdateEvent,
 } from './data-grid-crud-event';
-import { GridDetailDataProvider } from './data-grid-detail-provider';
-import { DataGridEngine } from './data-grid-engine';
 import {
   buildGridColumnFilter,
   buildGridSearch,
@@ -18,11 +16,7 @@ import {
   GridLookupProviderMap,
   GridLookupRegistry,
 } from './data-grid-lookup-registry';
-import {
-  GridDataProvider,
-  GridPage,
-  GridSort,
-} from './data-grid-provider';
+import { GridSort } from './data-grid-provider';
 import { DataGridComponent } from './data-grid.component';
 import { DataGridUtils } from './data-grid-utils';
 import { ProviderTdItemComponent } from './td-item/provider-td-item.component';
@@ -47,13 +41,9 @@ import { ProviderTdItemComponent } from './td-item/provider-td-item.component';
   ],
   providers: [GridLookupRegistry],
 })
-export class ProviderDataGridComponent<T = any> extends DataGridComponent {
+export class ProviderDataGridComponent<T = any> extends DataGridComponent<T> {
   private readonly providerLookupRegistry = inject(GridLookupRegistry);
-  private readonly gridEngine = new DataGridEngine<T>();
   private registeredLookupProviders: GridLookupProviderMap = {};
-
-  @Input() dataProvider?: GridDataProvider<T>;
-  @Input() detailDataProvider?: GridDetailDataProvider<T, any>;
 
   @Input()
   set lookupProviders(providers: GridLookupProviderMap | undefined) {
@@ -64,22 +54,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
 
   get lookupProviders(): GridLookupProviderMap {
     return this.registeredLookupProviders;
-  }
-
-  get remoteContinuation(): unknown {
-    return this.gridEngine.remoteContinuation;
-  }
-
-  set remoteContinuation(value: unknown) {
-    this.gridEngine.remoteContinuation = value;
-  }
-
-  get remoteHasMore(): boolean {
-    return this.gridEngine.remoteHasMore;
-  }
-
-  set remoteHasMore(value: boolean) {
-    this.gridEngine.remoteHasMore = value;
   }
 
   /**
@@ -100,7 +74,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
    */
   providerFilterDebounce = 500;
 
-  private providerMockItem?: T;
   private providerSearchTimer?: ReturnType<typeof setTimeout>;
   private providerFilterTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private providerScrollElement?: HTMLElement;
@@ -117,14 +90,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.providerLookupRegistry.clear();
     this.providerScrollElement = undefined;
     super.ngOnDestroy();
-  }
-
-  override buildAndTestQueryString(): Promise<boolean> {
-    if (this.dataProvider) {
-      return Promise.resolve(true);
-    }
-
-    return super.buildAndTestQueryString();
   }
 
   /**
@@ -154,26 +119,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     });
 
     return built;
-  }
-
-  override async loadRemoteRecords(): Promise<boolean> {
-    if (!this.dataProvider) {
-      return super.loadRemoteRecords();
-    }
-
-    this.isLoading = true;
-
-    try {
-      const page = await this.gridEngine.loadInitialPage(this.dataProvider, this.pageSize);
-
-      this.applyInitialProviderPage(page);
-      return true;
-    } catch {
-      return false;
-    } finally {
-      this.isLoading = false;
-      this.setProgressCursor(false);
-    }
   }
 
   /**
@@ -631,16 +576,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     this.providerFilterTimers.set(field, timer);
   }
 
-  private applyInitialProviderPage(page: GridPage<T>): void {
-    this.rowsData.set([...page.items]);
-    this.totalRecords = this.gridEngine.applyInitialPageState(page);
-    this.currentPage = 0;
-    this.latestSkipLoaded = 0;
-    this.latestScrollTopPosition = 0;
-    this.showNullData = page.items.length === 0;
-    this.providerMockItem = DataGridUtils.createMockItem(page.items[0]);
-  }
-
   private appendProviderPlaceholders(): number {
     if (!this.providerMockItem) return 0;
 
@@ -691,14 +626,6 @@ export class ProviderDataGridComponent<T = any> extends DataGridComponent {
     const isAtBottom = element.scrollHeight - element.clientHeight <= Math.floor(element.scrollTop) + 1;
     if (isAtBottom) {
       element.scrollTop = Math.max(0, element.scrollTop - 10);
-    }
-  }
-
-  private setProgressCursor(loading: boolean): void {
-    if (typeof document === 'undefined') return;
-    const body = document.getElementsByTagName('body').item(0) as HTMLBodyElement | null;
-    if (body) {
-      body.style.cursor = loading ? 'progress' : 'auto';
     }
   }
 }
