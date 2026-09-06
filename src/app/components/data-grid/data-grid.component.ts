@@ -1312,6 +1312,7 @@ export class DataGridComponent implements OnDestroy {
 
   startEdit(index: any, event: any) {
 
+
     let eventEditor = {
       infoEvent: event,
       rowIndex: index,
@@ -1412,6 +1413,7 @@ export class DataGridComponent implements OnDestroy {
     let eventSelectRows = {
       component: this,
       dataSelected: dataSourceRowSelected,
+
 
       name: 'onRowMultipleSelectionChange'
     }
