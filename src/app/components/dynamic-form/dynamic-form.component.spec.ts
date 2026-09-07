@@ -67,6 +67,17 @@ describe('DynamicFormComponent characterization', () => {
     expect(component.form.get('emptyValue')?.value).not.toBeNull();
     expect(component.formValues).toEqual(jasmine.objectContaining({ falseValue: false, zeroValue: 0, emptyValue: '', nullValue: null }));
   });
+  it('preserves explicit falsy cascade parents and defaults null or absent parents', () => {
+    component.fields = [
+      { name: 'zeroChild', type: 'selectBox', typeInput: 'selectBox', label: 'Zero child', selectOptions: { displayExp: 'name', valueExp: 'id', multiple: false, remote: false, parent: 'zeroParent' } },
+      { name: 'falseChild', type: 'selectBox', typeInput: 'selectBox', label: 'False child', selectOptions: { displayExp: 'name', valueExp: 'id', multiple: false, remote: false, parent: 'falseParent' } },
+      { name: 'nullChild', type: 'selectBox', typeInput: 'selectBox', label: 'Null child', selectOptions: { displayExp: 'name', valueExp: 'id', multiple: false, remote: false, parent: 'nullParent' } },
+      { name: 'absentChild', type: 'selectBox', typeInput: 'selectBox', label: 'Absent child', selectOptions: { displayExp: 'name', valueExp: 'id', multiple: false, remote: false, parent: 'absentParent' } }
+    ];
+    component.editData = { zeroParent: 0, falseParent: false, nullParent: null };
+    component.initializeForm();
+    expect(component.parentValues()).toEqual({ zeroParent: 0, falseParent: false, nullParent: '', absentParent: '' });
+  });
 
   it('applies required, length, email and number bounds and leaves plain fields unvalidated', () => {
     component.fields = fields; component.editData = {}; component.initializeForm();

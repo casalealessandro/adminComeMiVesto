@@ -41,7 +41,7 @@ export class DynamicSelectBoxComponent  {
     // Esegui un effetto reattivo per filtrare le opzioni quando il valore del parent cambia
     effect(() => {
       const parentValue = this.parentValue(); // Usa la funzione per ottenere il valore attuale del signal
-      if (parentValue) {
+      if (parentValue !== null && typeof parentValue !== 'undefined' && parentValue !== '') {
         this.filterOptionsBasedOnParent();
       }
     });
@@ -73,11 +73,12 @@ export class DynamicSelectBoxComponent  {
         this.availableOptions = await this.getRemoteOptions(this.selectOptions.api)
       }else{
         this.availableOptions = this.selectOptions.options || [];
+        this.isLoading = false;
       }
       
       
       if (this.config.selectOptions.parent && this.parentValue) {
-        this.availableOptions = this.availableOptions.filter((option:any) => option.parent === this.parentValue);
+        this.availableOptions = this.availableOptions.filter((option:any) => option.parent === this.parentValue());
       }
 
       //console.log(this.selectOptions)
@@ -90,18 +91,16 @@ export class DynamicSelectBoxComponent  {
     this.isLoading = true;
     this.formControlD?.disable();
     let res = []
-    if(this.parentValue()){
+    if(this.parentValue() !== null && typeof this.parentValue() !== 'undefined' && this.parentValue() !== ''){
       queryString = `/${this.parentValue()}`
     }
     try {
       res = await  this.formService.getData(api,queryString);
-      if(res.length>0){
-        this.isLoading=false;
-        this.formControlD?.enable();
-      }
     } catch (error) {
       
     }
+    this.isLoading=false;
+    this.formControlD?.enable();
     
 
     return res

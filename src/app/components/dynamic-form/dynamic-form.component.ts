@@ -116,7 +116,7 @@ export class DynamicFormComponent {
       // Creazione del segnale per il parent
       if (field.selectOptions && field.selectOptions.parent) {
         const parentField = field.selectOptions.parent;
-        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] || '' }); // Inizializza il segnale
+        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] ?? '' }); // Inizializza il segnale
 
 
       }
