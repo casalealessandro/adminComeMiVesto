@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { DataGridComponent } from '../../components/data-grid/data-grid.component';
@@ -24,7 +24,7 @@ import { UserGridProvider, UserRemoteGridRow } from './user-grid.provider';
   templateUrl: './users-remote.component.html',
   styleUrl: './users-remote.component.scss',
 })
-export class UsersRemoteComponent {
+export class UsersRemoteComponent implements AfterViewInit {
   @ViewChild(DataGridComponent) private grid?: DataGridComponent<UserRemoteGridRow>;
 
   readonly provider = inject(UserGridProvider);
@@ -69,6 +69,14 @@ export class UsersRemoteComponent {
       { type: 'campo', colVisible: true, allowEditing: true, allowFiltering: true, search: true, dataField: 'gender', colWidth: '100', colCaption: 'Gender', edit: false, groupDataField: undefined },
     ],
   }];
+
+  /**
+   * Starts the first provider load once Angular has resolved the DataGrid
+   * `ViewChild`. Local DataGrid initialization remains untouched.
+   */
+  ngAfterViewInit(): void {
+    this.grid?.refresh();
+  }
 
   /** Reloads the laboratory through the DataGrid public facade. */
   refresh(): void {
