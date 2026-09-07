@@ -174,8 +174,11 @@ export class ElementComponent {
     
     let valueExp = this.formField.selectOptions!.valueExp
     let displayExp = this.formField.selectOptions!.displayExp
+    let value = this.newOption[valueExp]
+    let display = this.newOption[displayExp]
 
-    if (!this.newOption[valueExp] || !this.newOption[displayExp]) {
+    if (value === null || typeof value == 'undefined' || value === '' ||
+        display === null || typeof display == 'undefined' || display === '') {
       return
     }
 
@@ -225,7 +228,10 @@ export class ElementComponent {
     }
     const valueExp = this.formField.radioOptions!.valueExp;
     const displayExp = this.formField.radioOptions!.displayExp;
-    if (!this.newRadioOption[valueExp] || !this.newRadioOption[displayExp]) {
+    const value = this.newRadioOption[valueExp];
+    const display = this.newRadioOption[displayExp];
+    if (value === null || typeof value == 'undefined' || value === '' ||
+        display === null || typeof display == 'undefined' || display === '') {
       return;
     }
     if (this.radioOptions.options) {
@@ -310,17 +316,39 @@ export class ElementComponent {
 
     }
 
-    if (this.showSelectOption && this.formField.selectOptions && !this.formField.selectOptions.remote ) {
-      if (this.formField.selectOptions.options?.length == 0) {
-        alert('Mancano i campi le options della select');
+    if (this.showSelectOption && this.formField.selectOptions) {
+      if (this.formField.selectOptions.parent == this.formField.name) {
+        alert('Il parent della select non può essere il campo stesso');
         return false
+      }
+      if (this.formField.selectOptions.remote) {
+        if (!this.formField.selectOptions.api || !this.formField.selectOptions.api.trim()) {
+          alert('Api della select obbligatoria');
+          return false
+        }
+      } else {
+        if (!this.formField.selectOptions.options || this.formField.selectOptions.options.length == 0) {
+          alert('Mancano i campi le options della select');
+          return false
+        }
       }
     }
 
-    if (this.showRadioOption && this.formField.radioOptions && !this.formField.radioOptions.remote) {
-      if (this.formField.radioOptions.options?.length == 0) {
-        alert('Mancano i campi le options del radio');
-        return false;
+    if (this.showRadioOption && this.formField.radioOptions) {
+      if (this.formField.radioOptions.parent == this.formField.name) {
+        alert('Il parent del radio non può essere il campo stesso');
+        return false
+      }
+      if (this.formField.radioOptions.remote) {
+        if (!this.formField.radioOptions.api || !this.formField.radioOptions.api.trim()) {
+          alert('Api del radio obbligatoria');
+          return false
+        }
+      } else {
+        if (!this.formField.radioOptions.options || this.formField.radioOptions.options.length == 0) {
+          alert('Mancano i campi le options del radio');
+          return false;
+        }
       }
     }
 
