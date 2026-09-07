@@ -20,6 +20,8 @@
 - `showBottomButtons`, `showBottomButtonLeft`, `showBottomButtonRight`: visibilità dei comandi.
 - `inputBtnLeftName`, `inputBtnRightName`: etichette personalizzate.
 
+L'assenza di `service` è un contratto intenzionale: il componente non richiede metadata e non costruisce controlli. `DynamicFormComponent` non supporta un secondo modo di inizializzazione tramite fields locali passati dall'esterno.
+
 `submitFormEvent` emette `{ name, formData, form, inEdit }`; il componente chiamante rimane responsabile del DTO, dell'autorizzazione e della chiamata API. `functionalInputFormEvent` notifica i pulsanti funzionali definiti nei campi.
 
 ## Select
@@ -76,6 +78,18 @@ Esempio remoto a cascata:
 ```
 
 Con `country = IT`, il runtime usa `FormService.getData('cities', '/IT')`; durante la richiesta il controllo è disabilitato e viene sempre riabilitato dopo successo, risposta vuota o errore. Se `country` viene poi svuotato, anche il RadioBox `city` viene svuotato e non viene effettuata una nuova chiamata remote finché il parent non viene nuovamente valorizzato.
+
+## Cascade concatenate
+
+SelectBox e RadioBox condividono la stessa semantica di parent. È quindi supportata una catena come:
+
+```text
+radio region
+→ select city
+→ radio district
+```
+
+Se `region` viene svuotato, `city` perde options e valore; lo svuotamento viene propagato tramite il normale `valueChange`, quindi anche `district` perde options e valore. Non viene introdotto uno stato cascade separato dal `FormControl`.
 
 ## Registrazione amministrativa
 
