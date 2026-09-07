@@ -3,3 +3,23 @@
     opacity: 0.6;
 }
 
+.properties-section-title{
+    font-weight: 600;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border_color);
+}
+
+.properties-subsection-title{
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+@media(max-width:600px){
+    .form-container .row > .col-sm-9{
+        margin-top: 0.35rem;
+    }
+
+    .modal-footer .btn{
+        min-height: 44px;
+    }
+}

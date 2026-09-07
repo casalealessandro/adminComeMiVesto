@@ -44,6 +44,12 @@
                 padding: 0.650rem;
                 border-radius: 0.375rem;
             }
+            .form-element-badges{
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.35rem;
+                margin-top: 0.35rem;
+            }
             .element-actions{
                 display: flex;
                 align-items: center;

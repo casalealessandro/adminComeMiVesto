@@ -2,6 +2,7 @@
 
     <form #elementForm="ngForm">
         <div class="">
+            <div class="properties-section-title">Dati campo</div>
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Nome campo
                     <span class="badge bg-secondary">Richiesto</span>
@@ -71,6 +72,7 @@
 
 
             </div>
+            <div class="properties-section-title mt-4">Validazione</div>
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Min Length</label>
                 <div class="col-sm-9">
@@ -133,6 +135,7 @@
         </div>
         <!--CheckBox-->
         <div *ngIf="showCheckBoxOption && formField.checkBoxOptions" class="row mt-3 mb-3 ">
+            <div class="properties-section-title">Configurazione CheckBox</div>
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">CheckBox con link</label>
                 <div class="col-sm-9 form-check">
@@ -175,6 +178,7 @@
         </div>
         <!--Fine CheckBox-->
         <div *ngIf="showFileBoxOption && formField.fileBoxOptions" class="row mt-3 mb-3 ">
+            <div class="properties-section-title">Configurazione FileBox</div>
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Larghezza massima immagine</label>
                 <div class="col-sm-9">
@@ -217,6 +221,7 @@
         </div>
 
         <div *ngIf="showSelectOption && formField.selectOptions" class="row mt-3 mb-3 ">
+            <div class="properties-section-title">Configurazione SelectBox</div>
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Multiple</label>
                 <div class="col-sm-9 form-check">
@@ -288,6 +293,7 @@
             </div>
 
             <div class="mt-3 mb-3" >
+                <div class="properties-subsection-title" *ngIf="!formField.selectOptions?.remote">Options</div>
 
                 <table class="table table-sm "
                     *ngIf="!formField.selectOptions?.remote && formField.selectOptions?.valueExp && formField.selectOptions?.displayExp">
@@ -342,6 +348,7 @@
         </div>
 
         <div *ngIf="showRadioOption && formField.radioOptions" class="row mt-3 mb-3">
+            <div class="properties-section-title">Configurazione Radio</div>
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Parent ID</label>
                 <div class="col-sm-9">
@@ -381,6 +388,8 @@
                 <div *ngIf="radioApi.invalid && radioApi.touched" class="text-danger">Api se remote obbligatorio</div>
             </div>
             <div class="mt-3 mb-3">
+                <div class="properties-subsection-title" *ngIf="!formField.radioOptions.remote">Options</div>
+
                 <table class="table table-sm"
                     *ngIf="!formField.radioOptions.remote && formField.radioOptions.valueExp && formField.radioOptions.displayExp">
                     <thead><tr>
@@ -417,5 +426,4 @@
             class="mdi mdi-keyboard-return"></span>Chiudi</button>
     <button type="button" class="btn ana-button" (click)="saveProperties(elementForm)"><span
             class="mdi mdi-content-save-outline"></span>Salva</button>
-
 </div>
