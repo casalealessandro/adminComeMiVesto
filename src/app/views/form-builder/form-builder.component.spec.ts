@@ -70,6 +70,13 @@ describe('FormBuilderComponent characterization', () => {
     const payload = buildFormPayload('profile', 'Profile', [{ name: 'gender', type: 'radio', typeInput: 'radio', label: 'Gender', radioOptions }] as any);
     expect(payload.json[0].type).toBe('radio'); expect(payload.json[0].radioOptions).toEqual(radioOptions); expect(payload.json[0].selectOptions).toBeUndefined();
   });
+  it('does not save a form without a name', () => {
+    const { component, formService } = setup('new');
+    component.formName = '   ';
+    component.formElements = [{ name: 'x', type: 'textBox', typeInput: 'text', label: 'X' } as any];
+    component.saveForm('ignored');
+    expect(formService.saveForm).not.toHaveBeenCalled();
+  });
   it('creates a new form with a generated technical id then navigates', async () => {
     const { component, formService, router } = setup('new'); component.ngOnInit(); component.formName = '  New form  ';
     component.formElements = [{ name: 'x', type: 'textBox', typeInput: 'text', label: 'X', minlength: 2 } as any]; component.saveForm('ignored'); await Promise.resolve();
