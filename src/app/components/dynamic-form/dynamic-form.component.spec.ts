@@ -102,6 +102,16 @@ describe('DynamicFormComponent characterization', () => {
     expect(component.form.get('choice')?.value).toBe('A'); expect(component.parentValues().choice).toBe('A');
   });
 
+  it('keeps formValues synchronized when Angular already updated the control', () => {
+    component.fields = [{ name: 'choice', type: 'selectBox', typeInput: 'selectBox', label: 'Choice',
+      selectOptions: { displayExp: 'value', valueExp: 'id', options: [], multiple: false, remote: false, parent: null } }];
+    component.editData = { choice: 'old' }; component.initializeForm();
+    component.form.get('choice')?.setValue('new'); component.onValueChange('choice', 'new');
+    expect(component.formValues.choice).toBe('new');
+    component.onValueChange('choice', null);
+    expect(component.form.get('choice')?.value).toBeNull(); expect(component.formValues.choice).toBeNull();
+  });
+
   it('renders the native dynamic radio component for radio metadata', () => {
     component.fields = [{ name: 'choice', type: 'radio', typeInput: 'radio', label: 'Choice',
       radioOptions: { displayExp: 'value', valueExp: 'id', options: [{ id: 'A', value: 'Alpha' }], remote: false, parent: null } }];

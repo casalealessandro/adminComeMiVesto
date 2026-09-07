@@ -6,13 +6,13 @@
       (change)="onValueChange($event)"
       
       >
-      <option *ngIf="isLoading" selected>
+      <option *ngIf="isLoading" [ngValue]="null" disabled>
         Caricamento in corso...
       </option>
-      <option>
+      <option [ngValue]="null">
         Seleziona una opzione...
       </option>
-    <option *ngFor="let option of availableOptions" [value]="option[valueExp]">
+    <option *ngFor="let option of availableOptions" [ngValue]="option[valueExp]">
       {{ option[displayExp] }}
     </option>
   </select>
@@ -27,7 +27,7 @@
     [formControlName]="fieldName"
     (change)="onValueChange($event)"
     >
-    <option *ngFor="let option of availableOptions" [value]="option[valueExp]">
+    <option *ngFor="let option of availableOptions" [ngValue]="option[valueExp]">
       {{ option[displayExp] }}
     </option>
   </select>

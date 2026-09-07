@@ -59,6 +59,17 @@ describe('DynamicSelectBoxComponent characterization', () => {
     fixture.componentRef.setInput('parentValue', 'south'); fixture.detectChanges(); await fixture.whenStable();
     expect(component.availableOptions).toEqual([options[1]]);
   });
+  it('clears local child options and value when its parent becomes empty', async () => {
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', 'south'); fixture.detectChanges(); await component.initializeOptions();
+    component.formGroup.get('choice')?.setValue(2); component.selectedValue = 2;
+    fixture.componentRef.setInput('parentValue', ''); fixture.detectChanges(); await fixture.whenStable();
+    expect(component.availableOptions).toEqual([]); expect(component.formGroup.get('choice')?.value).toBeNull(); expect(component.selectedValue).toBeNull();
+  });
+  it('starts an empty cascade child when the configured parent is empty', async () => {
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', ''); fixture.detectChanges();
+    component.formGroup.get('choice')?.setValue(2); await component.initializeOptions();
+    expect(component.availableOptions).toEqual([]); expect(component.formGroup.get('choice')?.value).toBeNull();
+  });
   [0, false].forEach(parent => {
     it(`reacts to the explicit falsy parent ${parent}`, async () => {
       const falsyOptions = [{ id: 1, parent: 0 }, { id: 2, parent: false }, { id: 3, parent: 'north' }];
@@ -74,6 +85,11 @@ describe('DynamicSelectBoxComponent characterization', () => {
     fixture.componentRef.setInput('parentValue', 'FR'); fixture.detectChanges(); await fixture.whenStable();
     expect(service.getData).toHaveBeenCalledWith('cities', '/FR');
   });
+  it('does not call a remote child API when its configured parent is empty', async () => {
+    configure({ remote: true, api: 'cities', parent: 'region' }); fixture.componentRef.setInput('parentValue', ''); fixture.detectChanges();
+    await component.initializeOptions();
+    expect(service.getData).not.toHaveBeenCalled(); expect(component.availableOptions).toEqual([]); expect(component.formGroup.get('choice')?.value).toBeNull();
+  });
   it('passes a slash-prefixed parent path to remote getData', async () => {
     service.getData.and.resolveTo(options); configure({ remote: true, api: 'cities', parent: 'region' });
     fixture.componentRef.setInput('parentValue', 'IT'); fixture.detectChanges(); await fixture.whenStable(); await component.initializeOptions();
@@ -81,8 +97,20 @@ describe('DynamicSelectBoxComponent characterization', () => {
     expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();
   });
   it('emits selectedValue, component, options and parent field', async () => {
-    configure({ parent: 'region' }); await component.initializeOptions(); const emit = spyOn(component.valueChange, 'emit');
-    const event = { target: { value: 2 } }; component.onValueChange(event);
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', 'south'); await component.initializeOptions(); const emit = spyOn(component.valueChange, 'emit');
+    component.formGroup.get('choice')?.setValue(2); const event = { target: { value: '2' } }; component.onValueChange(event);
     expect(emit).toHaveBeenCalledWith({ event, selectedValue: 2, component, selectOptions: component.selectOptions, parentField: 'region' } as any);
+  });
+  it('preserves boolean and numeric option values from the FormControl', async () => {
+    const typedOptions = [{ id: 0, title: 'Zero' }, { id: false, title: 'False' }]; configure({ options: typedOptions }); await component.initializeOptions();
+    const emit = spyOn(component.valueChange, 'emit'); component.formGroup.get('choice')?.setValue(false); component.onValueChange({ target: { value: 'false' } });
+    expect(component.selectedValue).toBe(false); expect(emit.calls.mostRecent().args[0].selectedValue).toBe(false);
+    component.formGroup.get('choice')?.setValue(0); component.onValueChange({ target: { value: '0' } });
+    expect(component.selectedValue).toBe(0); expect(emit.calls.mostRecent().args[0].selectedValue).toBe(0);
+  });
+  it('emits the complete typed array for a multiple selection change', async () => {
+    const typedOptions = [{ id: 1, title: 'One' }, { id: false, title: 'False' }]; configure({ multiple: true, options: typedOptions }); component.values = []; await component.initializeOptions();
+    const emit = spyOn(component.valueChange, 'emit'); component.formGroup.get('choice')?.setValue([1, false]); component.onValueChange({ target: { value: 'false' } });
+    expect(component.selectedValue).toEqual([1, false]); expect(emit.calls.mostRecent().args[0].selectedValue).toEqual([1, false]);
   });
 });

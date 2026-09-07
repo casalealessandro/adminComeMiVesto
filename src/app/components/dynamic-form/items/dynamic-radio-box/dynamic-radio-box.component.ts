@@ -32,9 +32,14 @@ export class DynamicRadioBoxComponent {
 
   constructor() {
     effect(() => {
-      const parentValue = this.parentValue();
-      if (parentValue !== null && typeof parentValue !== 'undefined' && parentValue !== '') {
+      this.parentValue();
+      if (!this.radioOptions || !this.radioOptions.parent) {
+        return;
+      }
+      if (this.hasParentValue()) {
         this.filterOptionsBasedOnParent();
+      } else {
+        this.clearCascadeState();
       }
     });
   }
@@ -53,14 +58,23 @@ export class DynamicRadioBoxComponent {
       this.isRemote = this.radioOptions.remote;
       this.selectedValue = this.formControlD?.value;
 
+      if (this.radioOptions.parent && !this.hasParentValue()) {
+        this.clearCascadeState();
+        return;
+      }
+
       if (this.isRemote) {
-        this.availableOptions = await this.getRemoteOptions(this.radioOptions.api);
+        if (this.radioOptions.parent) {
+          await this.filterOptionsBasedOnParent();
+        } else {
+          this.availableOptions = await this.getRemoteOptions(this.radioOptions.api);
+        }
       } else {
         this.availableOptions = this.radioOptions.options || [];
         this.isLoading = false;
       }
 
-      if (this.radioOptions.parent && this.hasParentValue()) {
+      if (this.radioOptions.parent && this.hasParentValue() && !this.isRemote) {
         this.availableOptions = this.availableOptions.filter(option => option.parent === this.parentValue());
       }
     }
@@ -88,14 +102,20 @@ export class DynamicRadioBoxComponent {
       return;
     }
     if (this.isRemote) {
-      this.availableOptions = await this.getRemoteOptions(this.radioOptions.api, this.parentValue());
+      const requestedParent = this.parentValue();
+      const options = await this.getRemoteOptions(this.radioOptions.api, requestedParent);
+      if (!this.hasParentValue() || this.parentValue() !== requestedParent) {
+        return;
+      }
+      this.availableOptions = options;
     } else if (this.radioOptions.parent) {
       this.availableOptions = (this.radioOptions.options || []).filter(option => option.parent === this.parentValue());
     }
   }
 
-  onValueChange(event: any): void {
-    this.selectedValue = event.target.value;
+  onValueChange(event: any, selectedValue?: any): void {
+    this.selectedValue = typeof selectedValue !== 'undefined' ? selectedValue : this.formControlD?.value;
+    this.formControlD?.setValue(this.selectedValue, { emitEvent: false });
     this.valueChange.emit({
       event,
       selectedValue: this.selectedValue,
@@ -108,5 +128,22 @@ export class DynamicRadioBoxComponent {
   private hasParentValue(): boolean {
     const parentValue = this.parentValue();
     return parentValue !== null && typeof parentValue !== 'undefined' && parentValue !== '';
+  }
+
+  private clearCascadeState(): void {
+    this.availableOptions = [];
+    this.isLoading = false;
+    this.selectedValue = null;
+    this.formControlD?.setValue(null, { emitEvent: false });
+    this.formControlD?.enable();
+    if (this.radioOptions) {
+      this.valueChange.emit({
+        event: null,
+        selectedValue: null,
+        component: this,
+        radioOptions: this.radioOptions,
+        parentField: this.radioOptions.parent
+      });
+    }
   }
 }

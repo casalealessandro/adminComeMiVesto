@@ -26,9 +26,13 @@
 
 Le select usano `selectOptions`. Con `remote: false`, `options` contiene la lista. Con `remote: true`, `api` viene letto tramite `GET /gen/{api}`. `displayExp` e `valueExp` identificano rispettivamente etichetta e valore. `parent` abilita il caricamento o filtro a cascata.
 
+I valori delle options mantengono il tipo originale nel `FormControl` (per esempio `0`, `false`, numeri o stringhe) e una select `multiple` mantiene l'intero array selezionato anche dopo una modifica dell'utente. Se una select ha un `parent` configurato e il parent è `null`, `undefined` o `''`, il child non espone options e il proprio valore viene svuotato; `0` e `false` restano invece parent validi. Per un child remoto non viene eseguita alcuna chiamata finché il parent è vuoto.
+
 ## Radio
 
-I campi `type: radio` sono scelte singole native e usano il contratto dedicato `radioOptions`, distinto da `selectOptions` e privo di `multiple`. `displayExp` identifica la proprietà mostrata, `valueExp` quella salvata nel `FormControl`, mentre `parent` abilita il filtro statico o il caricamento remoto a cascata. I valori parent espliciti `0` e `false` sono validi.
+I campi `type: radio` sono scelte singole native e usano il contratto dedicato `radioOptions`, distinto da `selectOptions` e privo di `multiple`. `displayExp` identifica la proprietà mostrata, `valueExp` quella salvata nel `FormControl`, mentre `parent` abilita il filtro statico o il caricamento remoto a cascata. I valori parent espliciti `0` e `false` sono validi e anche i valori delle singole options mantengono il loro tipo originale.
+
+Se un RadioBox ha un `parent` configurato e il parent è vuoto (`null`, `undefined` o `''`), le options del child e la selezione corrente vengono svuotate. Un RadioBox remoto non chiama l'API child finché il parent non viene valorizzato.
 
 Esempio statico:
 
@@ -71,7 +75,7 @@ Esempio remoto a cascata:
 }
 ```
 
-Con `country = IT`, il runtime usa `FormService.getData('cities', '/IT')`; durante la richiesta il controllo è disabilitato e viene sempre riabilitato dopo successo, risposta vuota o errore.
+Con `country = IT`, il runtime usa `FormService.getData('cities', '/IT')`; durante la richiesta il controllo è disabilitato e viene sempre riabilitato dopo successo, risposta vuota o errore. Se `country` viene poi svuotato, anche il RadioBox `city` viene svuotato e non viene effettuata una nuova chiamata remote finché il parent non viene nuovamente valorizzato.
 
 ## Registrazione amministrativa
 

@@ -35,9 +35,17 @@ describe('DynamicRadioBoxComponent', () => {
   });
 
   it('emits the selected value with radio metadata and parent context', async () => {
-    configure({ parent: 'region' }); await component.initializeOptions(); const emit = spyOn(component.valueChange, 'emit');
-    const event = { target: { value: 'S' } }; component.onValueChange(event);
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', 'south'); await component.initializeOptions(); const emit = spyOn(component.valueChange, 'emit');
+    const event = { target: { value: 'S' } }; component.onValueChange(event, 'S');
     expect(emit).toHaveBeenCalledWith({ event, selectedValue: 'S', component, radioOptions: component.radioOptions, parentField: 'region' });
+  });
+
+  it('preserves typed boolean and numeric option values', async () => {
+    configure({ options: [{ id: false, name: 'No' }, { id: 0, name: 'Zero' }] }); await component.initializeOptions(); const emit = spyOn(component.valueChange, 'emit');
+    component.onValueChange({ target: { value: 'false' } }, false);
+    expect(component.selectedValue).toBe(false); expect(component.formGroup.get('choice')?.value).toBe(false); expect(emit.calls.mostRecent().args[0].selectedValue).toBe(false);
+    component.onValueChange({ target: { value: '0' } }, 0);
+    expect(component.selectedValue).toBe(0); expect(component.formGroup.get('choice')?.value).toBe(0); expect(emit.calls.mostRecent().args[0].selectedValue).toBe(0);
   });
 
   it('disables while loading remote options and enables after data arrives', async () => {
@@ -64,6 +72,19 @@ describe('DynamicRadioBoxComponent', () => {
     expect(component.availableOptions).toEqual([options[1]]);
   });
 
+  it('clears local child options and selection when its parent becomes empty', async () => {
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', 'south'); fixture.detectChanges(); await component.initializeOptions();
+    component.formGroup.get('choice')?.setValue('S'); component.selectedValue = 'S';
+    fixture.componentRef.setInput('parentValue', ''); fixture.detectChanges(); await fixture.whenStable();
+    expect(component.availableOptions).toEqual([]); expect(component.formGroup.get('choice')?.value).toBeNull(); expect(component.selectedValue).toBeNull();
+  });
+
+  it('starts an empty cascade child when the configured parent is empty', async () => {
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', ''); fixture.detectChanges(); component.formGroup.get('choice')?.setValue('S');
+    await component.initializeOptions();
+    expect(component.availableOptions).toEqual([]); expect(component.formGroup.get('choice')?.value).toBeNull();
+  });
+
   [0, false].forEach(parent => it(`preserves the explicit falsy parent ${parent}`, async () => {
     const falsyOptions = [{ id: 1, parent: 0 }, { id: 2, parent: false }]; configure({ parent: 'region', options: falsyOptions });
     fixture.componentRef.setInput('parentValue', parent); fixture.detectChanges(); await component.initializeOptions();
@@ -76,5 +97,11 @@ describe('DynamicRadioBoxComponent', () => {
     expect(service.getData).toHaveBeenCalledWith('cities', '/IT');
     fixture.componentRef.setInput('parentValue', 'FR'); fixture.detectChanges(); await fixture.whenStable();
     expect(service.getData).toHaveBeenCalledWith('cities', '/FR');
+  });
+
+  it('does not call a remote child API when its configured parent is empty', async () => {
+    configure({ remote: true, api: 'cities', parent: 'region' }); fixture.componentRef.setInput('parentValue', ''); fixture.detectChanges();
+    await component.initializeOptions();
+    expect(service.getData).not.toHaveBeenCalled(); expect(component.availableOptions).toEqual([]); expect(component.formGroup.get('choice')?.value).toBeNull();
   });
 });
