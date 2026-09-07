@@ -77,6 +77,16 @@ describe('FormBuilderComponent characterization', () => {
     component.saveForm('ignored');
     expect(formService.saveForm).not.toHaveBeenCalled();
   });
+  it('does not save a form with duplicate field names', () => {
+    const { component, formService } = setup('new');
+    component.formName = 'Profile';
+    component.formElements = [
+      { name: 'email', type: 'textBox', typeInput: 'email', label: 'Email' } as any,
+      { name: 'email', type: 'textBox', typeInput: 'text', label: 'Conferma email' } as any
+    ];
+    component.saveForm('ignored');
+    expect(formService.saveForm).not.toHaveBeenCalled();
+  });
   it('creates a new form with a generated technical id then navigates', async () => {
     const { component, formService, router } = setup('new'); component.ngOnInit(); component.formName = '  New form  ';
     component.formElements = [{ name: 'x', type: 'textBox', typeInput: 'text', label: 'X', minlength: 2 } as any]; component.saveForm('ignored'); await Promise.resolve();
