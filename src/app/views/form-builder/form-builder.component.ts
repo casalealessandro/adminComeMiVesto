@@ -187,6 +187,14 @@ export class FormBuilderComponent {
       alert('Il nome del form è obbligatorio','Attenzione!');
       return;
     }
+
+    let fieldNames = this.formElements.map(element => element.name);
+    let duplicateFieldName = fieldNames.find((name,index) => name && fieldNames.indexOf(name) != index);
+    if (duplicateFieldName) {
+      alert('Esiste già un campo con nome ' + duplicateFieldName,'Attenzione!');
+      return;
+    }
+
     const data = buildFormPayload(idForm!, formNameS, formJson);
     this.formService.saveForm(this.formId === 'new' ? 'new' : idForm!, data).then(() => {
       alert('Form salvato con successo','Attenzione!');
