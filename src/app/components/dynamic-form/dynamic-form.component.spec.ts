@@ -79,6 +79,36 @@ describe('DynamicFormComponent characterization', () => {
     expect(component.parentValues()).toEqual({ zeroParent: 0, falseParent: false, nullParent: '', absentParent: '' });
   });
 
+  it('creates a radio control, restores its edit value, and applies required validation', () => {
+    component.fields = [{ name: 'choice', type: 'radio', typeInput: 'radio', label: 'Choice', required: true,
+      radioOptions: { displayExp: 'value', valueExp: 'id', options: [{ id: 'A', value: 'A' }], remote: false, parent: null } }];
+    component.editData = { choice: 'A' }; component.initializeForm();
+    expect(component.form.get('choice')?.value).toBe('A'); expect(component.form.get('choice')?.valid).toBeTrue();
+    component.form.get('choice')?.setValue(null); expect(component.form.get('choice')?.hasError('required')).toBeTrue();
+  });
+
+  it('registers radio cascade parents while preserving falsy edit values', () => {
+    component.fields = [{ name: 'child', type: 'radio', typeInput: 'radio', label: 'Child',
+      radioOptions: { displayExp: 'value', valueExp: 'id', options: [], remote: false, parent: 'parentField' } }];
+    component.editData = { parentField: false }; component.initializeForm();
+    expect(component.parentValues()).toEqual({ parentField: false });
+  });
+
+  it('updates a registered parent when a radio-compatible value event is received', () => {
+    component.fields = [{ name: 'child', type: 'radio', typeInput: 'radio', label: 'Child',
+      radioOptions: { displayExp: 'value', valueExp: 'id', options: [], remote: false, parent: 'choice' } },
+      { name: 'choice', type: 'radio', typeInput: 'radio', label: 'Choice', radioOptions: { displayExp: 'value', valueExp: 'id', options: [], remote: false, parent: null } }];
+    component.editData = {}; component.initializeForm(); component.onValueChangeSelectBox('choice', { selectedValue: 'A' });
+    expect(component.form.get('choice')?.value).toBe('A'); expect(component.parentValues().choice).toBe('A');
+  });
+
+  it('renders the native dynamic radio component for radio metadata', () => {
+    component.fields = [{ name: 'choice', type: 'radio', typeInput: 'radio', label: 'Choice',
+      radioOptions: { displayExp: 'value', valueExp: 'id', options: [{ id: 'A', value: 'Alpha' }], remote: false, parent: null } }];
+    component.editData = {}; component.initializeForm(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-dynamic-radio-box')).not.toBeNull();
+  });
+
   it('applies required, length, email and number bounds and leaves plain fields unvalidated', () => {
     component.fields = fields; component.editData = {}; component.initializeForm();
     expect(component.form.get('required')?.hasError('required')).toBeTrue();

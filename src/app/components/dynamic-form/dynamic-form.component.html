@@ -66,6 +66,12 @@
 
 
             </app-dynamic-select-box>
+            <app-dynamic-radio-box *ngIf="field.type === 'radio' && field.radioOptions" [config]="field"
+              [formGroup]="form"
+              [parentValue]="getParentValues(field.radioOptions.parent)"
+              [value]="formValues[field.name]"
+              (valueChange)="onValueChangeSelectBox(field.name, $event)">
+            </app-dynamic-radio-box>
             <app-dynamic-file-box *ngIf="field.type === 'fileBox'" [config]="field" [value]="formValues[field.name]"
               [formGroup]="form" (valueChange)="onValueChange(field.name, $event)">
             </app-dynamic-file-box>

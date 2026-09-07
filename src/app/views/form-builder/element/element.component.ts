@@ -4,7 +4,7 @@ import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 
 import { confirm } from '../../../widgets/ui-dialogs';
 import { DataGridComponent } from '../../../components/data-grid/data-grid.component';
-import { CheckBoxOptions, DynamicFormField, FileBoxOptions, SelectOptions } from '../../../interface/dynamic-form-field';
+import { CheckBoxOptions, DynamicFormField, FileBoxOptions, RadioOptions, SelectOptions } from '../../../interface/dynamic-form-field';
 
 @Component({
   selector: 'app-element',
@@ -20,15 +20,19 @@ export class ElementComponent {
 
   @Output() outPutProperties = new EventEmitter<any>();
   showSelectOption: boolean = false
+  showRadioOption: boolean = false
   showFileOption: boolean = false
   showCheckBoxOption: boolean = false
   showFileBoxOption: boolean = false
   showHiddenBox: boolean = false
   selectOptions!: SelectOptions;
+  radioOptions!: RadioOptions;
   checkBoxOptions!: CheckBoxOptions;
   fileBoxOptions!: FileBoxOptions;
   newOption: any = {}
+  newRadioOption: any = {}
   optionSelIndex: number = -1;
+  radioOptionSelIndex: number = -1;
   remoteSelect: boolean = false
   ngOnInit() {
 
@@ -36,6 +40,7 @@ export class ElementComponent {
 
     this.showSelectOption = false;
     let selectOptions;
+    let radioOptions;
 
 
 
@@ -125,6 +130,32 @@ export class ElementComponent {
 
         this.formField.selectOptions = this.selectOptions
         break;
+      case 'radio':
+        this.formField.typeInput = 'radio';
+        this.showRadioOption = true;
+        this.radioOptions = {
+          displayExp: '',
+          valueExp: '',
+          options: [],
+          parent: '',
+          remote: false,
+          api: ''
+        };
+
+        if (typeof this.formField.radioOptions != 'undefined') {
+          radioOptions = this.formField.radioOptions;
+          this.radioOptions = {
+            displayExp: radioOptions.displayExp,
+            valueExp: radioOptions.valueExp,
+            options: radioOptions.options,
+            parent: radioOptions.parent,
+            remote: radioOptions.remote,
+            api: radioOptions.api
+          };
+        }
+
+        this.formField.radioOptions = this.radioOptions;
+        break;
 
       default:
         break;
@@ -186,6 +217,39 @@ export class ElementComponent {
   removeOption(index: number) {
     if (this.selectOptions?.options) 
       this.selectOptions.options.splice(index, 1);
+  }
+
+  addRadioOption() {
+    if (this.formField.radioOptions!.remote) {
+      return;
+    }
+    const valueExp = this.formField.radioOptions!.valueExp;
+    const displayExp = this.formField.radioOptions!.displayExp;
+    if (!this.newRadioOption[valueExp] || !this.newRadioOption[displayExp]) {
+      return;
+    }
+    if (this.radioOptions.options) {
+      if (this.radioOptionSelIndex >= 0) {
+        this.radioOptions.options[this.radioOptionSelIndex] = this.newRadioOption;
+      } else {
+        this.radioOptions.options.push(this.newRadioOption);
+      }
+    }
+    this.newRadioOption = { [valueExp]: '', [displayExp]: '', parent: '' };
+    this.radioOptionSelIndex = -1;
+  }
+
+  onRadioOptionClick(option: any) {
+    this.newRadioOption = option;
+    if (this.formField.radioOptions?.options) {
+      this.radioOptionSelIndex = this.formField.radioOptions.options.findIndex(optionS => optionS == option);
+    }
+  }
+
+  removeRadioOption(index: number) {
+    if (this.radioOptions.options) {
+      this.radioOptions.options.splice(index, 1);
+    }
   }
 
   saveProperties(elementForm: NgForm) {
@@ -250,6 +314,13 @@ export class ElementComponent {
       if (this.formField.selectOptions.options?.length == 0) {
         alert('Mancano i campi le options della select');
         return false
+      }
+    }
+
+    if (this.showRadioOption && this.formField.radioOptions && !this.formField.radioOptions.remote) {
+      if (this.formField.radioOptions.options?.length == 0) {
+        alert('Mancano i campi le options del radio');
+        return false;
       }
     }
 

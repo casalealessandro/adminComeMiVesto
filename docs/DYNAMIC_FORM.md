@@ -26,6 +26,53 @@
 
 Le select usano `selectOptions`. Con `remote: false`, `options` contiene la lista. Con `remote: true`, `api` viene letto tramite `GET /gen/{api}`. `displayExp` e `valueExp` identificano rispettivamente etichetta e valore. `parent` abilita il caricamento o filtro a cascata.
 
+## Radio
+
+I campi `type: radio` sono scelte singole native e usano il contratto dedicato `radioOptions`, distinto da `selectOptions` e privo di `multiple`. `displayExp` identifica la proprietà mostrata, `valueExp` quella salvata nel `FormControl`, mentre `parent` abilita il filtro statico o il caricamento remoto a cascata. I valori parent espliciti `0` e `false` sono validi.
+
+Esempio statico:
+
+```json
+{
+  "type": "radio",
+  "typeInput": "radio",
+  "name": "gender",
+  "label": "Gender",
+  "radioOptions": {
+    "displayExp": "value",
+    "valueExp": "id",
+    "options": [
+      { "id": "U", "value": "Uomo" },
+      { "id": "D", "value": "Donna" }
+    ],
+    "remote": false,
+    "api": "",
+    "parent": ""
+  }
+}
+```
+
+Esempio remoto a cascata:
+
+```json
+{
+  "type": "radio",
+  "typeInput": "radio",
+  "name": "city",
+  "label": "City",
+  "radioOptions": {
+    "displayExp": "name",
+    "valueExp": "id",
+    "options": [],
+    "remote": true,
+    "api": "cities",
+    "parent": "country"
+  }
+}
+```
+
+Con `country = IT`, il runtime usa `FormService.getData('cities', '/IT')`; durante la richiesta il controllo è disabilitato e viene sempre riabilitato dopo successo, risposta vuota o errore.
+
 ## Registrazione amministrativa
 
 La creazione amministrativa usa una configurazione dedicata, `adminUserCreateForm`, perché il contratto è diverso da quello della registrazione pubblica:
