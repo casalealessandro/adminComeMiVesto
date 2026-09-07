@@ -34,15 +34,20 @@ export class DynamicSelectBoxComponent  {
   valueExp:any;
   isRemote:boolean =false;
   fieldName:string = '';
-  selectedValue!: string | string[];
+  selectedValue:any;
   multiple: boolean= false;
   
   constructor() {
     // Esegui un effetto reattivo per filtrare le opzioni quando il valore del parent cambia
     effect(() => {
-      const parentValue = this.parentValue(); // Usa la funzione per ottenere il valore attuale del signal
-      if (parentValue !== null && typeof parentValue !== 'undefined' && parentValue !== '') {
+      this.parentValue(); // Registra la dipendenza reattiva anche quando il parent viene svuotato
+      if (!this.selectOptions || !this.selectOptions.parent) {
+        return;
+      }
+      if (this.hasParentValue()) {
         this.filterOptionsBasedOnParent();
+      } else {
+        this.clearCascadeState();
       }
     });
   }
@@ -65,19 +70,26 @@ export class DynamicSelectBoxComponent  {
         this.multiple = this.selectOptions.multiple
       }
 
-      this.selectedValue = this.selectOptions.multiple ? this.values : this.value;
+      this.selectedValue = this.formControlD?.value ?? (this.selectOptions.multiple ? this.values : this.value);
 
-      //this.formControlD?.setValue(this.selectedValue)
+      if (this.selectOptions.parent && !this.hasParentValue()) {
+        this.clearCascadeState();
+        return;
+      }
 
       if(this.isRemote){
-        this.availableOptions = await this.getRemoteOptions(this.selectOptions.api)
+        if (this.selectOptions.parent) {
+          await this.filterOptionsBasedOnParent();
+        } else {
+          this.availableOptions = await this.getRemoteOptions(this.selectOptions.api)
+        }
       }else{
         this.availableOptions = this.selectOptions.options || [];
         this.isLoading = false;
       }
       
       
-      if (this.config.selectOptions.parent && this.parentValue) {
+      if (this.selectOptions.parent && this.hasParentValue() && !this.isRemote) {
         this.availableOptions = this.availableOptions.filter((option:any) => option.parent === this.parentValue());
       }
 
@@ -91,7 +103,7 @@ export class DynamicSelectBoxComponent  {
     this.isLoading = true;
     this.formControlD?.disable();
     let res = []
-    if(this.parentValue() !== null && typeof this.parentValue() !== 'undefined' && this.parentValue() !== ''){
+    if(this.hasParentValue()){
       queryString = `/${this.parentValue()}`
     }
     try {
@@ -111,14 +123,20 @@ export class DynamicSelectBoxComponent  {
   async filterOptionsBasedOnParent() :Promise<void> {
 
     if (this.isRemote) {
-      this.availableOptions = await this.getRemoteOptions(this.selectOptions.api, this.parentValue());
+      const requestedParent = this.parentValue();
+      const options = await this.getRemoteOptions(this.selectOptions.api, requestedParent);
+      if (!this.hasParentValue() || this.parentValue() !== requestedParent) {
+        return;
+      }
+      this.availableOptions = options;
     } else if (this.selectOptions && this.selectOptions.parent) {
-      this.availableOptions = this.selectOptions.options.filter((option:any) => option.parent === this.parentValue());
+      this.availableOptions = (this.selectOptions.options || []).filter((option:any) => option.parent === this.parentValue());
     }
   }
 
   onValueChange(event: any) {
-   this.selectedValue = event.target.value;
+   const controlValue = this.formControlD?.value;
+   this.selectedValue = typeof controlValue !== 'undefined' ? controlValue : event.target.value;
    let changes:any ={
      event: event,
      selectedValue: this.selectedValue,
@@ -128,5 +146,28 @@ export class DynamicSelectBoxComponent  {
    }
 
     this.valueChange.emit(changes); 
+  }
+
+  private hasParentValue(): boolean {
+    const parentValue = this.parentValue();
+    return parentValue !== null && typeof parentValue !== 'undefined' && parentValue !== '';
+  }
+
+  private clearCascadeState(): void {
+    this.availableOptions = [];
+    this.isLoading = false;
+    const emptyValue = this.multiple ? [] : null;
+    this.selectedValue = emptyValue;
+    this.formControlD?.setValue(emptyValue, { emitEvent: false });
+    this.formControlD?.enable();
+    if (this.selectOptions) {
+      this.valueChange.emit({
+        event: null,
+        selectedValue: emptyValue,
+        component: this,
+        selectOptions: this.selectOptions,
+        parentField: this.selectOptions.parent
+      } as any);
+    }
   }
 }
