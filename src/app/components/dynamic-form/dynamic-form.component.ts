@@ -187,6 +187,8 @@ export class DynamicFormComponent {
 
     if (control && control.value !== value) {
       control.setValue(value, { emitEvent: false });
+    }
+    if (control) {
       this.formValues[fieldName] = value;
     }
 
