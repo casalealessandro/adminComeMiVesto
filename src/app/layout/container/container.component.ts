@@ -1,9 +1,7 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, effect, HostListener, signal, WritableSignal } from '@angular/core';
 import { AnagraficaWrapperComponent } from '../anagrafica-wrapper/anagrafica-wrapper.component';
-import { FooterComponent } from '../footer/footer.component';
 import { HeaderComponent } from '../header/header.component';
 import { MenuComponent } from '../menu/menu.component';
-import { ToolbarComponent } from '../toolbar/toolbar.component';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { PopupWrapperComponent } from '../../components/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component';

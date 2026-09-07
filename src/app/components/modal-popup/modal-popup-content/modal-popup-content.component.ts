@@ -27,7 +27,7 @@ export interface infoPopUp{
   styleUrls: ['./modal-popup-content.component.scss']
 })
 
-export class NicaPopupContentComponent implements OnInit, AfterViewInit, OnChanges {
+export class PopupContentComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() infoPopUp!:infoPopUp;
   @Input() index: any;
   @Input() componentName!: string;

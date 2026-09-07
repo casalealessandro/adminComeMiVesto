@@ -1,8 +1,7 @@
-import { Component, Input, OnInit, Output, EventEmitter, ViewChild, AfterViewInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, AfterViewInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 
 import { Subscription } from 'rxjs';
-import { ToolbarComponent } from '../toolbar/toolbar.component';
 import { CaptionComponent } from '../../components/caption/caption.component';
 import { CommonModule } from '@angular/common';
 import { ToolbarButton } from '../../interface/app.interface';
@@ -18,8 +17,6 @@ import { ToolbarButton } from '../../interface/app.interface';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AnagraficaWrapperComponent {
-
-  @ViewChild('toolbarTab', { static: true })  toolbarTab!: ToolbarComponent;
 
   @Input() caption:string=''
   @Input() anaHeight:number=800

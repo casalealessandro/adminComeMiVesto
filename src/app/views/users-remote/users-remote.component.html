@@ -1,0 +1,62 @@
+<main class="admin-page">
+  <header class="page-header">
+    <div>
+      <div class="title-row"><h1>Utenti Remote</h1><span class="lab-badge">LAB</span></div>
+      <p>Area isolata per validare la DataGrid provider-neutral contro API reali senza modificare la gestione Utenti attuale.</p>
+    </div>
+    <button class="btn btn-outline-primary" type="button" (click)="refresh()">Aggiorna</button>
+  </header>
+
+  <div class="lab-note">
+    <strong>Test remoto:</strong> ricerca globale, filtri colonna, ordinamento, continuation paging e CRUD passano attraverso <code>GridDataProvider</code>.
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <section class="grid-shell" aria-label="Laboratorio utenti remote">
+    <app-data-grid
+      [idTable]="'users-remote-grid'"
+      [colonne]="columns"
+      [dataProvider]="provider"
+      [remoteOperation]="true"
+      [isEditable]="true"
+      [isEditableNewRow]="auth.isAdmin()"
+      [isEditableEditRow]="true"
+      [isEditableDeleteRow]="true"
+      [showToolbarTop]="true"
+      [showToolbarBottom]="false"
+      [showFilter]="true"
+      [isSearchable]="true"
+      [tableHeight]="620"
+      (emittendStartEdit)="handleEditEvent($event)">
+    </app-data-grid>
+  </section>
+</main>
+
+<div *ngIf="createOpen" class="edit-backdrop">
+  <section class="edit-panel" role="dialog" aria-modal="true" aria-labelledby="remote-create-title">
+    <header><h2 id="remote-create-title">Nuovo utente — Remote</h2><button class="btn-close" aria-label="Chiudi" (click)="closeCreate()" [disabled]="createBusy"></button></header>
+    <label>Email<input class="form-control" type="email" [(ngModel)]="createDraft.email"></label>
+    <label>Display name<input class="form-control" [(ngModel)]="createDraft.displayName"></label>
+    <label>Nome<input class="form-control" [(ngModel)]="createDraft.nome"></label>
+    <label>Cognome<input class="form-control" [(ngModel)]="createDraft.cognome"></label>
+    <label>Gender<input class="form-control" [(ngModel)]="createDraft.gender"></label>
+    <label>Ruolo<select class="form-select" [(ngModel)]="createDraft.role"><option value="creator">creator</option><option value="editor">editor</option><option value="admin">admin</option></select></label>
+    <footer><button class="btn btn-outline-secondary" (click)="closeCreate()" [disabled]="createBusy">Annulla</button><button class="btn btn-primary" (click)="createUser()" [disabled]="createBusy || !createDraft.email">Crea via provider</button></footer>
+  </section>
+</div>
+
+<div *ngIf="editDraft" class="edit-backdrop">
+  <section class="edit-panel" role="dialog" aria-modal="true" aria-labelledby="remote-edit-title">
+    <header><h2 id="remote-edit-title">Modifica profilo — Remote</h2><button class="btn-close" aria-label="Chiudi" (click)="closeEdit()" [disabled]="editBusy"></button></header>
+    <label>Email<input class="form-control" [value]="editDraft.email || ''" readonly></label>
+    <label>Ruolo<input class="form-control" [value]="editDraft.role || 'creator'" readonly></label>
+    <label>Display name<input class="form-control" [(ngModel)]="editDraft.displayName"></label>
+    <label>Nome<input class="form-control" [(ngModel)]="editDraft.nome"></label>
+    <label>Cognome<input class="form-control" [(ngModel)]="editDraft.cognome"></label>
+    <label>Bio<textarea class="form-control" [(ngModel)]="editDraft.bio"></textarea></label>
+    <label>Photo URL<input class="form-control" type="url" [(ngModel)]="editDraft.photoURL"></label>
+    <label>Gender<input class="form-control" [(ngModel)]="editDraft.gender"></label>
+    <footer><button class="btn btn-outline-secondary" (click)="closeEdit()" [disabled]="editBusy">Annulla</button><button class="btn btn-primary" (click)="saveEdit()" [disabled]="editBusy">Salva via provider</button></footer>
+  </section>
+</div>

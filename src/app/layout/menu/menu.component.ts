@@ -36,6 +36,7 @@ export class MenuComponent {
      allMenu = [
       { path: 'dashboard', label: 'Dashboard', icon:'mdi mdi-view-dashboard-outline' },
       { path: 'utenti', label:'Utenti Registrati',icon:'mdi mdi-account-multiple-outline' },
+      { path: 'utenti-remote', label:'Utenti Remote (Lab)',icon:'mdi mdi-database-search-outline' },
     
       { path: 'form-list', label:'Gestione form e viste',icon:'mdi mdi-cog-outline' },
       { path: 'outfit-list', label:'Lista outfit ',icon:'mdi mdi-wardrobe-outline' },

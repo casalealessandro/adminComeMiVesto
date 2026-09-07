@@ -1,14 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { PopUpService } from '../../../services/popup.service';
 import { CommonModule } from '@angular/common';
-import { NicaPopupContentComponent } from '../modal-popup-content/modal-popup-content.component';
+import { PopupContentComponent } from '../modal-popup-content/modal-popup-content.component';
 
 
 
 @Component({
   selector: 'app-modal-popup-wrapper',
   templateUrl: './modal-popup-wrapper.component.html',
-  imports:[CommonModule,NicaPopupContentComponent],
+  imports:[CommonModule,PopupContentComponent],
   standalone:true,
   styleUrls: ['./modal-popup-wrapper.component.css']
 })
