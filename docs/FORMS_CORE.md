@@ -13,7 +13,7 @@ This document records the observed Forms Core behavior. It is a safety-net inven
 | selectBox local | `selectOptions.options`, expressions | Supported | Supported | Local load and option management | Empty local options make builder validation fail. |
 | selectBox remote | `remote`, `api` | Partial | Supported | Success, empty, error | Empty/error responses leave the control disabled and `isLoading` true. Errors are swallowed. |
 | select cascade | `parent`, option `parent` | Partial | Supported | Local filtering and remote path | Remote parent is appended as `/{parentValue}`. Initial local filtering contains a function/value comparison; reactive filtering works. |
-| fileBox | `fileBoxOptions` | Partial | Supported | MIME, size, metadata, resize | `maxWidth` is consulted during file selection; `maxSize` is enforced. `maxHeight` and `isBase64` are declared but currently not applied by runtime processing. |
+| fileBox | `fileBoxOptions.maxWidth`, `maxHeight`, `maxSize` | Supported | Supported | MIME, size, metadata, resize | Both dimension limits are applied without cropping, distortion, or upscaling; `maxSize` is enforced. |
 | required | `required` | Supported | Supported | Validator and invalid submit | Uses Angular `Validators.required`. |
 | minLength | `minLength`; legacy `minlength` | Supported / legacy | Supported | Normalization and validator | Canonical value wins. `max_length`-style snake case is not supported. |
 | maxLength | `maxLength`; legacy `maxlength` | Supported / legacy | Supported | Normalization and validator | Canonical value wins. |
@@ -34,8 +34,8 @@ This document records the observed Forms Core behavior. It is a safety-net inven
 
 1. **Falsy edit values — resolved in Forms Core Phase 1.1:** previously, `false`, `0`, and `''` became `null` in controls because initialization used logical OR. Explicit falsy values are now preserved; only `null`, `undefined`, and absent values resolve to `null`. The parallel `formValues` map continues to retain explicit values.
 2. **Remote empty/error state — resolved in Forms Core Phase 1.2:** local selects now leave the loading state after initialization; remote selects restore their loading/enabled state after successful, empty, and error responses.
-3. **File metadata:** `maxHeight` and `isBase64` are declared and builder-supported but currently not applied by runtime image processing. Component `maxWidth`/`maxHeight` inputs are also separate from copied metadata; file selection directly reads metadata `maxWidth` with a 600-pixel fallback.
-4. **Legacy naming boundary:** `minlength`, `maxlength`, nested `maxheight`, and nested `isbase64` are supported. `max_length` is not supported.
+3. **File metadata — resolved in Forms Core Phase 1.3:** `maxHeight` is now applied together with `maxWidth` during runtime image processing. `isBase64` was removed from the active Forms Core contract in Phase 1.3. Legacy `isBase64`/`isbase64` metadata is tolerated only at the normalization boundary and stripped from canonical serialization. File selection retains the historical 600-pixel `maxWidth` fallback when no positive metadata limit is supplied; absent, null, or non-positive `maxHeight` remains unbounded rather than introducing a new limit.
+4. **Legacy naming boundary:** `minlength`, `maxlength`, and nested `maxheight` are normalized. Legacy nested `isBase64`/`isbase64` is recognized only so it can be discarded. `max_length` is not supported.
 5. **Cascade initialization — resolved in Forms Core Phase 1.2:** parent signal values are now read correctly during initial filtering, and explicit falsy parent values are no longer collapsed by initialization.
 6. **Service absence:** without a `service` input, `DynamicFormComponent` returns before insert/edit initialization and creates no metadata controls.
 

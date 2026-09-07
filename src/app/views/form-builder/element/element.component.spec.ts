@@ -19,9 +19,11 @@ describe('ElementComponent characterization', () => {
     const value = { haveLink: true, hrefLink: '/terms', hrefText: 'Terms' }; expect(create('checkBox', { checkBoxOptions: value }).checkBoxOptions).toEqual(value);
   });
   it('applies file defaults and preserves existing file metadata', () => {
-    expect(create('fileBox').fileBoxOptions).toEqual({ maxWidth: 0, maxHeight: 0, isBase64: true, maxSize: 10 });
-    const value = { maxWidth: 600, maxHeight: 800, isBase64: false, maxSize: 2 };
-    const existing = create('fileBox', { fileBoxOptions: value }); expect(existing.fileBoxOptions).toEqual(value); expect(existing.formField.typeInput).toBe('file');
+    expect(create('fileBox').fileBoxOptions).toEqual({ maxWidth: 0, maxHeight: 0, maxSize: 10 });
+    const value: any = { maxWidth: 600, maxHeight: 800, isBase64: false, maxSize: 2 };
+    const existing = create('fileBox', { fileBoxOptions: value });
+    expect(existing.fileBoxOptions).toEqual({ maxWidth: 600, maxHeight: 800, maxSize: 2 });
+    expect(existing.formField.typeInput).toBe('file');
   });
   it('applies select defaults and preserves existing metadata', () => {
     expect(create('selectBox').selectOptions).toEqual({ multiple: false, displayExp: '', valueExp: '', options: [], parent: '', remote: false, api: '' });

@@ -31,7 +31,6 @@ export interface SelectOptions {
 export interface FileBoxOptions {
   maxWidth: number;
   maxHeight: number;
-  isBase64: boolean;
   maxSize?: number;
 }
 
@@ -41,11 +40,12 @@ export interface CheckBoxOptions {
   hrefText: string;
 }
 
-type LegacyDynamicFormField = DynamicFormField & {
+type LegacyDynamicFormField = Omit<DynamicFormField, 'fileBoxOptions'> & {
   minlength?: number;
   maxlength?: number;
   fileBoxOptions?: FileBoxOptions & {
     maxheight?: number;
+    isBase64?: boolean;
     isbase64?: boolean;
   };
 };
@@ -60,11 +60,10 @@ export function normalizeDynamicFormField(field: LegacyDynamicFormField): Dynami
   };
 
   if (fileBoxOptions) {
-    const { maxheight, isbase64, ...canonicalFileBoxOptions } = fileBoxOptions;
+    const { maxheight, isBase64, isbase64, ...canonicalFileBoxOptions } = fileBoxOptions;
     normalized.fileBoxOptions = {
       ...canonicalFileBoxOptions,
-      maxHeight: fileBoxOptions.maxHeight ?? maxheight ?? 0,
-      isBase64: fileBoxOptions.isBase64 ?? isbase64 ?? true
+      maxHeight: fileBoxOptions.maxHeight ?? maxheight ?? 0
     };
   }
 

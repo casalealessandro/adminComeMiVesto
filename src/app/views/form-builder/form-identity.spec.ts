@@ -10,7 +10,8 @@ describe('form identity', () => {
     const payload = buildFormPayload('id-1', ' Form ', legacy);
     const reloaded = parseFields(JSON.stringify(payload.json));
     expect(reloaded[0]).toEqual(jasmine.objectContaining({ minLength: 2, maxLength: 20 }));
-    expect(reloaded[0].fileBoxOptions).toEqual({ maxWidth: 600, maxHeight: 800, isBase64: false, maxSize: 3 });
-    expect(JSON.stringify(reloaded)).not.toMatch(/minlength|maxlength|maxheight|isbase64/);
+    expect(reloaded[0].fileBoxOptions).toEqual({ maxWidth: 600, maxHeight: 800, maxSize: 3 });
+    expect(JSON.stringify(payload.json)).not.toMatch(/isBase64|isbase64/);
+    expect(JSON.stringify(reloaded)).not.toMatch(/minlength|maxlength|maxheight|isBase64|isbase64/);
   });
 });
