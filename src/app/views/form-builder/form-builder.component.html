@@ -50,6 +50,13 @@
           (click)="openPropertiesModal(element,iEl)">
           <div class="form-element mb-3">
             <span>{{ element.label }}</span>
+            <div class="form-element-badges" *ngIf="element.selectOptions || element.radioOptions">
+              <span class="badge bg-secondary" *ngIf="element.selectOptions?.remote || element.radioOptions?.remote">REMOTE</span>
+              <span class="badge bg-light text-dark" *ngIf="(element.selectOptions && !element.selectOptions.remote) || (element.radioOptions && !element.radioOptions.remote)">STATIC</span>
+              <span class="badge bg-light text-dark" *ngIf="element.selectOptions?.parent || element.radioOptions?.parent">
+                PARENT: {{ element.selectOptions?.parent || element.radioOptions?.parent }}
+              </span>
+            </div>
           </div>
 
           <div class="element-actions" (click)="$event.stopPropagation()">
