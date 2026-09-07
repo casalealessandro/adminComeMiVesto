@@ -121,7 +121,7 @@ export class FormBuilderComponent {
     if (!source) {
       return;
     }
-    const duplicate = structuredClone(source);
+    let duplicate = JSON.parse(JSON.stringify(source));
     duplicate.name = this.nextDuplicateName(source.name);
     duplicate.label = `${source.label || 'Campo'} (copia)`;
     this.formElements.splice(index + 1, 0, duplicate);
