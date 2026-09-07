@@ -222,7 +222,7 @@ export class TdItemComponent {
             if(typeof  this.remoteData[arrayValue[1]] !='undefined')
               this.dataRow[arrayValue[1]] = this.remoteData[arrayValue[0]]
           } else {
-            if(typeof  this.remoteData[values]!='undefined')
+            if(typeof  this.remoteData[values] !='undefined')
               this.dataRow[values] = this.remoteData[values]
           }
   
