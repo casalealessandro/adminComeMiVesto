@@ -314,7 +314,7 @@ export class TdItemComponent {
     }
 
     if (typeof text == 'boolean') {
-      const dataOptions = this.colProperty.dataOptions
+      const dataOptions = this.colProperty.booleanOptions ?? this.colProperty.dataOptions
       if (typeof dataOptions.trueText == 'undefined' || dataOptions.falseText == 'undefined') {
         this.showBooleanFlag = true;
 
