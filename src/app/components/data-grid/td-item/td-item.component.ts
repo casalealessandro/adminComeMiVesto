@@ -59,9 +59,23 @@ export class TdItemComponent {
     left: string;
   };
   toolTipImg: any;
+  private cellContentInitialized = false;
 
+
+  ngOnInit() {
+    this.initializeCellContent();
+  }
 
   ngAfterViewInit() {
+    this.initializeCellContent();
+    void this.resolveProviderLookup();
+  }
+
+  private initializeCellContent(): void {
+    if (this.cellContentInitialized) {
+      return;
+    }
+    this.cellContentInitialized = true;
 
     const colPropertyAlign = !this.colProperty.colAlignment ? 'left' : this.colProperty.colAlignment
 
@@ -86,8 +100,6 @@ export class TdItemComponent {
       default:
         break;
     }
-
-    void this.resolveProviderLookup();
   }
 
   async resolveProviderLookup(): Promise<boolean> {
@@ -210,7 +222,7 @@ export class TdItemComponent {
             if(typeof  this.remoteData[arrayValue[1]] !='undefined')
               this.dataRow[arrayValue[1]] = this.remoteData[arrayValue[0]]
           } else {
-            if(typeof  this.remoteData[values] !='undefined')
+            if(typeof  this.remoteData[values]!='undefined')
               this.dataRow[values] = this.remoteData[values]
           }
   
