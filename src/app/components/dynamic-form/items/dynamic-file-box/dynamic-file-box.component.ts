@@ -84,9 +84,10 @@ export class DynamicFileBoxComponent implements AfterViewInit {
   
           // Ridimensiona l'immagine prima di emetterla
           try {
-            const maxWidth =  this.fileBoxOptions && this.fileBoxOptions.maxWidth ? this.fileBoxOptions.maxWidth : 600;
+            const maxWidth = this.fileBoxOptions && this.fileBoxOptions.maxWidth > 0 ? this.fileBoxOptions.maxWidth : 600;
+            const maxHeight = this.fileBoxOptions && this.fileBoxOptions.maxHeight > 0 ? this.fileBoxOptions.maxHeight : Infinity;
             const type =  file.type.replace('image/','')
-            const resizedImage = await this.resizeImage(dataUrl, maxWidth, type); // Puoi cambiare 'jpeg' con il formato desiderato e 800 con la larghezza massima desiderata
+            const resizedImage = await this.resizeImage(dataUrl, maxWidth, maxHeight, type); // Puoi cambiare 'jpeg' con il formato desiderato e 800 con la larghezza massima desiderata
   
             // Assegna il valore ridimensionato
             this.value = resizedImage.dataUrl;
@@ -112,7 +113,7 @@ export class DynamicFileBoxComponent implements AfterViewInit {
     return file.size <= maxSize && allowedTypes.includes(file.type);
   }
 
-  resizeImage(dataUrl: string, maxWidth: number,format:string): Promise<{ dataUrl: string; format: string }> {
+  resizeImage(dataUrl: string, maxWidth: number, maxHeight: number,format:string): Promise<{ dataUrl: string; format: string }> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.src = dataUrl;
@@ -125,15 +126,17 @@ export class DynamicFileBoxComponent implements AfterViewInit {
         let height = img.height;
   
         // Calcolo del ridimensionamento mantenendo il rapporto d'aspetto
-        if (width > maxWidth ) {
-          const scaleFactor = maxWidth / img.width;
-          canvas.width = maxWidth;
-          canvas.height = img.height * scaleFactor;
-          
-          width = maxWidth;
-          height = img.height * scaleFactor;
+        if ((maxWidth > 0 && width > maxWidth) || (maxHeight > 0 && height > maxHeight)) {
+          const widthRatio = maxWidth > 0 ? maxWidth / width : 1;
+          const heightRatio = maxHeight > 0 ? maxHeight / height : 1;
+          const scaleFactor = Math.min(widthRatio, heightRatio);
+
+          width *= scaleFactor;
+          height *= scaleFactor;
         }
-  
+
+        canvas.width = width;
+        canvas.height = height;
         
   
         ctx!.drawImage(img, 0, 0, width, height);
@@ -151,18 +154,4 @@ export class DynamicFileBoxComponent implements AfterViewInit {
 
   
 
-  // Funzione per convertire dataURL (BASE64) in Blob m ora uso base64
-  private dataURLtoBlob(dataUrl: string): Blob {
-    const arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)![1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-
-    return new Blob([u8arr], { type: mime });
-  }
 }
-
