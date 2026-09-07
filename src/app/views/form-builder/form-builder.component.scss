@@ -12,6 +12,7 @@
         .list-group-item {
             padding: 0.3rem;
             text-align: start;
+            min-height: 44px;
             .iconE{
                 margin-right: 0.4rem;
                 line-height: 0.5rem;
@@ -43,6 +44,14 @@
                 padding: 0.650rem;
                 border-radius: 0.375rem;
             }
+            .element-actions{
+                display: flex;
+                align-items: center;
+            }
+            .element-actions .icon-button{
+                min-width: 36px;
+                min-height: 36px;
+            }
             .removeEl{
                color: red;
                font-size: 1rem;
@@ -50,11 +59,42 @@
         }
     }
 
+    .empty-form{
+        border: 1px dashed var(--border_color);
+        padding: 1rem;
+        border-radius: 0.375rem;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
     .no-evt{
         pointer-events: none;
     }
 }
-@media(max-width:600px){.content-formbuilder{flex-direction:column}.content-formbuilder .form-view{margin:1rem 0 0}.formbuilder-button .btn{min-height:44px;flex:1}}
+
+@media(max-width:600px){
+    .content-formbuilder{
+        flex-direction:column
+    }
+    .content-formbuilder .form-view{
+        margin:1rem 0 0
+    }
+    .content-formbuilder .form-view .element{
+        align-items: center;
+    }
+    .content-formbuilder .form-view .element .element-actions{
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .content-formbuilder .form-view .element .element-actions .icon-button{
+        min-width:44px;
+        min-height:44px;
+    }
+    .formbuilder-button .btn{
+        min-height:44px;
+        flex:1
+    }
+}
 
 .formbuilder-button {
     display: flex;

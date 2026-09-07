@@ -16,7 +16,7 @@
   </div>
 
   <div class="text pt-3 mt-3">
-    <h3><span class="mdi mdi-chevron-right"></span>Anteprima form</h3>
+    <h3><span class="mdi mdi-chevron-right"></span>Struttura form</h3>
   </div>
 
   <div class="content-formbuilder form-view ">
@@ -30,7 +30,7 @@
         {{ element.label }}
 
         <div>
-          <button class="btn icon-button ms-2" (click)="onAdd($event,i)">
+          <button type="button" class="btn icon-button ms-2" (click)="onAdd($event,i)">
             <span class="mdi mdi-plus-circle-outline"></span>
           </button>
 
@@ -40,31 +40,32 @@
 
     </ul>
     <div class="form-view ">
+      <div *ngIf="formElements.length === 0" class="empty-form">
+        Nessun campo configurato
+      </div>
+
       <div class="row">
 
         <div class="element" *ngFor="let element of formElements, index as iEl "
           (click)="openPropertiesModal(element,iEl)">
           <div class="form-element mb-3">
             <span>{{ element.label }}</span>
-
-            <!-- <ng-container [ngSwitch]="element.type">
-              <input [id]="element.label" *ngSwitchCase="'textBox'" [attr.type]="element.typeInput || 'text'"
-                class="form-control no-evt" [(ngModel)]="element.value">
-              <textarea [id]="element.label" *ngSwitchCase="'textarea'" class="form-control no-evt"
-                [(ngModel)]="element.value"></textarea>
-              <select [id]="element.label" *ngSwitchCase="'selectBox'" class="form-control no-evt"
-                [(ngModel)]="element.value">
-              
-              </select> 
-
-            </ng-container>-->
           </div>
 
-
-          <button class="icon-button ms-2 removeEl" (click)="onRemove(iEl)">
-
-            <span class="mdi mdi-close"></span>
-          </button>
+          <div class="element-actions" (click)="$event.stopPropagation()">
+            <button type="button" class="icon-button ms-2" (click)="moveElement(iEl,-1)" [disabled]="iEl === 0">
+              <span class="mdi mdi-arrow-up"></span>
+            </button>
+            <button type="button" class="icon-button ms-2" (click)="moveElement(iEl,1)" [disabled]="iEl === formElements.length - 1">
+              <span class="mdi mdi-arrow-down"></span>
+            </button>
+            <button type="button" class="icon-button ms-2" (click)="duplicateElement(iEl)">
+              <span class="mdi mdi-content-copy"></span>
+            </button>
+            <button type="button" class="icon-button ms-2 removeEl" (click)="onRemove(iEl)">
+              <span class="mdi mdi-close"></span>
+            </button>
+          </div>
 
         </div>
 
@@ -78,11 +79,11 @@
 
   <div class="formbuilder-button gap-3 mt-1">
 
-    <button class="ana-button btn" (click)="returnPrev()">
+    <button type="button" class="ana-button btn" (click)="returnPrev()">
       <span class="mdi mdi-keyboard-return"></span>
       Indietro
     </button>
-    <button class="ana-button btn" (click)="saveForm(formName)">
+    <button type="button" class="ana-button btn" (click)="saveForm(formName)" [disabled]="!formName || !formName.trim()">
       <span class="mdi mdi-content-save-outline"></span>
       Salva
     </button>
