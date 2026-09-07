@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { OverlayService } from '../../services/overlay.service';
 
 
@@ -13,8 +13,10 @@ import { OverlayService } from '../../services/overlay.service';
 
 export class CustomScrollbarComponent {
   @Input() scrollHeigth: number = 400;
+  @Output() scrollEvent: EventEmitter<Event> = new EventEmitter<Event>();
   overlayService= inject(OverlayService)  
-  onScroll(event: any): void {
+  onScroll(event: Event): void {
     this.overlayService.closeOverlay()
+    this.scrollEvent.emit(event)
   }
 }

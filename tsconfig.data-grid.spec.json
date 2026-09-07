@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/data-grid-spec",
+    "types": [
+      "jasmine",
+      "@angular/localize"
+    ]
+  },
+  "include": [
+    "src/app/components/data-grid/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}
