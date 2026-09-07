@@ -1,6 +1,6 @@
-# Forms Core: Phase 0 characterization
+# Forms Core v1 — stabilized characterization
 
-This document records the observed Forms Core behavior. It is a safety-net inventory, not a proposal for a new form engine. Form metadata continues to be loaded by `FormService`, rendered by `DynamicFormComponent`, and returned to the business consumer for final DTO construction and persistence.
+This document started as the Phase 0 safety-net inventory and now records the stabilized Forms Core v1 contract after Phases 1.x and 2.x. Form metadata continues to be loaded by `FormService`, rendered by `DynamicFormComponent`, and returned to the business consumer for final DTO construction and persistence.
 
 ## Capability matrix
 
@@ -12,11 +12,11 @@ This document records the observed Forms Core behavior. It is a safety-net inven
 | checkBox | `checkBoxOptions` | Supported | Supported | Defaults and preservation | Link metadata defaults to false/empty strings. |
 | selectBox local | `selectOptions.options`, expressions | Supported | Supported | Local load, option management, typed values | Option values keep their original type through the Angular `FormControl`. |
 | selectBox remote | `remote`, `api` | Supported | Supported | Success, empty, error | Empty/error responses restore the enabled control and complete loading. Errors are swallowed. |
-| select cascade | `parent`, option `parent` | Supported | Supported | Initial/reactive filtering, falsy/empty parents, remote path | `0`/`false` are valid parents; an empty parent clears child options and child selection. |
-| radio | `radioOptions` | Supported | Supported | Static / remote / cascade / edit / required / typed values | Native single-choice control; empty cascade parents clear options and selection. |
-| fileBox | `fileBoxOptions.maxWidth`, `maxHeight`, `maxSize` | Supported | Supported | MIME, size, metadata, resize | Both dimension limits are applied without cropping, distortion, or upscaling; `maxSize` is enforced. |
+| select cascade | `parent`, option `parent` | Supported | Supported | Initial/reactive filtering, falsy/empty parents, remote path, chained cascade | `0`/`false` are valid parents; an empty parent clears child options and child selection. |
+| radio | `radioOptions` | Supported | Supported | Static / remote / cascade / edit / required / typed values / chained cascade | Native single-choice control; metadata is separate from `selectOptions`. |
+| fileBox | `fileBoxOptions.maxWidth`, `maxHeight`, `maxSize` | Supported | Supported | MIME, size, metadata, resize, round trip | Both dimension limits are applied without cropping, distortion, or upscaling; `maxSize` is enforced. |
 | required | `required` | Supported | Supported | Validator and invalid submit | Uses Angular `Validators.required`. |
-| minLength | `minLength`; legacy `minlength` | Supported / legacy | Supported | Normalization and validator | Canonical value wins. `max_length`-style snake case is not supported. |
+| minLength | `minLength`; legacy `minlength` | Supported / legacy | Supported | Normalization and validator | Canonical value wins. |
 | maxLength | `maxLength`; legacy `maxlength` | Supported / legacy | Supported | Normalization and validator | Canonical value wins. |
 | min/max number | `min`, `max`, `typeInput: number` | Supported | Supported | Both bounds | Bounds only apply to number inputs. |
 | email | `typeInput: email` | Supported | Supported | Email validity | Uses Angular `Validators.email`. |
@@ -29,22 +29,35 @@ This document records the observed Forms Core behavior. It is a safety-net inven
 * `GET /gen/forms/:id` supplies only `form.json` to `DynamicFormComponent`; the consumer remains responsible for business persistence.
 * Submit, cancel, functional-button, loading guard, refresh, edit/insert, legacy `idData`, validators, and invalid-label behavior are characterized.
 * Form-service GET/POST/PUT/DELETE URLs, response mappings, payload shapes, encoding, and generic `/gen/{api}{queryString}` composition are characterized.
-* A legacy-metadata round trip through normalization, builder payload creation, serialization, and reload parsing is covered.
-* Select/radio option values preserve explicit numeric and boolean values instead of coercing them through `event.target.value`.
+* Legacy metadata round-trips through normalization, builder payload creation, serialization, and reload parsing.
+* Canonical metadata containing SelectBox, RadioBox and FileBox round-trips through `buildFormPayload()` → serialization → `parseFields()` → `DynamicFormComponent` → submit without changing the supported contracts.
+* Select/radio option values preserve explicit numeric and boolean values instead of coercing them through the raw DOM string value.
+* Multiple select changes preserve the complete selected array.
 * Cascade children with a configured but empty parent expose no options, clear their current value, and do not invoke a remote child API until the parent has a value. Explicit `0` and `false` parents remain valid.
+* A chained static `radio → select → radio` cascade is characterized, including propagation of an empty parent through every downstream child.
 
-## Findings intentionally not corrected in Phase 0
+## Phase 0 findings — final disposition
 
-1. **Falsy edit values — resolved in Forms Core Phase 1.1:** previously, `false`, `0`, and `''` became `null` in controls because initialization used logical OR. Explicit falsy values are now preserved; only `null`, `undefined`, and absent values resolve to `null`. The parallel `formValues` map continues to retain explicit values.
-2. **Remote empty/error state — resolved in Forms Core Phase 1.2:** local selects now leave the loading state after initialization; remote selects restore their loading/enabled state after successful, empty, and error responses.
-3. **File metadata — resolved in Forms Core Phase 1.3:** `maxHeight` is now applied together with `maxWidth` during runtime image processing. `isBase64` was removed from the active Forms Core contract in Phase 1.3. Legacy `isBase64`/`isbase64` metadata is tolerated only at the normalization boundary and stripped from canonical serialization. File selection retains the historical 600-pixel `maxWidth` fallback when no positive metadata limit is supplied; absent, null, or non-positive `maxHeight` remains unbounded rather than introducing a new limit.
-4. **Legacy naming boundary:** `minlength`, `maxlength`, and nested `maxheight` are normalized. Legacy nested `isBase64`/`isbase64` is recognized only so it can be discarded. `max_length` is not supported.
-5. **Cascade initialization — resolved in Forms Core Phase 1.2 and completed in Phase 2.2:** parent signal values are read correctly during initial filtering, explicit falsy parent values are preserved, and clearing a parent now clears child options/value consistently for select and radio fields.
-6. **Service absence:** without a `service` input, `DynamicFormComponent` returns before insert/edit initialization and creates no metadata controls.
+1. **Falsy edit values — resolved in Forms Core Phase 1.1.** `false`, `0`, and `''` are preserved. Only `null`, `undefined`, and absent values resolve to `null` during control initialization.
+2. **Remote empty/error state — resolved in Forms Core Phase 1.2.** Local selects leave loading after initialization; remote selects restore loading/enabled state after successful, empty, and error responses.
+3. **File metadata — resolved in Forms Core Phase 1.3.** `maxHeight` is applied together with `maxWidth`. `isBase64` was removed from the active contract; legacy `isBase64`/`isbase64` is tolerated only at normalization and stripped from canonical serialization.
+4. **Legacy naming boundary — intentional compatibility boundary.** `minlength`, `maxlength`, and nested `maxheight` are normalized. Legacy `isBase64`/`isbase64` is recognized only to be discarded. `max_length` is intentionally unsupported because no active repository contract requires it; `form.service.spec.ts` explicitly protects this boundary.
+5. **Cascade initialization — resolved in Phase 1.2 and completed in Phase 2.2.** Initial/reactive filtering works, explicit falsy parents survive, and clearing a parent clears downstream options/value consistently for select and radio fields.
+6. **Service absence — intentional contract.** `service` is required for metadata-driven `DynamicFormComponent`. Without it the component does not request metadata and does not create controls. This behavior is explicitly covered by tests and documented in `DYNAMIC_FORM.md`.
 
-## Later corrective phases
+There are no unresolved Phase 0 correctness findings after Phase 2.3.
 
-* **Forms Core Phase 2.1 — option value contract:** select and radio changes now use the Angular control/typed option value instead of treating the raw DOM string as the canonical value. Multiple select changes preserve the complete selected array.
-* **Forms Core Phase 2.2 — cascade consistency:** a child with a configured empty parent starts and remains empty; clearing the parent clears child options and selection, propagates the empty value through the existing value-change contract, and remote children are not loaded until the parent is populated.
+## Corrective phases
 
-At the time of Phase 0, no action was taken on these findings. Subsequent resolution status is recorded above; unresolved behavior corrections belong to later, explicitly scoped phases.
+* **Phase 1.1 — falsy edit values:** preserve explicit falsy values during control initialization.
+* **Phase 1.2 — select lifecycle and cascade initialization:** close loading/error lifecycle gaps and fix parent handling.
+* **Phase 1.3 — FileBox dimensions and Base64 cleanup:** support both dimension bounds and remove Base64 persistence metadata from the active contract.
+* **Phase 2.0 — DynamicRadioBox:** add native static/remote/cascade radio support with dedicated `radioOptions`.
+* **Phase 2.1 — option value contract:** preserve typed select/radio values and complete multiple-select array handling.
+* **Phase 2.2 — cascade consistency:** empty parent clears child options/value and skips unnecessary remote calls.
+* **Phase 2.3 — finding closure:** classify `service` absence and legacy `max_length` as intentional contracts rather than open defects.
+* **Phase 2.4 — final characterization:** add canonical end-to-end round-trip coverage and chained-cascade characterization without changing production behavior.
+
+## Forms Core v1 stabilization status
+
+Forms Core v1 is considered stabilized when the Phase 2.4 characterization suite is green together with the existing test suite and application build. Further work should be treated as a new capability or FormBuilder UX evolution, not as completion of the original Forms Core safety-net findings.
