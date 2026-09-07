@@ -33,10 +33,10 @@ This document records the observed Forms Core behavior. It is a safety-net inven
 ## Findings intentionally not corrected in Phase 0
 
 1. **Falsy edit values — resolved in Forms Core Phase 1.1:** previously, `false`, `0`, and `''` became `null` in controls because initialization used logical OR. Explicit falsy values are now preserved; only `null`, `undefined`, and absent values resolve to `null`. The parallel `formValues` map continues to retain explicit values.
-2. **Remote empty/error state:** a remote select is re-enabled only for a non-empty response. Empty results and swallowed errors leave it disabled and loading.
+2. **Remote empty/error state — resolved in Forms Core Phase 1.2:** local selects now leave the loading state after initialization; remote selects restore their loading/enabled state after successful, empty, and error responses.
 3. **File metadata:** `maxHeight` and `isBase64` are declared and builder-supported but currently not applied by runtime image processing. Component `maxWidth`/`maxHeight` inputs are also separate from copied metadata; file selection directly reads metadata `maxWidth` with a 600-pixel fallback.
 4. **Legacy naming boundary:** `minlength`, `maxlength`, nested `maxheight`, and nested `isbase64` are supported. `max_length` is not supported.
-5. **Cascade initialization:** the local initialization branch compares `option.parent` with the signal function rather than its current value. Subsequent reactive filtering calls the signal and works.
+5. **Cascade initialization — resolved in Forms Core Phase 1.2:** parent signal values are now read correctly during initial filtering, and explicit falsy parent values are no longer collapsed by initialization.
 6. **Service absence:** without a `service` input, `DynamicFormComponent` returns before insert/edit initialization and creates no metadata controls.
 
 At the time of Phase 0, no action was taken on these findings. Subsequent resolution status is recorded above; unresolved behavior corrections belong to later, explicitly scoped phases.

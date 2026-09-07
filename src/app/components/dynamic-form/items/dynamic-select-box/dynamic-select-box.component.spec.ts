@@ -24,7 +24,7 @@ describe('DynamicSelectBoxComponent characterization', () => {
   it('initializes local options, expressions, single selection and initial value', async () => {
     configure(); component.value = 2; await component.initializeOptions();
     expect(component.availableOptions).toBe(options); expect(component.displayExp).toBe('title'); expect(component.valueExp).toBe('id');
-    expect(component.multiple).toBeFalse(); expect(component.selectedValue).toBe(2); expect(component.isLoading).toBeTrue();
+    expect(component.multiple).toBeFalse(); expect(component.selectedValue).toBe(2); expect(component.isLoading).toBeFalse();
   });
   it('initializes a multiple selection from values', async () => {
     configure({ multiple: true }); component.values = [1, 2]; component.value = 1; await component.initializeOptions();
@@ -40,23 +40,45 @@ describe('DynamicSelectBoxComponent characterization', () => {
     expect(service.getData).toHaveBeenCalledWith('roles', undefined); resolve(options); await pending;
     expect(component.availableOptions).toEqual(options); expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();
   });
-  it('leaves the control disabled and loading after an empty remote response', async () => {
+  it('enables the control and stops loading after an empty remote response', async () => {
     service.getData.and.resolveTo([]); configure({ remote: true, api: 'roles' }); await component.initializeOptions();
-    expect(component.availableOptions).toEqual([]); expect(component.isLoading).toBeTrue(); expect(component.formGroup.get('choice')?.disabled).toBeTrue();
+    expect(component.availableOptions).toEqual([]); expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();
   });
-  it('silently converts a remote error to an empty result and remains disabled/loading', async () => {
+  it('silently converts a remote error to an empty result, enables and stops loading', async () => {
     service.getData.and.rejectWith(new Error('offline')); configure({ remote: true, api: 'roles' }); await component.initializeOptions();
-    expect(component.availableOptions).toEqual([]); expect(component.isLoading).toBeTrue(); expect(component.formGroup.get('choice')?.disabled).toBeTrue();
+    expect(component.availableOptions).toEqual([]); expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();
   });
-  it('filters local cascade options by option.parent', async () => {
-    configure({ parent: 'region' }); await component.initializeOptions();
+  it('filters local cascade options by the initial parent signal value', async () => {
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', 'south'); fixture.detectChanges();
+    await component.initializeOptions();
+    expect(component.availableOptions).toEqual([options[1]]);
+  });
+  it('reactively filters local cascade options when the parent changes', async () => {
+    configure({ parent: 'region' }); fixture.componentRef.setInput('parentValue', 'north'); fixture.detectChanges();
+    await component.initializeOptions(); expect(component.availableOptions).toEqual([options[0]]);
     fixture.componentRef.setInput('parentValue', 'south'); fixture.detectChanges(); await fixture.whenStable();
-    await component.filterOptionsBasedOnParent(); expect(component.availableOptions).toEqual([options[1]]);
+    expect(component.availableOptions).toEqual([options[1]]);
+  });
+  [0, false].forEach(parent => {
+    it(`reacts to the explicit falsy parent ${parent}`, async () => {
+      const falsyOptions = [{ id: 1, parent: 0 }, { id: 2, parent: false }, { id: 3, parent: 'north' }];
+      configure({ parent: 'region', options: falsyOptions }); fixture.componentRef.setInput('parentValue', 'north'); fixture.detectChanges(); await fixture.whenStable();
+      expect(component.availableOptions).toEqual([falsyOptions[2]]);
+      fixture.componentRef.setInput('parentValue', parent); fixture.detectChanges(); await fixture.whenStable();
+      expect(component.availableOptions).toEqual(falsyOptions.filter(option => option.parent === parent));
+    });
+  });
+  it('reloads remote cascade options with the current parent value', async () => {
+    service.getData.and.resolveTo(options); configure({ remote: true, api: 'cities', parent: 'region' });
+    fixture.componentRef.setInput('parentValue', 'IT'); fixture.detectChanges(); await component.initializeOptions();
+    fixture.componentRef.setInput('parentValue', 'FR'); fixture.detectChanges(); await fixture.whenStable();
+    expect(service.getData).toHaveBeenCalledWith('cities', '/FR');
   });
   it('passes a slash-prefixed parent path to remote getData', async () => {
     service.getData.and.resolveTo(options); configure({ remote: true, api: 'cities', parent: 'region' });
     fixture.componentRef.setInput('parentValue', 'IT'); fixture.detectChanges(); await fixture.whenStable(); await component.initializeOptions();
     expect(service.getData).toHaveBeenCalledWith('cities', '/IT');
+    expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();
   });
   it('emits selectedValue, component, options and parent field', async () => {
     configure({ parent: 'region' }); await component.initializeOptions(); const emit = spyOn(component.valueChange, 'emit');
