@@ -1,46 +1,35 @@
-import { normalizeDynamicFormField } from './dynamic-form-field';
+import { normalizeDynamicFormField, normalizeDynamicFormFields } from './dynamic-form-field';
 
-describe('normalizeDynamicFormField', () => {
-  it('normalizes legacy property names and removes them from saved JSON', () => {
-    const field = normalizeDynamicFormField({
-      name: 'description',
-      type: 'textBox',
-      typeInput: 'text',
-      label: 'Description',
-      minlength: 3,
-      maxlength: 20,
-      fileBoxOptions: {
-        maxWidth: 600,
-        maxheight: 800,
-        isbase64: false
-      }
-    } as any);
+const base = { name: 'photo', type: 'fileBox' as const, typeInput: 'file', label: 'Photo' };
 
-    expect(field.minLength).toBe(3);
-    expect(field.maxLength).toBe(20);
-    expect(field.fileBoxOptions?.maxHeight).toBe(800);
-    expect(field.fileBoxOptions?.isBase64).toBeFalse();
-
-    const savedJson = JSON.stringify(field);
-    expect(savedJson).not.toContain('minlength');
-    expect(savedJson).not.toContain('maxlength');
-    expect(savedJson).not.toContain('maxheight');
-    expect(savedJson).not.toContain('isbase64');
+describe('DynamicFormField metadata normalization', () => {
+  it('preserves canonical validation and file metadata', () => {
+    const source: any = { ...base, minLength: 2, maxLength: 20, min: 1, max: 9,
+      fileBoxOptions: { maxWidth: 600, maxHeight: 800, isBase64: false, maxSize: 4 } };
+    expect(normalizeDynamicFormField(source)).toEqual(source);
   });
 
-  it('prefers canonical values when both formats are present', () => {
-    const field = normalizeDynamicFormField({
-      name: 'title',
-      type: 'textBox',
-      typeInput: 'text',
-      label: 'Title',
-      minLength: 4,
-      minlength: 2,
-      maxLength: 40,
-      maxlength: 10
-    } as any);
+  it('normalizes the known legacy property names and retains unrelated properties', () => {
+    const field = normalizeDynamicFormField({ ...base, minlength: 3, maxlength: 20, custom: 'retained',
+      fileBoxOptions: { maxWidth: 600, maxheight: 800, isbase64: false, maxSize: 7, customFile: true } } as any) as any;
+    expect(field.minLength).toBe(3);
+    expect(field.maxLength).toBe(20);
+    expect(field.fileBoxOptions).toEqual({ maxWidth: 600, maxHeight: 800, isBase64: false, maxSize: 7, customFile: true });
+    expect(field.custom).toBe('retained');
+    expect(JSON.stringify(field)).not.toMatch(/minlength|maxlength|maxheight|isbase64/);
+  });
 
-    expect(field.minLength).toBe(4);
-    expect(field.maxLength).toBe(40);
+  it('gives canonical values precedence over legacy values, including falsy values', () => {
+    const field = normalizeDynamicFormField({ ...base, minLength: 0, minlength: 3, maxLength: 0, maxlength: 20,
+      fileBoxOptions: { maxWidth: 0, maxHeight: 0, maxheight: 800, isBase64: false, isbase64: true } } as any);
+    expect(field.minLength).toBe(0);
+    expect(field.maxLength).toBe(0);
+    expect(field.fileBoxOptions?.maxHeight).toBe(0);
+    expect(field.fileBoxOptions?.isBase64).toBeFalse();
+  });
+
+  it('normalizes every field in an array', () => {
+    expect(normalizeDynamicFormFields([{ ...base, minlength: 1 } as any, { ...base, name: 'second', maxlength: 5 } as any]))
+      .toEqual([jasmine.objectContaining({ minLength: 1 }), jasmine.objectContaining({ name: 'second', maxLength: 5 })]);
   });
 });
