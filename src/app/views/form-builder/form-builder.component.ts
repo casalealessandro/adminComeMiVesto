@@ -107,6 +107,38 @@ export class FormBuilderComponent {
        
   }
 
+  moveElement(index: number, offset: number) {
+    const targetIndex = index + offset;
+    if (targetIndex < 0 || targetIndex >= this.formElements.length) {
+      return;
+    }
+    const [element] = this.formElements.splice(index, 1);
+    this.formElements.splice(targetIndex, 0, element);
+  }
+
+  duplicateElement(index: number) {
+    const source = this.formElements[index];
+    if (!source) {
+      return;
+    }
+    const duplicate = structuredClone(source);
+    duplicate.name = this.nextDuplicateName(source.name);
+    duplicate.label = `${source.label || 'Campo'} (copia)`;
+    this.formElements.splice(index + 1, 0, duplicate);
+  }
+
+  private nextDuplicateName(name: string | undefined): string {
+    const baseName = `${name || 'field'}_copy`;
+    let candidate = baseName;
+    let suffix = 2;
+    const existingNames = new Set(this.formElements.map(element => element.name));
+    while (existingNames.has(candidate)) {
+      candidate = `${baseName}${suffix}`;
+      suffix++;
+    }
+    return candidate;
+  }
+
   openPropertiesModal(formElement: any,index:number) {
    this.selectedElement = { ...formElement };
    // this.modalService.open(this.propertiesModal);
@@ -151,6 +183,10 @@ export class FormBuilderComponent {
 
     const idForm = this.formId === 'new' ? Math.random().toString().replace("0.", "") : this.formId;
     const formNameS = this.formName.trim();
+    if (!formNameS) {
+      alert('Il nome del form è obbligatorio','Attenzione!');
+      return;
+    }
     const data = buildFormPayload(idForm!, formNameS, formJson);
     this.formService.saveForm(this.formId === 'new' ? 'new' : idForm!, data).then(() => {
       alert('Form salvato con successo','Attenzione!');
