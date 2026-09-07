@@ -738,6 +738,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
             dataField: resColH.dataField,
             format: resColH.format,
             dataOptions: resColH,
+            booleanOptions: resColH.booleanOptions,
             min: resColH.min,
             max: resColH.max,
             maxLength: resColH.maxLength,
@@ -774,6 +775,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
           colSpan: resColH.colSpan,
           colAlignment: resColH.colAlignment,
           format: resColH.format,
+          booleanOptions: resColH.booleanOptions,
           isEditable: allowEditing,
           editorType: resColH.editorType,
           customizedOptions: customizedOption,
@@ -953,7 +955,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
           class: col.class,
           style: 'background-color: #D6EEEE',
         })
-        this.colsGroupShow = true;
+        this.colsGroupShow = true
 
         this.colsGroup.unshift({
           span: '1',
