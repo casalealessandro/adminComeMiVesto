@@ -3,7 +3,6 @@
     <form #elementForm="ngForm">
         <div class="">
             <div class="properties-section-title">Dati campo</div>
-
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Nome campo
                     <span class="badge bg-secondary">Richiesto</span>
@@ -73,9 +72,7 @@
 
 
             </div>
-
             <div class="properties-section-title mt-4">Validazione</div>
-
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Min Length</label>
                 <div class="col-sm-9">
@@ -139,7 +136,6 @@
         <!--CheckBox-->
         <div *ngIf="showCheckBoxOption && formField.checkBoxOptions" class="row mt-3 mb-3 ">
             <div class="properties-section-title">Configurazione CheckBox</div>
-
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">CheckBox con link</label>
                 <div class="col-sm-9 form-check">
@@ -183,7 +179,6 @@
         <!--Fine CheckBox-->
         <div *ngIf="showFileBoxOption && formField.fileBoxOptions" class="row mt-3 mb-3 ">
             <div class="properties-section-title">Configurazione FileBox</div>
-
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Larghezza massima immagine</label>
                 <div class="col-sm-9">
@@ -227,7 +222,6 @@
 
         <div *ngIf="showSelectOption && formField.selectOptions" class="row mt-3 mb-3 ">
             <div class="properties-section-title">Configurazione SelectBox</div>
-
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Multiple</label>
                 <div class="col-sm-9 form-check">
@@ -301,63 +295,60 @@
             <div class="mt-3 mb-3" >
                 <div class="properties-subsection-title" *ngIf="!formField.selectOptions?.remote">Options</div>
 
-                <div class="table-responsive">
-                    <table class="table table-sm "
-                        *ngIf="!formField.selectOptions?.remote && formField.selectOptions?.valueExp && formField.selectOptions?.displayExp">
-                        <thead>
-                            <tr>
-                                <td>{{formField.selectOptions.valueExp}}</td>
-                                <td>{{formField.selectOptions.displayExp}}</td>
-                                <td>Parent</td>
-                                <td>Azioni</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><input type="text" class="form-control" [name]="formField.selectOptions!.valueExp"
-                                        [(ngModel)]="newOption[formField.selectOptions!.valueExp]"
-                                        placeholder="Nuovo Display">
-                                </td>
-                                <td><input type="text" class="form-control" [name]="formField.selectOptions!.displayExp"
-                                        [(ngModel)]="newOption[formField.selectOptions!.displayExp]"
-                                        placeholder="Nuovo Value">
-                                </td>
-                                <td><input type="text" class="form-control" name="parentT" [(ngModel)]="newOption.parent"
-                                        placeholder="Nuovo Parent"></td>
-                                <td class="action-cell"><button (click)="addOption()"
-                                        class="icon-button btn button-in-cell"><span
-                                            class="mdi mdi-content-save-outline"></span></button></td>
-                            </tr>
-                            <tr *ngFor="let option of formField.selectOptions!.options; let i = index"
-                                (click)="onOptionClick(option)">
-                                <td>
+                <table class="table table-sm "
+                    *ngIf="!formField.selectOptions?.remote && formField.selectOptions?.valueExp && formField.selectOptions?.displayExp">
+                    <thead>
+                        <tr>
+                            <td>{{formField.selectOptions.valueExp}}</td>
+                            <td>{{formField.selectOptions.displayExp}}</td>
+                            <td>Parent</td>
+                            <td>Azioni</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" class="form-control" [name]="formField.selectOptions!.valueExp"
+                                    [(ngModel)]="newOption[formField.selectOptions!.valueExp]"
+                                    placeholder="Nuovo Display">
+                            </td>
+                            <td><input type="text" class="form-control" [name]="formField.selectOptions!.displayExp"
+                                    [(ngModel)]="newOption[formField.selectOptions!.displayExp]"
+                                    placeholder="Nuovo Value">
+                            </td>
+                            <td><input type="text" class="form-control" name="parentT" [(ngModel)]="newOption.parent"
+                                    placeholder="Nuovo Parent"></td>
+                            <td class="action-cell"><button (click)="addOption()"
+                                    class="icon-button btn button-in-cell"><span
+                                        class="mdi mdi-content-save-outline"></span></button></td>
+                        </tr>
+                        <tr *ngFor="let option of formField.selectOptions!.options; let i = index"
+                            (click)="onOptionClick(option)">
+                            <td>
 
-                                    {{option[formField.selectOptions!.valueExp]}}
+                                {{option[formField.selectOptions!.valueExp]}}
 
-                                </td>
-                                <td>
-                                    {{option[formField.selectOptions!.displayExp]}}
+                            </td>
+                            <td>
+                                {{option[formField.selectOptions!.displayExp]}}
 
-                                </td>
-                                <td>
-                                    {{option.parent}}
-                                </td>
-                                <td>
-                                    <button (click)="removeOption(i)">Rimuovi</button>
-                                </td>
-                            </tr>
-                            <!-- Riga per aggiungere una nuova opzione -->
+                            </td>
+                            <td>
+                                {{option.parent}}
+                            </td>
+                            <td>
+                                <button (click)="removeOption(i)">Rimuovi</button>
+                            </td>
+                        </tr>
+                        <!-- Riga per aggiungere una nuova opzione -->
 
-                        </tbody>
-                    </table>
-                </div>
+                    </tbody>
+                </table>
             </div>
 
         </div>
 
         <div *ngIf="showRadioOption && formField.radioOptions" class="row mt-3 mb-3">
             <div class="properties-section-title">Configurazione Radio</div>
-
             <div class="row mt-3 mb-3">
                 <label class="col-sm-3 col-form-label font-medium">Parent ID</label>
                 <div class="col-sm-9">
@@ -399,33 +390,31 @@
             <div class="mt-3 mb-3">
                 <div class="properties-subsection-title" *ngIf="!formField.radioOptions.remote">Options</div>
 
-                <div class="table-responsive">
-                    <table class="table table-sm"
-                        *ngIf="!formField.radioOptions.remote && formField.radioOptions.valueExp && formField.radioOptions.displayExp">
-                        <thead><tr>
-                            <td>{{formField.radioOptions.valueExp}}</td>
-                            <td>{{formField.radioOptions.displayExp}}</td>
-                            <td>Parent</td><td>Azioni</td>
-                        </tr></thead>
-                        <tbody>
-                            <tr>
-                                <td><input type="text" class="form-control" [name]="'radio-' + formField.radioOptions.valueExp"
-                                    [(ngModel)]="newRadioOption[formField.radioOptions.valueExp]"></td>
-                                <td><input type="text" class="form-control" [name]="'radio-' + formField.radioOptions.displayExp"
-                                    [(ngModel)]="newRadioOption[formField.radioOptions.displayExp]"></td>
-                                <td><input type="text" class="form-control" name="radioOptionParent" [(ngModel)]="newRadioOption.parent"></td>
-                                <td class="action-cell"><button type="button" (click)="addRadioOption()" class="icon-button btn button-in-cell">
-                                    <span class="mdi mdi-content-save-outline"></span></button></td>
-                            </tr>
-                            <tr *ngFor="let option of formField.radioOptions.options; let i = index" (click)="onRadioOptionClick(option)">
-                                <td>{{option[formField.radioOptions.valueExp]}}</td>
-                                <td>{{option[formField.radioOptions.displayExp]}}</td>
-                                <td>{{option.parent}}</td>
-                                <td><button type="button" (click)="removeRadioOption(i)">Rimuovi</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table table-sm"
+                    *ngIf="!formField.radioOptions.remote && formField.radioOptions.valueExp && formField.radioOptions.displayExp">
+                    <thead><tr>
+                        <td>{{formField.radioOptions.valueExp}}</td>
+                        <td>{{formField.radioOptions.displayExp}}</td>
+                        <td>Parent</td><td>Azioni</td>
+                    </tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" class="form-control" [name]="'radio-' + formField.radioOptions.valueExp"
+                                [(ngModel)]="newRadioOption[formField.radioOptions.valueExp]"></td>
+                            <td><input type="text" class="form-control" [name]="'radio-' + formField.radioOptions.displayExp"
+                                [(ngModel)]="newRadioOption[formField.radioOptions.displayExp]"></td>
+                            <td><input type="text" class="form-control" name="radioOptionParent" [(ngModel)]="newRadioOption.parent"></td>
+                            <td class="action-cell"><button type="button" (click)="addRadioOption()" class="icon-button btn button-in-cell">
+                                <span class="mdi mdi-content-save-outline"></span></button></td>
+                        </tr>
+                        <tr *ngFor="let option of formField.radioOptions.options; let i = index" (click)="onRadioOptionClick(option)">
+                            <td>{{option[formField.radioOptions.valueExp]}}</td>
+                            <td>{{option[formField.radioOptions.displayExp]}}</td>
+                            <td>{{option.parent}}</td>
+                            <td><button type="button" (click)="removeRadioOption(i)">Rimuovi</button></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
