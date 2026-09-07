@@ -34,6 +34,30 @@ describe('FormBuilderComponent characterization', () => {
     expect(component.formElements).toEqual([{ type: 'textBox', label: 'Text Box', validation: [] }]);
     expect(open).toHaveBeenCalledWith(component.elements[0], 0); component.onRemove(0); expect(component.formElements).toEqual([]);
   });
+  it('moves fields without allowing them outside the form bounds', () => {
+    const { component } = setup('new');
+    component.formElements = [{ name: 'a' }, { name: 'b' }, { name: 'c' }];
+    component.moveElement(1, -1); expect(component.formElements.map(field => field.name)).toEqual(['b', 'a', 'c']);
+    component.moveElement(0, -1); expect(component.formElements.map(field => field.name)).toEqual(['b', 'a', 'c']);
+    component.moveElement(1, 1); expect(component.formElements.map(field => field.name)).toEqual(['b', 'c', 'a']);
+    component.moveElement(2, 1); expect(component.formElements.map(field => field.name)).toEqual(['b', 'c', 'a']);
+  });
+  it('duplicates a field as an independent copy with a unique technical name', () => {
+    const { component } = setup('new');
+    component.formElements = [{
+      name: 'role', type: 'selectBox', label: 'Ruolo',
+      selectOptions: { options: [{ id: 'admin', value: 'Admin' }], multiple: false, remote: false }
+    }];
+    component.duplicateElement(0);
+    expect(component.formElements[1].name).toBe('role_copy');
+    expect(component.formElements[1].label).toBe('Ruolo (copia)');
+    expect(component.formElements[1]).not.toBe(component.formElements[0]);
+    expect(component.formElements[1].selectOptions).not.toBe(component.formElements[0].selectOptions);
+    component.formElements[1].selectOptions.options[0].value = 'Changed';
+    expect(component.formElements[0].selectOptions.options[0].value).toBe('Admin');
+    component.duplicateElement(0);
+    expect(component.formElements[1].name).toBe('role_copy2');
+  });
   it('buildFormPayload trims the display name, keeps id separate, and normalizes metadata', () => {
     const payload: any = buildFormPayload('technical-id', '  Display name  ', [{ name: 'x', type: 'textBox', typeInput: 'text', label: 'X', maxlength: 3 } as any]);
     expect(payload.id).toBe('technical-id'); expect(payload.nameForm).toBe('Display name');
