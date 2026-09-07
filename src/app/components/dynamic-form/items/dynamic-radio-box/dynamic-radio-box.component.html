@@ -1,0 +1,12 @@
+<div class="radio-options" [formGroup]="formGroup" [attr.aria-busy]="isLoading">
+  <span *ngIf="isLoading" class="loading">Caricamento in corso...</span>
+  <label *ngFor="let option of availableOptions" class="radio-option">
+    <input
+      type="radio"
+      [formControlName]="fieldName"
+      [value]="option[valueExp]"
+      [attr.disabled]="disabled ? true : null"
+      (change)="onValueChange($event)">
+    <span>{{ option[displayExp] }}</span>
+  </label>
+</div>

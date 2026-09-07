@@ -43,6 +43,24 @@ describe('ElementComponent characterization', () => {
     const local = create('selectBox', { selectOptions: { multiple: false, displayExp: 'text', valueExp: 'id', options: [], parent: '', remote: false, api: '' } });
     local.newOption = { id: 1 }; local.addOption(); expect(local.selectOptions.options).toEqual([]);
   });
+  it('applies radio defaults and preserves existing radio metadata', () => {
+    expect(create('radio').radioOptions).toEqual({ displayExp: '', valueExp: '', options: [], parent: '', remote: false, api: '' });
+    const value = { displayExp: 'name', valueExp: 'id', options: [{ id: 'A', name: 'A' }], parent: 'group', remote: true, api: 'roles' };
+    const existing = create('radio', { radioOptions: value });
+    expect(existing.radioOptions).toEqual(value); expect(existing.formField.typeInput).toBe('radio');
+  });
+  it('adds, edits and removes static radio options', () => {
+    const component = create('radio', { radioOptions: { displayExp: 'text', valueExp: 'id', options: [], parent: '', remote: false, api: '' } });
+    component.newRadioOption = { id: 'A', text: 'Alpha' }; component.addRadioOption(); expect(component.radioOptions.options).toEqual([{ id: 'A', text: 'Alpha' }]);
+    component.onRadioOptionClick(component.radioOptions.options![0]); component.newRadioOption = { id: 'A', text: 'Updated' }; component.addRadioOption();
+    expect(component.radioOptions.options![0].text).toBe('Updated'); component.removeRadioOption(0); expect(component.radioOptions.options).toEqual([]);
+  });
+  it('blocks static options for remote radio and validates local versus remote configuration', () => {
+    const local = create('radio'); const valid: any = { valid: true }; expect(local.formPrsValidate(valid)).toBeFalse();
+    const remote = create('radio', { radioOptions: { displayExp: 'text', valueExp: 'id', options: [], parent: '', remote: true, api: 'roles' } });
+    remote.newRadioOption = { id: 'A', text: 'Alpha' }; remote.addRadioOption(); expect(remote.radioOptions.options).toEqual([]);
+    expect(remote.formPrsValidate(valid)).toBeTrue();
+  });
   it('rejects an invalid NgForm and marks its controls touched', () => {
     const component = create('textBox'); const control = new FormControl(''); const form: any = { valid: false, controls: { x: control }, control: new FormGroup({ x: control }) };
     expect(component.formPrsValidate(form)).toBeFalse(); expect(control.touched).toBeTrue();

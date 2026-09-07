@@ -32,4 +32,13 @@ describe('DynamicFormField metadata normalization', () => {
     expect(normalizeDynamicFormFields([{ ...base, minlength: 1 } as any, { ...base, name: 'second', maxlength: 5 } as any]))
       .toEqual([jasmine.objectContaining({ minLength: 1 }), jasmine.objectContaining({ name: 'second', maxLength: 5 })]);
   });
+
+  it('preserves canonical radio metadata through normalize and serialization', () => {
+    const radioOptions = { displayExp: 'value', valueExp: 'id', options: [{ id: 'U', value: 'Uomo' }], remote: false, api: '', parent: '' };
+    const normalized = normalizeDynamicFormField({ name: 'gender', type: 'radio', typeInput: 'radio', label: 'Gender', radioOptions });
+    const serialized = JSON.parse(JSON.stringify(normalized));
+    expect(serialized.type).toBe('radio');
+    expect(serialized.radioOptions).toEqual(radioOptions);
+    expect(serialized.selectOptions).toBeUndefined();
+  });
 });

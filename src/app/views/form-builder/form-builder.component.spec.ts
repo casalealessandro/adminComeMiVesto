@@ -39,6 +39,13 @@ describe('FormBuilderComponent characterization', () => {
     expect(payload.id).toBe('technical-id'); expect(payload.nameForm).toBe('Display name');
     expect(payload.json[0].maxLength).toBe(3); expect(payload.json[0].maxlength).toBeUndefined();
   });
+  it('keeps Radio Button canonical in the palette and preserves radioOptions in the payload', () => {
+    const { component } = setup('new');
+    expect(component.elements).toContain(jasmine.objectContaining({ type: 'radio', label: 'Radio Button' }));
+    const radioOptions = { displayExp: 'value', valueExp: 'id', options: [{ id: 'U', value: 'Uomo' }], parent: '', remote: false, api: '' };
+    const payload = buildFormPayload('profile', 'Profile', [{ name: 'gender', type: 'radio', typeInput: 'radio', label: 'Gender', radioOptions }] as any);
+    expect(payload.json[0].type).toBe('radio'); expect(payload.json[0].radioOptions).toEqual(radioOptions); expect(payload.json[0].selectOptions).toBeUndefined();
+  });
   it('creates a new form with a generated technical id then navigates', async () => {
     const { component, formService, router } = setup('new'); component.ngOnInit(); component.formName = '  New form  ';
     component.formElements = [{ name: 'x', type: 'textBox', typeInput: 'text', label: 'X', minlength: 2 } as any]; component.saveForm('ignored'); await Promise.resolve();

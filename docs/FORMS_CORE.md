@@ -11,8 +11,9 @@ This document records the observed Forms Core behavior. It is a safety-net inven
 | hiddenBox | `type: hiddenBox` | Supported | Supported | Builder defaults | Builder forces `typeInput: hidden`. |
 | checkBox | `checkBoxOptions` | Supported | Supported | Defaults and preservation | Link metadata defaults to false/empty strings. |
 | selectBox local | `selectOptions.options`, expressions | Supported | Supported | Local load and option management | Empty local options make builder validation fail. |
-| selectBox remote | `remote`, `api` | Partial | Supported | Success, empty, error | Empty/error responses leave the control disabled and `isLoading` true. Errors are swallowed. |
-| select cascade | `parent`, option `parent` | Partial | Supported | Local filtering and remote path | Remote parent is appended as `/{parentValue}`. Initial local filtering contains a function/value comparison; reactive filtering works. |
+| selectBox remote | `remote`, `api` | Supported | Supported | Success, empty, error | Empty/error responses restore the enabled control and complete loading. Errors are swallowed. |
+| select cascade | `parent`, option `parent` | Supported | Supported | Initial/reactive local filtering, falsy parents, remote path | Remote parent is appended as `/{parentValue}`. |
+| radio | `radioOptions` | Supported | Supported | Static / remote / cascade / edit / required | Native single-choice control; metadata is separate from `selectOptions`. |
 | fileBox | `fileBoxOptions.maxWidth`, `maxHeight`, `maxSize` | Supported | Supported | MIME, size, metadata, resize | Both dimension limits are applied without cropping, distortion, or upscaling; `maxSize` is enforced. |
 | required | `required` | Supported | Supported | Validator and invalid submit | Uses Angular `Validators.required`. |
 | minLength | `minLength`; legacy `minlength` | Supported / legacy | Supported | Normalization and validator | Canonical value wins. `max_length`-style snake case is not supported. |

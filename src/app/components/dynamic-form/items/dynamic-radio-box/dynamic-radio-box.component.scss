@@ -1,0 +1,22 @@
+.radio-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.radio-option {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.4rem;
+  min-height: 2rem;
+}
+
+.radio-option input {
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.loading {
+  width: 100%;
+}

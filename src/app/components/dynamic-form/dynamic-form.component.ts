@@ -8,12 +8,13 @@ import { alert } from '../../widgets/ui-dialogs';
 import { CommonModule } from '@angular/common';
 import { DynamicSelectBoxComponent } from './items/dynamic-select-box/dynamic-select-box.component';
 import { DynamicFileBoxComponent } from './items/dynamic-file-box/dynamic-file-box.component';
+import { DynamicRadioBoxComponent } from './items/dynamic-radio-box/dynamic-radio-box.component';
 import { CustomScrollbarComponent } from "../custom-scrollbar/custom-scrollbar.component";
 
 @Component({
   selector: 'app-dynamic-form',
   standalone: true,
-  imports: [CommonModule, DynamicSelectBoxComponent, DynamicFileBoxComponent, FormsModule, ReactiveFormsModule, CustomScrollbarComponent],
+  imports: [CommonModule, DynamicSelectBoxComponent, DynamicRadioBoxComponent, DynamicFileBoxComponent, FormsModule, ReactiveFormsModule, CustomScrollbarComponent],
   templateUrl: './dynamic-form.component.html',
   styleUrls: ['./dynamic-form.component.scss'],
 })
@@ -119,6 +120,11 @@ export class DynamicFormComponent {
         this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] ?? '' }); // Inizializza il segnale
 
 
+      }
+
+      if (field.radioOptions && field.radioOptions.parent) {
+        const parentField = field.radioOptions.parent;
+        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] ?? '' });
       }
       
       if (field.typeInput === 'password') {

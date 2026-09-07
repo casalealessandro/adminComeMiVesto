@@ -1,7 +1,7 @@
 export interface DynamicFormField {
   htmlId?: string;
   name: string;
-  type: 'textBox' | 'textArea' | 'selectBox' | 'fileBox' | 'checkBox' | 'hiddenBox';
+  type: 'textBox' | 'textArea' | 'selectBox' | 'fileBox' | 'checkBox' | 'hiddenBox' | 'radio';
   typeInput: string;
   label: string;
   cssClass?: string;
@@ -13,6 +13,7 @@ export interface DynamicFormField {
   placeholder?: string;
   options?: any[];
   selectOptions?: SelectOptions;
+  radioOptions?: RadioOptions;
   checkBoxOptions?: CheckBoxOptions;
   fileBoxOptions?: FileBoxOptions;
   funcButton?: boolean;
@@ -23,6 +24,15 @@ export interface SelectOptions {
   valueExp: string;
   options?: any[];
   multiple: boolean;
+  remote: boolean;
+  api?: string;
+  parent: string | null;
+}
+
+export interface RadioOptions {
+  displayExp: string;
+  valueExp: string;
+  options?: any[];
   remote: boolean;
   api?: string;
   parent: string | null;
