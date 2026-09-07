@@ -51,12 +51,21 @@ describe('DynamicFormComponent characterization', () => {
     component.service = 'profile'; component.editData = { required: 'edit' }; component.idData = { required: 'legacy' }; component.ngOnInit();
     expect(component.form.value.required).toBe('legacy');
   });
-  it('characterizes false, zero, empty string and null edit values as null controls while retaining formValues', () => {
-    component.fields = fields;
-    component.editData = { required: false, length: 0, email: '', number: null };
+  it('preserves explicit falsy edit values in controls while retaining formValues', () => {
+    component.fields = [
+      { name: 'falseValue', type: 'textBox', typeInput: 'text', label: 'False' },
+      { name: 'zeroValue', type: 'textBox', typeInput: 'number', label: 'Zero' },
+      { name: 'emptyValue', type: 'textBox', typeInput: 'text', label: 'Empty' },
+      { name: 'nullValue', type: 'textBox', typeInput: 'text', label: 'Null' },
+      { name: 'missingValue', type: 'textBox', typeInput: 'text', label: 'Missing' }
+    ];
+    component.editData = { falseValue: false, zeroValue: 0, emptyValue: '', nullValue: null };
     component.initializeForm();
-    expect(component.form.value).toEqual({ required: null, length: null, email: null, number: null, plain: null });
-    expect(component.formValues).toEqual(jasmine.objectContaining({ required: false, length: 0, email: '', number: null }));
+    expect(component.form.value).toEqual({ falseValue: false, zeroValue: 0, emptyValue: '', nullValue: null, missingValue: null });
+    expect(component.form.get('falseValue')?.value).not.toBeNull();
+    expect(component.form.get('zeroValue')?.value).not.toBeNull();
+    expect(component.form.get('emptyValue')?.value).not.toBeNull();
+    expect(component.formValues).toEqual(jasmine.objectContaining({ falseValue: false, zeroValue: 0, emptyValue: '', nullValue: null }));
   });
 
   it('applies required, length, email and number bounds and leaves plain fields unvalidated', () => {

@@ -104,7 +104,7 @@ export class DynamicFormComponent {
       let validators = this.getValidators(field);
 
       // Recupera il valore dall'editData o imposta null come valore predefinito
-      const value = this.editData[field.name] || null;
+      const value = this.editData[field.name] ?? null;
       // Aggiungi il controllo al formGroup con i validatori come terzo argomento
       try {
         formGroup.addControl(field.name, new FormControl(value, validators));
