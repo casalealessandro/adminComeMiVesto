@@ -5,90 +5,115 @@
 
   </div>
 
-  <div class="row  mt-3 mb-3 ">
+  <div class="row mt-3 mb-3">
     <label class="col-sm-2 col-form-label font-medium" for="formName">Form Name <span
         class="badge bg-secondary">Richiesto</span></label>
     <div class="col-sm-10">
-      <input id="formName" type="text" class="form-control" [(ngModel)]="formName" placeholder="">
+      <input id="formName" type="text" class="form-control" [(ngModel)]="formName" required placeholder="Nome del form">
     </div>
-
-
   </div>
 
   <div class="text pt-3 mt-3">
-    <h3><span class="mdi mdi-chevron-right"></span>Anteprima form</h3>
+    <h3><span class="mdi mdi-chevron-right"></span>Struttura e anteprima form</h3>
   </div>
 
-  <div class="content-formbuilder form-view ">
-
-
-    <!-- Aggiungi Elemento -->
-    <ul class="list-group elements">
-      <li *ngFor="let element of elements, index as i "
-        class="list-group-item d-flex justify-content-between align-items-center" (click)="onAdd($event,i)">
-        <span class="iconE" [ngClass]="elementIcons[element.type]"></span>
-        {{ element.label }}
-
-        <div>
-          <button class="btn icon-button ms-2" (click)="onAdd($event,i)">
+  <div class="content-formbuilder">
+    <aside class="builder-palette" aria-label="Tipi di campo disponibili">
+      <div class="builder-section-title">Aggiungi campo</div>
+      <ul class="list-group elements">
+        <li *ngFor="let element of elements; index as i"
+          class="list-group-item d-flex justify-content-between align-items-center" (click)="onAdd($event,i)">
+          <span><span class="iconE" [ngClass]="elementIcons[element.type]"></span>{{ element.label }}</span>
+          <button type="button" class="btn icon-button ms-2" (click)="onAdd($event,i)" [attr.aria-label]="'Aggiungi ' + element.label">
             <span class="mdi mdi-plus-circle-outline"></span>
           </button>
+        </li>
+      </ul>
+    </aside>
 
-        </div>
-
-      </li>
-
-    </ul>
-    <div class="form-view ">
-      <div class="row">
-
-        <div class="element" *ngFor="let element of formElements, index as iEl "
-          (click)="openPropertiesModal(element,iEl)">
-          <div class="form-element mb-3">
-            <span>{{ element.label }}</span>
-
-            <!-- <ng-container [ngSwitch]="element.type">
-              <input [id]="element.label" *ngSwitchCase="'textBox'" [attr.type]="element.typeInput || 'text'"
-                class="form-control no-evt" [(ngModel)]="element.value">
-              <textarea [id]="element.label" *ngSwitchCase="'textarea'" class="form-control no-evt"
-                [(ngModel)]="element.value"></textarea>
-              <select [id]="element.label" *ngSwitchCase="'selectBox'" class="form-control no-evt"
-                [(ngModel)]="element.value">
-              
-              </select> 
-
-            </ng-container>-->
-          </div>
-
-
-          <button class="icon-button ms-2 removeEl" (click)="onRemove(iEl)">
-
-            <span class="mdi mdi-close"></span>
-          </button>
-
-        </div>
-
+    <section class="form-view" aria-label="Campi del form">
+      <div *ngIf="formElements.length === 0" class="builder-empty-state">
+        <span class="mdi mdi-form-select"></span>
+        <strong>Nessun campo configurato</strong>
+        <span>Scegli un elemento dalla colonna “Aggiungi campo”.</span>
       </div>
 
-    </div>
+      <div class="element" *ngFor="let element of formElements; index as iEl" (click)="openPropertiesModal(element,iEl)">
+        <div class="form-element mb-3">
+          <div class="field-card-header">
+            <div class="field-card-title">
+              <span class="field-type-icon" [ngClass]="elementIcons[element.type]"></span>
+              <strong>{{ element.label || 'Campo senza etichetta' }}</strong>
+              <span class="badge bg-secondary" *ngIf="element.required">Richiesto</span>
+              <span class="badge bg-light text-dark">{{ element.type }}</span>
+              <span class="badge bg-light text-dark" *ngIf="element.selectOptions?.remote || element.radioOptions?.remote">Remote</span>
+              <span class="badge bg-light text-dark" *ngIf="(element.selectOptions && !element.selectOptions.remote) || (element.radioOptions && !element.radioOptions.remote)">Static</span>
+            </div>
+            <div class="field-actions" (click)="$event.stopPropagation()">
+              <button type="button" class="btn icon-button" (click)="moveElement(iEl, -1)" [disabled]="iEl === 0" aria-label="Sposta campo su">
+                <span class="mdi mdi-arrow-up"></span>
+              </button>
+              <button type="button" class="btn icon-button" (click)="moveElement(iEl, 1)" [disabled]="iEl === formElements.length - 1" aria-label="Sposta campo giù">
+                <span class="mdi mdi-arrow-down"></span>
+              </button>
+              <button type="button" class="btn icon-button" (click)="duplicateElement(iEl)" aria-label="Duplica campo">
+                <span class="mdi mdi-content-copy"></span>
+              </button>
+              <button type="button" class="btn icon-button removeEl" (click)="onRemove(iEl)" aria-label="Rimuovi campo">
+                <span class="mdi mdi-close"></span>
+              </button>
+            </div>
+          </div>
 
+          <div class="field-meta">
+            <span><strong>Name:</strong> {{ element.name || '—' }}</span>
+            <span *ngIf="element.typeInput"><strong>Input:</strong> {{ element.typeInput }}</span>
+            <span *ngIf="element.selectOptions?.parent || element.radioOptions?.parent"><strong>Parent:</strong> {{ element.selectOptions?.parent || element.radioOptions?.parent }}</span>
+          </div>
+
+          <div class="field-preview" [ngSwitch]="element.type">
+            <input *ngSwitchCase="'textBox'" class="form-control" [type]="element.typeInput || 'text'" [placeholder]="element.placeholder || element.label" disabled>
+            <textarea *ngSwitchCase="'textArea'" class="form-control" rows="2" [placeholder]="element.placeholder || element.label" disabled></textarea>
+
+            <select *ngSwitchCase="'selectBox'" class="form-control" disabled>
+              <option>{{ element.selectOptions?.remote ? 'Opzioni remote' : 'Seleziona una opzione...' }}</option>
+              <option *ngFor="let option of element.selectOptions?.options">
+                {{ option[element.selectOptions?.displayExp || 'value'] }}
+              </option>
+            </select>
+
+            <div *ngSwitchCase="'radio'" class="preview-radio-group">
+              <span *ngIf="element.radioOptions?.remote">Opzioni radio remote</span>
+              <label *ngFor="let option of element.radioOptions?.options" class="preview-radio-option">
+                <input type="radio" disabled>
+                <span>{{ option[element.radioOptions?.displayExp || 'value'] }}</span>
+              </label>
+            </div>
+
+            <label *ngSwitchCase="'checkBox'" class="preview-checkbox">
+              <input type="checkbox" disabled>
+              <span>{{ element.label }}</span>
+            </label>
+
+            <input *ngSwitchCase="'fileBox'" class="form-control" type="file" disabled>
+
+            <div *ngSwitchCase="'hiddenBox'" class="hidden-preview">
+              <span class="mdi mdi-eye-off-outline"></span> Campo nascosto nel form utente
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <!-- Salva il form -->
-
-  <div class="formbuilder-button gap-3 mt-1">
-
-    <button class="ana-button btn" (click)="returnPrev()">
+  <div class="formbuilder-button gap-3 mt-3">
+    <button type="button" class="ana-button btn" (click)="returnPrev()">
       <span class="mdi mdi-keyboard-return"></span>
       Indietro
     </button>
-    <button class="ana-button btn" (click)="saveForm(formName)">
+    <button type="button" class="ana-button btn" (click)="saveForm(formName)" [disabled]="!formName || !formName.trim()">
       <span class="mdi mdi-content-save-outline"></span>
       Salva
     </button>
-
-
-
   </div>
-
 </app-anagrafica-wrapper>
