@@ -6,7 +6,7 @@
       [formControlName]="fieldName"
       [value]="option[valueExp]"
       [attr.disabled]="disabled ? true : null"
-      (change)="onValueChange($event)">
+      (change)="onValueChange($event, option[valueExp])">
     <span>{{ option[displayExp] }}</span>
   </label>
 </div>
