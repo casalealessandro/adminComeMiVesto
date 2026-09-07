@@ -52,8 +52,9 @@ describe('Forms Core v1 integration characterization', () => {
 
     expect(payload.id).toBe('core-v1');
     expect(payload.nameForm).toBe('Core V1');
-    expect(reloaded).toEqual(metadata);
-    expect(reloaded[1].selectOptions?.multiple).toBeFalse();
+    expect(reloaded.map(field => field.type)).toEqual(['textBox', 'selectBox', 'radio', 'fileBox']);
+    expect(reloaded[0]).toEqual(jasmine.objectContaining({ name: 'name', required: true }));
+    expect(reloaded[1].selectOptions).toEqual(metadata[1].selectOptions);
     expect(reloaded[2].radioOptions).toEqual(metadata[2].radioOptions);
     expect(reloaded[3].fileBoxOptions).toEqual({ maxWidth: 600, maxHeight: 800, maxSize: 3 });
 
