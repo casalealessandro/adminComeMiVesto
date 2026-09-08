@@ -361,7 +361,7 @@ export class FotoOutfitPage implements OnInit {
 
 
     return new Promise((resolve, reject) => {
-      this.propertiesModal.outputComponent.subscribe(async respo => {
+      const popupSubscription = this.propertiesModal.outputComponent.subscribe(async respo => {
         if (respo.guid === guid) {
 
           if (respo.name === 'functionalInputClick') {
@@ -373,12 +373,14 @@ export class FotoOutfitPage implements OnInit {
           if (respo.name === 'submitForm') {
             const resolveC = respo.formData;
             this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+            popupSubscription.unsubscribe();
             //this.propertiesModal.onSubScribe();
             resolve(resolveC); // Risolvi la Promise con i dati del form
           }
 
           if (respo.name === 'cancelForm') {
             this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+            popupSubscription.unsubscribe();
             resolve(false); // Risolvi la Promise
           }
         }
@@ -404,12 +406,15 @@ export class FotoOutfitPage implements OnInit {
 
 
 
-    this.propertiesModal.outputComponent.subscribe(async resulOutputComponent => {
+    const popupSubscription = this.propertiesModal.outputComponent.subscribe(async resulOutputComponent => {
       if (resulOutputComponent.guid === guid) {
 
 
         console.log(resulOutputComponent)
 
+        if (resulOutputComponent.name === 'stochiudendo') {
+          popupSubscription.unsubscribe();
+        }
       }
     });
   }
