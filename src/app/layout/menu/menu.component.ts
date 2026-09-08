@@ -1,18 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, input, Input, Output,Signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
+import { Component, Input } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuService } from '../../services/menu.service';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports:[CommonModule, RouterLink],
+  imports:[CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  isMenuOpen = false;
   // allMenu: Array<{ path: string, label: string,icon:string }> = [];
   
 
@@ -29,8 +27,8 @@ export class MenuComponent {
   mode: 'side' | 'over' | 'push' = 'side';
   // Funzione passata come input per alternare lo stato del menu
   @Input() toggleMenu: () =>void = () => {};
-   // Observable che rappresenta lo stato del menu (collegato al servizio)
-  getIsMenuOpenObservable = this.menuService.getIsMenuOpenObservable;
+   // Signal readonly che rappresenta lo stato del menu (collegato al servizio)
+  getIsMenuOpen = this.menuService.getIsMenuOpen;
 
 // Definizione delle voci di menu
      allMenu = [
@@ -44,17 +42,10 @@ export class MenuComponent {
       { path: 'reports', label:'Segnalazioni',icon:'mdi mdi-flag-outline' },
       { path: 'outfit-product-list', label:'Gestione prodotti e feed',icon:'mdi mdi-tshirt-v-outline' }, 
     ]; // }
-    //Construttore : inietta il servvizio del menu e il breakpointObserver
+    //Construttore : inietta il servvizio del menu
     constructor(
-      private menuService: MenuService,
-      private breakpointObserver: BreakpointObserver
+      private menuService: MenuService
     ){}
-    //metodo eseguito al momento dell'inizializzazione del componente
-    ngOnInit(): void {
-      this.menuService.getIsMenuOpenObservable.subscribe((isOpen) => {
-        this.isMenuOpen = isOpen;
-      });
-    }
 // metodo per navigare a in percorso specifico e chiudere il menu
     navigateTo(route: string) {
       this.menuService.closeMenu(); // Chiude il menu in modalità overlay

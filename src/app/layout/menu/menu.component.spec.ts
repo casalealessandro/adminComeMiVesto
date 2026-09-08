@@ -1,27 +1,36 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BreakpointObserver } from '@angular/cdk/layout';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { MenuComponent } from './menu.component';
 import { MenuService } from '../../services/menu.service';
 
-describe('MenuComponent E.0 characterization', () => {
+@Component({
+  standalone: true,
+  template: ''
+})
+class TestRouteComponent {}
+
+describe('MenuComponent E.1 correctness', () => {
   let component: MenuComponent;
   let fixture: ComponentFixture<MenuComponent>;
   let menuService: MenuService;
+  let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MenuComponent],
       providers: [
         MenuService,
-        provideRouter([]),
-        { provide: BreakpointObserver, useValue: {} }
+        provideRouter([
+          { path: 'dashboard', component: TestRouteComponent }
+        ])
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MenuComponent);
     component = fixture.componentInstance;
     menuService = TestBed.inject(MenuService);
+    router = TestBed.inject(Router);
     fixture.detectChanges();
   });
 
@@ -46,14 +55,14 @@ describe('MenuComponent E.0 characterization', () => {
       .toEqual(component.allMenu.map(item => item.label));
   });
 
-  it('reflects MenuService observable state locally', () => {
-    expect(component.isMenuOpen).toBeFalse();
+  it('reads the shared menu state directly from the readonly signal', () => {
+    expect(component.getIsMenuOpen()).toBeFalse();
 
     menuService.openMenu();
-    expect(component.isMenuOpen).toBeTrue();
+    expect(component.getIsMenuOpen()).toBeTrue();
 
     menuService.closeMenu();
-    expect(component.isMenuOpen).toBeFalse();
+    expect(component.getIsMenuOpen()).toBeFalse();
   });
 
   it('closes the shared menu state when a navigation item is selected', () => {
@@ -64,5 +73,16 @@ describe('MenuComponent E.0 characterization', () => {
 
     expect(menuService.closeMenu).toHaveBeenCalled();
     expect(menuService.isOpenMenu()).toBeFalse();
+  });
+
+  it('sets aria-current only on the active route', async () => {
+    await router.navigateByUrl('/dashboard');
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const links = Array.from(fixture.nativeElement.querySelectorAll('a.nav-link')) as HTMLAnchorElement[];
+
+    expect(links[0].getAttribute('aria-current')).toBe('page');
+    links.slice(1).forEach(link => expect(link.getAttribute('aria-current')).toBeNull());
   });
 });

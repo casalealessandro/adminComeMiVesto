@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, effect, HostListener, signal, WritableSignal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, HostListener, signal, WritableSignal } from '@angular/core';
 import { AnagraficaWrapperComponent } from '../anagrafica-wrapper/anagrafica-wrapper.component';
 import { FooterComponent } from '../footer/footer.component';
 import { HeaderComponent } from '../header/header.component';
@@ -12,6 +12,7 @@ import { AuthService } from '../../services/auth.service';
 
 import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import { MenuService } from '../../services/menu.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 
 @Component({
@@ -34,8 +35,6 @@ export class ContainerComponent {
 
 // Modalità del menu: 'side' (a lato), 'over' (sovrapposto), 'push' (spingendo il contenuto)
   mode: 'side' | 'over' | 'push' = 'side';
-   // Observable che rappresenta lo stato del menu (collegato al servizio)
-  getIsMenuOpenObservable = this.menuService.getIsMenuOpenObservable;
 
 
   // Signal per tracciare se il menu è aperto o chiuso
@@ -43,7 +42,7 @@ export class ContainerComponent {
 
 
 
-  constructor(private auth: AuthService, private menuService: MenuService, private breakpointObserver: BreakpointObserver) {
+  constructor(private auth: AuthService, private menuService: MenuService, private breakpointObserver: BreakpointObserver, private destroyRef: DestroyRef) {
 
     effect(() => {
       this.isLogin = !!this.auth.currentUser();
@@ -56,6 +55,7 @@ export class ContainerComponent {
     this.updateMenuVisibility(window.innerWidth);
     //osserva i breakpoint (dimensioni dello schermo) per cambiare la modalità del menu
     this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small, Breakpoints.Medium, Breakpoints.Large])
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe(result => {
       console.log('result',result)
       if(result.breakpoints[Breakpoints.XSmall] || result.breakpoints[Breakpoints.Small] ) {
