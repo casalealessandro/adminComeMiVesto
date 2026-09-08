@@ -2,10 +2,12 @@ import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed } from '@angular/
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout';
 import { provideRouter } from '@angular/router';
 import { signal, WritableSignal } from '@angular/core';
-import { Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ContainerComponent } from './container.component';
 import { MenuService } from '../../services/menu.service';
 import { AuthService } from '../../services/auth.service';
+import { UserService } from '../../services/user.service';
+import { OverlayService } from '../../services/overlay.service';
 
 describe('ContainerComponent E.0 characterization', () => {
   let fixture: ComponentFixture<ContainerComponent>;
@@ -33,7 +35,21 @@ describe('ContainerComponent E.0 characterization', () => {
           provide: AuthService,
           useValue: {
             currentUser,
-            waitForUser: jasmine.createSpy('waitForUser').and.callFake(() => Promise.resolve(currentUser()))
+            waitForUser: jasmine.createSpy('waitForUser').and.callFake(() => Promise.resolve(currentUser())),
+            logout: jasmine.createSpy('logout').and.returnValue(Promise.resolve())
+          }
+        },
+        {
+          provide: UserService,
+          useValue: {
+            getUserProfile: jasmine.createSpy('getUserProfile').and.returnValue(of({}))
+          }
+        },
+        {
+          provide: OverlayService,
+          useValue: {
+            openOverlay: jasmine.createSpy('openOverlay'),
+            closeOverlay: jasmine.createSpy('closeOverlay')
           }
         }
       ]
