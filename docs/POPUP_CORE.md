@@ -35,7 +35,7 @@ caller
 - popup identity is currently the pair `id + componentName` when opening/updating;
 - popup state uses the historical actions `added`, `update`, `remove`, `setted`;
 - wrapper animation timing is part of the observed behavior;
-- runtime components are resolved through `entryComponents` by string name;
+- runtime components are resolved through the popup registry by their historical string names;
 - `dataToSend` is assigned to runtime `itemData`;
 - `instancedData` keys are assigned directly to the runtime component instance;
 - runtime `EventEmitter` properties are discovered dynamically and forwarded through `PopUpService.outputComponent`;
@@ -103,9 +103,9 @@ The previous stale overlay component spec referenced a component/file name that 
 
 ## Architectural boundary discovered
 
-The popup runtime is conceptually reusable, but its current registry is not application-neutral.
+The popup runtime is conceptually reusable, but its original registry was not application-neutral.
 
-Current `entryComponents` contains both reusable/core candidates and ComeMiVesto-specific components.
+The original `entryComponents` mixed reusable/core candidates and ComeMiVesto-specific components.
 
 Core/reusable candidates currently include:
 
@@ -117,7 +117,29 @@ ComeMiVesto-specific registrations currently include:
 - `ProductFromFeedComponent`;
 - `OutfitProductsComponent`.
 
-Therefore the popup engine is reusable in concept but still directly coupled to the application registry. This is a Phase D.3 concern, not a D.0 change.
+## Phase D.3 — starter-kit registry boundary
+
+D.3 keeps the historical dynamic popup mechanism but moves registry ownership to the application composition root.
+
+```text
+Popup Core
+   -> POPUP_REGISTRY contract
+       <- starter-kit registrations
+       <- ComeMiVesto application registrations
+```
+
+Implementation boundary:
+
+- `PopUpService` depends only on `POPUP_REGISTRY` and `PopupRegistration`;
+- starter-kit registrations live in `services/entryComponents.ts`;
+- ComeMiVesto registrations live in `app-popup-components.ts`;
+- `app.config.ts` combines both sets and provides the registry through Angular DI;
+- existing string names remain unchanged;
+- callers still use `setNewPopUp(...)` exactly as before;
+- popup content still creates the resolved component dynamically with `ViewContainerRef.createComponent(...)`;
+- GUID behavior, shared output stream, EventEmitter discovery and metadata envelopes remain unchanged.
+
+This removes the former dependency cycle in which `OutfitProductsComponent` depended on `PopUpService`, while `PopUpService` imported a registry that imported `OutfitProductsComponent` again.
 
 ## Findings to validate/fix after the baseline
 
@@ -151,19 +173,6 @@ The following are findings from source analysis. They are intentionally **not fi
 4. Popup arrays are intentionally mutated in place and emitted with historical ordering; this must not be modernized blindly.
 
 These behaviors require targeted tests before any lifecycle change.
-
-### D.3 starter-kit boundary
-
-Target direction, without committing to an implementation yet:
-
-```text
-Popup Core
-   -> registry contract
-       <- reusable/core registrations
-       <- ComeMiVesto application registrations
-```
-
-The goal is to remove direct domain imports from the generic popup runtime while preserving the historical string-registry behavior unless a later phase explicitly proves a safer migration.
 
 ## Explicit non-goals for Phase D.0
 

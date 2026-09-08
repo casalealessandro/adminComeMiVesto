@@ -1,11 +1,16 @@
 import { fakeAsync, tick } from '@angular/core/testing';
+import { comeMiVestoPopupComponents } from '../app-popup-components';
+import { starterKitEntryComponents } from './entryComponents';
 import { PopUpService } from './popup.service';
 
 describe('PopUpService characterization', () => {
   let service: PopUpService;
 
   beforeEach(() => {
-    service = new PopUpService();
+    service = new PopUpService([
+      ...starterKitEntryComponents,
+      ...comeMiVestoPopupComponents,
+    ]);
   });
 
   it('registers a new popup with the current public configuration contract', () => {
@@ -61,10 +66,29 @@ describe('PopUpService characterization', () => {
     expect(service.currentPopupsSet.map(popup => popup.id)).toEqual(['popup-1', 'popup-2']);
   });
 
-  it('resolves components already registered by name', () => {
-    expect(service.isComponentExistByName('DynamicFormComponent')).toBeTrue();
-    expect(service.getComponentByName('DynamicFormComponent')).toBeTruthy();
-    expect(service.isComponentExistByName('ElementComponent')).toBeTrue();
+  it('resolves all current starter-kit and ComeMiVesto registrations by the historical names', () => {
+    const names = [
+      'DynamicFormComponent',
+      'ElementComponent',
+      'ProductFromFeedComponent',
+      'OutfitProductsComponent',
+    ];
+
+    names.forEach(name => {
+      expect(service.isComponentExistByName(name)).toBeTrue();
+      expect(service.getComponentByName(name)).toBeTruthy();
+    });
+  });
+
+  it('can resolve a component supplied externally without changing PopUpService', () => {
+    class ExternalPopupComponent {}
+
+    const externalService = new PopUpService([
+      { name: 'ExternalPopupComponent', component: ExternalPopupComponent },
+    ]);
+
+    expect(externalService.isComponentExistByName('ExternalPopupComponent')).toBeTrue();
+    expect(externalService.getComponentByName('ExternalPopupComponent')).toBe(ExternalPopupComponent);
   });
 
   it('handles unknown registry names deterministically', () => {

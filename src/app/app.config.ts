@@ -11,11 +11,20 @@ import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFireFunctionsModule } from '@angular/fire/compat/functions';
 import { authInterceptor } from './auth.interceptor';
+import { POPUP_REGISTRY } from './services/popup-registry';
+import { starterKitEntryComponents } from './services/entryComponents';
+import { comeMiVestoPopupComponents } from './app-popup-components';
+
+const popupComponents = [
+  ...starterKitEntryComponents,
+  ...comeMiVestoPopupComponents,
+];
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
+    { provide: POPUP_REGISTRY, useValue: popupComponents },
     importProvidersFrom(
       AngularFireModule.initializeApp(environment.firebase),
       AngularFirestoreModule,

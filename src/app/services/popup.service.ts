@@ -1,8 +1,8 @@
-import { EventEmitter, Injectable, Output, Type, } from '@angular/core';
+import { EventEmitter, Inject, Injectable, Output, Type, } from '@angular/core';
 
 import { BehaviorSubject, filter, take } from 'rxjs';
 
-import { entryComponents } from './entryComponents';
+import { POPUP_REGISTRY, PopupRegistration } from './popup-registry';
 
 
 
@@ -29,10 +29,14 @@ export class PopUpService {
 
 
 
+  constructor(
+    @Inject(POPUP_REGISTRY) private readonly popupRegistry: readonly PopupRegistration[]
+  ) {}
+
 
   getComponentByName(componenName: any): Type<any> {
 
-    const component = entryComponents.find((c: { name: any; }) => c.name === componenName);
+    const component = this.popupRegistry.find((c: { name: any; }) => c.name === componenName);
 
     if (!component) {
       throw new Error(`Component "${componenName}" is not registered`);
@@ -43,7 +47,7 @@ export class PopUpService {
 
   isComponentExistByName(componenName: any): boolean {
 
-    const component = entryComponents.find((c: { name: any; }) => c.name === componenName);
+    const component = this.popupRegistry.find((c: { name: any; }) => c.name === componenName);
 
     return !!component;
   }
