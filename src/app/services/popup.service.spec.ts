@@ -93,6 +93,45 @@ describe('PopUpService characterization', () => {
     subscription.unsubscribe();
   });
 
+  it('getOutputComponent ignores events for other guids and resolves the matching event', async () => {
+    let resolved = false;
+    const expected = { guid: 'popup-1', name: 'save', value: 42 };
+    const resultPromise = service.getOutputComponent('popup-1').then(result => {
+      resolved = true;
+      return result;
+    });
+
+    service.setOutputComponent({ guid: 'popup-2', name: 'save', value: 7 });
+    await Promise.resolve();
+    expect(resolved).toBeFalse();
+
+    service.setOutputComponent(expected);
+
+    await expectAsync(resultPromise).toBeResolvedTo(expected);
+  });
+
+  it('getOutputComponent adds one listener for one waiting guid', () => {
+    const outputSubject = (service as any)._outputComponent;
+    const listenersBefore = outputSubject.observers.length;
+
+    service.getOutputComponent('popup-1');
+
+    expect(outputSubject.observers.length).toBe(listenersBefore + 1);
+  });
+
+  it('getOutputComponent currently keeps its listener attached after the matching event resolves', async () => {
+    const outputSubject = (service as any)._outputComponent;
+    const listenersBefore = outputSubject.observers.length;
+    const resultPromise = service.getOutputComponent('popup-1');
+
+    expect(outputSubject.observers.length).toBe(listenersBefore + 1);
+
+    service.setOutputComponent({ guid: 'popup-1', name: 'save' });
+    await resultPromise;
+
+    expect(outputSubject.observers.length).toBe(listenersBefore + 1);
+  });
+
   it('removes a popup immediately by guid and reports whether it was found', () => {
     service.setNewPopUp('popup-1', 'DynamicFormComponent', null);
 
