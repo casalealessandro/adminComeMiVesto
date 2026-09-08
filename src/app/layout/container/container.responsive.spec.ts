@@ -1,6 +1,6 @@
 import { BreakpointObserver, Breakpoints, BreakpointState } from '@angular/cdk/layout';
 import { signal, WritableSignal } from '@angular/core';
-import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -12,7 +12,7 @@ import { ContainerComponent } from './container.component';
 
 describe('ContainerComponent E.5.0 responsive characterization', () => {
   let component: ContainerComponent;
-  let fixture: ReturnType<typeof TestBed.createComponent<ContainerComponent>>;
+  let fixture: ComponentFixture<ContainerComponent>;
   let menuService: MenuService;
   let breakpointState$: Subject<BreakpointState>;
   let currentUser: WritableSignal<any>;
@@ -86,16 +86,16 @@ describe('ContainerComponent E.5.0 responsive characterization', () => {
 
   it('projects the current breakpoint policy into the shell mode classes', () => {
     emitBreakpoint(Breakpoints.XSmall);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList).toContain('menu-over');
+    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-over')).toBeTrue();
 
     emitBreakpoint(Breakpoints.Small);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList).toContain('menu-over');
+    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-over')).toBeTrue();
 
     emitBreakpoint(Breakpoints.Medium);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList).toContain('menu-side');
+    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-side')).toBeTrue();
 
     emitBreakpoint(Breakpoints.Large);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList).toContain('menu-push');
+    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-push')).toBeTrue();
   });
 
   it('keeps the authenticated Small shell mounted but closed and without a backdrop', fakeAsync(() => {
@@ -106,7 +106,7 @@ describe('ContainerComponent E.5.0 responsive characterization', () => {
     const menuShell = fixture.nativeElement.querySelector('.verticalMenucontainer');
 
     expect(menuShell).toBeTruthy();
-    expect(menuShell.classList).not.toContain('open');
+    expect(menuShell.classList.contains('open')).toBeFalse();
     expect(fixture.nativeElement.querySelector('.menu-backdrop')).toBeNull();
   }));
 
@@ -120,7 +120,7 @@ describe('ContainerComponent E.5.0 responsive characterization', () => {
 
     const menuShell = fixture.nativeElement.querySelector('.verticalMenucontainer');
 
-    expect(menuShell.classList).toContain('open');
+    expect(menuShell.classList.contains('open')).toBeTrue();
     expect(fixture.nativeElement.querySelector('.menu-backdrop')).toBeTruthy();
   }));
 
@@ -141,6 +141,6 @@ describe('ContainerComponent E.5.0 responsive characterization', () => {
 
     expect(component.mode).toBe('push');
     expect(menuService.isOpenMenu()).toBeTrue();
-    expect(fixture.nativeElement.querySelector('.mi-container').classList).toContain('menu-push');
+    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-push')).toBeTrue();
   });
 });
