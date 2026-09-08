@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { PopUpService } from '../../../services/popup.service';
 import { FotoOutfitPage } from './foto-outfit.page';
 
-describe('FotoOutfitPage popup characterization', () => {
+describe('FotoOutfitPage popup lifecycle', () => {
   function setup() {
     TestBed.resetTestingModule();
 
@@ -53,7 +53,7 @@ describe('FotoOutfitPage popup characterization', () => {
     expect(output.observers.length).toBe(1);
   });
 
-  it('resolves submitForm for the matching tag popup while characterizing the listener left attached', async () => {
+  it('resolves submitForm for the matching tag popup and releases its listener', async () => {
     const { component, popup, output } = setup();
 
     const modalPromise = component.openModal();
@@ -64,10 +64,10 @@ describe('FotoOutfitPage popup characterization', () => {
 
     await expectAsync(modalPromise).toBeResolvedTo(formData);
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guid);
-    expect(output.observers.length).toBe(1);
+    expect(output.observers.length).toBe(0);
   });
 
-  it('resolves cancelForm only for the matching tag popup while characterizing the listener left attached', async () => {
+  it('resolves cancelForm only for the matching tag popup and releases its listener', async () => {
     const { component, popup, output } = setup();
 
     const modalPromise = component.openModal();
@@ -76,15 +76,16 @@ describe('FotoOutfitPage popup characterization', () => {
     output.next({ guid: 'other-guid', name: 'cancelForm' });
     await flushPromise();
     expect(popup.destroyCurrentOpenPopUpByGuid).not.toHaveBeenCalled();
+    expect(output.observers.length).toBe(1);
 
     output.next({ guid, name: 'cancelForm' });
 
     await expectAsync(modalPromise).toBeResolvedTo(false);
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guid);
-    expect(output.observers.length).toBe(1);
+    expect(output.observers.length).toBe(0);
   });
 
-  it('keeps simultaneous tag popup promises isolated by guid while characterizing both listeners left attached', async () => {
+  it('keeps simultaneous tag popup promises isolated and releases only each terminal listener', async () => {
     const { component, popup, output } = setup();
 
     let settledA = false;
@@ -101,14 +102,14 @@ describe('FotoOutfitPage popup characterization', () => {
     output.next({ guid: guidB, name: 'submitForm', formData: { name: 'B' } });
     await expectAsync(promiseB).toBeResolvedTo({ name: 'B' });
     expect(settledA).toBeFalse();
-    expect(output.observers.length).toBe(2);
+    expect(output.observers.length).toBe(1);
 
     output.next({ guid: guidA, name: 'cancelForm' });
     await expectAsync(promiseA).toBeResolvedTo(false);
-    expect(output.observers.length).toBe(2);
+    expect(output.observers.length).toBe(0);
   });
 
-  it('characterizes the nested product popup listener as surviving selectProduct and stochiudendo', () => {
+  it('keeps nested product popup listener alive on selectProduct and releases it on stochiudendo', () => {
     const { component, popup, output } = setup();
 
     component.openOutfitProducts();
@@ -120,6 +121,27 @@ describe('FotoOutfitPage popup characterization', () => {
     expect(output.observers.length).toBe(1);
 
     output.next({ guid, name: 'stochiudendo' });
+    expect(output.observers.length).toBe(0);
+  });
+
+  it('keeps simultaneous nested product popups isolated by guid', () => {
+    const { component, popup, output } = setup();
+
+    component.openOutfitProducts();
+    const guidA = lastGuid(popup);
+    component.openOutfitProducts();
+    const guidB = lastGuid(popup);
+
+    expect(guidB).not.toBe(guidA);
+    expect(output.observers.length).toBe(2);
+
+    output.next({ guid: guidB, name: 'stochiudendo' });
     expect(output.observers.length).toBe(1);
+
+    output.next({ guid: guidA, name: 'selectProduct', data: { id: 'product-a' } });
+    expect(output.observers.length).toBe(1);
+
+    output.next({ guid: guidA, name: 'stochiudendo' });
+    expect(output.observers.length).toBe(0);
   });
 });
