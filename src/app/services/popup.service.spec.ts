@@ -35,19 +35,22 @@ describe('PopUpService characterization', () => {
       showCaptionHeader: true,
       title: 'Modifica',
       position: 'center',
+      isClosable: true,
       isClosablePopUp: true,
       action: 'added'
     }));
   });
 
   it('updates the existing popup when id and component name match', () => {
-    service.setNewPopUp('popup-1', 'DynamicFormComponent', { value: 1 }, 800, null, null, false, true);
-    service.setNewPopUp('popup-1', 'DynamicFormComponent', { value: 2 }, 800, null, null, true, false);
+    service.setNewPopUp('popup-1', 'DynamicFormComponent', { value: 1 }, 800, null, null, false, true, '', 'center', false);
+    service.setNewPopUp('popup-1', 'DynamicFormComponent', { value: 2 }, 800, null, null, true, false, '', 'center', true);
 
     expect(service.currentPopupsSet.length).toBe(1);
     expect(service.currentPopupsSet[0].dataToSend).toEqual({ value: 2 });
     expect(service.currentPopupsSet[0].showCaptionFooter).toBeTrue();
     expect(service.currentPopupsSet[0].showCaptionHeader).toBeFalse();
+    expect(service.currentPopupsSet[0].isClosable).toBeTrue();
+    expect(service.currentPopupsSet[0].isClosablePopUp).toBeTrue();
     expect(service.currentPopupsSet[0].action).toBe('update');
   });
 
@@ -62,6 +65,21 @@ describe('PopUpService characterization', () => {
     expect(service.isComponentExistByName('DynamicFormComponent')).toBeTrue();
     expect(service.getComponentByName('DynamicFormComponent')).toBeTruthy();
     expect(service.isComponentExistByName('ElementComponent')).toBeTrue();
+  });
+
+  it('handles unknown registry names deterministically', () => {
+    expect(service.isComponentExistByName('MissingComponent')).toBeFalse();
+    expect(() => service.getComponentByName('MissingComponent')).toThrowError(
+      'Component "MissingComponent" is not registered'
+    );
+  });
+
+  it('uses a numeric viewport width on mobile so PopupContent can append px safely', () => {
+    spyOnProperty(window, 'innerWidth', 'get').and.returnValue(500);
+
+    service.setNewPopUp('popup-mobile', 'DynamicFormComponent', null, 800);
+
+    expect(service.currentPopupsSet[0].popUpWidth).toBe(500);
   });
 
   it('forwards output events through the shared output stream', () => {
