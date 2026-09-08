@@ -1,13 +1,8 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, HostListener, signal, WritableSignal } from '@angular/core';
-import { AnagraficaWrapperComponent } from '../anagrafica-wrapper/anagrafica-wrapper.component';
-import { FooterComponent } from '../footer/footer.component';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { MenuComponent } from '../menu/menu.component';
-import { ToolbarComponent } from '../toolbar/toolbar.component';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { PopupWrapperComponent } from '../../components/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component';
-import { OverlayComponent } from '../../components/overlay-component/overlay.component';
 import { AuthService } from '../../services/auth.service';
 
 import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
@@ -29,9 +24,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]  // Opzionale, se stai usando Web Components
 })
 export class ContainerComponent {
-  isClose: boolean = false;
   isLogin: boolean = false;
-  idTipoUtente: number = -1;
 
 // Modalità del menu: 'side' (a lato), 'over' (sovrapposto), 'push' (spingendo il contenuto)
   mode: 'side' | 'over' | 'push' = 'side';
@@ -74,13 +67,6 @@ export class ContainerComponent {
 
 
 
-  /*  // Listener per l'evento resize, per aggiornare la visibilità del menu
-   @HostListener('window:resize', ['$event'])
-   onResize(event: Event) {
-     const windowWidth = (event.target as Window).innerWidth;
-     this.updateMenuVisibility(windowWidth);
-   } */
-
   // Funzione per aggiornare lo stato del menu in base alla risoluzione dello schermo
   updateMenuVisibility(windowWidth: number) {
     if (windowWidth > 1024) {
@@ -92,9 +78,5 @@ export class ContainerComponent {
     console.log('' + this.isMenuOpen)
   }
 
-  // Metodo per passare la funzione toggle al componente Header
-  toggleMenu(evt: any) {
-    this.menuService.toggleMenu();
-  }
   closeMenu(): void { this.menuService.closeMenu(); }
 }
