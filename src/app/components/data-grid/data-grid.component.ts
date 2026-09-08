@@ -7,7 +7,6 @@ import { CommonModule } from '@angular/common';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { AnagraficaService } from '../../services/anagrafica.service';
 import { TdItemComponent } from './td-item/td-item.component';
-import { ToolbarComponent } from '../../layout/toolbar/toolbar.component';
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 import { OverlayService } from '../../services/overlay.service';
 
@@ -168,7 +167,7 @@ export class DataGridComponent implements OnDestroy {
   searchText!: string
 
   isHovered: any[] = [false];
-  isHoveredDetatil: any[] = [false];
+  isHoveredDetatil: any[] = [];
   rowcustomclass: any[] = [];
   tableWidthDetail!: number;
   checkQueryStringError: boolean = false;
