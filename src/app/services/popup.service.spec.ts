@@ -110,6 +110,20 @@ describe('PopUpService characterization', () => {
     await expectAsync(resultPromise).toBeResolvedTo(expected);
   });
 
+  it('getOutputComponent keeps simultaneous popup waits independent by guid', async () => {
+    const popupA = service.getOutputComponent('popup-a');
+    const popupB = service.getOutputComponent('popup-b');
+
+    const eventB = { guid: 'popup-b', name: 'save', value: 'B' };
+    const eventA = { guid: 'popup-a', name: 'save', value: 'A' };
+
+    service.setOutputComponent(eventB);
+    await expectAsync(popupB).toBeResolvedTo(eventB);
+
+    service.setOutputComponent(eventA);
+    await expectAsync(popupA).toBeResolvedTo(eventA);
+  });
+
   it('getOutputComponent adds one listener for one waiting guid', () => {
     const outputSubject = (service as any)._outputComponent;
     const listenersBefore = outputSubject.observers.length;
@@ -119,7 +133,7 @@ describe('PopUpService characterization', () => {
     expect(outputSubject.observers.length).toBe(listenersBefore + 1);
   });
 
-  it('getOutputComponent currently keeps its listener attached after the matching event resolves', async () => {
+  it('getOutputComponent releases its listener after the matching event resolves', async () => {
     const outputSubject = (service as any)._outputComponent;
     const listenersBefore = outputSubject.observers.length;
     const resultPromise = service.getOutputComponent('popup-1');
@@ -129,7 +143,7 @@ describe('PopUpService characterization', () => {
     service.setOutputComponent({ guid: 'popup-1', name: 'save' });
     await resultPromise;
 
-    expect(outputSubject.observers.length).toBe(listenersBefore + 1);
+    expect(outputSubject.observers.length).toBe(listenersBefore);
   });
 
   it('removes a popup immediately by guid and reports whether it was found', () => {

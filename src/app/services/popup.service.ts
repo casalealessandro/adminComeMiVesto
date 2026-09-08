@@ -1,6 +1,6 @@
 import { EventEmitter, Injectable, Output, Type, } from '@angular/core';
 
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, filter, take } from 'rxjs';
 
 import { entryComponents } from './entryComponents';
 
@@ -88,7 +88,6 @@ export class PopUpService {
     } else {
 
       // dataPoUp.action = 'update'
-
       this.currentPopupsSet[index]['dataToSend'] = data;
       this.currentPopupsSet[index]['action'] = 'update';
 
@@ -197,18 +196,17 @@ export class PopUpService {
 
   async getOutputComponent(guid: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.outputComponent.subscribe(async resulOutputComponent => {
-        if (resulOutputComponent.guid === guid) {
-         
-          
-          if (resulOutputComponent.guid == guid ) {
+      this.outputComponent
+        .pipe(
+          filter(resulOutputComponent => resulOutputComponent.guid === guid),
+          take(1)
+        )
+        .subscribe(async resulOutputComponent => {
+          if (resulOutputComponent.guid === guid) {
             const resolveC = resulOutputComponent;
             resolve(resolveC); // Risolvi la Promise con i dati del form
           }
-          
-
-        }
-      });
+        });
     });
   }
 
