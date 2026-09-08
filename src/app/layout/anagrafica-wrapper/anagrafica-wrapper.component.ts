@@ -1,8 +1,6 @@
-import { Component, Input, OnInit, Output, EventEmitter, ViewChild, AfterViewInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 
-import { Subscription } from 'rxjs';
-import { ToolbarComponent } from '../toolbar/toolbar.component';
 import { CaptionComponent } from '../../components/caption/caption.component';
 import { CommonModule } from '@angular/common';
 import { ToolbarButton } from '../../interface/app.interface';
@@ -19,8 +17,6 @@ import { ToolbarButton } from '../../interface/app.interface';
 })
 export class AnagraficaWrapperComponent {
 
-  @ViewChild('toolbarTab', { static: true })  toolbarTab!: ToolbarComponent;
-
   @Input() caption:string=''
   @Input() anaHeight:number=800
   @Input() subTitle:string=''
@@ -36,7 +32,6 @@ export class AnagraficaWrapperComponent {
 
   @Output() emittChiusura: EventEmitter<any> = new EventEmitter<any>();
   @Output() emittEventButton: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitToolbarLeft: EventEmitter<any> = new EventEmitter<any>();
   @Output() emitEventSearchInput: EventEmitter<any> = new EventEmitter<any>();
   @Output() emitEventButtonInputChange: EventEmitter<any> = new EventEmitter<any>();
   
@@ -47,9 +42,6 @@ export class AnagraficaWrapperComponent {
   public timeInterval: any = 0;
 
   heightWrap!: number;
-  itemTabs: any = [];
-  showItemsTabs:boolean=false
-  private tabSubscription: Subscription | undefined;
   
   constructor() {this.setAutoDismiss()}
 
@@ -103,12 +95,6 @@ private setAutoDismiss(): void {
   }
 
 
-
-  buttonToolbarLeft(event: any) {
-
-    this.emitToolbarLeft.emit(event)
-
-  }
 
   onAddClick(event:any){
     this.emittEventButton.emit(event)
