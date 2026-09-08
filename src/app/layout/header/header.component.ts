@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, output, TemplateRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuService } from '../../services/menu.service';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,7 @@ import { UserProfile } from '../../interface/app.interface';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-header',
@@ -24,7 +25,7 @@ export class HeaderComponent {
   userProfile?: UserProfile;
 
 
-  constructor(private menuService: MenuService, private router: Router, private userService: UserService, private auth: AuthService, private overlayService: OverlayService) {
+  constructor(private menuService: MenuService, private router: Router, private userService: UserService, private auth: AuthService, private overlayService: OverlayService, private destroyRef: DestroyRef) {
 
   }
 
@@ -36,7 +37,9 @@ export class HeaderComponent {
   renderHeader() {
     const user = this.auth.currentUser();
     if (!user) return;
-    this.userService.getUserProfile(user.uid).subscribe((userProfile: UserProfile) => {
+    this.userService.getUserProfile(user.uid)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe((userProfile: UserProfile) => {
       this.userProfile = userProfile;
       console.log('userProfile', userProfile);
     });
