@@ -18,6 +18,8 @@ import { NAVIGATION_ITEMS } from './services/navigation-registry';
 import { comeMiVestoNavigation } from './app-navigation';
 import { HEADER_CONFIG } from './services/header-config';
 import { comeMiVestoHeaderConfig } from './app-header-config';
+import { HEADER_USER_PROVIDER } from './services/header-user-provider';
+import { ComeMiVestoHeaderUserService } from './app-header-user.service';
 
 const popupComponents = [
   ...starterKitEntryComponents,
@@ -31,6 +33,7 @@ export const appConfig: ApplicationConfig = {
     { provide: POPUP_REGISTRY, useValue: popupComponents },
     { provide: NAVIGATION_ITEMS, useValue: comeMiVestoNavigation },
     { provide: HEADER_CONFIG, useValue: comeMiVestoHeaderConfig },
+    { provide: HEADER_USER_PROVIDER, useClass: ComeMiVestoHeaderUserService },
     importProvidersFrom(
       AngularFireModule.initializeApp(environment.firebase),
       AngularFirestoreModule,
