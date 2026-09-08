@@ -23,7 +23,7 @@ describe('PopupWrapperComponent characterization', () => {
   });
 
   it('adds a popup and converts the added action to the rendered state', () => {
-    const popup = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
+    const popup: any = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
 
     popupState.next([popup]);
 
@@ -34,8 +34,8 @@ describe('PopupWrapperComponent characterization', () => {
   });
 
   it('keeps multiple added popups in the order received', () => {
-    const first = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
-    const second = { id: 'popup-2', componentName: 'ElementComponent', action: 'added' };
+    const first: any = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
+    const second: any = { id: 'popup-2', componentName: 'ElementComponent', action: 'added' };
 
     popupState.next([first, second]);
 
@@ -43,7 +43,7 @@ describe('PopupWrapperComponent characterization', () => {
   });
 
   it('replaces an updated popup after the historical animation delay', fakeAsync(() => {
-    const popup = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
+    const popup: any = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
     popupState.next([popup]);
 
     popup.action = 'update';
@@ -59,7 +59,7 @@ describe('PopupWrapperComponent characterization', () => {
   }));
 
   it('removes a popup after the historical fade-out delay', fakeAsync(() => {
-    const popup = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
+    const popup: any = { id: 'popup-1', componentName: 'DynamicFormComponent', action: 'added' };
     popupState.next([popup]);
 
     popup.action = 'remove';
