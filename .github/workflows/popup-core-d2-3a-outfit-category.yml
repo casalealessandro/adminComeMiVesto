@@ -1,0 +1,29 @@
+name: Popup Core Phase D.2.3a OutfitCategory characterization
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  outfit_category_popup_lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.20.2
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run OutfitCategory D.2.3a tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless --include=src/app/views/outfit-category/outfit-category.component.spec.ts
