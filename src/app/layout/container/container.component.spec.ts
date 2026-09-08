@@ -6,10 +6,11 @@ import { of, Subject } from 'rxjs';
 import { ContainerComponent } from './container.component';
 import { MenuService } from '../../services/menu.service';
 import { AuthService } from '../../services/auth.service';
-import { UserService } from '../../services/user.service';
 import { OverlayService } from '../../services/overlay.service';
+import { HEADER_CONFIG } from '../../services/header-config';
+import { HEADER_USER_PROVIDER } from '../../services/header-user-provider';
 
-describe('ContainerComponent E.0 characterization', () => {
+describe('ContainerComponent E.4.4 characterization', () => {
   let fixture: ComponentFixture<ContainerComponent>;
   let component: ContainerComponent;
   let menuService: MenuService;
@@ -40,9 +41,18 @@ describe('ContainerComponent E.0 characterization', () => {
           }
         },
         {
-          provide: UserService,
+          provide: HEADER_CONFIG,
           useValue: {
-            getUserProfile: jasmine.createSpy('getUserProfile').and.returnValue(of({}))
+            logoUrl: 'assets/images/test-logo.jpg',
+            logoAlt: 'Test logo',
+            defaultAvatarUrl: 'assets/images/default-avatar.svg'
+          }
+        },
+        {
+          provide: HEADER_USER_PROVIDER,
+          useValue: {
+            getUser: jasmine.createSpy('getUser').and.returnValue(of(null)),
+            logout: jasmine.createSpy('logout').and.returnValue(Promise.resolve())
           }
         },
         {
@@ -123,13 +133,11 @@ describe('ContainerComponent E.0 characterization', () => {
     expect(fixture.nativeElement.querySelector('.menu-backdrop')).toBeNull();
   }));
 
-  it('delegates header/menu toggle behavior to MenuService', () => {
-    menuService.closeMenu();
-
-    component.toggleMenu(null);
-    expect(menuService.isOpenMenu()).toBeTrue();
+  it('delegates menu close behavior to MenuService', () => {
+    menuService.openMenu();
 
     component.closeMenu();
+
     expect(menuService.isOpenMenu()).toBeFalse();
   });
 });
