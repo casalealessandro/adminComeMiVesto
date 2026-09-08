@@ -10,7 +10,7 @@ import { MenuService } from '../../services/menu.service';
 import { OverlayService } from '../../services/overlay.service';
 import { ContainerComponent } from './container.component';
 
-describe('ContainerComponent E.5.0 responsive characterization', () => {
+describe('ContainerComponent E.5.1 responsive regression', () => {
   let component: ContainerComponent;
   let fixture: ComponentFixture<ContainerComponent>;
   let menuService: MenuService;
@@ -84,18 +84,28 @@ describe('ContainerComponent E.5.0 responsive characterization', () => {
     fixture.detectChanges();
   }
 
-  it('projects the current breakpoint policy into the shell mode classes', () => {
+  it('projects the breakpoint policy into one shell mode class at a time', () => {
+    const shell = () => fixture.nativeElement.querySelector('.mi-container').classList;
+
     emitBreakpoint(Breakpoints.XSmall);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-over')).toBeTrue();
+    expect(shell().contains('menu-over')).toBeTrue();
+    expect(shell().contains('menu-side')).toBeFalse();
+    expect(shell().contains('menu-push')).toBeFalse();
 
     emitBreakpoint(Breakpoints.Small);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-over')).toBeTrue();
+    expect(shell().contains('menu-over')).toBeTrue();
+    expect(shell().contains('menu-side')).toBeFalse();
+    expect(shell().contains('menu-push')).toBeFalse();
 
     emitBreakpoint(Breakpoints.Medium);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-side')).toBeTrue();
+    expect(shell().contains('menu-over')).toBeFalse();
+    expect(shell().contains('menu-side')).toBeTrue();
+    expect(shell().contains('menu-push')).toBeFalse();
 
     emitBreakpoint(Breakpoints.Large);
-    expect(fixture.nativeElement.querySelector('.mi-container').classList.contains('menu-push')).toBeTrue();
+    expect(shell().contains('menu-over')).toBeFalse();
+    expect(shell().contains('menu-side')).toBeFalse();
+    expect(shell().contains('menu-push')).toBeTrue();
   });
 
   it('keeps the authenticated Small shell mounted but closed and without a backdrop', fakeAsync(() => {
@@ -110,10 +120,10 @@ describe('ContainerComponent E.5.0 responsive characterization', () => {
     expect(fixture.nativeElement.querySelector('.menu-backdrop')).toBeNull();
   }));
 
-  it('renders the open state and backdrop when an authenticated over-menu is explicitly opened', fakeAsync(() => {
+  it('opens the over shell and renders its backdrop through MenuService state', fakeAsync(() => {
     currentUser.set({ uid: 'user-1' });
     flushMicrotasks();
-    emitBreakpoint(Breakpoints.XSmall);
+    emitBreakpoint(Breakpoints.Small);
 
     menuService.openMenu();
     fixture.detectChanges();
@@ -123,6 +133,16 @@ describe('ContainerComponent E.5.0 responsive characterization', () => {
     expect(menuShell.classList.contains('open')).toBeTrue();
     expect(fixture.nativeElement.querySelector('.menu-backdrop')).toBeTruthy();
   }));
+
+  it('keeps Medium in side mode with the menu opened by the breakpoint policy', () => {
+    menuService.closeMenu();
+
+    emitBreakpoint(Breakpoints.Medium);
+
+    expect(component.mode).toBe('side');
+    expect(menuService.isOpenMenu()).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.verticalMenucontainer').classList.contains('open')).toBeTrue();
+  });
 
   it('preserves the historical 1024px initialization threshold', () => {
     menuService.closeMenu();
