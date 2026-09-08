@@ -1,0 +1,29 @@
+name: Popup Core Phase D.2.3c FotoOutfit lifecycle
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  foto_outfit_popup_lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.20.2
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run FotoOutfit D.2.3c tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless --include=src/app/views/outfits/foto-outfit/foto-outfit.page.spec.ts
