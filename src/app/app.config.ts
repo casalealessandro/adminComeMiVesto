@@ -14,6 +14,8 @@ import { authInterceptor } from './auth.interceptor';
 import { POPUP_REGISTRY } from './services/popup-registry';
 import { starterKitEntryComponents } from './services/entryComponents';
 import { comeMiVestoPopupComponents } from './app-popup-components';
+import { NAVIGATION_ITEMS } from './services/navigation-registry';
+import { comeMiVestoNavigation } from './app-navigation';
 
 const popupComponents = [
   ...starterKitEntryComponents,
@@ -25,6 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: POPUP_REGISTRY, useValue: popupComponents },
+    { provide: NAVIGATION_ITEMS, useValue: comeMiVestoNavigation },
     importProvidersFrom(
       AngularFireModule.initializeApp(environment.firebase),
       AngularFirestoreModule,
