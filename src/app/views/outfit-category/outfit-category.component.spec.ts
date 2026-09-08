@@ -105,8 +105,11 @@ describe('OutfitCategoryComponent popup characterization', () => {
     expect(output.observers.length).toBe(1);
   });
 
-  it('closes the matching popup only after a successful submit and releases its listener', async () => {
+  it('keeps the popup open while save is pending, then closes it and releases its listener after success', async () => {
     const { component, outfitService, popup, output } = setup();
+    let resolveSave!: (value: boolean) => void;
+    const pendingSave = new Promise<boolean>(resolve => resolveSave = resolve);
+    outfitService.saveOutfitCategories.and.returnValue(pendingSave);
 
     component.createOrEditCategories({ service: 'outfitCategories', idData: {} });
     const guid = lastGuid(popup);
@@ -117,9 +120,14 @@ describe('OutfitCategoryComponent popup characterization', () => {
       inEdit: false,
       formData: { categoryName: 'Nuova categoria', parentCategory: null }
     });
-    await flushPromise();
 
     expect(outfitService.saveOutfitCategories).toHaveBeenCalled();
+    expect(popup.destroyCurrentOpenPopUpByGuid).not.toHaveBeenCalled();
+    expect(output.observers.length).toBe(1);
+
+    resolveSave(true);
+    await flushPromise();
+
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guid);
     expect(output.observers.length).toBe(0);
   });
