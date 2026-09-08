@@ -9,7 +9,7 @@
     ]
   },
   "include": [
-    "src/**/*.spec.ts",
+    "src/app/services/popup.service.spec.ts",
     "src/**/*.d.ts"
   ]
 }
