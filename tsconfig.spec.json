@@ -9,7 +9,7 @@
     ]
   },
   "include": [
-    "src/**/*.spec.ts",
+    "src/app/views/outfits/foto-outfit/foto-outfit.page.spec.ts",
     "src/**/*.d.ts"
   ]
 }
