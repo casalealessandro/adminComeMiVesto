@@ -65,7 +65,7 @@ describe('OutfitCategoryComponent popup characterization', () => {
     expect(popup.setNewPopUp.calls.mostRecent().args[1]).toBe('DynamicFormComponent');
   });
 
-  it('keeps simultaneous category popup events isolated by guid', () => {
+  it('keeps simultaneous category popup events isolated by guid and releases only the terminal listener', () => {
     const { component, popup, output } = setup();
 
     component.createOrEditCategories({ service: 'outfitCategories', idData: {} });
@@ -78,9 +78,11 @@ describe('OutfitCategoryComponent popup characterization', () => {
     output.next({ guid: guidB, name: 'cancelForm' });
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guidB);
     expect(popup.destroyCurrentOpenPopUpByGuid).not.toHaveBeenCalledWith(guidA);
+    expect(output.observers.length).toBe(1);
 
     output.next({ guid: guidA, name: 'cancelForm' });
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guidA);
+    expect(output.observers.length).toBe(0);
   });
 
   it('keeps the popup and listener alive when submit does not complete successfully', async () => {
@@ -103,7 +105,7 @@ describe('OutfitCategoryComponent popup characterization', () => {
     expect(output.observers.length).toBe(1);
   });
 
-  it('closes the matching popup only after a successful submit but currently keeps its listener attached', async () => {
+  it('closes the matching popup only after a successful submit and releases its listener', async () => {
     const { component, outfitService, popup, output } = setup();
 
     component.createOrEditCategories({ service: 'outfitCategories', idData: {} });
@@ -119,10 +121,10 @@ describe('OutfitCategoryComponent popup characterization', () => {
 
     expect(outfitService.saveOutfitCategories).toHaveBeenCalled();
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guid);
-    expect(output.observers.length).toBe(1);
+    expect(output.observers.length).toBe(0);
   });
 
-  it('cancelForm closes the matching popup but currently keeps its listener attached', () => {
+  it('cancelForm closes the matching popup and releases its listener', () => {
     const { component, popup, output } = setup();
 
     component.createOrEditCategories({ service: 'outfitCategories', idData: {} });
@@ -131,6 +133,6 @@ describe('OutfitCategoryComponent popup characterization', () => {
     output.next({ guid, name: 'cancelForm' });
 
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guid);
-    expect(output.observers.length).toBe(1);
+    expect(output.observers.length).toBe(0);
   });
 });
