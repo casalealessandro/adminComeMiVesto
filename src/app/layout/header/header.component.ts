@@ -1,5 +1,4 @@
-import { Component, DestroyRef, EventEmitter, Input, Output, output, TemplateRef, ViewChild, Inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, DestroyRef, TemplateRef, ViewChild, Inject } from '@angular/core';
 import { MenuService } from '../../services/menu.service';
 import { CommonModule } from '@angular/common';
 import { OverlayService } from '../../services/overlay.service';
@@ -20,17 +19,15 @@ export class HeaderComponent {
 
   @ViewChild('dynamicContent', { static: false }) dynamicContent!: TemplateRef<any>;
 
-  showProfileInfo = true;
   userProfile?: HeaderUser;
 
 
-  constructor(private menuService: MenuService, private router: Router, private overlayService: OverlayService, private destroyRef: DestroyRef, @Inject(HEADER_CONFIG) public headerConfig: HeaderConfig, @Inject(HEADER_USER_PROVIDER) private headerUserProvider: HeaderUserProvider) {
+  constructor(private menuService: MenuService, private overlayService: OverlayService, private destroyRef: DestroyRef, @Inject(HEADER_CONFIG) public headerConfig: HeaderConfig, @Inject(HEADER_USER_PROVIDER) private headerUserProvider: HeaderUserProvider) {
 
   }
 
   ngOnInit() {
     this.renderHeader();
-    this.checkRoute();
 
   }
   renderHeader() {
@@ -87,10 +84,5 @@ export class HeaderComponent {
   async logout() {
     console.log('LOGOUT');
     await this.headerUserProvider.logout();
-  }
-
-  checkRoute() {
-    const currentRoute = this.router.url;
-    this.showProfileInfo = currentRoute !== '/login';
   }
 }
