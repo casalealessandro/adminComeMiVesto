@@ -1,4 +1,4 @@
-import { Component, DestroyRef, EventEmitter, Input, Output, output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, output, TemplateRef, ViewChild, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuService } from '../../services/menu.service';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,7 @@ import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HEADER_CONFIG, HeaderConfig } from '../../services/header-config';
 
 @Component({
   selector: 'app-header',
@@ -25,7 +26,7 @@ export class HeaderComponent {
   userProfile?: UserProfile;
 
 
-  constructor(private menuService: MenuService, private router: Router, private userService: UserService, private auth: AuthService, private overlayService: OverlayService, private destroyRef: DestroyRef) {
+  constructor(private menuService: MenuService, private router: Router, private userService: UserService, private auth: AuthService, private overlayService: OverlayService, private destroyRef: DestroyRef, @Inject(HEADER_CONFIG) public headerConfig: HeaderConfig) {
 
   }
 
