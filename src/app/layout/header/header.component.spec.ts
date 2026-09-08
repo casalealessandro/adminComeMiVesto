@@ -3,19 +3,16 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { HeaderComponent } from './header.component';
 import { MenuService } from '../../services/menu.service';
-import { UserService } from '../../services/user.service';
-import { AuthService } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
-import { UserProfile } from '../../interface/app.interface';
 import { HEADER_CONFIG, HeaderConfig } from '../../services/header-config';
+import { HEADER_USER_PROVIDER, HeaderUser, HeaderUserProvider } from '../../services/header-user-provider';
 
-describe('HeaderComponent E.0 characterization', () => {
+describe('HeaderComponent E.3.2 boundary', () => {
   let fixture: ComponentFixture<HeaderComponent>;
   let component: HeaderComponent;
   let menuService: MenuService;
-  let userService: jasmine.SpyObj<UserService>;
-  let auth: jasmine.SpyObj<AuthService>;
   let overlayService: jasmine.SpyObj<OverlayService>;
+  let headerUserProvider: jasmine.SpyObj<HeaderUserProvider>;
 
   const headerConfig: HeaderConfig = {
     logoUrl: 'assets/images/test-logo.jpg',
@@ -23,20 +20,16 @@ describe('HeaderComponent E.0 characterization', () => {
     defaultAvatarUrl: 'assets/images/default-avatar.svg'
   };
 
-  const profile = {
-    nome: 'Mario',
-    cognome: 'Rossi',
+  const profile: HeaderUser = {
     displayName: 'Mario Rossi',
+    profileLabel: 'Mario Rossi',
     photoURL: 'avatar.jpg'
-  } as UserProfile;
+  };
 
   beforeEach(async () => {
-    userService = jasmine.createSpyObj<UserService>('UserService', ['getUserProfile']);
-    userService.getUserProfile.and.returnValue(of(profile) as any);
-
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['currentUser', 'logout']);
-    auth.currentUser.and.returnValue({ uid: 'user-1' } as any);
-    auth.logout.and.returnValue(Promise.resolve() as any);
+    headerUserProvider = jasmine.createSpyObj<HeaderUserProvider>('HeaderUserProvider', ['getUser', 'logout']);
+    headerUserProvider.getUser.and.returnValue(of(profile));
+    headerUserProvider.logout.and.returnValue(Promise.resolve());
 
     overlayService = jasmine.createSpyObj<OverlayService>('OverlayService', ['openOverlay', 'closeOverlay']);
 
@@ -45,10 +38,9 @@ describe('HeaderComponent E.0 characterization', () => {
       providers: [
         MenuService,
         provideRouter([]),
-        { provide: UserService, useValue: userService },
-        { provide: AuthService, useValue: auth },
         { provide: OverlayService, useValue: overlayService },
-        { provide: HEADER_CONFIG, useValue: headerConfig }
+        { provide: HEADER_CONFIG, useValue: headerConfig },
+        { provide: HEADER_USER_PROVIDER, useValue: headerUserProvider }
       ]
     }).compileComponents();
 
@@ -58,22 +50,22 @@ describe('HeaderComponent E.0 characterization', () => {
     fixture.detectChanges();
   });
 
-  it('loads the current user profile during initialization', () => {
-    expect(userService.getUserProfile).toHaveBeenCalledWith('user-1');
+  it('loads the current header user during initialization', () => {
+    expect(headerUserProvider.getUser).toHaveBeenCalled();
     expect(component.userProfile).toBe(profile);
   });
 
-  it('does not request a profile when there is no authenticated user', () => {
-    userService.getUserProfile.calls.reset();
-    auth.currentUser.and.returnValue(null as any);
+  it('keeps the header user empty when the provider has no current user', () => {
+    headerUserProvider.getUser.and.returnValue(of(null));
+    component.userProfile = undefined;
 
     component.renderHeader();
 
-    expect(userService.getUserProfile).not.toHaveBeenCalled();
+    expect(component.userProfile).toBeUndefined();
   });
 
   it('uses the configured logo and default avatar', () => {
-    component.userProfile = { ...profile, photoURL: undefined } as UserProfile;
+    component.userProfile = { ...profile, photoURL: undefined };
     fixture.detectChanges();
 
     const logo = fixture.nativeElement.querySelector('.logo-image') as HTMLImageElement;
@@ -123,9 +115,9 @@ describe('HeaderComponent E.0 characterization', () => {
     }));
   });
 
-  it('delegates logout to AuthService', async () => {
+  it('delegates logout to the header user provider', async () => {
     await component.logout();
 
-    expect(auth.logout).toHaveBeenCalled();
+    expect(headerUserProvider.logout).toHaveBeenCalled();
   });
 });
