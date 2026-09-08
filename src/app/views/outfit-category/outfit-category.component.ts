@@ -246,7 +246,7 @@ export class OutfitCategoryComponent {
     this.propertiesModal.setNewPopUp(guid, 'DynamicFormComponent', null, 800, null, InstanceData, false, true, "Modifica Outfit", '', false)
 
 
-    this.propertiesModal.outputComponent.subscribe(async resulOutputComponent => {
+    const popupSubscription = this.propertiesModal.outputComponent.subscribe(async resulOutputComponent => {
       if (resulOutputComponent.guid == guid && resulOutputComponent.name == 'submitForm') {
 
         const formData = resulOutputComponent.formData;
@@ -262,6 +262,7 @@ export class OutfitCategoryComponent {
         if (res) {
           this.selectedCatOutfit = !this.categoryId ? undefined : this.selectedCatOutfit
           this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+          popupSubscription.unsubscribe();
          
           this.outFitCategories$ = this.outFitService.getOutFitCategories(this.categoryId);
           this.loadOutFitCategories()
@@ -271,6 +272,7 @@ export class OutfitCategoryComponent {
       if (resulOutputComponent.guid == guid && resulOutputComponent.name == 'cancelForm') {
         this.selectedCatOutfit = !this.categoryId ? undefined : this.selectedCatOutfit
         this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+        popupSubscription.unsubscribe();
       }
     })
   }
