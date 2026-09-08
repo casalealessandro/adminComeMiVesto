@@ -1,0 +1,29 @@
+name: Popup Core Phase D.2.1 tests
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  popup_core_d2_1_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.20.2
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Popup Core D.2.1 characterization tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless --include=src/app/services/popup.service.spec.ts
