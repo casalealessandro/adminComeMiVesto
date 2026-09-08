@@ -9,7 +9,7 @@
     ]
   },
   "include": [
-    "src/app/views/form-builder/form-builder.component.spec.ts",
+    "src/**/*.spec.ts",
     "src/**/*.d.ts"
   ]
 }
