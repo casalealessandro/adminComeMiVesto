@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { alert } from '../../widgets/ui-dialogs';
 import { FormService } from '../../services/form.service';
 import { normalizeDynamicFormFields } from '../../interface/dynamic-form-field';
+import { Subscription } from 'rxjs';
 
 export function buildFormPayload(id: string, nameForm: string, json: any[]) {
   return { id, nameForm: nameForm.trim(), json: normalizeDynamicFormFields(json) };
@@ -151,7 +152,8 @@ export class FormBuilderComponent {
     this.propertiesModal.setNewPopUp(guid, 'ElementComponent', null, 800, null, InstanceData, false, true, "Gestione proprietà",'',false)
     
 
-    this.propertiesModal.outputComponent.subscribe(resulOutputComponent=>{
+    let outputSubscription: Subscription | undefined;
+    outputSubscription = this.propertiesModal.outputComponent.subscribe(resulOutputComponent=>{
       if(resulOutputComponent.guid == guid && resulOutputComponent.name == 'saveProperties'){
         
         if (index >= 0) {
@@ -160,12 +162,14 @@ export class FormBuilderComponent {
 
           this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
           this.selectedElement = {}
+          outputSubscription?.unsubscribe();
         }
       }
 
       if(resulOutputComponent.guid == guid && resulOutputComponent.name == 'closeProperties'){
         //this.formElements[index] = 
         this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+        outputSubscription?.unsubscribe();
       }
     })
   }

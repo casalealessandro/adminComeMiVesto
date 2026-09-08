@@ -34,6 +34,53 @@ describe('FormBuilderComponent characterization', () => {
     expect(component.formElements).toEqual([{ type: 'textBox', label: 'Text Box', validation: [] }]);
     expect(open).toHaveBeenCalledWith(component.elements[0], 0); component.onRemove(0); expect(component.formElements).toEqual([]);
   });
+  it('keeps simultaneous property popups independent by guid', () => {
+    const { component, popup, output } = setup('new');
+    spyOn(Math, 'random').and.returnValues(0.111, 0.222);
+    component.formElements = [{ name: 'field-a', label: 'A' }, { name: 'field-b', label: 'B' }];
+
+    component.openPropertiesModal(component.formElements[0], 0);
+    component.openPropertiesModal(component.formElements[1], 1);
+
+    expect(output.observers.length).toBe(2);
+
+    output.next({ guid: '222', name: 'saveProperties', formField: { name: 'field-b-saved', label: 'B saved' } });
+
+    expect(component.formElements[0]).toEqual({ name: 'field-a', label: 'A' });
+    expect(component.formElements[1]).toEqual({ name: 'field-b-saved', label: 'B saved' });
+    expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith('222');
+
+    output.next({ guid: '111', name: 'saveProperties', formField: { name: 'field-a-saved', label: 'A saved' } });
+
+    expect(component.formElements[0]).toEqual({ name: 'field-a-saved', label: 'A saved' });
+    expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith('111');
+  });
+  it('keeps the field unchanged when closeProperties closes its popup', () => {
+    const { component, popup, output } = setup('new');
+    spyOn(Math, 'random').and.returnValue(0.333);
+    component.formElements = [{ name: 'field-a', label: 'A' }];
+
+    component.openPropertiesModal(component.formElements[0], 0);
+    output.next({ guid: '333', name: 'closeProperties', formField: { name: 'changed-in-popup' } });
+
+    expect(component.formElements[0]).toEqual({ name: 'field-a', label: 'A' });
+    expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith('333');
+  });
+  it('releases only the terminal popup listener after save or close', () => {
+    const { component, output } = setup('new');
+    spyOn(Math, 'random').and.returnValues(0.444, 0.555);
+    component.formElements = [{ name: 'field-a' }, { name: 'field-b' }];
+
+    component.openPropertiesModal(component.formElements[0], 0);
+    component.openPropertiesModal(component.formElements[1], 1);
+    expect(output.observers.length).toBe(2);
+
+    output.next({ guid: '555', name: 'closeProperties' });
+    expect(output.observers.length).toBe(1);
+
+    output.next({ guid: '444', name: 'saveProperties', formField: { name: 'field-a-saved' } });
+    expect(output.observers.length).toBe(0);
+  });
   it('moves fields without allowing them outside the form bounds', () => {
     const { component } = setup('new');
     component.formElements = [{ name: 'a' }, { name: 'b' }, { name: 'c' }];
