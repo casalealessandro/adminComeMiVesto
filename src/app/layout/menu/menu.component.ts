@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MenuService } from '../../services/menu.service';
+import { NAVIGATION_ITEMS, NavigationItem } from '../../services/navigation-registry';
 
 @Component({
   selector: 'app-menu',
@@ -30,21 +31,10 @@ export class MenuComponent {
    // Signal readonly che rappresenta lo stato del menu (collegato al servizio)
   getIsMenuOpen = this.menuService.getIsMenuOpen;
 
-// Definizione delle voci di menu
-     allMenu = [
-      { path: 'dashboard', label: 'Dashboard', icon:'mdi mdi-view-dashboard-outline' },
-      { path: 'utenti', label:'Utenti Registrati',icon:'mdi mdi-account-multiple-outline' },
-    
-      { path: 'form-list', label:'Gestione form e viste',icon:'mdi mdi-cog-outline' },
-      { path: 'outfit-list', label:'Lista outfit ',icon:'mdi mdi-wardrobe-outline' },
-      { path: 'outfit-category', label:'Lista categorie outfit ',icon:'mdi mdi-wardrobe-outline' },
-      { path: 'colors', label:'Colori outfit',icon:'mdi mdi-palette-outline' },
-      { path: 'reports', label:'Segnalazioni',icon:'mdi mdi-flag-outline' },
-      { path: 'outfit-product-list', label:'Gestione prodotti e feed',icon:'mdi mdi-tshirt-v-outline' }, 
-    ]; // }
-    //Construttore : inietta il servvizio del menu
+    //Construttore : inietta il servvizio del menu e le voci configurate dall'applicazione
     constructor(
-      private menuService: MenuService
+      private menuService: MenuService,
+      @Inject(NAVIGATION_ITEMS) public allMenu: readonly NavigationItem[]
     ){}
 // metodo per navigare a in percorso specifico e chiudere il menu
     navigateTo(route: string) {
