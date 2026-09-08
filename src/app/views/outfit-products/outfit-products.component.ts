@@ -190,7 +190,7 @@ export class OutfitProductsComponent {
     this.popupModal.setNewPopUp(guid, 'DynamicFormComponent', null, 800, null, InstanceData, false, true, "Modifica Prodotto", '', false)
 
 
-    this.popupModal.outputComponent.subscribe(async resulOutputComponent => {
+    const popupSubscription = this.popupModal.outputComponent.subscribe(async resulOutputComponent => {
       if (resulOutputComponent.guid == guid && resulOutputComponent.name == 'submitForm') {
 
         const formData = resulOutputComponent.formData;
@@ -214,6 +214,7 @@ export class OutfitProductsComponent {
         if (res) {
           
           this.popupModal.destroyCurrentOpenPopUpByGuid(guid);
+          popupSubscription.unsubscribe();
          
           this.loadProduct()
         }
@@ -222,6 +223,7 @@ export class OutfitProductsComponent {
       if (resulOutputComponent.guid == guid && resulOutputComponent.name == 'cancelForm') {
        
         this.popupModal.destroyCurrentOpenPopUpByGuid(guid);
+        popupSubscription.unsubscribe();
       }
     })
   }
@@ -261,10 +263,11 @@ export class OutfitProductsComponent {
       this.popupModal.setNewPopUp(guid, 'ProductFromFeedComponent', null, 1000, null, InstanceData, true, true, "Importa Prodotti",'',true)
       
   
-      this.popupModal.outputComponent.subscribe(async resulOutputComponent=>{
+      const feedPopupSubscription = this.popupModal.outputComponent.subscribe(async resulOutputComponent=>{
         if(resulOutputComponent.guid == guid && resulOutputComponent.name == 'stochiudendo'){
 
           this.loadProduct()
+          feedPopupSubscription.unsubscribe();
         }
 
       })
@@ -294,7 +297,6 @@ export class OutfitProductsComponent {
     }
 
     
-
     if(formData.outfitCategory){ 
 
       this.products = this.products.filter(p=>p.outfitCategory == formData.outfitCategory);
