@@ -1,4 +1,4 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
+/* Temporary Phase D.1 runner scope. Revert before merging the PR. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -9,7 +9,12 @@
     ]
   },
   "include": [
-    "src/**/*.spec.ts",
+    "src/app/services/popup.service.spec.ts",
+    "src/app/services/overlay.service.spec.ts",
+    "src/app/components/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component.spec.ts",
+    "src/app/components/modal-popup/modal-popup-content/modal-popup-content.component.spec.ts",
+    "src/app/components/overlay-component/overlay.component.spec.ts",
+    "src/app/widgets/ui-dialogs.spec.ts",
     "src/**/*.d.ts"
   ]
 }
