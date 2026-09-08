@@ -1,4 +1,4 @@
-/* Temporary test scope for Popup Core D.2.1 characterization. Restored before merge. */
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -9,7 +9,7 @@
     ]
   },
   "include": [
-    "src/app/services/popup.service.spec.ts",
+    "src/**/*.spec.ts",
     "src/**/*.d.ts"
   ]
 }
