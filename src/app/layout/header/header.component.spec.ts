@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { HeaderComponent } from './header.component';
 import { MenuService } from '../../services/menu.service';
@@ -7,7 +6,7 @@ import { OverlayService } from '../../services/overlay.service';
 import { HEADER_CONFIG, HeaderConfig } from '../../services/header-config';
 import { HEADER_USER_PROVIDER, HeaderUser, HeaderUserProvider } from '../../services/header-user-provider';
 
-describe('HeaderComponent E.3.2 boundary', () => {
+describe('HeaderComponent E.3.3 cleanup', () => {
   let fixture: ComponentFixture<HeaderComponent>;
   let component: HeaderComponent;
   let menuService: MenuService;
@@ -37,7 +36,6 @@ describe('HeaderComponent E.3.2 boundary', () => {
       imports: [HeaderComponent],
       providers: [
         MenuService,
-        provideRouter([]),
         { provide: OverlayService, useValue: overlayService },
         { provide: HEADER_CONFIG, useValue: headerConfig },
         { provide: HEADER_USER_PROVIDER, useValue: headerUserProvider }
