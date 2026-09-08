@@ -16,6 +16,8 @@ import { starterKitEntryComponents } from './services/entryComponents';
 import { comeMiVestoPopupComponents } from './app-popup-components';
 import { NAVIGATION_ITEMS } from './services/navigation-registry';
 import { comeMiVestoNavigation } from './app-navigation';
+import { HEADER_CONFIG } from './services/header-config';
+import { comeMiVestoHeaderConfig } from './app-header-config';
 
 const popupComponents = [
   ...starterKitEntryComponents,
@@ -28,6 +30,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: POPUP_REGISTRY, useValue: popupComponents },
     { provide: NAVIGATION_ITEMS, useValue: comeMiVestoNavigation },
+    { provide: HEADER_CONFIG, useValue: comeMiVestoHeaderConfig },
     importProvidersFrom(
       AngularFireModule.initializeApp(environment.firebase),
       AngularFirestoreModule,
