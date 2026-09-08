@@ -2,9 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, Subject } from 'rxjs';
 
-import { OutfitProductsComponent } from './outfit-products.component';
-import { OutfitsService } from '../../services/outfit.service';
 import { PopUpService } from '../../services/popup.service';
+import { OutfitsService } from '../../services/outfit.service';
+import { OutfitProductsComponent } from './outfit-products.component';
 
 describe('OutfitProductsComponent popup lifecycle D.2.3b', () => {
   function setup() {
