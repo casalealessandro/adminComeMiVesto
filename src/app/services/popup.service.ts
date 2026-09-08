@@ -34,18 +34,18 @@ export class PopUpService {
 
     const component = entryComponents.find((c: { name: any; }) => c.name === componenName);
 
-    return component!.component || null;
+    if (!component) {
+      throw new Error(`Component "${componenName}" is not registered`);
+    }
+
+    return component.component;
   }
 
   isComponentExistByName(componenName: any): boolean {
 
     const component = entryComponents.find((c: { name: any; }) => c.name === componenName);
 
-    if (component!.name) {
-      return true
-    }
-
-    return false
+    return !!component;
   }
 
 
@@ -53,7 +53,7 @@ export class PopUpService {
 
   setNewPopUp(id: string, componentName: any, data: any, popUpWidth: any = '800', accessoringData?: any, instancedData?: any, showCaptionFooter = false, showCaptionHeader = false, title = '', position = 'center', isClosablePopUp = false) {
 
-    if (typeof window !== 'undefined' && window.innerWidth <= 600) popUpWidth = '100vw';
+    if (typeof window !== 'undefined' && window.innerWidth <= 600) popUpWidth = window.innerWidth;
 
     if (!id) {
       id = Math.random().toString().replace("0.", "")
@@ -79,6 +79,7 @@ export class PopUpService {
         title: title,
         position: position,
         id: id,
+        isClosable: isClosablePopUp,
         isClosablePopUp: isClosablePopUp
       }
       this.currentPopupsSet.push(dataPoUp)
@@ -94,6 +95,8 @@ export class PopUpService {
       // this.currentPopupsSet[index]['id'] = id;
       this.currentPopupsSet[index]['showCaptionFooter'] = showCaptionFooter;
       this.currentPopupsSet[index]['showCaptionHeader'] = showCaptionHeader;
+      this.currentPopupsSet[index]['isClosable'] = isClosablePopUp;
+      this.currentPopupsSet[index]['isClosablePopUp'] = isClosablePopUp;
 
 
       this._popupsSet.next(this.currentPopupsSet);
