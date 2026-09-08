@@ -26,50 +26,42 @@ export class OverlayComponent {
 
   constructor(private overlayService: OverlayService) {}
 
-
   // Listener per il click fuori dal componente
   @HostListener('document:click', ['$event'])
   clickOutside(event: MouseEvent) {
-   
-    setTimeout(() => {
-     // Verifica se il click è fuori dal contenitore ovveride 
-    
-     const currentTarget = event.target as HTMLElement;
+    const currentTarget = event.target as Node | null;
 
-     // Verifica se il click è avvenuto fuori dal contenitore dell'overlay
-     if (this.overlayContentRef && !this.overlayContentRef.nativeElement.contains(currentTarget) && this.isVisible()) {
-       this.closeOverlay();
-     }
-   }, 600);
-    
-   
-    
+    if (
+      this.overlayContentRef &&
+      currentTarget &&
+      !this.overlayContentRef.nativeElement.contains(currentTarget) &&
+      this.isVisible()
+    ) {
+      this.closeOverlay();
+    }
   }
 
   ngOnInit() {
-
     this.overlaySubscription.add(
       this.overlayService.overlayData$.subscribe((data) => {
-        if(!data){
+        if (!data) {
           this.isVisible.set(false);
-          return
+          return;
         }
+
         this.contentTemplate = data?.contentTemplate || null; // Passa il template al componente
-        
-        this.openOverlay(data.position);
-
         this.showBgOverlay = data.showBgOverlay;
-
+        this.openOverlay(data.position);
       })
     );
   }
+
   openOverlay(position: { top: number; left: number }): void {
     this.position.set(position);
     this.isVisible.set(true);
 
     setTimeout(() => {
-      const overlayElement = document.querySelector('.overlay-content');
-      overlayElement?.classList.add('active');
+      this.overlayContentRef?.nativeElement.classList.add('active');
     }, 10);
   }
 
@@ -77,14 +69,14 @@ export class OverlayComponent {
     // Annulla la sottoscrizione quando il componente viene distrutto
     this.overlaySubscription.unsubscribe();
   }
+
   closeOverlay(): void {
-   
-    const overlayElement = document.querySelector('.overlay-content');
-    overlayElement?.classList.remove('active');
+    this.overlayContentRef?.nativeElement.classList.remove('active');
+
     setTimeout(() => {
       this.isVisible.set(false);
       this.overlayService.closeOverlay(); // Chiamata al servizio per chiudere l'overlay
+      this.closed.emit();
     }, 200); // Tempo per chiusura animata
   }
-  
 }

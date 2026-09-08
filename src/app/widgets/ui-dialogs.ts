@@ -1,5 +1,3 @@
-
-
 const dialogTemplate = `
  
     <div class="ui-modal-dialog ">
@@ -18,79 +16,120 @@ const dialogTemplate = `
  
 `;
 
+let dialogTitleSequence = 0;
+
+const prepareDialog = (dialogElement: HTMLElement): HTMLElement | null => {
+  const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const titleElement = dialogElement.querySelector('.ui-modal-title');
+
+  dialogElement.setAttribute('role', 'dialog');
+  dialogElement.setAttribute('aria-modal', 'true');
+
+  if (titleElement) {
+    const titleId = `ui-modal-title-${++dialogTitleSequence}`;
+    titleElement.id = titleId;
+    dialogElement.setAttribute('aria-labelledby', titleId);
+  }
+
+  return previousFocus;
+};
+
+const mountAndFocusDialog = (dialogElement: HTMLElement): void => {
+  document.body.appendChild(dialogElement);
+  (dialogElement.querySelector('button') as HTMLButtonElement | null)?.focus();
+};
+
+const removeDialogAndRestoreFocus = (
+  dialogElement: HTMLElement,
+  previousFocus: HTMLElement | null
+): void => {
+  if (dialogElement.isConnected) {
+    dialogElement.remove();
+  }
+
+  if (previousFocus?.isConnected) {
+    previousFocus.focus();
+  }
+};
 
 export const alert = (messageHtml: string, title: string, callback?: (resp?: any) => void): void => {
-
-  
   const dialog = dialogTemplate
-  .replace('{{title}}', title)
-  .replace('{{message}}', messageHtml); //document.createElement('div');
- 
-
+    .replace('{{title}}', title)
+    .replace('{{message}}', messageHtml);
 
   const alertElement = document.createElement('div');
   alertElement.classList.add('modal');
-  alertElement.style.display = 'block'
+  alertElement.style.display = 'block';
   alertElement.innerHTML = dialog;
-  // Adding OK button
-  
-  alertElement.querySelector('.ok-button')!.addEventListener('click', () => {
-    let resp = true
-    document.body.removeChild(alertElement);
-    if (callback) {
-      callback(resp); // Chiama la callback se è stata fornita
+
+  const previousFocus = prepareDialog(alertElement);
+  let isClosed = false;
+
+  const closeAlert = () => {
+    if (isClosed) {
+      return;
+    }
+
+    isClosed = true;
+    removeDialogAndRestoreFocus(alertElement, previousFocus);
+    callback?.(true);
+  };
+
+  alertElement.querySelector('.ok-button')!.addEventListener('click', closeAlert);
+  alertElement.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeAlert();
     }
   });
-  document.body.appendChild(alertElement);
-  //dialog.appendChild(cancelButton);
 
-
+  mountAndFocusDialog(alertElement);
 };
+
 export const confirm = (messageHtml: string, title: string, callback?: (resp?: any) => void): void => {
-
   const dialog = dialogTemplate
-  .replace('{{title}}', title)
-  .replace('{{message}}', messageHtml); //document.createElement('div');
- 
-
+    .replace('{{title}}', title)
+    .replace('{{message}}', messageHtml);
 
   const alertElement = document.createElement('div');
   alertElement.classList.add('modal');
-  alertElement.style.display = 'block'
+  alertElement.style.display = 'block';
   alertElement.innerHTML = dialog;
 
-  // Adding OK button
   const okButton = document.createElement('button');
   const cancelButton = document.createElement('button');
   okButton.classList.add('ui-modal-button');
   cancelButton.classList.add('ui-modal-button');
-  
   okButton.textContent = 'Si';
-  cancelButton.textContent = 'No'
+  cancelButton.textContent = 'No';
 
   alertElement.querySelector('.ui-modal-footer-message')!.innerHTML = '';
-  
-  alertElement.querySelector('.ui-modal-footer-message')!.appendChild(okButton)
-  alertElement.querySelector('.ui-modal-footer-message')!.appendChild(cancelButton)
+  alertElement.querySelector('.ui-modal-footer-message')!.appendChild(okButton);
+  alertElement.querySelector('.ui-modal-footer-message')!.appendChild(cancelButton);
 
-  okButton.addEventListener('click', () => {
-    let resp = true
-    document.body.removeChild(alertElement);
-    if (callback) {
-      callback(resp); // Chiama la callback se è stata fornita
+  const previousFocus = prepareDialog(alertElement);
+  let isClosed = false;
+
+  const closeConfirm = (response: boolean) => {
+    if (isClosed) {
+      return;
+    }
+
+    isClosed = true;
+    removeDialogAndRestoreFocus(alertElement, previousFocus);
+    callback?.(response);
+  };
+
+  okButton.addEventListener('click', () => closeConfirm(true));
+  cancelButton.addEventListener('click', () => closeConfirm(false));
+  alertElement.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeConfirm(false);
     }
   });
-  cancelButton.addEventListener('click', () => {
-    let resp = false
-    document.body.removeChild(alertElement);
-    if (callback) {
-      callback(resp); // Chiama la callback se è stata fornita
-    }
-  });
-  
 
-  // Adding the dialog to the DOM
-  document.body.appendChild(alertElement);
+  mountAndFocusDialog(alertElement);
 };
 
 export const showPopover = (messageHtml: string, targetElement: HTMLElement, position: 'top' | 'left' | 'right' | 'bottom' = 'bottom'): void => {
