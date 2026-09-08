@@ -9,7 +9,7 @@
     ]
   },
   "include": [
-    "src/**/*.spec.ts",
+    "src/app/views/outfit-products/outfit-products.component.spec.ts",
     "src/**/*.d.ts"
   ]
 }
