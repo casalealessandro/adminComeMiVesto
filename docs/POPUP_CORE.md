@@ -141,6 +141,36 @@ Implementation boundary:
 
 This removes the former dependency cycle in which `OutfitProductsComponent` depended on `PopUpService`, while `PopUpService` imported a registry that imported `OutfitProductsComponent` again.
 
+## Phase D.4 — interaction stabilization
+
+D.4 keeps the existing popup, overlay and simple-dialog architectures and only hardens user interaction behavior.
+
+Characterized and stabilized behavior:
+
+- a newly rendered popup receives focus without changing `setNewPopUp(...)`;
+- closing a popup restores focus to the element that was active before opening it;
+- `Escape` closes only the topmost popup and only when that popup is closable;
+- popup closing through `Escape` preserves the historical `stochiudendo` event path;
+- duplicate popup DOM ids are removed while the GUID remains on the dialog root;
+- popup dialog markup exposes `aria-modal` and an accessible label;
+- overlay click-outside no longer relies on the historical 600 ms delay;
+- overlay animation manipulates its own `ViewChild` instead of a global `document.querySelector`;
+- `showBgOverlay` renders the already-existing backdrop only when requested;
+- component-driven overlay close emits the existing `closed` output;
+- `alert` and `confirm` keep their callback API while adding dialog semantics, initial focus and focus restoration;
+- `Escape` on `confirm` follows the existing negative/cancel path.
+
+D.4 explicitly does not change:
+
+- popup registry or dynamic component resolution;
+- GUID identity semantics;
+- `BehaviorSubject` popup state;
+- runtime `EventEmitter` discovery or metadata envelopes;
+- existing popup consumer call sites;
+- visual design or animation timings;
+- `showPopover` behavior;
+- Forms Core, FormBuilder or ComeMiVesto business behavior.
+
 ## Findings to validate/fix after the baseline
 
 The following are findings from source analysis. They are intentionally **not fixed in Phase D.0**.
