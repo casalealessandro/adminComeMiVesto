@@ -7,6 +7,7 @@ import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
 import { UserProfile } from '../../interface/app.interface';
+import { HEADER_CONFIG, HeaderConfig } from '../../services/header-config';
 
 describe('HeaderComponent E.0 characterization', () => {
   let fixture: ComponentFixture<HeaderComponent>;
@@ -15,6 +16,12 @@ describe('HeaderComponent E.0 characterization', () => {
   let userService: jasmine.SpyObj<UserService>;
   let auth: jasmine.SpyObj<AuthService>;
   let overlayService: jasmine.SpyObj<OverlayService>;
+
+  const headerConfig: HeaderConfig = {
+    logoUrl: 'assets/images/test-logo.jpg',
+    logoAlt: 'Test logo',
+    defaultAvatarUrl: 'assets/images/default-avatar.svg'
+  };
 
   const profile = {
     nome: 'Mario',
@@ -40,7 +47,8 @@ describe('HeaderComponent E.0 characterization', () => {
         provideRouter([]),
         { provide: UserService, useValue: userService },
         { provide: AuthService, useValue: auth },
-        { provide: OverlayService, useValue: overlayService }
+        { provide: OverlayService, useValue: overlayService },
+        { provide: HEADER_CONFIG, useValue: headerConfig }
       ]
     }).compileComponents();
 
@@ -62,6 +70,18 @@ describe('HeaderComponent E.0 characterization', () => {
     component.renderHeader();
 
     expect(userService.getUserProfile).not.toHaveBeenCalled();
+  });
+
+  it('uses the configured logo and default avatar', () => {
+    component.userProfile = { ...profile, photoURL: undefined } as UserProfile;
+    fixture.detectChanges();
+
+    const logo = fixture.nativeElement.querySelector('.logo-image') as HTMLImageElement;
+    const avatar = fixture.nativeElement.querySelector('.profile-img') as HTMLImageElement;
+
+    expect(logo.getAttribute('src')).toBe(headerConfig.logoUrl);
+    expect(logo.getAttribute('alt')).toBe(headerConfig.logoAlt);
+    expect(avatar.getAttribute('src')).toBe(headerConfig.defaultAvatarUrl);
   });
 
   it('toggles the shared menu state from the hamburger action', () => {
