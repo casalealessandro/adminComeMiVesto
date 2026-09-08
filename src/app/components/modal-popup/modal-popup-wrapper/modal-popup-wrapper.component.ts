@@ -37,7 +37,6 @@ export class PopupWrapperComponent implements OnInit {
           res.class = this.classSlideCenter;
           setTimeout(() => {
             this.popups.push(res);
-            this.focusPopup(res);
           }, 500);
         }
 

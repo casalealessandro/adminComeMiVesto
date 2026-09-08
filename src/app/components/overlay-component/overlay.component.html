@@ -2,7 +2,7 @@
   *ngIf="isVisible() && showBgOverlay"
   [ngClass]="{'bg-overlay':showBgOverlay}"
   class="overlay-backdrop"
-  (click)="closeOverlay()">
+  (click)="$event.stopPropagation(); closeOverlay()">
 </div>
 <div
   #overlayContent
