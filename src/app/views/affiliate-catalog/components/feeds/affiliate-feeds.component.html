@@ -1,0 +1,102 @@
+<section class="affiliate-feeds" aria-labelledby="affiliate-feeds-title" [attr.aria-busy]="loading">
+  <header class="affiliate-feeds__header">
+    <div>
+      <p class="affiliate-feeds__eyebrow">Catalogo Affiliati</p>
+      <h2 id="affiliate-feeds-title">Feed affiliati</h2>
+      <p class="affiliate-feeds__description">
+        Configura le sorgenti prodotto collegate ai programmi. La sincronizzazione verrà gestita in una fase dedicata.
+      </p>
+    </div>
+
+    <div class="affiliate-feeds__actions">
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-primary" (click)="openCreate()">
+        <span class="mdi mdi-plus" aria-hidden="true"></span>
+        Nuovo feed
+      </button>
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
+        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert alert-danger affiliate-feeds__error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  </div>
+
+  <label *ngIf="feeds.length" class="affiliate-feeds__search">
+    <span>Cerca feed</span>
+    <input
+      class="form-control"
+      [(ngModel)]="search"
+      (ngModelChange)="applySearch()"
+      placeholder="Nome, programma, ID feed, adapter, modalità o mercato">
+  </label>
+
+  <p *ngIf="loading" class="affiliate-feeds__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento feed…
+  </p>
+
+  <div *ngIf="!loading && !error && !filteredFeeds.length" class="affiliate-feeds__empty">
+    <span class="mdi mdi-rss-off" aria-hidden="true"></span>
+    <strong>Nessun feed affiliato trovato</strong>
+    <span>{{ search ? 'Modifica i criteri di ricerca.' : 'Crea il primo feed per collegare una sorgente prodotto a un programma.' }}</span>
+  </div>
+
+  <div class="affiliate-feeds__desktop" *ngIf="!loading && gridRows.length">
+    <app-data-grid
+      [idTable]="'affiliate-feeds-grid'"
+      [colonne]="columns"
+      [dataSource]="gridRows"
+      [remoteOperation]="false"
+      [isEditable]="false"
+      [isEditableNewRow]="false"
+      [isEditableEditRow]="false"
+      [isEditableDeleteRow]="false"
+      [showToolbarTop]="false"
+      [showToolbarBottom]="false"
+      [isSearchable]="false"
+      [tableHeight]="520"
+      (emittendButtonCellClick)="gridAction($event)">
+    </app-data-grid>
+  </div>
+
+  <div class="affiliate-feeds__mobile" *ngIf="!loading && filteredFeeds.length">
+    <article class="affiliate-feed-card" *ngFor="let feed of filteredFeeds">
+      <div class="affiliate-feed-card__header">
+        <div>
+          <span class="affiliate-feed-card__program">{{ programName(feed) }}</span>
+          <h3>{{ feed.name }}</h3>
+          <p>{{ feed.networkFeedId }}</p>
+        </div>
+        <span class="badge" [class.text-bg-success]="feed.enabled" [class.text-bg-secondary]="!feed.enabled">
+          {{ feed.enabled ? 'Abilitato' : 'Disabilitato' }}
+        </span>
+      </div>
+
+      <div class="affiliate-feed-card__badges">
+        <span class="badge text-bg-light">{{ feed.readMode }}</span>
+        <span class="badge text-bg-light">{{ feed.locale }}</span>
+        <span class="badge text-bg-light">{{ feed.market }}</span>
+      </div>
+
+      <dl>
+        <div><dt>Adapter</dt><dd>{{ feed.adapterType || 'Predefinito programma' }}</dd></div>
+        <div><dt>Ultimo sync OK</dt><dd>{{ feed.lastSuccessfulSyncAt ? (feed.lastSuccessfulSyncAt | date:'short') : 'Mai' }}</dd></div>
+        <div><dt>Ultimo totale</dt><dd>{{ feed.lastTotalHits ?? '—' }}</dd></div>
+        <div><dt>Aggiornato</dt><dd>{{ feed.updatedAt | date:'short' }}</dd></div>
+      </dl>
+
+      <button
+        *ngIf="auth.isAdmin()"
+        type="button"
+        class="btn btn-sm btn-outline-primary affiliate-feed-card__edit"
+        (click)="openEdit(feed)">
+        <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+        Modifica
+      </button>
+    </article>
+  </div>
+</section>

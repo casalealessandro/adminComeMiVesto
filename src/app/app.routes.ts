@@ -14,6 +14,7 @@ import { ColorsComponent } from './views/colors/colors.component';
 import { ReportsComponent } from './views/reports/reports.component';
 import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
 import { AffiliateProgramsComponent } from './views/affiliate-catalog/components/programs/affiliate-programs.component';
+import { AffiliateFeedsComponent } from './views/affiliate-catalog/components/feeds/affiliate-feeds.component';
 
 
 export const routes:Routes = [
@@ -31,6 +32,7 @@ export const routes:Routes = [
       children: [
         { path: '', redirectTo: 'programs', pathMatch: 'full' },
         { path: 'programs', component: AffiliateProgramsComponent },
+        { path: 'feeds', component: AffiliateFeedsComponent },
       ]
     },
     { path: 'form-list', component: AppFormListComponent,canActivate:[authGuard] },

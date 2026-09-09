@@ -1,0 +1,27 @@
+<section class="affiliate-feed-form" aria-live="polite">
+  <ng-container *ngIf="itemData.feed as feed">
+    <div *ngIf="itemData.mode === 'edit'" class="affiliate-feed-form__identity">
+      <div>
+        <span>Programma affiliato</span>
+        <strong>{{ itemData.programName || feed.affiliateProgramId }}</strong>
+      </div>
+      <div>
+        <span>Network Feed ID</span>
+        <strong>{{ feed.networkFeedId }}</strong>
+      </div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <app-dynamic-form
+    [service]="formId"
+    [editData]="itemData.mode === 'edit' ? itemData.feed : undefined"
+    [idData]="itemData.mode === 'create' ? createDefaults : undefined"
+    [showBottomButtons]="true"
+    [inputBtnLeftName]="'Annulla'"
+    [inputBtnRightName]="itemData.mode === 'edit' ? 'Salva modifiche' : 'Crea feed'"
+    [loading]="saving"
+    (submitFormEvent)="handleForm($event)">
+  </app-dynamic-form>
+</section>
