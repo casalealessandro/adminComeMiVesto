@@ -4,14 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { DataGridComponent } from '../../../../core/data-grid/data-grid.component';
 import { ColData, Colonne } from '../../../../core/data-grid/models/data-grid.models';
-import { alert } from '../../../../core/dialogs/ui-dialogs';
+import { alert, confirm } from '../../../../core/dialogs/ui-dialogs';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AuthService } from '../../../../services/auth.service';
 import {
   AffiliateFeedFormContext,
   AffiliateFeedFormResult,
 } from '../../forms/affiliate-feed-form-host.component';
-import { AffiliateFeed, AffiliateProgram } from '../../models/affiliate-catalog.models';
+import {
+  AffiliateFeed,
+  AffiliateProgram,
+  AffiliateSyncRun,
+} from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 const baseColumn = (
@@ -36,7 +40,34 @@ export interface AffiliateFeedGridRow extends AffiliateFeed {
   adapterTypeLabel: string;
 }
 
-export function buildAffiliateFeedColumns(canEdit: boolean): Colonne[] {
+export interface AffiliateFeedSyncNotice {
+  feedName: string;
+  run: AffiliateSyncRun;
+}
+
+export function affiliateFeedSyncEligibility(
+  feed: AffiliateFeed,
+  program?: AffiliateProgram,
+): string | null {
+  if (!feed.enabled) return 'Il feed è disabilitato.';
+  if (!program) return 'Il programma affiliato associato non è disponibile.';
+  if (!program.enabled) return 'Il programma affiliato è disabilitato.';
+  if (program.networkStatus !== 'ACTIVE') return 'Il programma affiliato non è attivo sul network.';
+  return null;
+}
+
+export function affiliateFeedSyncErrorMessage(status?: number): string {
+  if (status === 400) return 'La richiesta di sincronizzazione non è valida.';
+  if (status === 401 || status === 403) return 'Non sei autorizzato ad avviare la sincronizzazione.';
+  if (status === 404) return 'Il feed affiliato non è più disponibile.';
+  if (status === 409) {
+    return 'La sincronizzazione non può partire: il feed non è eleggibile oppure esiste già una sincronizzazione attiva.';
+  }
+  if (status === 0) return 'Backend non raggiungibile. Riprova quando la connessione è disponibile.';
+  return 'Avvio della sincronizzazione non riuscito.';
+}
+
+export function buildAffiliateFeedColumns(canManage: boolean): Colonne[] {
   const columns: ColData[] = [
     baseColumn('name', 'Nome', 190),
     baseColumn('programName', 'Programma', 190),
@@ -50,17 +81,29 @@ export function buildAffiliateFeedColumns(canEdit: boolean): Colonne[] {
     baseColumn('updatedAt', 'Aggiornato', 135, 'campoDateTime'),
   ];
 
-  if (canEdit) {
-    columns.push({
-      ...baseColumn('', 'Modifica', 72, 'campoButton'),
-      button: {
-        text: '',
-        name: 'edit',
-        event: 'edit',
-        icon: 'mdi mdi-pencil-outline',
-        hint: 'Modifica feed',
+  if (canManage) {
+    columns.push(
+      {
+        ...baseColumn('', 'Sync', 72, 'campoButton'),
+        button: {
+          text: '',
+          name: 'sync',
+          event: 'sync',
+          icon: 'mdi mdi-sync',
+          hint: 'Avvia sincronizzazione',
+        },
       },
-    });
+      {
+        ...baseColumn('', 'Modifica', 72, 'campoButton'),
+        button: {
+          text: '',
+          name: 'edit',
+          event: 'edit',
+          icon: 'mdi mdi-pencil-outline',
+          hint: 'Modifica feed',
+        },
+      },
+    );
   }
 
   return [{ itemType: 'group', groupDataField: '', data: columns }];
@@ -86,8 +129,11 @@ export class AffiliateFeedsComponent implements OnInit {
   search = '';
   loading = false;
   error = '';
+  syncError = '';
+  syncNotice: AffiliateFeedSyncNotice | null = null;
+  readonly syncingFeedIds = new Set<string>();
 
-  private programNames = new Map<string, string>();
+  private programsById = new Map<string, AffiliateProgram>();
 
   ngOnInit(): void {
     this.columns = buildAffiliateFeedColumns(this.auth.isAdmin());
@@ -108,7 +154,7 @@ export class AffiliateFeedsComponent implements OnInit {
         next: ({ feeds, programs }) => {
           this.feeds = feeds;
           this.programs = programs;
-          this.programNames = new Map(programs.map((program) => [program.id, program.name]));
+          this.programsById = new Map(programs.map((program) => [program.id, program]));
           this.applySearch();
         },
         error: () => {
@@ -116,7 +162,7 @@ export class AffiliateFeedsComponent implements OnInit {
           this.filteredFeeds = [];
           this.programs = [];
           this.gridRows = [];
-          this.programNames.clear();
+          this.programsById.clear();
           this.error = 'Impossibile caricare i feed affiliati.';
         },
       });
@@ -145,7 +191,11 @@ export class AffiliateFeedsComponent implements OnInit {
   }
 
   programName(feed: AffiliateFeed): string {
-    return this.programNames.get(feed.affiliateProgramId) || feed.affiliateProgramId;
+    return this.programsById.get(feed.affiliateProgramId)?.name || feed.affiliateProgramId;
+  }
+
+  isSyncing(feedId: string): boolean {
+    return this.syncingFeedIds.has(feedId);
   }
 
   openCreate(): void {
@@ -166,8 +216,54 @@ export class AffiliateFeedsComponent implements OnInit {
     });
   }
 
+  requestSync(feed: AffiliateFeed): void {
+    if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id)) return;
+
+    const eligibilityError = affiliateFeedSyncEligibility(
+      feed,
+      this.programsById.get(feed.affiliateProgramId),
+    );
+    if (eligibilityError) {
+      alert(eligibilityError, 'Sincronizzazione non disponibile');
+      return;
+    }
+
+    confirm(
+      'Avviare la sincronizzazione di questo feed? Il processo verrà accodato ed eseguito dal backend.',
+      'Avvia sincronizzazione',
+      (confirmed) => {
+        if (confirmed) this.startSync(feed);
+      },
+    );
+  }
+
   gridAction(event: { name?: string; rowData?: AffiliateFeedGridRow }): void {
-    if (event?.name === 'edit' && event.rowData) this.openEdit(event.rowData);
+    if (!event?.rowData) return;
+    if (event.name === 'sync') {
+      this.requestSync(event.rowData);
+      return;
+    }
+    if (event.name === 'edit') this.openEdit(event.rowData);
+  }
+
+  private startSync(feed: AffiliateFeed): void {
+    if (this.isSyncing(feed.id)) return;
+
+    this.syncError = '';
+    this.syncNotice = null;
+    this.syncingFeedIds.add(feed.id);
+
+    this.affiliateCatalogService
+      .syncFeed(feed.id)
+      .pipe(finalize(() => this.syncingFeedIds.delete(feed.id)))
+      .subscribe({
+        next: (run) => {
+          this.syncNotice = { feedName: feed.name, run };
+        },
+        error: (error: { status?: number }) => {
+          this.syncError = affiliateFeedSyncErrorMessage(error?.status);
+        },
+      });
   }
 
   private openForm(context: AffiliateFeedFormContext): void {

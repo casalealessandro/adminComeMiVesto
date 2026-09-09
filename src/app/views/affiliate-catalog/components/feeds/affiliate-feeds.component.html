@@ -4,7 +4,7 @@
       <p class="affiliate-feeds__eyebrow">Catalogo Affiliati</p>
       <h2 id="affiliate-feeds-title">Feed affiliati</h2>
       <p class="affiliate-feeds__description">
-        Configura le sorgenti prodotto collegate ai programmi. La sincronizzazione verrà gestita in una fase dedicata.
+        Configura le sorgenti prodotto collegate ai programmi e avvia manualmente la sincronizzazione quando necessario.
       </p>
     </div>
 
@@ -23,6 +23,19 @@
   <div *ngIf="error" class="alert alert-danger affiliate-feeds__error" role="alert">
     <span>{{ error }}</span>
     <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  </div>
+
+  <div *ngIf="syncError" class="alert alert-danger affiliate-feeds__sync-state" role="alert">
+    <span class="mdi mdi-alert-circle-outline" aria-hidden="true"></span>
+    <span>{{ syncError }}</span>
+  </div>
+
+  <div *ngIf="syncNotice as notice" class="alert alert-success affiliate-feeds__sync-state" role="status">
+    <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
+    <div>
+      <strong>Sincronizzazione accodata</strong>
+      <span>{{ notice.feedName }} · Run {{ notice.run.id }} · Stato {{ notice.run.status }}</span>
+    </div>
   </div>
 
   <label *ngIf="feeds.length" class="affiliate-feeds__search">
@@ -89,14 +102,26 @@
         <div><dt>Aggiornato</dt><dd>{{ feed.updatedAt | date:'short' }}</dd></div>
       </dl>
 
-      <button
-        *ngIf="auth.isAdmin()"
-        type="button"
-        class="btn btn-sm btn-outline-primary affiliate-feed-card__edit"
-        (click)="openEdit(feed)">
-        <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
-        Modifica
-      </button>
+      <div *ngIf="auth.isAdmin()" class="affiliate-feed-card__actions">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-success"
+          (click)="requestSync(feed)"
+          [disabled]="isSyncing(feed.id)">
+          <span *ngIf="isSyncing(feed.id)" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          <span *ngIf="!isSyncing(feed.id)" class="mdi mdi-sync" aria-hidden="true"></span>
+          {{ isSyncing(feed.id) ? 'Accodamento…' : 'Sincronizza' }}
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-primary"
+          (click)="openEdit(feed)"
+          [disabled]="isSyncing(feed.id)">
+          <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+          Modifica
+        </button>
+      </div>
     </article>
   </div>
 </section>
