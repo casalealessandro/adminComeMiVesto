@@ -3,6 +3,8 @@ import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { buildFormPayload } from '../../views/form-builder/form-builder.component';
 import { parseFields, FormService } from '../../services/form.service';
+import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
+import { FORM_OPTIONS_PROVIDER } from '../../services/form-options-provider';
 import { DynamicFormComponent } from './dynamic-form.component';
 import { DynamicSelectBoxComponent } from './items/dynamic-select-box/dynamic-select-box.component';
 import { DynamicRadioBoxComponent } from './items/dynamic-radio-box/dynamic-radio-box.component';
@@ -18,7 +20,10 @@ describe('Forms Core v1 integration characterization', () => {
     service.getData.and.resolveTo([]);
     await TestBed.configureTestingModule({
       imports: [DynamicFormComponent],
-      providers: [{ provide: FormService, useValue: service }]
+      providers: [
+        { provide: FORM_DEFINITION_REPOSITORY, useValue: service },
+        { provide: FORM_OPTIONS_PROVIDER, useValue: service }
+      ]
     }).compileComponents();
     fixture = TestBed.createComponent(DynamicFormComponent);
     component = fixture.componentInstance;
