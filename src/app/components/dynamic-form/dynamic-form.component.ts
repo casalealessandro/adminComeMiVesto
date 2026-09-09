@@ -10,12 +10,11 @@ import { DynamicSelectBoxComponent } from './items/dynamic-select-box/dynamic-se
 import { DynamicFileBoxComponent } from './items/dynamic-file-box/dynamic-file-box.component';
 import { DynamicRadioBoxComponent } from './items/dynamic-radio-box/dynamic-radio-box.component';
 import { CustomScrollbarComponent } from "../custom-scrollbar/custom-scrollbar.component";
-import { CloseOverlayOnScrollDirective } from '../custom-scrollbar/close-overlay-on-scroll.directive';
 
 @Component({
   selector: 'app-dynamic-form',
   standalone: true,
-  imports: [CommonModule, DynamicSelectBoxComponent, DynamicRadioBoxComponent, DynamicFileBoxComponent, FormsModule, ReactiveFormsModule, CustomScrollbarComponent, CloseOverlayOnScrollDirective],
+  imports: [CommonModule, DynamicSelectBoxComponent, DynamicRadioBoxComponent, DynamicFileBoxComponent, FormsModule, ReactiveFormsModule, CustomScrollbarComponent],
   templateUrl: './dynamic-form.component.html',
   styleUrls: ['./dynamic-form.component.scss'],
 })
