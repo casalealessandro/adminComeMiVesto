@@ -1,0 +1,32 @@
+/* Default Starter Kit theme tokens.
+ * Host applications can override these values without changing Core structure.
+ */
+:root {
+    --primary: #080808;
+    --primary_border: #0304054f;
+
+    --blueSoft: rgb(100 116 139 / 1);
+    --bg-grey: #f4f7fa;
+    --link-nav: #f3f1E9;
+    --bianco: #fff;
+    --giallo: #edcd5f;
+    --table-th-bg: rgb(248 250 252 / 1);
+    --border_color: #e2e8f099;
+    --back: #080808;
+
+    /**Altezza Globale degli elementi di layout***/
+
+    --height_caption: 27px;
+    --height_footer: 40px;
+    --height_caption: 35px;
+    --height_menuFunzioni: 60px;
+    --header_height: 145px;
+    --height_combined: calc(var(--header_height) + var(--height_footer));
+
+    /**Lagrghezza Globale degli elementi di layout***/
+
+    --width_container: 2200px;
+        /***Utils***/
+
+
+}
