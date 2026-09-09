@@ -69,88 +69,237 @@ export class DynamicFormComponent {
     }
     if (typeof this.editData === 'undefined') {
       this.editData = {};
+      this.inEdit = false
     }
-    this.initializeForm();
-  }
-
-  initializeForm() {
-    this.templateService.getJson(this.service).subscribe((data: any) => {
-      this.dataSet = data
-      this.fields = data.fields || [];
-      this.fieldConfigs = data.fieldConfigs || {};
-      this.createForm();
-      this.formShow = true
-    })
-  }
-
-  createForm() {
-    const group: any = {};
-
-    this.fields.forEach(field => {
-      const validators = [];
-      if (field.required) {
-        validators.push(Validators.required);
-      }
-      if (field.minLength !== undefined) {
-        validators.push(Validators.minLength(field.minLength));
-      }
-      if (field.maxLength !== undefined) {
-        validators.push(Validators.maxLength(field.maxLength));
-      }
-      if (field.typeInput === 'number') {
-        if (field.min !== undefined) validators.push(Validators.min(field.min));
-        if (field.max !== undefined) validators.push(Validators.max(field.max));
-      }
-
-      group[field.name] = new FormControl(this.editData?.[field.name] ?? field.value ?? '', validators);
-      this.formValues[field.name] = this.editData?.[field.name] ?? field.value ?? '';
+    //I dati che servono per fare un insert.
+    if (typeof this.idData != 'undefined') {
+      this.editData = this.idData
+    }
+    this.templateService.getFormFields(this.service).subscribe({
+      next: fields => {
+        this.fields = fields;
+        this.initializeForm();
+      },
+      error: () => this.presentToast('Impossibile caricare la configurazione del form.')
     });
 
-    this.form = new FormGroup(group);
+    if (this.inputBtnLeftName) {
+      this.closeButton = this.inputBtnLeftName;
+    }
+    if (this.inputBtnRightName) {
+      this.iconSubmitButton = ''
+      this.submitButton = this.inputBtnRightName;
+    }
   }
 
-  getParentValues(parent: string | undefined): any {
-    if (!parent) return null;
-    return this.parentValues()[parent];
+
+
+
+  initializeForm() {
+    // Inizializza editData come oggetto vuoto se è undefined
+    this.editData = this.editData || {};
+
+    const formGroup = new FormGroup({});
+
+    this.fields.forEach(field => {
+
+      let validators = this.getValidators(field);
+
+      // Recupera il valore dall'editData o imposta null come valore predefinito
+      const value = this.editData[field.name] ?? null;
+      // Aggiungi il controllo al formGroup con i validatori come terzo argomento
+      try {
+        formGroup.addControl(field.name, new FormControl(value, validators));
+      } catch (error) {
+        console.error(`Error setting control for field ${field.name}:`, error);
+      }
+
+
+      // Creazione del segnale per il parent
+      if (field.selectOptions && field.selectOptions.parent) {
+        const parentField = field.selectOptions.parent;
+        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] ?? '' }); // Inizializza il segnale
+
+
+      }
+
+      if (field.radioOptions && field.radioOptions.parent) {
+        const parentField = field.radioOptions.parent;
+        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] ?? '' });
+      }
+      
+      if (field.typeInput === 'password') {
+        this.showPasswordButton[field.name] = true
+      }
+      // Inizializza i valori del form
+      this.initializeFormValues(field);
+    });
+
+    this.form = formGroup;
+
   }
 
-  onValueChangeSelectBox(fieldName: string, value: any): void {
-    this.formValues[fieldName] = value;
-    this.form.get(fieldName)?.setValue(value);
-    this.parentValues.update(current => ({ ...current, [fieldName]: value }));
+  // Metodo separato per gestire i validatori
+  private getValidators(field: DynamicFormField) {
+    const validators = [];
+
+    if (field.required) {
+      validators.push(Validators.required);
+    }
+    if (typeof field.minLength !== 'undefined') {
+      validators.push(Validators.minLength(field.minLength));
+    }
+    if (typeof field.maxLength !== 'undefined') {
+      validators.push(Validators.maxLength(field.maxLength));
+    }
+    if (field.typeInput === 'number' && typeof field.min !== 'undefined') {
+      validators.push(Validators.min(field.min));
+    }
+    if (field.typeInput === 'number' && typeof field.max !== 'undefined') {
+      validators.push(Validators.max(field.max));
+    }
+    if (field.typeInput === 'email') {
+      validators.push(Validators.email);
+    }
+
+    return validators;
   }
 
-  onValueChange(fieldName: string, value: any): void {
-    this.formValues[fieldName] = value;
-    this.form.get(fieldName)?.setValue(value);
+
+
+  initializeFormValues(field: any) {
+
+    //this.formValues[field.name] = field.type === 'selectBox' && field.multiple ? [] : '';
+
+    if (typeof this.editData[field.name] != 'undefined') {
+      this.formValues[field.name] = this.editData[field.name];
+      //this.formValues[field.name] = field.type === 'selectBox' && field.multiple ? this.editData[field.name] : this.editData[field.name];
+
+    }
+
+    this.fieldConfigs[field.name] = field
+  }
+
+  onValueChange(fieldName: string, value: any) {
+
+
+
+    const control = this.form.get(fieldName);
+
+    if (control && control.value !== value) {
+      control.setValue(value, { emitEvent: false });
+    }
+    if (control) {
+      this.formValues[fieldName] = value;
+    }
+
+
+  }
+
+  onValueChangeSelectBox(fieldName: string, event: any) {
+    
+    this.onValueChange(fieldName, event.selectedValue);
+    // Controllo se fieldName è un parent
+    if (fieldName in this.parentValues()) {
+
+
+      this.parentValues.set({ ...this.parentValues(), [fieldName]: event.selectedValue }); // Imposta il valore del parent
+    }
+  }
+
+  getParentValues(parent: any) {
+    if (parent) {
+      return this.parentValues()[parent]
+    }
+    return null
+  }
+  updateCascadeOptions(fieldName: string, value: any) {
+    const fieldConfig = this.fieldConfigs[fieldName];
+    if (fieldConfig && fieldConfig.cascadeFrom) {
+
+      if (fieldName === fieldConfig.cascadeFrom) {
+
+        const updatedOptions = fieldConfig.cascadeOptions[value] || [];
+        this.formValues[fieldName] = updatedOptions;
+
+      }
+
+    }
   }
 
   toggleFieldTextType(field: DynamicFormField) {
-    field.typeInput = field.typeInput === 'password' ? 'text' : 'password';
-  }
 
-  onFucBtnClick(field: DynamicFormField) {
-    this.functionalInputFormEvent.emit({ field, formData: this.form.getRawValue() });
+    if (field.typeInput === 'password') {
+
+      field.typeInput = 'text';
+    } else {
+      field.typeInput = 'password';
+    }
   }
 
   submitForm() {
     if (this.loading) return;
-    if (this.form.invalid) {
+    if (this.form.valid) {
+      let eventT = {
+        name: 'submitForm',
+        formData: this.form.value,
+        form: this.form,
+        inEdit: this.inEdit
+      }
+      this.submitFormEvent.emit(eventT);
+    } else {
       this.form.markAllAsTouched();
-      alert('Compila correttamente i campi richiesti', 'Attenzione');
-      return;
+      const invalidFields = this.getInvalidFields(this.form);
+
+
+      this.presentToast(`Mancano i seguenti campi:${invalidFields.join(', ')}`);
     }
-    this.submitFormEvent.emit({
-      name: 'submitForm',
-      formData: this.form.getRawValue()
-    });
+  }
+  cancellForm() {
+    if (this.loading) return;
+    let eventT = {
+      name: 'cancelForm',
+      formData: this.form.value,
+      form: this.form,
+      component: this
+    }
+    this.submitFormEvent.emit(eventT);
   }
 
-  closeForm() {
-    if (this.loading) return;
-    this.submitFormEvent.emit({
-      name: 'cancelForm',
-      formData: this.form.getRawValue()
+  // Metodo per ottenere i campi non validi
+  getInvalidFields(formGroup: FormGroup): string[] {
+    const invalidFields: string[] = [];
+
+    Object.keys(formGroup.controls).forEach(field => {
+      const control = formGroup.get(field);
+      if (control && control.invalid) {
+
+        let ff = this.fieldConfigs[field].label
+        invalidFields.push(ff);
+      }
     });
+
+    return invalidFields;
+  }
+
+  async presentToast(message: string) {
+    alert(message, 'Errore!')
+  }
+
+  onFucBtnClick(evt: any) {
+    /* evt.stopPropagation();
+    evt.preventDefault(); */
+
+    let send = {
+      name: 'functionalInputClick',
+      nomeCampo: evt.name,
+      allFields: evt
+    }
+
+    this.functionalInputFormEvent.emit(send)
+  }
+
+  public refresh() {
+    this.form.reset()
   }
 }
