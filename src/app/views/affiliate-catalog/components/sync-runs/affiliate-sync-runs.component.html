@@ -1,0 +1,96 @@
+<section class="affiliate-sync-runs" aria-labelledby="affiliate-sync-runs-title" [attr.aria-busy]="loading || loadingMore">
+  <header class="affiliate-sync-runs__header">
+    <div>
+      <p class="affiliate-sync-runs__eyebrow">Catalogo Affiliati</p>
+      <h2 id="affiliate-sync-runs-title">Sincronizzazioni</h2>
+      <p class="affiliate-sync-runs__description">
+        Consulta la cronologia dei run di sincronizzazione, ordinata dal backend dal più recente al meno recente.
+      </p>
+    </div>
+
+    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || loadingMore">
+      <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+      Aggiorna
+    </button>
+  </header>
+
+  <div class="alert alert-info affiliate-sync-runs__contract" role="note">
+    <span class="mdi mdi-information-outline" aria-hidden="true"></span>
+    <span>Il backend espone solo paginazione a cursore: filtri, ordinamenti aggiuntivi e polling automatico non vengono simulati nella UI.</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger affiliate-sync-runs__error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  </div>
+
+  <p *ngIf="loading" class="affiliate-sync-runs__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento sincronizzazioni…
+  </p>
+
+  <div *ngIf="!loading && !error && !runs.length" class="affiliate-sync-runs__empty">
+    <span class="mdi mdi-sync-off" aria-hidden="true"></span>
+    <strong>Nessuna sincronizzazione disponibile</strong>
+    <span>I run compariranno qui dopo l'avvio manuale o schedulato di un feed.</span>
+  </div>
+
+  <div *ngIf="!loading && runs.length" class="affiliate-sync-runs__summary" role="status">
+    <strong>{{ runs.length }}</strong>
+    <span>run caricati</span>
+    <span *ngIf="hasMore" class="badge text-bg-light">altri disponibili</span>
+  </div>
+
+  <div class="affiliate-sync-runs__desktop" *ngIf="!loading && gridRows.length">
+    <app-data-grid
+      [idTable]="'affiliate-sync-runs-grid'"
+      [colonne]="columns"
+      [dataSource]="gridRows"
+      [remoteOperation]="false"
+      [isEditable]="false"
+      [isEditableNewRow]="false"
+      [isEditableEditRow]="false"
+      [isEditableDeleteRow]="false"
+      [showToolbarTop]="false"
+      [showToolbarBottom]="false"
+      [showFilter]="false"
+      [isSearchable]="false"
+      [tableHeight]="560">
+    </app-data-grid>
+  </div>
+
+  <div class="affiliate-sync-runs__mobile" *ngIf="!loading && runs.length">
+    <article class="affiliate-sync-run-card" *ngFor="let run of runs">
+      <div class="affiliate-sync-run-card__topline">
+        <span class="badge" [ngClass]="statusBadgeClass(run)">{{ statusLabel(run) }}</span>
+        <span>{{ run.startedAt | date:'short' }}</span>
+      </div>
+
+      <h3>{{ feedName(run) }}</h3>
+      <p class="affiliate-sync-run-card__program">{{ programName(run) }}</p>
+
+      <dl>
+        <div><dt>Completamento</dt><dd>{{ run.completedAt ? (run.completedAt | date:'short') : '—' }}</dd></div>
+        <div><dt>Record letti</dt><dd>{{ run.recordsRead }}</dd></div>
+        <div><dt>Prodotti + / ~</dt><dd>{{ run.productsCreated }} / {{ run.productsUpdated }}</dd></div>
+        <div><dt>Varianti + / ~</dt><dd>{{ run.variantsCreated }} / {{ run.variantsUpdated }}</dd></div>
+        <div><dt>Offerte aggiornate</dt><dd>{{ run.offersUpdated }}</dd></div>
+        <div><dt>Prodotti mancanti</dt><dd>{{ run.productsMissing }}</dd></div>
+        <div><dt>Errori</dt><dd>{{ errorsCount(run) }}</dd></div>
+        <div><dt>Run ID</dt><dd>{{ run.id }}</dd></div>
+      </dl>
+    </article>
+  </div>
+
+  <div *ngIf="loadMoreError" class="alert alert-danger affiliate-sync-runs__load-more-error" role="alert">
+    {{ loadMoreError }}
+  </div>
+
+  <div *ngIf="!loading && runs.length && hasMore" class="affiliate-sync-runs__load-more">
+    <button type="button" class="btn btn-outline-primary" (click)="loadMore()" [disabled]="loadingMore">
+      <span *ngIf="loadingMore" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      <span *ngIf="!loadingMore" class="mdi mdi-chevron-down" aria-hidden="true"></span>
+      {{ loadingMore ? 'Caricamento…' : 'Carica altri' }}
+    </button>
+  </div>
+</section>

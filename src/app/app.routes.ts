@@ -15,6 +15,7 @@ import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-c
 import { AffiliateProgramsComponent } from './views/affiliate-catalog/components/programs/affiliate-programs.component';
 import { AffiliateFeedsComponent } from './views/affiliate-catalog/components/feeds/affiliate-feeds.component';
 import { AffiliateProductsComponent } from './views/affiliate-catalog/components/products/affiliate-products.component';
+import { AffiliateSyncRunsComponent } from './views/affiliate-catalog/components/sync-runs/affiliate-sync-runs.component';
 
 
 export const routes:Routes = [
@@ -34,6 +35,7 @@ export const routes:Routes = [
         { path: 'programs', component: AffiliateProgramsComponent },
         { path: 'feeds', component: AffiliateFeedsComponent },
         { path: 'products', component: AffiliateProductsComponent },
+        { path: 'sync-runs', component: AffiliateSyncRunsComponent },
       ]
     },
     { path: 'form-list', component: AppFormListComponent,canActivate:[authGuard] },
