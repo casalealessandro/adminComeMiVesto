@@ -1,5 +1,7 @@
 import { SelectOptions } from "./dynamic-form-field";
 
+export { ToolbarButton } from '../components/caption/toolbar-button';
+
 export interface detailOptions {
   groupDataField: string;
   costantValue?: costantValue[]
@@ -38,20 +40,6 @@ export interface Utente {
   photoURL?: string;
   bio?: string;
   userType?: any
-}
-
-export interface ToolbarButton {
-
-  id: string;             // Identificativo del pulsante
-  name: string;           // Nome del pulsante
-  text: string;           // Testo visibile nel pulsante
-  icon?: string;          // Icona associata al pulsante (opzionale)
-  disabled: boolean;      // Se il pulsante è disabilitato
-  visible: boolean;       // Se il pulsante è visibile
-  cssClass?: string;
-  widget: 'button' | "textBox";         // Tipo di widget, ad esempio 'button' o 'textBox'
-  width?: number;         // Larghezza del pulsante (opzionale, specifica per alcuni widget)
-  position?: 'left' | 'right' | 'center';
 }
 
 

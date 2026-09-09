@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core
 
 import { CaptionComponent } from '../../components/caption/caption.component';
 import { CommonModule } from '@angular/common';
-import { ToolbarButton } from '../../interface/app.interface';
+import { ToolbarButton } from '../../components/caption/toolbar-button';
 
 
 

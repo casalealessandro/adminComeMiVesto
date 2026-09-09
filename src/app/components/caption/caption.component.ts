@@ -1,6 +1,6 @@
 import { Component,Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToolbarButton } from '../../interface/app.interface';
+import { ToolbarButton } from './toolbar-button';
 import { FormsModule } from '@angular/forms';
 
 
@@ -18,7 +18,9 @@ export class CaptionComponent {
   @Input() caption: string='';
   @Input() cssClass: string='';
 
+  /** @deprecated Breadcrumb rendering is not active in the current Caption template. */
   @Input() showBreadcrumb?:boolean=false;
+  /** @deprecated Breadcrumb rendering is not active in the current Caption template. */
   @Input() breadcrumbNavigation?:any;
 
 
@@ -40,11 +42,13 @@ export class CaptionComponent {
  //Buttoni aggiuntivi
  @Input() customToolbarButtons!:ToolbarButton[]
  
-  /** URL HELPER */
+  /** @deprecated Help rendering is not active in the current Caption template. */
   @Input() help: string = "";
+  /** @deprecated Help rendering is not active in the current Caption template. */
   @Input() idHelper: number = 0;
 
 
+  /** @deprecated Help rendering is not active in the current Caption template. */
   @Output() emitHelperClick: EventEmitter<any> = new EventEmitter<any>();
   
   @Output() emitChiusura: EventEmitter<any> = new EventEmitter<any>();
@@ -54,7 +58,7 @@ export class CaptionComponent {
   @Output() emitToolbarButtonInput: EventEmitter<any> = new EventEmitter<any>();
   
   
-  
+  /** @deprecated Breadcrumb rendering is not active in the current Caption template. */
   @Output() emitBreadCrumbClick : EventEmitter<any> = new EventEmitter<any>();
   
 
