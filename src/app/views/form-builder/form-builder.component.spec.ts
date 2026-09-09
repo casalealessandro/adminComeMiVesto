@@ -4,6 +4,7 @@ import { of, Subject } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilderComponent, buildFormPayload } from './form-builder.component';
 import { FormService } from '../../services/form.service';
+import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
 import { PopUpService } from '../../services/popup.service';
 
 describe('FormBuilderComponent characterization', () => {
@@ -13,7 +14,7 @@ describe('FormBuilderComponent characterization', () => {
     const route = { paramMap: of(convertToParamMap({ id })) } as any;
     const router = jasmine.createSpyObj('Router', ['navigate']); const modal = jasmine.createSpyObj<NgbModal>('NgbModal', ['open']);
     const output = new Subject<any>(); const popup = jasmine.createSpyObj<PopUpService>('PopUpService', ['setNewPopUp', 'destroyCurrentOpenPopUpByGuid'], { outputComponent: output });
-    TestBed.configureTestingModule({ providers: [{ provide: FormService, useValue: formService }, { provide: PopUpService, useValue: popup }] });
+    TestBed.configureTestingModule({ providers: [{ provide: FORM_DEFINITION_REPOSITORY, useValue: formService }, { provide: PopUpService, useValue: popup }] });
     const component = TestBed.runInInjectionContext(() => new FormBuilderComponent(modal, route, router));
     return { component, formService, router, popup, output };
   }
