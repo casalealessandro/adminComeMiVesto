@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { HeaderComponent } from './header.component';
-import { MenuService } from '../../services/menu.service';
-import { OverlayService } from '../../services/overlay.service';
-import { HEADER_CONFIG, HeaderConfig } from '../../services/header-config';
-import { HEADER_USER_PROVIDER, HeaderUser, HeaderUserProvider } from '../../services/header-user-provider';
+import { MenuService } from '../menu/menu.service';
+import { OverlayService } from '../../overlay/overlay.service';
+import { HEADER_CONFIG, HeaderConfig } from '../contracts/header-config';
+import { HEADER_USER_PROVIDER, HeaderUser, HeaderUserProvider } from '../contracts/header-user-provider';
 
 describe('HeaderComponent E.3.3 cleanup', () => {
   let fixture: ComponentFixture<HeaderComponent>;
