@@ -5,10 +5,10 @@ import { signal, WritableSignal } from '@angular/core';
 import { of, Subject } from 'rxjs';
 import { ContainerComponent } from './container.component';
 import { MenuService } from '../../services/menu.service';
-import { AuthService } from '../../services/auth.service';
 import { OverlayService } from '../../services/overlay.service';
 import { HEADER_CONFIG } from '../../services/header-config';
 import { HEADER_USER_PROVIDER } from '../../services/header-user-provider';
+import { LAYOUT_SESSION_PROVIDER } from '../../services/layout-session-provider';
 
 describe('ContainerComponent E.4.4 characterization', () => {
   let fixture: ComponentFixture<ContainerComponent>;
@@ -33,11 +33,10 @@ describe('ContainerComponent E.4.4 characterization', () => {
           }
         },
         {
-          provide: AuthService,
+          provide: LAYOUT_SESSION_PROVIDER,
           useValue: {
-            currentUser,
-            waitForUser: jasmine.createSpy('waitForUser').and.callFake(() => Promise.resolve(currentUser())),
-            logout: jasmine.createSpy('logout').and.returnValue(Promise.resolve())
+            isAuthenticated: () => !!currentUser(),
+            waitForSession: jasmine.createSpy('waitForSession').and.callFake(() => Promise.resolve(!!currentUser()))
           }
         },
         {

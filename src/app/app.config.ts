@@ -25,6 +25,8 @@ import { FORM_DEFINITION_REPOSITORY } from './services/form-definition-repositor
 import { FORM_OPTIONS_PROVIDER } from './services/form-options-provider';
 import { FormService } from './services/form.service';
 import { SCROLL_INTERACTION_POLICY, ScrollInteractionPolicy } from './components/custom-scrollbar/scroll-interaction-policy';
+import { LAYOUT_SESSION_PROVIDER } from './services/layout-session-provider';
+import { ComeMiVestoLayoutSessionService } from './app-layout-session.service';
 
 const popupComponents = [
   ...starterKitEntryComponents,
@@ -39,6 +41,7 @@ export const appConfig: ApplicationConfig = {
     { provide: NAVIGATION_ITEMS, useValue: comeMiVestoNavigation },
     { provide: HEADER_CONFIG, useValue: comeMiVestoHeaderConfig },
     { provide: HEADER_USER_PROVIDER, useClass: ComeMiVestoHeaderUserService },
+    { provide: LAYOUT_SESSION_PROVIDER, useClass: ComeMiVestoLayoutSessionService },
     { provide: FORM_DEFINITION_REPOSITORY, useExisting: FormService },
     { provide: FORM_OPTIONS_PROVIDER, useExisting: FormService },
     {
