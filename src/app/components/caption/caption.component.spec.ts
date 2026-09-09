@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CaptionComponent } from './caption.component';
 import { ToolbarButton } from '../../interface/app.interface';
 
-describe('CaptionComponent F.0 characterization', () => {
+describe('CaptionComponent F.1 regression', () => {
   let component: CaptionComponent;
   let fixture: ComponentFixture<CaptionComponent>;
 
@@ -65,17 +65,20 @@ describe('CaptionComponent F.0 characterization', () => {
     expect(emitted[0].name).toBe('addButton');
   });
 
-  it('uses inputValue as the current search value when the search button is pressed', () => {
-    const emitted: string[] = [];
+  it('preserves search-button delivery through emitToolbarSearchInputChange', () => {
+    const searchValues: string[] = [];
+    const buttonInputValues: string[] = [];
     component.showSearchInput = true;
     component.showButtonInput = true;
     component.inputValue = 'outfit';
-    component.emitToolbarSearchInputChange.subscribe(value => emitted.push(value));
+    component.emitToolbarSearchInputChange.subscribe(value => searchValues.push(value));
+    component.emitToolbarButtonInput.subscribe(value => buttonInputValues.push(value));
     fixture.detectChanges();
 
     (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.input-container button')?.click();
 
-    expect(emitted).toEqual(['outfit']);
+    expect(searchValues).toEqual(['outfit']);
+    expect(buttonInputValues).toEqual([]);
   });
 
   it('emits close only when the closable action is available', () => {

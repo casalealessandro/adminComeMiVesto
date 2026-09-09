@@ -18,6 +18,7 @@ import { ToolbarButton } from '../../interface/app.interface';
       [addButtonShow]="true"
       [showSearchInput]="true"
       [customToolbarButtons]="customToolbarButtons"
+      (emittChiusura)="onClose($event)"
       (emittEventButton)="onButton($event)"
       (emitEventSearchInput)="onSearch($event)"
       (emitEventButtonInputChange)="onButtonInput($event)"
@@ -34,18 +35,21 @@ class AnagraficaWrapperHostComponent {
   customToolbarButtons: ToolbarButton[] = [
     { id: 'custom', name: 'custom', text: 'Custom', disabled: false, visible: true, icon: 'mdi mdi-test-tube', widget: 'button' }
   ];
+  receivedClose: any;
   receivedButton: any;
   receivedSearch: any;
   receivedButtonInput: any;
 
+  onClose(event: any) { this.receivedClose = event; }
   onButton(event: any) { this.receivedButton = event; }
   onSearch(event: any) { this.receivedSearch = event; }
   onButtonInput(event: any) { this.receivedButtonInput = event; }
 }
 
-describe('AnagraficaWrapperComponent E.4.2 characterization', () => {
+describe('AnagraficaWrapperComponent F.1 regression', () => {
   let fixture: ComponentFixture<AnagraficaWrapperHostComponent>;
   let host: AnagraficaWrapperHostComponent;
+  let wrapper: AnagraficaWrapperComponent;
   let topCaption: CaptionComponent;
 
   beforeEach(async () => {
@@ -56,6 +60,7 @@ describe('AnagraficaWrapperComponent E.4.2 characterization', () => {
     fixture = TestBed.createComponent(AnagraficaWrapperHostComponent);
     host = fixture.componentInstance;
     fixture.detectChanges();
+    wrapper = fixture.debugElement.query(By.directive(AnagraficaWrapperComponent)).componentInstance as AnagraficaWrapperComponent;
     topCaption = fixture.debugElement.queryAll(By.directive(CaptionComponent))[0].componentInstance as CaptionComponent;
   });
 
@@ -89,5 +94,23 @@ describe('AnagraficaWrapperComponent E.4.2 characterization', () => {
 
     topCaption.emitToolbarButtonInput.emit('valore');
     expect(host.receivedButtonInput).toBe('valore');
+  });
+
+  it('forwards the Caption close output through the wrapper contract', () => {
+    const closeEvent = { reason: 'close' };
+
+    topCaption.emitChiusura.emit(closeEvent);
+
+    expect(host.receivedClose).toBe(closeEvent);
+  });
+
+  it('clears the auto-dismiss timer when the wrapper is destroyed', () => {
+    const clearTimeoutSpy = spyOn(window, 'clearTimeout').and.callThrough();
+    const timer = wrapper.timeInterval;
+
+    fixture.destroy();
+
+    expect(timer).toBeDefined();
+    expect(clearTimeoutSpy).toHaveBeenCalledWith(timer as number);
   });
 });

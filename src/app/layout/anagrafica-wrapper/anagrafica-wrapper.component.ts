@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 
 
 import { CaptionComponent } from '../../components/caption/caption.component';
@@ -12,10 +12,9 @@ import { ToolbarButton } from '../../interface/app.interface';
   standalone:true,
   imports:[CaptionComponent,CommonModule],
   templateUrl: './anagrafica-wrapper.component.html',
-  styleUrls: ['./anagrafica-wrapper.component.scss'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  styleUrls: ['./anagrafica-wrapper.component.scss']
 })
-export class AnagraficaWrapperComponent {
+export class AnagraficaWrapperComponent implements OnDestroy {
 
   @Input() caption:string=''
   @Input() anaHeight:number=800
@@ -39,7 +38,7 @@ export class AnagraficaWrapperComponent {
 
  
 
-  public timeInterval: any = 0;
+  public timeInterval: ReturnType<typeof setTimeout> | undefined;
 
   heightWrap!: number;
   
@@ -51,9 +50,15 @@ export class AnagraficaWrapperComponent {
     
   }
 
+  ngOnDestroy(): void {
+    if (this.timeInterval !== undefined) {
+      clearTimeout(this.timeInterval);
+    }
+  }
+
 // Metodo per chiudere automaticamente l'alert
 private setAutoDismiss(): void {
-  setTimeout(() => {
+  this.timeInterval = setTimeout(() => {
     this.tip = '';
   }, 60000); // 1 minuto (60000 ms)
 }

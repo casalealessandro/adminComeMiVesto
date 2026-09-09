@@ -10,7 +10,7 @@
       [help]="helpDoc"
       [breadcrumbNavigation]="breadcrumbNavigation"
       [isClosable]="false"
-      (emettiChiusura)="onCrocettaClick($event)"
+      (emitChiusura)="onCrocettaClick($event)"
       (emitToolbarButtonClick)="onButtonToolbarClick($event)"
       (emitAddEvent)="onAddClick($event)"
       (emitToolbarSearchInputChange)="onSearchInputChange($event)"
@@ -52,7 +52,7 @@
     <app-caption
       [showBreadcrumb]="false"
       [isClosable]="false"
-      (emettiChiusura)="onCrocettaClick($event)"
+      (emitChiusura)="onCrocettaClick($event)"
       [isFooter]="true"
     >
     </app-caption>

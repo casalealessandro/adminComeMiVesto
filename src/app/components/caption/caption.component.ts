@@ -1,26 +1,7 @@
 import { Component,Input, Output, EventEmitter } from '@angular/core';
-import { Router, ActivatedRoute, NavigationExtras } from '@angular/router';
-
-import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { ToolbarButton } from '../../interface/app.interface';
 import { FormsModule } from '@angular/forms';
-
-
-
-class _tasto{
-  id:any;
-  text?:string;
-  icon?:string;
-  disabled?:boolean;
-  image?:string;
-  separator?:boolean;
-  visible?:boolean | Function;
-  hint?:string;
-  name?:string
-  location?:'before' | 'center' | 'after';
-  widget:string = 'button' 
-}
 
 
 @Component({
