@@ -34,21 +34,9 @@ export class AnagraficaWrapperComponent implements OnDestroy {
   @Output() emitEventSearchInput: EventEmitter<any> = new EventEmitter<any>();
   @Output() emitEventButtonInputChange: EventEmitter<any> = new EventEmitter<any>();
   
-
-
- 
-
   public timeInterval: ReturnType<typeof setTimeout> | undefined;
-
-  heightWrap!: number;
   
   constructor() {this.setAutoDismiss()}
-
-
-  ngAfterViewInit(){
-    //this.getWindowHeight()
-    
-  }
 
   ngOnDestroy(): void {
     if (this.timeInterval !== undefined) {
@@ -56,50 +44,16 @@ export class AnagraficaWrapperComponent implements OnDestroy {
     }
   }
 
-// Metodo per chiudere automaticamente l'alert
-private setAutoDismiss(): void {
-  this.timeInterval = setTimeout(() => {
-    this.tip = '';
-  }, 60000); // 1 minuto (60000 ms)
-}
-
-
-  getWindowHeight() {
-
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.clientHeight;
-  
-    // Altezza massima tra l'altezza della finestra e l'altezza del documento
-
-    const heightWin  = Math.max(windowHeight, documentHeight);
-
-    let  headerHeight, footerHeight ,menuHeight;
-    headerHeight = document.getElementById('header')!.offsetHeight ;
-    footerHeight = 200// document.getElementById('footer')!.offsetHeight;
-    setTimeout(() => {
-      /* menuHeight = document.getElementById('horizontalMenucontainer')!.offsetHeight 
- 
-      if(menuHeight == 0){
-        menuHeight = 60.5
-      } */
-     
-     
-      this.heightWrap = heightWin - headerHeight - footerHeight //- menuHeight ;   
-      this.heightWrap = this.heightWrap  - 13;
-     }, 300);
-   
-    
+  // Metodo per chiudere automaticamente l'alert
+  private setAutoDismiss(): void {
+    this.timeInterval = setTimeout(() => {
+      this.tip = '';
+    }, 60000); // 1 minuto (60000 ms)
   }
-  
 
- 
   onCrocettaClick(evt:any) {
-
     this.emittChiusura.emit(evt);
-
   }
-
-
 
   onAddClick(event:any){
     this.emittEventButton.emit(event)
@@ -108,12 +62,12 @@ private setAutoDismiss(): void {
   onButtonToolbarClick(event:any){
     this.emittEventButton.emit(event)
   }
+
   onSearchInputChange(event:any){
     this.emitEventSearchInput.emit(event);
-
   }
+
   onButtonInputChange(event:any){
     this.emitEventButtonInputChange.emit(event);
-
   }
 }
