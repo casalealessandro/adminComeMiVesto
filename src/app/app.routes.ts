@@ -12,6 +12,7 @@ import { LoginComponent } from './views/login/login.component';
 import { AccessDeniedComponent } from './views/access-denied/access-denied.component';
 import { ColorsComponent } from './views/colors/colors.component';
 import { ReportsComponent } from './views/reports/reports.component';
+import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
 
 
 export const routes:Routes = [
@@ -22,6 +23,7 @@ export const routes:Routes = [
     { path: 'access-denied', component: AccessDeniedComponent},
     { path: 'colors', component: ColorsComponent, canActivate:[authGuard]},
     { path: 'reports', component: ReportsComponent, canActivate:[authGuard]},
+    { path: 'affiliate-catalog', component: AffiliateCatalogComponent, canActivate:[authGuard]},
     { path: 'form-list', component: AppFormListComponent,canActivate:[authGuard] },
      { path: 'form-builder/:id', component: FormBuilderComponent ,canActivate:[authGuard]},
      { path: 'outfit-list', component: OutfitsComponent,canActivate:[authGuard] },
