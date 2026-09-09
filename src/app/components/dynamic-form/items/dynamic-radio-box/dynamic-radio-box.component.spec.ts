@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import { FormService } from '../../../../services/form.service';
+import { FORM_OPTIONS_PROVIDER } from '../../../../services/form-options-provider';
 import { DynamicRadioBoxComponent } from './dynamic-radio-box.component';
 
 describe('DynamicRadioBoxComponent', () => {
@@ -11,7 +12,7 @@ describe('DynamicRadioBoxComponent', () => {
 
   beforeEach(async () => {
     service = jasmine.createSpyObj<FormService>('FormService', ['getData']);
-    await TestBed.configureTestingModule({ imports: [DynamicRadioBoxComponent], providers: [{ provide: FormService, useValue: service }] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [DynamicRadioBoxComponent], providers: [{ provide: FORM_OPTIONS_PROVIDER, useValue: service }] }).compileComponents();
     fixture = TestBed.createComponent(DynamicRadioBoxComponent);
     component = fixture.componentInstance;
     component.formGroup = new FormGroup({ choice: new FormControl(null) });
