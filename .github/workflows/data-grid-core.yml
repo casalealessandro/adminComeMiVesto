@@ -3,7 +3,9 @@ name: DataGrid Core
 on:
   pull_request:
     paths:
+      - 'src/app/core/data-grid/**'
       - 'src/app/components/data-grid/**'
+      - 'src/app/core/public-api.ts'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/data-grid-core.yml'

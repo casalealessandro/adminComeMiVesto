@@ -11,21 +11,24 @@ import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFireFunctionsModule } from '@angular/fire/compat/functions';
 import { authInterceptor } from './auth.interceptor';
-import { POPUP_REGISTRY } from './services/popup-registry';
-import { starterKitEntryComponents } from './services/entryComponents';
+import {
+  FORM_DEFINITION_REPOSITORY,
+  FORM_OPTIONS_PROVIDER,
+  HEADER_CONFIG,
+  HEADER_USER_PROVIDER,
+  LAYOUT_SESSION_PROVIDER,
+  NAVIGATION_ITEMS,
+  OverlayService,
+  POPUP_REGISTRY,
+  SCROLL_INTERACTION_POLICY,
+  ScrollInteractionPolicy,
+  starterKitEntryComponents,
+} from './core/public-api';
 import { comeMiVestoPopupComponents } from './app-popup-components';
-import { NAVIGATION_ITEMS } from './services/navigation-registry';
 import { comeMiVestoNavigation } from './app-navigation';
-import { HEADER_CONFIG } from './services/header-config';
 import { comeMiVestoHeaderConfig } from './app-header-config';
-import { HEADER_USER_PROVIDER } from './services/header-user-provider';
 import { ComeMiVestoHeaderUserService } from './app-header-user.service';
-import { OverlayService } from './services/overlay.service';
-import { FORM_DEFINITION_REPOSITORY } from './services/form-definition-repository';
-import { FORM_OPTIONS_PROVIDER } from './services/form-options-provider';
 import { FormService } from './services/form.service';
-import { SCROLL_INTERACTION_POLICY, ScrollInteractionPolicy } from './components/custom-scrollbar/scroll-interaction-policy';
-import { LAYOUT_SESSION_PROVIDER } from './services/layout-session-provider';
 import { ComeMiVestoLayoutSessionService } from './app-layout-session.service';
 
 const popupComponents = [

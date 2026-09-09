@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { map, Observable, of } from 'rxjs';
 import { AuthService } from './services/auth.service';
-import { HeaderUser, HeaderUserProvider } from './services/header-user-provider';
+import { HeaderUser, HeaderUserProvider } from './core/public-api';
 import { UserService } from './services/user.service';
 
 @Injectable()

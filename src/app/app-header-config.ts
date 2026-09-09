@@ -1,4 +1,4 @@
-import { HeaderConfig } from './services/header-config';
+import { HeaderConfig } from './core/public-api';
 
 export const comeMiVestoHeaderConfig: HeaderConfig = {
   logoUrl: 'assets/images/logo.jpg',
