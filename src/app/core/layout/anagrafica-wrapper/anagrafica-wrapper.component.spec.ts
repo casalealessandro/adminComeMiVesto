@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AnagraficaWrapperComponent } from './anagrafica-wrapper.component';
-import { CaptionComponent } from '../../components/caption/caption.component';
-import { ToolbarButton } from '../../interface/app.interface';
+import { CaptionComponent } from '../../ui/caption/caption.component';
+import { ToolbarButton } from '../../ui/caption/toolbar-button';
 
 @Component({
   selector: 'app-anagrafica-wrapper-host',

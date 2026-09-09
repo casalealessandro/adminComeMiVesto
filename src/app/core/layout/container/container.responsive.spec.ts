@@ -3,11 +3,11 @@ import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, Subject } from 'rxjs';
-import { HEADER_CONFIG } from '../../services/header-config';
-import { HEADER_USER_PROVIDER } from '../../services/header-user-provider';
-import { LAYOUT_SESSION_PROVIDER } from '../../services/layout-session-provider';
-import { MenuService } from '../../services/menu.service';
-import { OverlayService } from '../../services/overlay.service';
+import { HEADER_CONFIG } from '../contracts/header-config';
+import { HEADER_USER_PROVIDER } from '../contracts/header-user-provider';
+import { LAYOUT_SESSION_PROVIDER } from '../contracts/layout-session-provider';
+import { MenuService } from '../menu/menu.service';
+import { OverlayService } from '../../overlay/overlay.service';
 import { ContainerComponent } from './container.component';
 
 describe('ContainerComponent E.5.1 responsive regression', () => {
