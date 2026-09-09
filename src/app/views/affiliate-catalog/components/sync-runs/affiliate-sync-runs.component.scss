@@ -1,0 +1,199 @@
+.affiliate-sync-runs {
+  min-width: 0;
+}
+
+.affiliate-sync-runs__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.affiliate-sync-runs__eyebrow {
+  margin: 0 0 0.2rem;
+  color: var(--bs-primary, #0d6efd);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.affiliate-sync-runs__header h2,
+.affiliate-sync-run-card h3 {
+  margin: 0;
+}
+
+.affiliate-sync-runs__description {
+  max-width: 52rem;
+  margin: 0.3rem 0 0;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.affiliate-sync-runs__header .btn {
+  flex: 0 0 auto;
+}
+
+.affiliate-sync-runs__contract,
+.affiliate-sync-runs__loading,
+.affiliate-sync-runs__summary,
+.affiliate-sync-runs__error {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.affiliate-sync-runs__error {
+  justify-content: space-between;
+}
+
+.affiliate-sync-runs__loading,
+.affiliate-sync-runs__empty {
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.65rem;
+}
+
+.affiliate-sync-runs__empty {
+  display: flex;
+  min-height: 10rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  text-align: center;
+}
+
+.affiliate-sync-runs__empty .mdi {
+  font-size: 1.9rem;
+}
+
+.affiliate-sync-runs__summary {
+  margin-bottom: 0.75rem;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.affiliate-sync-runs__summary strong {
+  color: var(--bs-body-color, #212529);
+}
+
+.affiliate-sync-runs__mobile {
+  display: none;
+}
+
+/*
+ * L'API Sync Runs restituisce l'ordine canonico startedAt DESC + documentId DESC.
+ * La DataGrid viene usata qui solo come renderer dei record caricati: disabilitiamo
+ * l'ordinamento locale per non alterare o simulare l'ordine backend.
+ */
+:host ::ng-deep .affiliate-sync-runs__desktop app-data-grid thead th span {
+  pointer-events: none;
+  cursor: default;
+}
+
+:host ::ng-deep .affiliate-sync-runs__desktop app-data-grid thead th span i {
+  display: none;
+}
+
+.affiliate-sync-run-card {
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.75rem;
+  background: var(--bs-body-bg, #fff);
+}
+
+.affiliate-sync-run-card__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.78rem;
+}
+
+.affiliate-sync-run-card h3 {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.affiliate-sync-run-card__program {
+  margin: 0.2rem 0 0.9rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.affiliate-sync-run-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem 0.85rem;
+  margin: 0;
+}
+
+.affiliate-sync-run-card dt {
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.affiliate-sync-run-card dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.affiliate-sync-runs__load-more-error {
+  margin-top: 1rem;
+}
+
+.affiliate-sync-runs__load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.affiliate-sync-runs__load-more .btn {
+  min-width: 11rem;
+  min-height: 44px;
+}
+
+.spin {
+  display: inline-block;
+  animation: affiliate-sync-runs-spin 0.9s linear infinite;
+}
+
+@keyframes affiliate-sync-runs-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 767.98px) {
+  .affiliate-sync-runs__header,
+  .affiliate-sync-runs__error {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .affiliate-sync-runs__header .btn {
+    min-height: 44px;
+  }
+
+  .affiliate-sync-runs__contract {
+    align-items: flex-start;
+  }
+
+  .affiliate-sync-runs__desktop {
+    display: none;
+  }
+
+  .affiliate-sync-runs__mobile {
+    display: grid;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .affiliate-sync-run-card dl {
+    grid-template-columns: 1fr;
+  }
+}
