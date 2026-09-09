@@ -1,6 +1,6 @@
 <form [formGroup]="form" (ngSubmit)="submitForm()" [attr.aria-busy]="loading">
   <div class="form-container">
-    <app-custom-scrollbar [scrollHeigth]="700">
+    <app-custom-scrollbar appCloseOverlayOnScroll [scrollHeigth]="700">
       <ng-container *ngFor="let field of fields">
         <ng-container *ngIf="field.type == 'hiddenBox'">
           <input 
