@@ -37,6 +37,7 @@ function listTypeScriptFiles(directory) {
     const entry = join(directory, name);
     const stats = statSync(entry);
     if (stats.isDirectory()) return listTypeScriptFiles(entry);
+    if (entry.endsWith('.spec.ts')) return [];
     return extname(entry) === '.ts' ? [entry] : [];
   });
 }
