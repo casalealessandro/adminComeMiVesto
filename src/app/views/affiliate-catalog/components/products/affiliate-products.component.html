@@ -1,0 +1,103 @@
+<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || loadingMore">
+  <header class="affiliate-products__header">
+    <div>
+      <p class="affiliate-products__eyebrow">Catalogo Affiliati</p>
+      <h2 id="affiliate-products-title">Prodotti</h2>
+      <p class="affiliate-products__description">
+        Consulta il catalogo canonico importato dai feed. La vista è in sola lettura e usa la paginazione a cursore esposta dal backend.
+      </p>
+    </div>
+
+    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || loadingMore">
+      <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+      Aggiorna
+    </button>
+  </header>
+
+  <div class="alert alert-info affiliate-products__contract" role="note">
+    <span class="mdi mdi-information-outline" aria-hidden="true"></span>
+    <span>Ricerca, filtri e ordinamento remoto non sono esposti dall'API Products e non vengono simulati nella UI.</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger affiliate-products__error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  </div>
+
+  <p *ngIf="loading" class="affiliate-products__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento prodotti…
+  </p>
+
+  <div *ngIf="!loading && !error && !products.length" class="affiliate-products__empty">
+    <span class="mdi mdi-hanger" aria-hidden="true"></span>
+    <strong>Nessun prodotto disponibile</strong>
+    <span>Il catalogo si popolerà dopo una sincronizzazione feed valida.</span>
+  </div>
+
+  <div *ngIf="!loading && products.length" class="affiliate-products__summary" role="status">
+    <strong>{{ products.length }}</strong>
+    <span>prodotti caricati</span>
+    <span *ngIf="hasMore" class="badge text-bg-light">altri disponibili</span>
+  </div>
+
+  <div class="affiliate-products__desktop" *ngIf="!loading && gridRows.length">
+    <app-data-grid
+      [idTable]="'affiliate-products-grid'"
+      [colonne]="columns"
+      [dataSource]="gridRows"
+      [remoteOperation]="false"
+      [isEditable]="false"
+      [isEditableNewRow]="false"
+      [isEditableEditRow]="false"
+      [isEditableDeleteRow]="false"
+      [showToolbarTop]="false"
+      [showToolbarBottom]="false"
+      [showFilter]="false"
+      [isSearchable]="false"
+      [tableHeight]="560">
+    </app-data-grid>
+  </div>
+
+  <div class="affiliate-products__mobile" *ngIf="!loading && products.length">
+    <article class="affiliate-product-card" *ngFor="let product of products">
+      <div class="affiliate-product-card__media">
+        <img *ngIf="productImage(product) as image" [src]="image" [alt]="product.name" loading="lazy">
+        <span *ngIf="!productImage(product)" class="mdi mdi-hanger" aria-hidden="true"></span>
+      </div>
+
+      <div class="affiliate-product-card__body">
+        <div class="affiliate-product-card__topline">
+          <span>{{ product.brand || 'Brand non disponibile' }}</span>
+          <span class="badge" [class.text-bg-success]="product.active" [class.text-bg-secondary]="!product.active">
+            {{ product.active ? 'Attivo' : 'Inattivo' }}
+          </span>
+        </div>
+
+        <h3>{{ product.name }}</h3>
+        <p class="affiliate-product-card__program">{{ programName(product) }}</p>
+
+        <dl>
+          <div><dt>Categoria</dt><dd>{{ categoryLabel(product) }}</dd></div>
+          <div><dt>Colore</dt><dd>{{ product.normalizedColor || '—' }}</dd></div>
+          <div><dt>Target</dt><dd>{{ genderLabel(product) }}</dd></div>
+          <div><dt>Materiali</dt><dd>{{ materialsLabel(product) }}</dd></div>
+          <div><dt>Feed sorgente</dt><dd>{{ product.sourceFeedIds.length }}</dd></div>
+          <div><dt>Ultima rilevazione</dt><dd>{{ product.lastSeenAt | date:'short' }}</dd></div>
+        </dl>
+      </div>
+    </article>
+  </div>
+
+  <div *ngIf="loadMoreError" class="alert alert-danger affiliate-products__load-more-error" role="alert">
+    {{ loadMoreError }}
+  </div>
+
+  <div *ngIf="!loading && products.length && hasMore" class="affiliate-products__load-more">
+    <button type="button" class="btn btn-outline-primary" (click)="loadMore()" [disabled]="loadingMore">
+      <span *ngIf="loadingMore" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      <span *ngIf="!loadingMore" class="mdi mdi-chevron-down" aria-hidden="true"></span>
+      {{ loadingMore ? 'Caricamento…' : 'Carica altri' }}
+    </button>
+  </div>
+</section>

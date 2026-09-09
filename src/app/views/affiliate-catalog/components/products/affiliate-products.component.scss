@@ -1,0 +1,237 @@
+.affiliate-products {
+  min-width: 0;
+}
+
+.affiliate-products__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.affiliate-products__eyebrow {
+  margin: 0 0 0.2rem;
+  color: var(--bs-primary, #0d6efd);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.affiliate-products__header h2,
+.affiliate-product-card h3 {
+  margin: 0;
+}
+
+.affiliate-products__description {
+  max-width: 52rem;
+  margin: 0.3rem 0 0;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.affiliate-products__header .btn {
+  flex: 0 0 auto;
+}
+
+.affiliate-products__contract,
+.affiliate-products__loading,
+.affiliate-products__summary,
+.affiliate-products__error {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.affiliate-products__error {
+  justify-content: space-between;
+}
+
+.affiliate-products__loading,
+.affiliate-products__empty {
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.65rem;
+}
+
+.affiliate-products__empty {
+  display: flex;
+  min-height: 10rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  text-align: center;
+}
+
+.affiliate-products__empty .mdi {
+  font-size: 1.9rem;
+}
+
+.affiliate-products__summary {
+  margin-bottom: 0.75rem;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.affiliate-products__summary strong {
+  color: var(--bs-body-color, #212529);
+}
+
+.affiliate-products__mobile {
+  display: none;
+}
+
+/*
+ * Products non espone sort remoto. La DataGrid viene riusata solo come renderer
+ * dei record già caricati: nel solo scope di questa feature disabilitiamo la
+ * affordance di sorting per non suggerire un comportamento che il backend non offre.
+ */
+:host ::ng-deep .affiliate-products__desktop app-data-grid thead th span {
+  pointer-events: none;
+  cursor: default;
+}
+
+:host ::ng-deep .affiliate-products__desktop app-data-grid thead th span i {
+  display: none;
+}
+
+.affiliate-product-card {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 0.9rem;
+  padding: 0.9rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.75rem;
+  background: var(--bs-body-bg, #fff);
+}
+
+.affiliate-product-card__media {
+  display: flex;
+  width: 96px;
+  min-height: 112px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+.affiliate-product-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.affiliate-product-card__media .mdi {
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 2rem;
+}
+
+.affiliate-product-card__body {
+  min-width: 0;
+}
+
+.affiliate-product-card__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.78rem;
+}
+
+.affiliate-product-card h3 {
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.affiliate-product-card__program {
+  margin: 0.2rem 0 0.8rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.affiliate-product-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 0.8rem;
+  margin: 0;
+}
+
+.affiliate-product-card dt {
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.affiliate-product-card dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.affiliate-products__load-more-error {
+  margin-top: 1rem;
+}
+
+.affiliate-products__load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.affiliate-products__load-more .btn {
+  min-width: 11rem;
+  min-height: 44px;
+}
+
+.spin {
+  display: inline-block;
+  animation: affiliate-products-spin 0.9s linear infinite;
+}
+
+@keyframes affiliate-products-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 767.98px) {
+  .affiliate-products__header,
+  .affiliate-products__error {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .affiliate-products__header .btn {
+    min-height: 44px;
+  }
+
+  .affiliate-products__contract {
+    align-items: flex-start;
+  }
+
+  .affiliate-products__desktop {
+    display: none;
+  }
+
+  .affiliate-products__mobile {
+    display: grid;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .affiliate-product-card {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .affiliate-product-card__media {
+    width: 76px;
+    min-height: 94px;
+  }
+
+  .affiliate-product-card dl {
+    grid-template-columns: 1fr;
+  }
+}
