@@ -4,8 +4,8 @@
 
 - repository: `casalealessandro/adminComeMiVesto`
 - base branch: `develop`
-- baseline commit: `a61700ae808366f8833bb1a0e393e05d4193014f`
-- latest application state included in the baseline: Affiliate Catalog Programs + Feed CRUD
+- baseline commit: `7774ae9e47f6c7de633ac57234ffe9e4448b57e9`
+- latest application state included in the baseline: Affiliate Catalog Programs + Feed CRUD + manual Feed Sync (Phase D.2)
 - SK.4.1–SK.4.6 physical capability moves: completed
 
 ## Goal
@@ -91,6 +91,8 @@ The application composition boundary now consumes the canonical Core surface ins
 
 The concrete ComeMiVesto `FormService` remains outside Core and now imports the canonical Forms metadata model directly.
 
+`DataGridUtils` now imports `ColData` / `Colonne` directly from the canonical Core DataGrid models instead of crossing the historical `app.interface.ts` compatibility facade.
+
 ## Compatibility surfaces preserved
 
 SK.4.7 is not a breaking cleanup.
@@ -113,15 +115,17 @@ A new command is available:
 npm run test:core-boundaries
 ```
 
-`scripts/check-core-boundaries.mjs` recursively inspects TypeScript imports/exports under `src/app/core` and fails when:
+`scripts/check-core-boundaries.mjs` recursively inspects production TypeScript imports/exports under `src/app/core`; characterization specs (`*.spec.ts`) are intentionally excluded because they may import concrete host adapters as test fixtures without becoming runtime Core dependencies.
 
-- a relative dependency escapes `src/app/core` without being explicitly characterized;
-- Core imports Firebase / AngularFire packages;
-- Core imports an environment module.
+The gate fails when production Core code:
+
+- has a relative dependency that escapes `src/app/core` without being explicitly characterized;
+- imports Firebase / AngularFire packages;
+- imports an environment module.
 
 The existing DataGrid physical move still carries a small, explicit V1 compatibility allowlist for historical facade traversals from `DataGridComponent` / `TdItemComponent`. This includes the intentional `AnagraficaService` fallback and the already-existing DataGrid model/dialog/overlay compatibility paths. The allowlist is source-file + import-specifier specific: it cannot silently expand to another Core capability.
 
-This makes the remaining compatibility debt visible while preventing new Core -> Application dependencies.
+This makes the remaining compatibility debt visible while preventing new Core -> Application runtime dependencies.
 
 ## CI
 
