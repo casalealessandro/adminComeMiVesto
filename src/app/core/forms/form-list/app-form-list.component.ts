@@ -1,0 +1,55 @@
+import { Component, inject } from '@angular/core';
+
+import { Router } from '@angular/router';
+import { AnagraficaWrapperComponent } from "../../layout/anagrafica-wrapper/anagrafica-wrapper.component";
+import { CommonModule } from '@angular/common';
+import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
+import { confirm } from '../../widgets/ui-dialogs';
+
+export function formEditorRoute(form: { id: string }): [string, string] { return ['/form-builder', form.id]; }
+
+@Component({
+  selector: 'app-form-list',
+  standalone: true,
+  imports: [CommonModule,AnagraficaWrapperComponent],
+  templateUrl: './app-form-list.component.html',
+  styleUrl: './app-form-list.component.scss'
+})
+export class AppFormListComponent {
+  forms: any[] = [];
+  formService=inject(FORM_DEFINITION_REPOSITORY)
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.loadForms();
+  }
+
+  loadForms() {
+    this.formService.getForms().subscribe((data: any[]) => {
+      this.forms = data
+    });
+  }
+
+  createNewForm() {
+    this.router.navigate(['/form-builder', 'new']);
+  }
+
+  editForm(form: any) {
+    this.router.navigate(formEditorRoute(form));
+  }
+
+  deleteForm(formId: string) {
+    confirm('Sei sicuro di voler elimare la form?','Attenzione!',res=>{
+      if(res){
+        this.formService.deleteForm(formId).then(() => {
+          this.forms = this.forms.filter(form => form.id !== formId);
+        }).catch((err:any) => {
+          console.error('Errore durante l\'eliminazione del form:', err);
+        });
+      }
+    })
+
+    
+  }
+
+}
