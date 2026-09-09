@@ -64,6 +64,13 @@ export function buildAffiliateProgramColumns(canEdit: boolean): Colonne[] {
   return [{ itemType: 'group', groupDataField: '', data: columns }];
 }
 
+export function buildAffiliateProgramGridRows(programs: AffiliateProgram[]): AffiliateProgramGridRow[] {
+  return programs.map((program) => ({
+    ...program,
+    enabledLabel: program.enabled ? 'Sì' : 'No',
+  }));
+}
+
 @Component({
   selector: 'app-affiliate-programs',
   standalone: true,
@@ -126,10 +133,7 @@ export class AffiliateProgramsComponent implements OnInit {
           program.defaultAdapterType,
         ].some((value) => value.toLowerCase().includes(term)));
 
-    this.gridRows = this.filteredPrograms.map((program) => ({
-      ...program,
-      enabledLabel: program.enabled ? 'Sì' : 'No',
-    }));
+    this.gridRows = buildAffiliateProgramGridRows(this.filteredPrograms);
   }
 
   openCreate(): void {

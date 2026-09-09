@@ -28,6 +28,7 @@
   <label *ngIf="programs.length" class="affiliate-programs__search">
     <span>Cerca programmi</span>
     <input
+      type="search"
       class="form-control"
       [(ngModel)]="search"
       (ngModelChange)="applySearch()"
@@ -45,11 +46,11 @@
     <span>{{ search ? 'Modifica i criteri di ricerca.' : 'Crea il primo programma per iniziare a configurare il catalogo.' }}</span>
   </div>
 
-  <div class="affiliate-programs__desktop" *ngIf="!loading && filteredPrograms.length">
+  <div class="affiliate-programs__desktop" *ngIf="!loading && gridRows.length">
     <app-data-grid
       [idTable]="'affiliate-programs-grid'"
       [colonne]="columns"
-      [dataSource]="filteredPrograms"
+      [dataSource]="gridRows"
       [remoteOperation]="false"
       [isEditable]="false"
       [isEditableNewRow]="false"
