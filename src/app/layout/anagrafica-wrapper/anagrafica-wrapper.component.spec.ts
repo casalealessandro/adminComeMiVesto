@@ -46,7 +46,7 @@ class AnagraficaWrapperHostComponent {
   onButtonInput(event: any) { this.receivedButtonInput = event; }
 }
 
-describe('AnagraficaWrapperComponent F.1 regression', () => {
+describe('AnagraficaWrapperComponent F.4 regression', () => {
   let fixture: ComponentFixture<AnagraficaWrapperHostComponent>;
   let host: AnagraficaWrapperHostComponent;
   let wrapper: AnagraficaWrapperComponent;
@@ -61,7 +61,7 @@ describe('AnagraficaWrapperComponent F.1 regression', () => {
     host = fixture.componentInstance;
     fixture.detectChanges();
     wrapper = fixture.debugElement.query(By.directive(AnagraficaWrapperComponent)).componentInstance as AnagraficaWrapperComponent;
-    topCaption = fixture.debugElement.queryAll(By.directive(CaptionComponent))[0].componentInstance as CaptionComponent;
+    topCaption = fixture.debugElement.query(By.directive(CaptionComponent)).componentInstance as CaptionComponent;
   });
 
   it('renders the current page shell content', () => {
@@ -72,6 +72,10 @@ describe('AnagraficaWrapperComponent F.1 regression', () => {
     expect(element.querySelector('.alert')?.textContent).toContain(host.tip);
     expect(element.textContent).toContain('Carimento in corso...');
     expect(element.querySelector('.projected-content')?.textContent).toContain('Contenuto pagina');
+  });
+
+  it('renders a single page toolbar caption', () => {
+    expect(fixture.debugElement.queryAll(By.directive(CaptionComponent)).length).toBe(1);
   });
 
   it('passes custom toolbar buttons to the top caption', () => {
