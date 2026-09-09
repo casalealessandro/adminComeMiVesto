@@ -91,8 +91,34 @@ export interface GridPage<T> {
  * rows to mutations and must not assume an `id`, URL or database technology.
  */
 export interface GridDataProvider<T> {
+  /**
+   * Loads one page using the normalized request produced by the grid engine.
+   *
+   * @param request Page size, opaque continuation and active query state.
+   * @returns The rows plus provider-owned continuation metadata.
+   */
   load(request: GridLoadRequest): Promise<GridPage<T>>;
+
+  /**
+   * Creates one row when the provider supports mutations.
+   *
+   * @param data Partial row supplied by the grid consumer.
+   * @returns The authoritative row returned by the provider.
+   */
   create?(data: Partial<T>): Promise<T>;
+
+  /**
+   * Updates one row without imposing any identity convention on `T`.
+   *
+   * @param data Complete row whose identity is interpreted by the provider.
+   * @returns The authoritative updated row returned by the provider.
+   */
   update?(data: T): Promise<T>;
+
+  /**
+   * Deletes one row without assuming a specific key field.
+   *
+   * @param data Complete row whose identity is interpreted by the provider.
+   */
   delete?(data: T): Promise<void>;
 }
