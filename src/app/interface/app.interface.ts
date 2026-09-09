@@ -72,6 +72,10 @@ export interface ColData {
   colAlignment?: string;  // Allineamento della colonna
   search?: boolean;        // possibile cercare nella cella si o no
   format?: string;       // Formato della colonna (es: numero, data)
+  booleanOptions?: {
+    trueText?: string;
+    falseText?: string;
+  };
   editorType?: string;   // Tipo di editor (es: "text", "number")
   dynamic?: DynamicOptions;  // Opzioni dinamiche per il campo
   lista?: SelectOptions;     // Opzioni di lista (specifiche dell'implementazione)
