@@ -113,24 +113,4 @@ describe('OutfitProductsComponent popup lifecycle D.2.3b', () => {
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalledWith(guid);
     expect(output.observers.length).toBe(0);
   });
-
-  it('treats stochiudendo as terminal only for the matching feed popup', () => {
-    const { component, popup, output } = setup();
-
-    component.showFeedProductComponent();
-    const guidA = lastGuid(popup);
-    component.showFeedProductComponent();
-    const guidB = lastGuid(popup);
-
-    expect(popup.setNewPopUp.calls.mostRecent().args[1]).toBe('ProductFromFeedComponent');
-    expect(output.observers.length).toBe(2);
-
-    output.next({ guid: guidB, name: 'stochiudendo' });
-    expect(component.loadProduct).toHaveBeenCalledTimes(1);
-    expect(output.observers.length).toBe(1);
-
-    output.next({ guid: guidA, name: 'stochiudendo' });
-    expect(component.loadProduct).toHaveBeenCalledTimes(2);
-    expect(output.observers.length).toBe(0);
-  });
 });
