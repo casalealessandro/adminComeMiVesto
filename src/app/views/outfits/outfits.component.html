@@ -1,4 +1,4 @@
-<app-anagrafica-wrapper [caption]="'Elenco Outfit caricati dagli utenti'" [subTitle]="subtitle" [addButtonShow]="true" [showSpinner]="loading" [customToolbarButtons]="customToolbarButtons" (emittEventButton)="eventToolbarOutfit($event)">
+<app-anagrafica-wrapper [caption]="'Elenco Outfit caricati dagli utenti'" [subTitle]="subtitle" [addButtonShow]="true" [showSpinner]="loading" (emittEventButton)="eventToolbarOutfit($event)">
   <div *ngIf="error" class="alert alert-danger">{{error}}</div>
   <button class="btn btn-outline-primary mobile-filter-toggle" (click)="filtersOpen=!filtersOpen">{{filtersOpen?'Chiudi filtri':'Filtri'}}</button>
   <form class="filters" [class.open]="filtersOpen" (ngSubmit)="applyFilters()">
