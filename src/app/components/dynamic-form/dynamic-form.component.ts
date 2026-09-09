@@ -3,7 +3,7 @@ import { Component, EventEmitter, inject, Input, Output, signal, SimpleChanges }
 
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DynamicFormField } from '../../interface/dynamic-form-field';
-import { FormService } from '../../services/form.service';
+import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
 import { alert } from '../../widgets/ui-dialogs';
 import { CommonModule } from '@angular/common';
 import { DynamicSelectBoxComponent } from './items/dynamic-select-box/dynamic-select-box.component';
@@ -46,7 +46,7 @@ export class DynamicFormComponent {
   fields: DynamicFormField[] = [];
   formShow: boolean = false
   fieldConfigs: any = {};
-  templateService = inject(FormService)
+  templateService = inject(FORM_DEFINITION_REPOSITORY)
   inEdit: boolean = true
   // Signal per il valore del parent
   parentValues = signal<{ [key: string]: any }>({}); // Mappa per i segnali dei parent
