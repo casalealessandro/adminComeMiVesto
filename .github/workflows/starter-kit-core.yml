@@ -13,6 +13,8 @@ on:
       - 'src/app/app-popup-components.ts'
       - 'src/app/app.component.ts'
       - 'src/app/services/form.service.ts'
+      - 'src/styles.scss'
+      - 'src/styles/**'
       - 'scripts/check-core-boundaries.mjs'
       - 'package.json'
       - 'package-lock.json'
