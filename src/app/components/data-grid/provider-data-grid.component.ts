@@ -1,1 +1,1 @@
-export { DataGridComponent as ProviderDataGridComponent } from './data-grid.component';
+export * from '../../core/data-grid/provider-data-grid.component';
