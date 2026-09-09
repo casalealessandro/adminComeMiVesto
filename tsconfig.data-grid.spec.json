@@ -8,7 +8,7 @@
     ]
   },
   "include": [
-    "src/app/components/data-grid/**/*.spec.ts",
+    "src/app/core/data-grid/**/*.spec.ts",
     "src/**/*.d.ts"
   ]
 }
