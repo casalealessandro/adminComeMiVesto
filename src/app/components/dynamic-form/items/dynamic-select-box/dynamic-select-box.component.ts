@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, injec
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormField } from '../../../../interface/dynamic-form-field';
 import { CommonModule } from '@angular/common';
-import { FormService } from '../../../../services/form.service';
+import { FORM_OPTIONS_PROVIDER } from '../../../../services/form-options-provider';
 
 
 
@@ -26,7 +26,7 @@ export class DynamicSelectBoxComponent  {
   // Utilizzo di input<string>() per il parent value
   parentValue = input<any>();
   formControlD!:FormControl
-  formService=inject(FormService)  
+  formService=inject(FORM_OPTIONS_PROVIDER)  
   availableOptions: any = [];
   isLoading:boolean=true
   selectOptions:any
