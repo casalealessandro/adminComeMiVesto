@@ -105,7 +105,6 @@ export class OutfitsService {
   backendBase = environment.apiBaseUrl
   resultsSignal = signal<any[]>([]);
   pagination = signal({ page: 1, limit: 10, total: 0 });
-  feedUrl: string = "https://api.tradedoubler.com/1.0/products.json"
 
   // Definizione di un signal con un array vuoto come valore iniziale
   mySignal = signal<any[]>([]);
@@ -238,100 +237,6 @@ export class OutfitsService {
       return false
     }
   }
-
-  //Funzione per salvare gli outfit ottenuti e mappati
-  async JsonOutfits(): Promise<boolean> {
-
-
-    try {
-      const prod = this.getProductsFromFeed();
-      prod.subscribe(async resProd => {
-        console.log('resProd', resProd)
-
-        resProd.forEach(async (element: outfit) => {
-          let condition: FireBaseConditions[] = [{
-            field: 'id',
-            operator: '==',
-            value: element.id
-          }]
-          let check = await this.getOutfits(condition)
-          if (check.length == 0) {
-            let ress = await this.saveOutfitCollection(element.id, element, false);
-            if (!ress) {
-              console.log("c'è stato un problema")
-            }
-          }
-
-        });
-
-        await this.getOutfits()
-
-        return true
-      })
-    } catch (error) {
-      console.error('Errore:', error)
-      return false
-    }
-    return false
-
-  }
-
-  // Funzione per ottenere i prodotti dal feed e trasformarli
-  getProductsFromFeed(page: number = 1, fid: number = 104437): Observable<any[]> {
-    const queryString = `;page=${page};pageSize=100;fid=${fid}?token=83C91107EA3A44C6B67AD66A2799E13653192324"`
-    return this.httpClient.get<any>("https://api.tradedoubler.com/1.0/products.json;page=1;pageSize=100;fid=104437?token=83C91107EA3A44C6B67AD66A2799E13653192324").pipe(
-      map(response => {
-        /* const girlProducts = response.products.filter((item: any) =>
-          item.categories.some((cat: any) => cat.name.toLowerCase() === 'Dress')
-        ); */
-
-        // Prendi solo i primi 4 prodotti della categoria "girl" e mappa
-        return response.products.map((item: any) => this.mapToFirebase(item,));
-      })
-    );
-  }
-
-
-  // Funzione di mappatura per convertire il formato del prodotto
-  private mapToFirebase(item: any): outfit {
-    const date = new Date
-    return {
-      style: 'C', // mappalo secondo la logica della tua app
-      visits: 0,
-      outfitSubCategory: ['CDC'],
-      gender: 'D',
-      createdAt: date.getTime(),
-      editedAt: date.getTime(),
-      id: item.offers[0].id,
-      feedId: item.offers[0].feedId,
-      tags: [
-        {
-          brend: 'vestitielegantishop',
-          x: 0.60,
-          outfitCategory: 'ABC',
-          color: '',
-          y: 0.60,
-          name: item.name,
-          id: item.offers[0].id,
-          outfitSubCategory: 'CDC',
-          link: item.offers[0].productUrl,
-          imageUrl: item.productImage.url,
-          prezzo: item.offers[0].priceHistory[0].price.value
-        }
-      ],
-      description: item.description.replace("Controlla la tabella taglie e misure, per sapere se la taglia dell'abito è adatta alle tue misure corporee.", ''),
-      userId: 'yoq2HOxUJhdn4shCUgIB8ICMBVq2',
-      season: 'E',
-      imageUrl: item.productImage.url,
-
-      status: 'pending',
-      likes: 0,
-      title: item.name,
-      outfitCategory: ['ABC'],
-      userName: 'Maria '
-    };
-  }
-
 
   //Prodotti Creati e messi a disposizione nell'app
 
