@@ -21,6 +21,9 @@ import { comeMiVestoHeaderConfig } from './app-header-config';
 import { HEADER_USER_PROVIDER } from './services/header-user-provider';
 import { ComeMiVestoHeaderUserService } from './app-header-user.service';
 import { OverlayService } from './services/overlay.service';
+import { FORM_DEFINITION_REPOSITORY } from './services/form-definition-repository';
+import { FORM_OPTIONS_PROVIDER } from './services/form-options-provider';
+import { FormService } from './services/form.service';
 import { SCROLL_INTERACTION_POLICY, ScrollInteractionPolicy } from './components/custom-scrollbar/scroll-interaction-policy';
 
 const popupComponents = [
@@ -36,6 +39,8 @@ export const appConfig: ApplicationConfig = {
     { provide: NAVIGATION_ITEMS, useValue: comeMiVestoNavigation },
     { provide: HEADER_CONFIG, useValue: comeMiVestoHeaderConfig },
     { provide: HEADER_USER_PROVIDER, useClass: ComeMiVestoHeaderUserService },
+    { provide: FORM_DEFINITION_REPOSITORY, useExisting: FormService },
+    { provide: FORM_OPTIONS_PROVIDER, useExisting: FormService },
     {
       provide: SCROLL_INTERACTION_POLICY,
       useFactory: (overlayService: OverlayService): ScrollInteractionPolicy => ({

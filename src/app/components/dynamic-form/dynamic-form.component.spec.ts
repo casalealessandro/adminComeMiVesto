@@ -4,6 +4,8 @@ import { FormGroup } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { DynamicFormComponent } from './dynamic-form.component';
 import { FormService } from '../../services/form.service';
+import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
+import { FORM_OPTIONS_PROVIDER } from '../../services/form-options-provider';
 import { DynamicFormField } from '../../interface/dynamic-form-field';
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 
@@ -20,9 +22,16 @@ describe('DynamicFormComponent characterization', () => {
   ];
 
   beforeEach(async () => {
-    service = jasmine.createSpyObj<FormService>('FormService', ['getFormFields']);
+    service = jasmine.createSpyObj<FormService>('FormService', ['getFormFields', 'getData']);
     service.getFormFields.and.returnValue(of(fields));
-    await TestBed.configureTestingModule({ imports: [DynamicFormComponent], providers: [{ provide: FormService, useValue: service }] }).compileComponents();
+    service.getData.and.resolveTo([]);
+    await TestBed.configureTestingModule({
+      imports: [DynamicFormComponent],
+      providers: [
+        { provide: FORM_DEFINITION_REPOSITORY, useValue: service },
+        { provide: FORM_OPTIONS_PROVIDER, useValue: service }
+      ]
+    }).compileComponents();
     fixture = TestBed.createComponent(DynamicFormComponent);
     component = fixture.componentInstance;
   });

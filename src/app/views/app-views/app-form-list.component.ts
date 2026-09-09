@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from "../../layout/anagrafica-wrapper/anagrafica-wrapper.component";
 import { CommonModule } from '@angular/common';
-import { FormService } from '../../services/form.service';
+import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
 import { confirm } from '../../widgets/ui-dialogs';
 
 export function formEditorRoute(form: { id: string }): [string, string] { return ['/form-builder', form.id]; }
@@ -17,7 +17,7 @@ export function formEditorRoute(form: { id: string }): [string, string] { return
 })
 export class AppFormListComponent {
   forms: any[] = [];
-  formService=inject(FormService)
+  formService=inject(FORM_DEFINITION_REPOSITORY)
   constructor(private router: Router) {}
 
   ngOnInit() {

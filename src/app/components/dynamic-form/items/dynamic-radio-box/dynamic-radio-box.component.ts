@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, effect, EventEmitter, inject, Input, input, Output } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormField, RadioOptions } from '../../../../interface/dynamic-form-field';
-import { FormService } from '../../../../services/form.service';
+import { FORM_OPTIONS_PROVIDER } from '../../../../services/form-options-provider';
 
 @Component({
   selector: 'app-dynamic-radio-box',
@@ -20,7 +20,7 @@ export class DynamicRadioBoxComponent {
 
   parentValue = input<any>();
   formControlD!: FormControl;
-  formService = inject(FormService);
+  formService = inject(FORM_OPTIONS_PROVIDER);
   availableOptions: any[] = [];
   isLoading = true;
   radioOptions!: RadioOptions;
