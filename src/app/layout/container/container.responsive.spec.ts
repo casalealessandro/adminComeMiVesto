@@ -3,9 +3,9 @@ import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, Subject } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
 import { HEADER_CONFIG } from '../../services/header-config';
 import { HEADER_USER_PROVIDER } from '../../services/header-user-provider';
+import { LAYOUT_SESSION_PROVIDER } from '../../services/layout-session-provider';
 import { MenuService } from '../../services/menu.service';
 import { OverlayService } from '../../services/overlay.service';
 import { ContainerComponent } from './container.component';
@@ -33,11 +33,10 @@ describe('ContainerComponent E.5.1 responsive regression', () => {
           }
         },
         {
-          provide: AuthService,
+          provide: LAYOUT_SESSION_PROVIDER,
           useValue: {
-            currentUser,
-            waitForUser: jasmine.createSpy('waitForUser').and.callFake(() => Promise.resolve(currentUser())),
-            logout: jasmine.createSpy('logout').and.returnValue(Promise.resolve())
+            isAuthenticated: () => !!currentUser(),
+            waitForSession: jasmine.createSpy('waitForSession').and.callFake(() => Promise.resolve(!!currentUser()))
           }
         },
         {
