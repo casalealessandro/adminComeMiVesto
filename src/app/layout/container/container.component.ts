@@ -1,9 +1,9 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, Inject } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { MenuComponent } from '../menu/menu.component';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { LAYOUT_SESSION_PROVIDER, LayoutSessionProvider } from '../../services/layout-session-provider';
 
 import {  BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import { MenuService } from '../../services/menu.service';
@@ -35,16 +35,16 @@ export class ContainerComponent {
 
 
 
-  constructor(private auth: AuthService, private menuService: MenuService, private breakpointObserver: BreakpointObserver, private destroyRef: DestroyRef) {
+  constructor(@Inject(LAYOUT_SESSION_PROVIDER) private layoutSessionProvider: LayoutSessionProvider, private menuService: MenuService, private breakpointObserver: BreakpointObserver, private destroyRef: DestroyRef) {
 
     effect(() => {
-      this.isLogin = !!this.auth.currentUser();
+      this.isLogin = this.layoutSessionProvider.isAuthenticated();
       this.isMenuOpen = this.menuService.isOpenMenu();
     });
   }
 
   ngOnInit() {
-    void this.auth.waitForUser().then(user => this.isLogin = !!user);
+    void this.layoutSessionProvider.waitForSession().then(isAuthenticated => this.isLogin = isAuthenticated);
     this.updateMenuVisibility(window.innerWidth);
     //osserva i breakpoint (dimensioni dello schermo) per cambiare la modalità del menu
     this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small, Breakpoints.Medium, Breakpoints.Large])
