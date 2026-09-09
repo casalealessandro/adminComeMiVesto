@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { FormGroup } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 import { DynamicFormComponent } from './dynamic-form.component';
 import { FormService } from '../../services/form.service';
 import { DynamicFormField } from '../../interface/dynamic-form-field';
+import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 
 describe('DynamicFormComponent characterization', () => {
   let component: DynamicFormComponent;
@@ -117,6 +119,18 @@ describe('DynamicFormComponent characterization', () => {
       radioOptions: { displayExp: 'value', valueExp: 'id', options: [{ id: 'A', value: 'Alpha' }], remote: false, parent: null } }];
     component.editData = {}; component.initializeForm(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-dynamic-radio-box')).not.toBeNull();
+  });
+
+  it('keeps the form content inside the shared scroll primitive with the historical height contract', () => {
+    component.fields = [];
+    component.editData = {};
+    component.initializeForm();
+    fixture.detectChanges();
+
+    const scrollbar = fixture.debugElement.query(By.directive(CustomScrollbarComponent))
+      .componentInstance as CustomScrollbarComponent;
+
+    expect(scrollbar.scrollHeigth).toBe(700);
   });
 
   it('applies required, length, email and number bounds and leaves plain fields unvalidated', () => {
