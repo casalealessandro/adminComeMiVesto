@@ -10,11 +10,12 @@ import { DynamicSelectBoxComponent } from './items/dynamic-select-box/dynamic-se
 import { DynamicFileBoxComponent } from './items/dynamic-file-box/dynamic-file-box.component';
 import { DynamicRadioBoxComponent } from './items/dynamic-radio-box/dynamic-radio-box.component';
 import { CustomScrollbarComponent } from "../custom-scrollbar/custom-scrollbar.component";
+import { CloseOverlayOnScrollDirective } from '../custom-scrollbar/close-overlay-on-scroll.directive';
 
 @Component({
   selector: 'app-dynamic-form',
   standalone: true,
-  imports: [CommonModule, DynamicSelectBoxComponent, DynamicRadioBoxComponent, DynamicFileBoxComponent, FormsModule, ReactiveFormsModule, CustomScrollbarComponent],
+  imports: [CommonModule, DynamicSelectBoxComponent, DynamicRadioBoxComponent, DynamicFileBoxComponent, FormsModule, ReactiveFormsModule, CustomScrollbarComponent, CloseOverlayOnScrollDirective],
   templateUrl: './dynamic-form.component.html',
   styleUrls: ['./dynamic-form.component.scss'],
 })
@@ -68,237 +69,88 @@ export class DynamicFormComponent {
     }
     if (typeof this.editData === 'undefined') {
       this.editData = {};
-      this.inEdit = false
     }
-    //I dati che servono per fare un insert.
-    if (typeof this.idData != 'undefined') {
-      this.editData = this.idData
-    }
-    this.templateService.getFormFields(this.service).subscribe({
-      next: fields => {
-        this.fields = fields;
-        this.initializeForm();
-      },
-      error: () => this.presentToast('Impossibile caricare la configurazione del form.')
-    });
-
-    if (this.inputBtnLeftName) {
-      this.closeButton = this.inputBtnLeftName;
-    }
-    if (this.inputBtnRightName) {
-      this.iconSubmitButton = ''
-      this.submitButton = this.inputBtnRightName;
-    }
+    this.initializeForm();
   }
-
-
-
 
   initializeForm() {
-    // Inizializza editData come oggetto vuoto se è undefined
-    this.editData = this.editData || {};
+    this.templateService.getJson(this.service).subscribe((data: any) => {
+      this.dataSet = data
+      this.fields = data.fields || [];
+      this.fieldConfigs = data.fieldConfigs || {};
+      this.createForm();
+      this.formShow = true
+    })
+  }
 
-    const formGroup = new FormGroup({});
+  createForm() {
+    const group: any = {};
 
     this.fields.forEach(field => {
-
-      let validators = this.getValidators(field);
-
-      // Recupera il valore dall'editData o imposta null come valore predefinito
-      const value = this.editData[field.name] ?? null;
-      // Aggiungi il controllo al formGroup con i validatori come terzo argomento
-      try {
-        formGroup.addControl(field.name, new FormControl(value, validators));
-      } catch (error) {
-        console.error(`Error setting control for field ${field.name}:`, error);
+      const validators = [];
+      if (field.required) {
+        validators.push(Validators.required);
+      }
+      if (field.minLength !== undefined) {
+        validators.push(Validators.minLength(field.minLength));
+      }
+      if (field.maxLength !== undefined) {
+        validators.push(Validators.maxLength(field.maxLength));
+      }
+      if (field.typeInput === 'number') {
+        if (field.min !== undefined) validators.push(Validators.min(field.min));
+        if (field.max !== undefined) validators.push(Validators.max(field.max));
       }
 
-
-      // Creazione del segnale per il parent
-      if (field.selectOptions && field.selectOptions.parent) {
-        const parentField = field.selectOptions.parent;
-        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] ?? '' }); // Inizializza il segnale
-
-
-      }
-
-      if (field.radioOptions && field.radioOptions.parent) {
-        const parentField = field.radioOptions.parent;
-        this.parentValues.set({ ...this.parentValues(), [parentField]: this.editData[parentField] ?? '' });
-      }
-      
-      if (field.typeInput === 'password') {
-        this.showPasswordButton[field.name] = true
-      }
-      // Inizializza i valori del form
-      this.initializeFormValues(field);
+      group[field.name] = new FormControl(this.editData?.[field.name] ?? field.value ?? '', validators);
+      this.formValues[field.name] = this.editData?.[field.name] ?? field.value ?? '';
     });
 
-    this.form = formGroup;
-
+    this.form = new FormGroup(group);
   }
 
-  // Metodo separato per gestire i validatori
-  private getValidators(field: DynamicFormField) {
-    const validators = [];
-
-    if (field.required) {
-      validators.push(Validators.required);
-    }
-    if (typeof field.minLength !== 'undefined') {
-      validators.push(Validators.minLength(field.minLength));
-    }
-    if (typeof field.maxLength !== 'undefined') {
-      validators.push(Validators.maxLength(field.maxLength));
-    }
-    if (field.typeInput === 'number' && typeof field.min !== 'undefined') {
-      validators.push(Validators.min(field.min));
-    }
-    if (field.typeInput === 'number' && typeof field.max !== 'undefined') {
-      validators.push(Validators.max(field.max));
-    }
-    if (field.typeInput === 'email') {
-      validators.push(Validators.email);
-    }
-
-    return validators;
+  getParentValues(parent: string | undefined): any {
+    if (!parent) return null;
+    return this.parentValues()[parent];
   }
 
-
-
-  initializeFormValues(field: any) {
-
-    //this.formValues[field.name] = field.type === 'selectBox' && field.multiple ? [] : '';
-
-    if (typeof this.editData[field.name] != 'undefined') {
-      this.formValues[field.name] = this.editData[field.name];
-      //this.formValues[field.name] = field.type === 'selectBox' && field.multiple ? this.editData[field.name] : this.editData[field.name];
-
-    }
-
-    this.fieldConfigs[field.name] = field
+  onValueChangeSelectBox(fieldName: string, value: any): void {
+    this.formValues[fieldName] = value;
+    this.form.get(fieldName)?.setValue(value);
+    this.parentValues.update(current => ({ ...current, [fieldName]: value }));
   }
 
-  onValueChange(fieldName: string, value: any) {
-
-
-
-    const control = this.form.get(fieldName);
-
-    if (control && control.value !== value) {
-      control.setValue(value, { emitEvent: false });
-    }
-    if (control) {
-      this.formValues[fieldName] = value;
-    }
-
-
-  }
-
-  onValueChangeSelectBox(fieldName: string, event: any) {
-    
-    this.onValueChange(fieldName, event.selectedValue);
-    // Controllo se fieldName è un parent
-    if (fieldName in this.parentValues()) {
-
-
-      this.parentValues.set({ ...this.parentValues(), [fieldName]: event.selectedValue }); // Imposta il valore del parent
-    }
-  }
-
-  getParentValues(parent: any) {
-    if (parent) {
-      return this.parentValues()[parent]
-    }
-    return null
-  }
-  updateCascadeOptions(fieldName: string, value: any) {
-    const fieldConfig = this.fieldConfigs[fieldName];
-    if (fieldConfig && fieldConfig.cascadeFrom) {
-
-      if (fieldName === fieldConfig.cascadeFrom) {
-
-        const updatedOptions = fieldConfig.cascadeOptions[value] || [];
-        this.formValues[fieldName] = updatedOptions;
-
-      }
-
-    }
+  onValueChange(fieldName: string, value: any): void {
+    this.formValues[fieldName] = value;
+    this.form.get(fieldName)?.setValue(value);
   }
 
   toggleFieldTextType(field: DynamicFormField) {
+    field.typeInput = field.typeInput === 'password' ? 'text' : 'password';
+  }
 
-    if (field.typeInput === 'password') {
-
-      field.typeInput = 'text';
-    } else {
-      field.typeInput = 'password';
-    }
+  onFucBtnClick(field: DynamicFormField) {
+    this.functionalInputFormEvent.emit({ field, formData: this.form.getRawValue() });
   }
 
   submitForm() {
     if (this.loading) return;
-    if (this.form.valid) {
-      let eventT = {
-        name: 'submitForm',
-        formData: this.form.value,
-        form: this.form,
-        inEdit: this.inEdit
-      }
-      this.submitFormEvent.emit(eventT);
-    } else {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
-      const invalidFields = this.getInvalidFields(this.form);
-
-
-      this.presentToast(`Mancano i seguenti campi:${invalidFields.join(', ')}`);
+      alert('Compila correttamente i campi richiesti', 'Attenzione');
+      return;
     }
-  }
-  cancellForm() {
-    if (this.loading) return;
-    let eventT = {
-      name: 'cancelForm',
-      formData: this.form.value,
-      form: this.form,
-      component: this
-    }
-    this.submitFormEvent.emit(eventT);
-  }
-
-  // Metodo per ottenere i campi non validi
-  getInvalidFields(formGroup: FormGroup): string[] {
-    const invalidFields: string[] = [];
-
-    Object.keys(formGroup.controls).forEach(field => {
-      const control = formGroup.get(field);
-      if (control && control.invalid) {
-
-        let ff = this.fieldConfigs[field].label
-        invalidFields.push(ff);
-      }
+    this.submitFormEvent.emit({
+      name: 'submitForm',
+      formData: this.form.getRawValue()
     });
-
-    return invalidFields;
   }
 
-  async presentToast(message: string) {
-    alert(message, 'Errore!')
-  }
-
-  onFucBtnClick(evt: any) {
-    /* evt.stopPropagation();
-    evt.preventDefault(); */
-
-    let send = {
-      name: 'functionalInputClick',
-      nomeCampo: evt.name,
-      allFields: evt
-    }
-
-    this.functionalInputFormEvent.emit(send)
-  }
-
-  public refresh() {
-    this.form.reset()
+  closeForm() {
+    if (this.loading) return;
+    this.submitFormEvent.emit({
+      name: 'cancelForm',
+      formData: this.form.getRawValue()
+    });
   }
 }
