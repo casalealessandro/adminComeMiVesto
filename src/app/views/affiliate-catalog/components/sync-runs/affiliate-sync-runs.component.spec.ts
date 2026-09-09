@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AffiliateFeed, AffiliateProgram, AffiliateSyncRun } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
   AFFILIATE_SYNC_RUNS_PAGE_SIZE,
   AffiliateSyncRunsComponent,
+  affiliateSyncStatusBadgeClass,
   affiliateSyncStatusLabel,
   buildAffiliateSyncRunColumns,
   buildAffiliateSyncRunGridRows,
@@ -63,20 +65,23 @@ describe('Affiliate sync runs', () => {
     errors: ['sample'],
   };
 
-  it('keeps the sync runs grid read-only and free from action columns', () => {
+  it('keeps the sync runs grid read-only with detail as the only action', () => {
     const columns = buildAffiliateSyncRunColumns()[0].data;
+    const actions = columns.filter((column) => column.type === 'campoButton');
 
-    expect(columns.some((column) => column.type === 'campoButton')).toBeFalse();
+    expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
   });
 
-  it('maps backend statuses to readable labels', () => {
+  it('maps backend statuses to readable labels and badges', () => {
     expect(affiliateSyncStatusLabel('QUEUED')).toBe('In coda');
     expect(affiliateSyncStatusLabel('RUNNING')).toBe('In esecuzione');
     expect(affiliateSyncStatusLabel('SUCCESS')).toBe('Completata');
     expect(affiliateSyncStatusLabel('PARTIAL')).toBe('Parziale');
     expect(affiliateSyncStatusLabel('FAILED')).toBe('Fallita');
     expect(affiliateSyncStatusLabel('ABORTED')).toBe('Interrotta');
+    expect(affiliateSyncStatusBadgeClass('SUCCESS')).toBe('text-bg-success');
+    expect(affiliateSyncStatusBadgeClass('FAILED')).toBe('text-bg-danger');
   });
 
   it('maps program, feed and counters to display-only rows', () => {
@@ -100,10 +105,11 @@ describe('Affiliate sync runs', () => {
     expect(rows[0].feedName).toBe(feed.id);
   });
 
-  describe('cursor pagination', () => {
+  describe('cursor pagination and detail navigation', () => {
     let fixture: ComponentFixture<AffiliateSyncRunsComponent>;
     let component: AffiliateSyncRunsComponent;
     let service: jasmine.SpyObj<AffiliateCatalogService>;
+    let router: Router;
 
     beforeEach(async () => {
       service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', [
@@ -127,12 +133,14 @@ describe('Affiliate sync runs', () => {
       await TestBed.configureTestingModule({
         imports: [AffiliateSyncRunsComponent],
         providers: [
+          provideRouter([]),
           { provide: AffiliateCatalogService, useValue: service },
         ],
       }).compileComponents();
 
       fixture = TestBed.createComponent(AffiliateSyncRunsComponent);
       component = fixture.componentInstance;
+      router = TestBed.inject(Router);
     });
 
     it('loads the first backend page with the canonical page size', () => {
@@ -157,6 +165,14 @@ describe('Affiliate sync runs', () => {
       expect(component.runs.map((item) => item.id)).toEqual(['run-1', 'run-2']);
       expect(component.hasMore).toBeFalse();
       expect(component.nextCursor).toBeNull();
+    });
+
+    it('navigates to the canonical sync run detail route', () => {
+      const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.openDetail(run);
+
+      expect(navigate).toHaveBeenCalledWith(['/affiliate-catalog/sync-runs', run.id]);
     });
   });
 });

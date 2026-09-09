@@ -55,7 +55,8 @@
       [showToolbarBottom]="false"
       [showFilter]="false"
       [isSearchable]="false"
-      [tableHeight]="560">
+      [tableHeight]="560"
+      (emittendButtonCellClick)="gridAction($event)">
     </app-data-grid>
   </div>
 
@@ -79,6 +80,11 @@
         <div><dt>Errori</dt><dd>{{ errorsCount(run) }}</dd></div>
         <div><dt>Run ID</dt><dd>{{ run.id }}</dd></div>
       </dl>
+
+      <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-3" (click)="openDetail(run)">
+        <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
+        Dettaglio
+      </button>
     </article>
   </div>
 

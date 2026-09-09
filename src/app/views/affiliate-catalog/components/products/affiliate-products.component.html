@@ -55,7 +55,8 @@
       [showToolbarBottom]="false"
       [showFilter]="false"
       [isSearchable]="false"
-      [tableHeight]="560">
+      [tableHeight]="560"
+      (emittendButtonCellClick)="gridAction($event)">
     </app-data-grid>
   </div>
 
@@ -85,6 +86,11 @@
           <div><dt>Feed sorgente</dt><dd>{{ product.sourceFeedIds.length }}</dd></div>
           <div><dt>Ultima rilevazione</dt><dd>{{ product.lastSeenAt | date:'short' }}</dd></div>
         </dl>
+
+        <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-3" (click)="openDetail(product)">
+          <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
+          Dettaglio
+        </button>
       </div>
     </article>
   </div>

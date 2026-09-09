@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
@@ -45,10 +46,11 @@ describe('Affiliate products', () => {
     lastSeenAt: 3,
   };
 
-  it('keeps the products grid read-only and free from action columns', () => {
+  it('keeps the products grid read-only with detail as the only action', () => {
     const columns = buildAffiliateProductColumns()[0].data;
+    const actions = columns.filter((column) => column.type === 'campoButton');
 
-    expect(columns.some((column) => column.type === 'campoButton')).toBeFalse();
+    expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
   });
 
@@ -70,10 +72,11 @@ describe('Affiliate products', () => {
     expect(rows[0].programName).toBe(program.id);
   });
 
-  describe('cursor pagination', () => {
+  describe('cursor pagination and detail navigation', () => {
     let fixture: ComponentFixture<AffiliateProductsComponent>;
     let component: AffiliateProductsComponent;
     let service: jasmine.SpyObj<AffiliateCatalogService>;
+    let router: Router;
 
     beforeEach(async () => {
       service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', [
@@ -95,12 +98,14 @@ describe('Affiliate products', () => {
       await TestBed.configureTestingModule({
         imports: [AffiliateProductsComponent],
         providers: [
+          provideRouter([]),
           { provide: AffiliateCatalogService, useValue: service },
         ],
       }).compileComponents();
 
       fixture = TestBed.createComponent(AffiliateProductsComponent);
       component = fixture.componentInstance;
+      router = TestBed.inject(Router);
     });
 
     it('loads the first backend page with the canonical page size', () => {
@@ -125,6 +130,14 @@ describe('Affiliate products', () => {
       expect(component.products.map((item) => item.id)).toEqual(['product-1', 'product-2']);
       expect(component.hasMore).toBeFalse();
       expect(component.nextCursor).toBeNull();
+    });
+
+    it('navigates to the canonical product detail route', () => {
+      const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+
+      component.openDetail(product);
+
+      expect(navigate).toHaveBeenCalledWith(['/affiliate-catalog/products', product.id]);
     });
   });
 });

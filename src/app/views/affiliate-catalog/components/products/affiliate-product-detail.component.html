@@ -1,0 +1,100 @@
+<section class="affiliate-detail" aria-labelledby="affiliate-product-detail-title" [attr.aria-busy]="loading">
+  <div class="affiliate-detail__toolbar">
+    <a class="btn btn-outline-secondary" routerLink="/affiliate-catalog/products">
+      <span class="mdi mdi-arrow-left" aria-hidden="true"></span>
+      Torna ai prodotti
+    </a>
+    <button type="button" class="btn btn-outline-primary" (click)="load()" [disabled]="loading || !productId">
+      <span class="mdi mdi-refresh" aria-hidden="true"></span>
+      Aggiorna
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger affiliate-detail__error" role="alert">
+    <span>{{ error }}</span>
+    <button *ngIf="productId" type="button" class="btn btn-sm btn-outline-danger" (click)="load()">Riprova</button>
+  </div>
+
+  <p *ngIf="loading" class="affiliate-detail__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento dettaglio prodotto…
+  </p>
+
+  <ng-container *ngIf="!loading && !error && product as item">
+    <div class="affiliate-detail__hero">
+      <div>
+        <div *ngIf="images.length; else noImage" class="affiliate-detail__gallery">
+          <img *ngFor="let image of images" [src]="image" [alt]="item.name" loading="lazy">
+        </div>
+        <ng-template #noImage>
+          <div class="affiliate-detail__image-placeholder">
+            <span class="mdi mdi-hanger" aria-hidden="true"></span>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="affiliate-detail__hero-body">
+        <p class="affiliate-detail__eyebrow">{{ item.brand || 'Brand non disponibile' }}</p>
+        <h2 id="affiliate-product-detail-title">{{ item.name }}</h2>
+        <p class="affiliate-detail__subtitle">{{ programName() }}</p>
+
+        <div class="affiliate-detail__badges">
+          <span class="badge" [class.text-bg-success]="item.active" [class.text-bg-secondary]="!item.active">
+            {{ item.active ? 'Attivo' : 'Inattivo' }}
+          </span>
+          <span class="badge text-bg-light">{{ categoryLabel() }}</span>
+          <span *ngIf="item.normalizedColor" class="badge text-bg-light">{{ item.normalizedColor }}</span>
+        </div>
+
+        <p class="affiliate-detail__description">{{ item.description || 'Nessuna descrizione disponibile.' }}</p>
+      </div>
+    </div>
+
+    <div class="affiliate-detail__grid">
+      <section class="affiliate-detail__card">
+        <h3>Identità catalogo</h3>
+        <dl class="affiliate-detail__definition">
+          <div><dt>Product ID</dt><dd>{{ item.id }}</dd></div>
+          <div><dt>Merchant Product Group ID</dt><dd>{{ item.merchantProductGroupId || '—' }}</dd></div>
+          <div><dt>Programma</dt><dd>{{ programName() }}</dd></div>
+          <div><dt>Program ID</dt><dd>{{ item.affiliateProgramId }}</dd></div>
+          <div *ngIf="program"><dt>Network</dt><dd>{{ program.network }}</dd></div>
+          <div *ngIf="program"><dt>Mercato programma</dt><dd>{{ program.market }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="affiliate-detail__card">
+        <h3>Classificazione</h3>
+        <dl class="affiliate-detail__definition">
+          <div><dt>Categoria</dt><dd>{{ categoryLabel() }}</dd></div>
+          <div><dt>Colore normalizzato</dt><dd>{{ item.normalizedColor || '—' }}</dd></div>
+          <div><dt>Target</dt><dd>{{ genderLabel() }}</dd></div>
+          <div><dt>Materiali</dt><dd>{{ materialsLabel() }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="affiliate-detail__card">
+        <h3>Feed sorgente</h3>
+        <ul *ngIf="item.sourceFeedIds.length; else noFeeds" class="affiliate-detail__list">
+          <li *ngFor="let feedId of item.sourceFeedIds">
+            <strong>{{ sourceFeedName(feedId) }}</strong><br>
+            <small>{{ feedId }}</small>
+          </li>
+        </ul>
+        <ng-template #noFeeds>
+          <p class="affiliate-detail__empty-note">Nessun feed sorgente associato.</p>
+        </ng-template>
+      </section>
+
+      <section class="affiliate-detail__card">
+        <h3>Lifecycle</h3>
+        <dl class="affiliate-detail__definition">
+          <div><dt>Creato</dt><dd>{{ item.createdAt | date:'short' }}</dd></div>
+          <div><dt>Aggiornato</dt><dd>{{ item.updatedAt | date:'short' }}</dd></div>
+          <div><dt>Ultima rilevazione</dt><dd>{{ item.lastSeenAt | date:'short' }}</dd></div>
+          <div><dt>Immagini</dt><dd>{{ images.length }}</dd></div>
+        </dl>
+      </section>
+    </div>
+  </ng-container>
+</section>
