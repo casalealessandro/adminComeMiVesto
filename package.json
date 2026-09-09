@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:data-grid": "ng test --watch=false --browsers=ChromeHeadless --ts-config=tsconfig.data-grid.spec.json --include=src/app/core/data-grid/**/*.spec.ts",
+    "test:affiliate-catalog": "ng test --watch=false --browsers=ChromeHeadless --ts-config=tsconfig.affiliate-catalog.spec.json --include='src/app/views/affiliate-catalog/**/*.spec.ts'",
     "compodoc:build": "compodoc -p tsconfig.doc.json",
     "compodoc:build-and-serve": "compodoc -p tsconfig.doc.json -s",
     "compodoc:serve": "compodoc -s",

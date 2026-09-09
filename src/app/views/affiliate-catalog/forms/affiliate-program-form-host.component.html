@@ -1,0 +1,27 @@
+<section class="affiliate-program-form" aria-live="polite">
+  <ng-container *ngIf="itemData.program as program">
+    <div *ngIf="itemData.mode === 'edit'" class="affiliate-program-form__identity">
+      <div>
+        <span>Network</span>
+        <strong>{{ program.network }}</strong>
+      </div>
+      <div>
+        <span>Network Program ID</span>
+        <strong>{{ program.networkProgramId }}</strong>
+      </div>
+    </div>
+  </ng-container>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <app-dynamic-form
+    [service]="formId"
+    [editData]="itemData.mode === 'edit' ? itemData.program : undefined"
+    [idData]="itemData.mode === 'create' ? createDefaults : undefined"
+    [showBottomButtons]="true"
+    [inputBtnLeftName]="'Annulla'"
+    [inputBtnRightName]="itemData.mode === 'edit' ? 'Salva modifiche' : 'Crea programma'"
+    [loading]="saving"
+    (submitFormEvent)="handleForm($event)">
+  </app-dynamic-form>
+</section>
