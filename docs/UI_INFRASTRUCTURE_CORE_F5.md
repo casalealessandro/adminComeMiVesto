@@ -10,7 +10,7 @@ Baseline:
 
 - `develop` @ `3720f6658beaf538ccc6a594101595a55eb42878`;
 - Layout & Navigation Core already closed in Phase E;
-- DataGrid Core already stabilized before Phase F;
+- DataGrid Core was stabilized on `refactor/clean-admin-core`, but its dedicated Core abstractions/tests have not yet been reconciled into current `develop`;
 - Forms Core / FormBuilder already stabilized before Phase F;
 - Popup / Overlay Core already stabilized before Phase F;
 - F.1 correctness/lifecycle merged;
@@ -47,7 +47,7 @@ Popup remains a separate stabilized Core and keeps its own optional Caption foot
 | DynamicForm | metadata/form contracts plus use of shared scroll primitive at historical 700px contract | `dynamic-form.component.spec.ts` + F.5 assertion |
 | Forms Core | integration behavior across DynamicForm/form metadata | existing `forms-core.integration.spec.ts` |
 | Popup Core | popup content/wrapper characterization retained | existing popup specs; no F.5 production change |
-| DataGrid Core | previously stabilized public/runtime behavior; current direct use of CustomScrollbar remains unchanged | prior DataGrid Core work + F.3 consumer characterization; no F.5 production change |
+| DataGrid Core | dedicated engine/provider/filter/lookup abstractions and focused specs exist on `refactor/clean-admin-core`; current `develop` still uses the stabilized DataGrid runtime but has not yet reconciled that branch-only Core test/abstraction set | verified branch comparison; reconciliation required before Starter Kit extraction |
 | Layout / responsive shell | over/side/push shell modes and mobile/tablet/desktop baseline | Phase E.5 characterization/fixes; F.0–F.5 introduce no responsive CSS redesign |
 
 ## 3. F.5 focused addition
@@ -102,9 +102,15 @@ Inactive breadcrumb/help members remain deprecated. They can be removed only aft
 
 `scrollHeigth` and some wrapper outputs carry historical naming. Rename only through an explicit compatibility/migration layer.
 
-### UI-FUTURE-04 — DataGrid dedicated test locality
+### UI-FUTURE-04 — DataGrid Core reconciliation
 
-DataGrid Core was stabilized before Phase F, but there is no dedicated `data-grid.component.spec.ts` in the current DataGrid folder. Do not create a broad new DataGrid suite as a side effect of F.5. During Starter Kit extraction, decide whether existing DataGrid characterization should be consolidated next to the component.
+The dedicated DataGrid Core work is **not missing**: it exists on `refactor/clean-admin-core` and includes, among other pieces, `data-grid-engine`, provider abstractions, filter/lookup/detail contracts, `data-grid.component.spec.ts`, focused behavior specs, and a dedicated DataGrid CI workflow.
+
+Those branch-only changes must not be merged wholesale because `refactor/clean-admin-core` has diverged from current `develop`. Before Starter Kit extraction, perform a dedicated reconciliation phase that classifies and selectively ports only the still-valid DataGrid Core work and repository-cleanup changes.
+
+### UI-FUTURE-05 — clean-admin branch reconciliation
+
+`refactor/clean-admin-core` and `develop` are divergent. The branch contains valuable reusable-Core work but also historical application removals and repository cleanup. Treat it as a source for selective recovery, not as a merge candidate.
 
 ## 7. Phase F exit criteria
 
@@ -114,13 +120,28 @@ Phase F can be declared **CLOSED** when:
 2. the existing focused regression suites remain source-compatible;
 3. DynamicForm → CustomScrollbar compatibility is explicitly protected;
 4. no production runtime files are changed by F.5;
-5. the remaining compatibility/dependency debt is documented rather than silently refactored.
+5. the remaining compatibility/dependency debt is documented rather than silently refactored;
+6. DataGrid branch divergence is explicitly recorded so it cannot be mistaken for missing characterization.
 
-## 8. Handoff — next phase
+## 8. Handoff — reconciliation before extraction
 
-After F.5, work changes direction from stabilization to **Starter Kit extraction / packaging**.
+After F.5, the next step is **not yet the repository split**.
 
-The next phase should begin by classifying the current repository into three layers:
+First perform a conservative reconciliation of `refactor/clean-admin-core` against current `develop`:
+
+```text
+refactor/clean-admin-core
+        │
+        ├── reusable DataGrid Core work ───────┐
+        ├── repository cleanup ────────────────┤ selective review/port
+        └── historical app-specific changes ──┘
+                                               ↓
+                                         current develop
+```
+
+Only after that reconciliation should work move to **Starter Kit extraction / packaging**.
+
+The extraction phase should then classify the current repository into three layers:
 
 ```text
 Admin Core / Starter Kit
@@ -134,4 +155,4 @@ ComeMiVesto application layer
 └── ComeMiVesto registrations/configuration
 ```
 
-The first extraction step must be an inventory and dependency map, not a repository split or mass move.
+The first extraction step remains an inventory and dependency map, not a repository split or mass move.
