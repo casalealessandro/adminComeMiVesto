@@ -1,12 +1,5 @@
-export interface ToolbarButton {
-  id: string;
-  name: string;
-  text: string;
-  icon?: string;
-  disabled: boolean;
-  visible: boolean;
-  cssClass?: string;
-  widget: 'button' | 'textBox';
-  width?: number;
-  position?: 'left' | 'right' | 'center';
-}
+/**
+ * @deprecated Import from `src/app/core/ui/caption/toolbar-button`.
+ * Compatibility re-export kept during Starter Kit physical extraction.
+ */
+export { ToolbarButton } from '../../core/ui/caption/toolbar-button';

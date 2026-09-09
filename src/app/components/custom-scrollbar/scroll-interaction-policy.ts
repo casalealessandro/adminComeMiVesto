@@ -1,7 +1,8 @@
-import { InjectionToken } from '@angular/core';
-
-export interface ScrollInteractionPolicy {
-  onScroll(event: Event): void;
-}
-
-export const SCROLL_INTERACTION_POLICY = new InjectionToken<ScrollInteractionPolicy>('SCROLL_INTERACTION_POLICY');
+/**
+ * @deprecated Import from `src/app/core/ui/custom-scrollbar/scroll-interaction-policy`.
+ * Compatibility re-export kept during Starter Kit physical extraction.
+ */
+export {
+  SCROLL_INTERACTION_POLICY,
+  ScrollInteractionPolicy,
+} from '../../core/ui/custom-scrollbar/scroll-interaction-policy';
