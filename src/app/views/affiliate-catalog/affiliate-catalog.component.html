@@ -1,7 +1,7 @@
 <app-anagrafica-wrapper
   caption="Catalogo Affiliati"
   subTitle="Gestione catalogo e sincronizzazioni affiliate"
-  tip="Questa area raccoglierà programmi, feed, prodotti e sincronizzazioni usando esclusivamente le API backend dedicate."
+  tip="Gestisci il catalogo affiliato usando esclusivamente le API backend dedicate."
   cssClass="affiliate-catalog-wrapper">
 
   <section class="affiliate-catalog" aria-labelledby="affiliate-catalog-title">
@@ -10,10 +10,21 @@
       <div>
         <h1 id="affiliate-catalog-title">Catalogo Affiliati</h1>
         <p>
-          Workspace amministrativa per la gestione del catalogo affiliato. Le sezioni operative
-          verranno abilitate progressivamente nelle prossime fasi senza accessi diretti a provider esterni o Firestore.
+          Configura progressivamente programmi, feed, prodotti e sincronizzazioni senza accessi diretti
+          a provider esterni o Firestore dal browser.
         </p>
       </div>
+    </div>
+
+    <nav class="affiliate-catalog__nav" aria-label="Sezioni Catalogo Affiliati">
+      <a routerLink="programs" routerLinkActive="active" class="affiliate-catalog__nav-item">
+        <span class="mdi mdi-domain" aria-hidden="true"></span>
+        Programmi
+      </a>
+    </nav>
+
+    <div class="affiliate-catalog__content">
+      <router-outlet></router-outlet>
     </div>
   </section>
 </app-anagrafica-wrapper>

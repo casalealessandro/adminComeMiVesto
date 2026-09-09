@@ -1,5 +1,6 @@
 .affiliate-catalog {
   width: 100%;
+  min-width: 0;
   padding: 1rem;
 }
 
@@ -30,6 +31,45 @@
   line-height: 1.5;
 }
 
+.affiliate-catalog__nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  overflow-x: auto;
+  padding: 0.2rem 0 0.45rem;
+  scrollbar-width: thin;
+}
+
+.affiliate-catalog__nav-item {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.6rem;
+  color: var(--bs-body-color, #212529);
+  text-decoration: none;
+}
+
+.affiliate-catalog__nav-item:hover,
+.affiliate-catalog__nav-item:focus-visible {
+  border-color: var(--bs-primary, #0d6efd);
+  color: var(--bs-primary, #0d6efd);
+}
+
+.affiliate-catalog__nav-item.active {
+  border-color: var(--bs-primary, #0d6efd);
+  background: var(--bs-primary, #0d6efd);
+  color: #fff;
+}
+
+.affiliate-catalog__content {
+  min-width: 0;
+  margin-top: 1rem;
+}
+
 @media (min-width: 768px) {
   .affiliate-catalog {
     padding: 1.25rem;
@@ -37,5 +77,15 @@
 
   .affiliate-catalog__intro {
     padding: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .affiliate-catalog {
+    padding: 0.75rem;
+  }
+
+  .affiliate-catalog__intro {
+    padding: 0.85rem;
   }
 }

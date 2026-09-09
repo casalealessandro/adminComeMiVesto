@@ -13,6 +13,7 @@ import { AccessDeniedComponent } from './views/access-denied/access-denied.compo
 import { ColorsComponent } from './views/colors/colors.component';
 import { ReportsComponent } from './views/reports/reports.component';
 import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
+import { AffiliateProgramsComponent } from './views/affiliate-catalog/components/programs/affiliate-programs.component';
 
 
 export const routes:Routes = [
@@ -23,7 +24,15 @@ export const routes:Routes = [
     { path: 'access-denied', component: AccessDeniedComponent},
     { path: 'colors', component: ColorsComponent, canActivate:[authGuard]},
     { path: 'reports', component: ReportsComponent, canActivate:[authGuard]},
-    { path: 'affiliate-catalog', component: AffiliateCatalogComponent, canActivate:[authGuard]},
+    {
+      path: 'affiliate-catalog',
+      component: AffiliateCatalogComponent,
+      canActivate:[authGuard],
+      children: [
+        { path: '', redirectTo: 'programs', pathMatch: 'full' },
+        { path: 'programs', component: AffiliateProgramsComponent },
+      ]
+    },
     { path: 'form-list', component: AppFormListComponent,canActivate:[authGuard] },
      { path: 'form-builder/:id', component: FormBuilderComponent ,canActivate:[authGuard]},
      { path: 'outfit-list', component: OutfitsComponent,canActivate:[authGuard] },

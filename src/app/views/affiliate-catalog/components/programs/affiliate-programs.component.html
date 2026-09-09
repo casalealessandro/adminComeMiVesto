@@ -1,0 +1,106 @@
+<section class="affiliate-programs" aria-labelledby="affiliate-programs-title" [attr.aria-busy]="loading">
+  <header class="affiliate-programs__header">
+    <div>
+      <p class="affiliate-programs__eyebrow">Catalogo Affiliati</p>
+      <h2 id="affiliate-programs-title">Programmi affiliati</h2>
+      <p class="affiliate-programs__description">
+        Configura i programmi commerciali disponibili al catalogo. Le modifiche sono riservate agli amministratori.
+      </p>
+    </div>
+
+    <div class="affiliate-programs__actions">
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-primary" (click)="openCreate()">
+        <span class="mdi mdi-plus" aria-hidden="true"></span>
+        Nuovo programma
+      </button>
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
+        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert alert-danger affiliate-programs__error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  </div>
+
+  <label *ngIf="programs.length" class="affiliate-programs__search">
+    <span>Cerca programmi</span>
+    <input
+      class="form-control"
+      [(ngModel)]="search"
+      (ngModelChange)="applySearch()"
+      placeholder="Nome, network, ID, mercato o fascia prezzo">
+  </label>
+
+  <p *ngIf="loading" class="affiliate-programs__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento programmi…
+  </p>
+
+  <div *ngIf="!loading && !error && !filteredPrograms.length" class="affiliate-programs__empty">
+    <span class="mdi mdi-link-off" aria-hidden="true"></span>
+    <strong>Nessun programma affiliato trovato</strong>
+    <span>{{ search ? 'Modifica i criteri di ricerca.' : 'Crea il primo programma per iniziare a configurare il catalogo.' }}</span>
+  </div>
+
+  <div class="affiliate-programs__desktop" *ngIf="!loading && filteredPrograms.length">
+    <app-data-grid
+      [idTable]="'affiliate-programs-grid'"
+      [colonne]="columns"
+      [dataSource]="filteredPrograms"
+      [remoteOperation]="false"
+      [isEditable]="false"
+      [isEditableNewRow]="false"
+      [isEditableEditRow]="false"
+      [isEditableDeleteRow]="false"
+      [showToolbarTop]="false"
+      [showToolbarBottom]="false"
+      [isSearchable]="false"
+      [tableHeight]="520"
+      (emittendButtonCellClick)="gridAction($event)">
+    </app-data-grid>
+  </div>
+
+  <div class="affiliate-programs__mobile" *ngIf="!loading && filteredPrograms.length">
+    <article class="affiliate-program-card" *ngFor="let program of filteredPrograms">
+      <div class="affiliate-program-card__header">
+        <div>
+          <span class="affiliate-program-card__network">{{ program.network }}</span>
+          <h3>{{ program.name }}</h3>
+          <p>{{ program.networkProgramId }}</p>
+        </div>
+        <span
+          class="badge"
+          [class.text-bg-success]="program.networkStatus === 'ACTIVE'"
+          [class.text-bg-secondary]="program.networkStatus !== 'ACTIVE'">
+          {{ program.networkStatus }}
+        </span>
+      </div>
+
+      <div class="affiliate-program-card__badges">
+        <span class="badge" [class.text-bg-success]="program.enabled" [class.text-bg-light]="!program.enabled">
+          {{ program.enabled ? 'Abilitato' : 'Disabilitato' }}
+        </span>
+        <span class="badge text-bg-light">{{ program.market }}</span>
+        <span class="badge text-bg-light">{{ program.currency }}</span>
+        <span class="badge text-bg-light">{{ program.priceSegment }}</span>
+      </div>
+
+      <dl>
+        <div><dt>Adapter</dt><dd>{{ program.defaultAdapterType }}</dd></div>
+        <div><dt>Aggiornato</dt><dd>{{ program.updatedAt | date:'short' }}</dd></div>
+      </dl>
+
+      <button
+        *ngIf="auth.isAdmin()"
+        type="button"
+        class="btn btn-sm btn-outline-primary affiliate-program-card__edit"
+        (click)="openEdit(program)">
+        <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+        Modifica
+      </button>
+    </article>
+  </div>
+</section>

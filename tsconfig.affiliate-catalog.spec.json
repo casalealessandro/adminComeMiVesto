@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/affiliate-catalog-spec",
+    "types": [
+      "jasmine",
+      "@angular/localize"
+    ]
+  },
+  "include": [
+    "src/app/views/affiliate-catalog/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}
