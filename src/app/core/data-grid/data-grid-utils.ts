@@ -1,4 +1,4 @@
-import { ColData, Colonne } from '../../interface/app.interface';
+import { ColData, Colonne } from './models/data-grid.models';
 import { GridFilterColumnMetadata } from './data-grid-filter-model';
 import {
   GridFilter,

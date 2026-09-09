@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './services/auth.service';
-import { LayoutSessionProvider } from './services/layout-session-provider';
+import { LayoutSessionProvider } from './core/public-api';
 
 @Injectable()
 export class ComeMiVestoLayoutSessionService implements LayoutSessionProvider {

@@ -1,4 +1,4 @@
-import { NavigationItem } from './services/navigation-registry';
+import { NavigationItem } from './core/public-api';
 
 export const comeMiVestoNavigation: readonly NavigationItem[] = [
   { path: 'dashboard', label: 'Dashboard', icon:'mdi mdi-view-dashboard-outline' },

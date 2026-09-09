@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ContainerComponent } from './layout/container/container.component';
-import { OverlayComponent } from "./components/overlay-component/overlay.component";
-import { PopupWrapperComponent } from "./components/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component";
+import { ContainerComponent } from './core/layout/container/container.component';
+import { OverlayComponent } from './core/overlay/overlay.component';
+import { PopupWrapperComponent } from './core/popup/modal-popup/modal-popup-wrapper/modal-popup-wrapper.component';
 
 @Component({
   selector: 'app-root',

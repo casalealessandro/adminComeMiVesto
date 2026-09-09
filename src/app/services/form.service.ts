@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable, firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { DynamicFormField, normalizeDynamicFormFields } from '../interface/dynamic-form-field';
+import { DynamicFormField, normalizeDynamicFormFields } from '../core/forms/models/dynamic-form-field';
 
 export interface StoredForm { id: string; nameForm: string; json: DynamicFormField[]; }
 
