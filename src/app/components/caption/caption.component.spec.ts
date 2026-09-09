@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CaptionComponent } from './caption.component';
-import { ToolbarButton } from '../../interface/app.interface';
+import { ToolbarButton } from './toolbar-button';
 
-describe('CaptionComponent F.1 regression', () => {
+describe('CaptionComponent F.2 page toolbar core', () => {
   let component: CaptionComponent;
   let fixture: ComponentFixture<CaptionComponent>;
 
