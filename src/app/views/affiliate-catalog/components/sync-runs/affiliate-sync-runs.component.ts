@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { ColData, Colonne, DataGridComponent } from '../../../../core/public-api';
 import {
@@ -50,6 +51,17 @@ export function affiliateSyncStatusLabel(status: AffiliateSyncRunStatus): string
   return STATUS_LABELS[status];
 }
 
+export function affiliateSyncStatusBadgeClass(status: AffiliateSyncRunStatus): string {
+  switch (status) {
+    case 'SUCCESS': return 'text-bg-success';
+    case 'FAILED': return 'text-bg-danger';
+    case 'PARTIAL': return 'text-bg-warning';
+    case 'RUNNING': return 'text-bg-primary';
+    case 'QUEUED': return 'text-bg-info';
+    case 'ABORTED': return 'text-bg-secondary';
+  }
+}
+
 export function buildAffiliateSyncRunColumns(): Colonne[] {
   const columns: ColData[] = [
     baseColumn('statusLabel', 'Stato', 120),
@@ -63,6 +75,16 @@ export function buildAffiliateSyncRunColumns(): Colonne[] {
     baseColumn('offersUpdated', 'Offerte', 90, 'campoNumber'),
     baseColumn('productsMissing', 'Mancanti', 95, 'campoNumber'),
     baseColumn('errorsCount', 'Errori', 80, 'campoNumber'),
+    {
+      ...baseColumn('', 'Dettaglio', 76, 'campoButton'),
+      button: {
+        text: '',
+        name: 'detail',
+        event: 'detail',
+        icon: 'mdi mdi-eye-outline',
+        hint: 'Apri dettaglio sincronizzazione',
+      },
+    },
   ];
 
   return [{ itemType: 'group', groupDataField: '', data: columns }];
@@ -93,6 +115,7 @@ export function buildAffiliateSyncRunGridRows(
 })
 export class AffiliateSyncRunsComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
+  private readonly router = inject(Router);
 
   runs: AffiliateSyncRun[] = [];
   gridRows: AffiliateSyncRunGridRow[] = [];
@@ -179,18 +202,20 @@ export class AffiliateSyncRunsComponent implements OnInit {
   }
 
   statusBadgeClass(run: AffiliateSyncRun): string {
-    switch (run.status) {
-      case 'SUCCESS': return 'text-bg-success';
-      case 'FAILED': return 'text-bg-danger';
-      case 'PARTIAL': return 'text-bg-warning';
-      case 'RUNNING': return 'text-bg-primary';
-      case 'QUEUED': return 'text-bg-info';
-      case 'ABORTED': return 'text-bg-secondary';
-    }
+    return affiliateSyncStatusBadgeClass(run.status);
   }
 
   errorsCount(run: AffiliateSyncRun): number {
     return run.errors?.length ?? 0;
+  }
+
+  openDetail(run: AffiliateSyncRun): void {
+    if (!run?.id) return;
+    void this.router.navigate(['/affiliate-catalog/sync-runs', run.id]);
+  }
+
+  gridAction(event: { name?: string; rowData?: AffiliateSyncRunGridRow }): void {
+    if (event?.name === 'detail' && event.rowData) this.openDetail(event.rowData);
   }
 
   private applyPage(

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { ColData, Colonne, DataGridComponent } from '../../../../core/public-api';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
@@ -42,6 +43,16 @@ export function buildAffiliateProductColumns(): Colonne[] {
     baseColumn('sourceFeedCount', 'Feed', 70, 'campoNumber'),
     baseColumn('activeLabel', 'Attivo', 80),
     baseColumn('lastSeenAt', 'Ultima rilevazione', 145, 'campoDateTime'),
+    {
+      ...baseColumn('', 'Dettaglio', 76, 'campoButton'),
+      button: {
+        text: '',
+        name: 'detail',
+        event: 'detail',
+        icon: 'mdi mdi-eye-outline',
+        hint: 'Apri dettaglio prodotto',
+      },
+    },
   ];
 
   return [{ itemType: 'group', groupDataField: '', data: columns }];
@@ -70,6 +81,7 @@ export function buildAffiliateProductGridRows(
 })
 export class AffiliateProductsComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
+  private readonly router = inject(Router);
 
   products: CatalogProduct[] = [];
   gridRows: AffiliateProductGridRow[] = [];
@@ -156,6 +168,15 @@ export class AffiliateProductsComponent implements OnInit {
 
   materialsLabel(product: CatalogProduct): string {
     return product.materials?.filter(Boolean).join(', ') || '—';
+  }
+
+  openDetail(product: CatalogProduct): void {
+    if (!product?.id) return;
+    void this.router.navigate(['/affiliate-catalog/products', product.id]);
+  }
+
+  gridAction(event: { name?: string; rowData?: AffiliateProductGridRow }): void {
+    if (event?.name === 'detail' && event.rowData) this.openDetail(event.rowData);
   }
 
   private applyPage(

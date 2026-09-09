@@ -1,0 +1,85 @@
+<section class="affiliate-detail" aria-labelledby="affiliate-sync-run-detail-title" [attr.aria-busy]="loading">
+  <div class="affiliate-detail__toolbar">
+    <a class="btn btn-outline-secondary" routerLink="/affiliate-catalog/sync-runs">
+      <span class="mdi mdi-arrow-left" aria-hidden="true"></span>
+      Torna alle sincronizzazioni
+    </a>
+    <button type="button" class="btn btn-outline-primary" (click)="load()" [disabled]="loading || !runId">
+      <span class="mdi mdi-refresh" aria-hidden="true"></span>
+      Aggiorna
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger affiliate-detail__error" role="alert">
+    <span>{{ error }}</span>
+    <button *ngIf="runId" type="button" class="btn btn-sm btn-outline-danger" (click)="load()">Riprova</button>
+  </div>
+
+  <p *ngIf="loading" class="affiliate-detail__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento dettaglio sincronizzazione…
+  </p>
+
+  <ng-container *ngIf="!loading && !error && run as item">
+    <section class="affiliate-detail__card affiliate-detail__hero-body">
+      <p class="affiliate-detail__eyebrow">Sincronizzazione affiliata</p>
+      <h2 id="affiliate-sync-run-detail-title">{{ feedName() }}</h2>
+      <p class="affiliate-detail__subtitle">{{ programName() }}</p>
+
+      <div class="affiliate-detail__badges">
+        <span class="badge" [ngClass]="statusBadgeClass()">{{ statusLabel() }}</span>
+        <span class="badge text-bg-light">Run {{ item.id }}</span>
+      </div>
+    </section>
+
+    <section class="affiliate-detail__card mt-3">
+      <h3>Risultati</h3>
+      <div class="affiliate-detail__metrics">
+        <div class="affiliate-detail__metric"><span>Record letti</span><strong>{{ item.recordsRead }}</strong></div>
+        <div class="affiliate-detail__metric"><span>Prodotti creati</span><strong>{{ item.productsCreated }}</strong></div>
+        <div class="affiliate-detail__metric"><span>Prodotti aggiornati</span><strong>{{ item.productsUpdated }}</strong></div>
+        <div class="affiliate-detail__metric"><span>Prodotti mancanti</span><strong>{{ item.productsMissing }}</strong></div>
+        <div class="affiliate-detail__metric"><span>Varianti create</span><strong>{{ item.variantsCreated }}</strong></div>
+        <div class="affiliate-detail__metric"><span>Varianti aggiornate</span><strong>{{ item.variantsUpdated }}</strong></div>
+        <div class="affiliate-detail__metric"><span>Offerte aggiornate</span><strong>{{ item.offersUpdated }}</strong></div>
+        <div class="affiliate-detail__metric"><span>Errori</span><strong>{{ item.errors.length }}</strong></div>
+      </div>
+    </section>
+
+    <div class="affiliate-detail__grid mt-3">
+      <section class="affiliate-detail__card">
+        <h3>Identità e sorgente</h3>
+        <dl class="affiliate-detail__definition">
+          <div><dt>Run ID</dt><dd>{{ item.id }}</dd></div>
+          <div><dt>Stato</dt><dd>{{ statusLabel() }}</dd></div>
+          <div><dt>Feed</dt><dd>{{ feedName() }}</dd></div>
+          <div><dt>Feed ID</dt><dd>{{ item.affiliateFeedId }}</dd></div>
+          <div><dt>Programma</dt><dd>{{ programName() }}</dd></div>
+          <div><dt>Program ID</dt><dd>{{ item.affiliateProgramId }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="affiliate-detail__card">
+        <h3>Esecuzione</h3>
+        <dl class="affiliate-detail__definition">
+          <div><dt>Avvio</dt><dd>{{ item.startedAt | date:'short' }}</dd></div>
+          <div><dt>Completamento</dt><dd>{{ item.completedAt ? (item.completedAt | date:'short') : '—' }}</dd></div>
+          <div><dt>Programmi processati</dt><dd>{{ item.programsProcessed }}</dd></div>
+          <div><dt>Feed processati</dt><dd>{{ item.feedsProcessed }}</dd></div>
+          <div *ngIf="feed"><dt>Modalità lettura feed</dt><dd>{{ feed.readMode }}</dd></div>
+          <div *ngIf="feed"><dt>Network Feed ID</dt><dd>{{ feed.networkFeedId }}</dd></div>
+        </dl>
+      </section>
+    </div>
+
+    <section class="affiliate-detail__card mt-3">
+      <h3>Errori restituiti dal run</h3>
+      <ul *ngIf="item.errors.length; else noErrors" class="affiliate-detail__list affiliate-detail__errors">
+        <li *ngFor="let errorItem of item.errors">{{ errorItem }}</li>
+      </ul>
+      <ng-template #noErrors>
+        <p class="affiliate-detail__empty-note">Nessun errore registrato per questo run.</p>
+      </ng-template>
+    </section>
+  </ng-container>
+</section>
