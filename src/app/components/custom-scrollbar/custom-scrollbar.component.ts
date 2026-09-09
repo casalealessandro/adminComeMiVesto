@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
-import { OverlayService } from '../../services/overlay.service';
-
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { SCROLL_INTERACTION_POLICY } from './scroll-interaction-policy';
 
 @Component({
   selector: 'app-custom-scrollbar',
@@ -10,11 +9,14 @@ import { OverlayService } from '../../services/overlay.service';
   templateUrl: './custom-scrollbar.component.html',
   styleUrl: './custom-scrollbar.component.scss'
 })
-
 export class CustomScrollbarComponent {
   @Input() scrollHeigth: number = 400;
-  overlayService= inject(OverlayService)  
-  onScroll(event: any): void {
-    this.overlayService.closeOverlay()
+  @Output() scrolled = new EventEmitter<Event>();
+
+  private readonly interactionPolicy = inject(SCROLL_INTERACTION_POLICY, { optional: true });
+
+  onScroll(event: Event): void {
+    this.scrolled.emit(event);
+    this.interactionPolicy?.onScroll(event);
   }
 }

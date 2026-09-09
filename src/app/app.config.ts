@@ -20,6 +20,8 @@ import { HEADER_CONFIG } from './services/header-config';
 import { comeMiVestoHeaderConfig } from './app-header-config';
 import { HEADER_USER_PROVIDER } from './services/header-user-provider';
 import { ComeMiVestoHeaderUserService } from './app-header-user.service';
+import { OverlayService } from './services/overlay.service';
+import { SCROLL_INTERACTION_POLICY, ScrollInteractionPolicy } from './components/custom-scrollbar/scroll-interaction-policy';
 
 const popupComponents = [
   ...starterKitEntryComponents,
@@ -34,6 +36,13 @@ export const appConfig: ApplicationConfig = {
     { provide: NAVIGATION_ITEMS, useValue: comeMiVestoNavigation },
     { provide: HEADER_CONFIG, useValue: comeMiVestoHeaderConfig },
     { provide: HEADER_USER_PROVIDER, useClass: ComeMiVestoHeaderUserService },
+    {
+      provide: SCROLL_INTERACTION_POLICY,
+      useFactory: (overlayService: OverlayService): ScrollInteractionPolicy => ({
+        onScroll: () => overlayService.closeOverlay()
+      }),
+      deps: [OverlayService]
+    },
     importProvidersFrom(
       AngularFireModule.initializeApp(environment.firebase),
       AngularFirestoreModule,
