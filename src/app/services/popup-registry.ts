@@ -1,8 +1,2 @@
-import { InjectionToken, Type } from '@angular/core';
-
-export interface PopupRegistration {
-  readonly name: string;
-  readonly component: Type<any>;
-}
-
-export const POPUP_REGISTRY = new InjectionToken<readonly PopupRegistration[]>('POPUP_REGISTRY');
+/** @deprecated Import from `src/app/core/popup/popup-registry`. */
+export * from '../core/popup/popup-registry';

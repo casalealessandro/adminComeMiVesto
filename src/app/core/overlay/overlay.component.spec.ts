@@ -1,7 +1,7 @@
 import { ElementRef } from '@angular/core';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { OverlayComponent } from './overlay.component';
-import { OverlayService } from '../../services/overlay.service';
+import { OverlayService } from './overlay.service';
 
 describe('OverlayComponent characterization', () => {
   let service: OverlayService;
