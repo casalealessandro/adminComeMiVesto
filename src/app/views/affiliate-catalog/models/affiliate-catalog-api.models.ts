@@ -54,11 +54,13 @@ export type AffiliateFeedCreateInput = Pick<
   | 'affiliateProgramId'
   | 'name'
   | 'enabled'
-  | 'adapterType'
-  | 'readMode'
   | 'locale'
   | 'market'
->;
+> & Partial<Pick<
+  AffiliateFeed,
+  | 'adapterType'
+  | 'readMode'
+>>;
 
 export type AffiliateFeedUpdateInput = Partial<Pick<
   AffiliateFeed,

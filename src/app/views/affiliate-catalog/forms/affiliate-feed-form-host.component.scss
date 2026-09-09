@@ -1,0 +1,40 @@
+.affiliate-feed-form {
+  min-width: 0;
+  padding: 0.25rem;
+}
+
+.affiliate-feed-form__identity {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.5rem;
+  background: var(--bs-light-bg-subtle, #f8f9fa);
+}
+
+.affiliate-feed-form__identity div {
+  min-width: 0;
+}
+
+.affiliate-feed-form__identity span,
+.affiliate-feed-form__identity strong {
+  display: block;
+}
+
+.affiliate-feed-form__identity span {
+  margin-bottom: 0.2rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.78rem;
+}
+
+.affiliate-feed-form__identity strong {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .affiliate-feed-form__identity {
+    grid-template-columns: 1fr;
+  }
+}
