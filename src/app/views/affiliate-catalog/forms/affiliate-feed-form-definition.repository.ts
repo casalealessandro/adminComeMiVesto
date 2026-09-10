@@ -97,7 +97,24 @@ const editableFields: DynamicFormField[] = [
     maxLength: 10,
     placeholder: 'IT',
   },
+  {
+    name: 'rules',
+    type: 'textArea',
+    typeInput: 'text',
+    label: 'Regole importazione (JSON)',
+    required: false,
+    placeholder: 'Regole di lettura e validità dei prodotti del feed',
+  },
 ];
+
+const rulesMapperField: DynamicFormField = {
+  name: 'rulesMapper',
+  type: 'textArea',
+  typeInput: 'text',
+  label: 'Mapping ComeMiVesto (JSON)',
+  required: false,
+  placeholder: 'Generato dalla configurazione visuale; modificabile manualmente se necessario',
+};
 
 export function buildAffiliateFeedFormDefinitions(programs: readonly AffiliateProgram[]): FormDefinition[] {
   const createFields: DynamicFormField[] = [
@@ -129,7 +146,7 @@ export function buildAffiliateFeedFormDefinitions(programs: readonly AffiliatePr
     {
       id: AFFILIATE_FEED_EDIT_FORM,
       nameForm: 'Modifica feed affiliato',
-      json: [...editableFields],
+      json: [...editableFields, rulesMapperField],
     },
   ];
 }

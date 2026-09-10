@@ -24,6 +24,28 @@ export interface AffiliateCursorPage<T> {
   };
 }
 
+export interface AffiliateFeedSourceValues {
+  recordsRead: number;
+  recordsNormalized: number;
+  categories: string[];
+  colors: string[];
+  genders: string[];
+}
+
+export interface AffiliateFeedMappingResponse extends AffiliateApiResponse<AffiliateFeed> {
+  sourceValues: AffiliateFeedSourceValues | null;
+  sourceValuesError: string | null;
+}
+
+export type AffiliateFeedCreateResponse = AffiliateFeedMappingResponse;
+
+export interface OutfitColorOption {
+  id: string;
+  value: string;
+  parent?: string | null;
+  hex?: string;
+}
+
 export type AffiliateProgramCreateInput = Pick<
   AffiliateProgram,
   | 'network'
@@ -56,6 +78,8 @@ export type AffiliateFeedCreateInput = Pick<
   | 'enabled'
   | 'locale'
   | 'market'
+  | 'rules'
+  | 'rulesMapper'
 > & Partial<Pick<
   AffiliateFeed,
   | 'adapterType'
@@ -70,4 +94,6 @@ export type AffiliateFeedUpdateInput = Partial<Pick<
   | 'readMode'
   | 'locale'
   | 'market'
+  | 'rules'
+  | 'rulesMapper'
 >>;

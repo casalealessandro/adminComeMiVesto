@@ -14,20 +14,28 @@ import {
   AffiliateCursorPage,
   AffiliateCursorRequest,
   AffiliateFeedCreateInput,
+  AffiliateFeedCreateResponse,
+  AffiliateFeedMappingResponse,
   AffiliateFeedUpdateInput,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
+  OutfitColorOption,
 } from '../models/affiliate-catalog-api.models';
 
 @Injectable({ providedIn: 'root' })
 export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiBaseUrl}/admin/affiliate`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
 
   getCatalogAudit(): Observable<AffiliateCatalogAudit> {
     return this.http
       .get<AffiliateApiResponse<AffiliateCatalogAudit>>(`${this.baseUrl}/catalog-audit`)
       .pipe(map((response) => response.data));
+  }
+
+  getOutfitColors(): Observable<OutfitColorOption[]> {
+    return this.http.get<OutfitColorOption[]>(`${this.apiUrl}/gen/outfitColors`);
   }
 
   getPrograms(): Observable<AffiliateProgram[]> {
@@ -71,16 +79,19 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
-  createFeed(input: AffiliateFeedCreateInput): Observable<AffiliateFeed> {
-    return this.http
-      .post<AffiliateApiResponse<AffiliateFeed>>(`${this.baseUrl}/feeds`, input)
-      .pipe(map((response) => response.data));
+  createFeed(input: AffiliateFeedCreateInput): Observable<AffiliateFeedCreateResponse> {
+    return this.http.post<AffiliateFeedCreateResponse>(`${this.baseUrl}/feeds`, input);
   }
 
   updateFeed(id: string, input: AffiliateFeedUpdateInput): Observable<AffiliateFeed> {
     return this.http
       .put<AffiliateApiResponse<AffiliateFeed>>(`${this.baseUrl}/feeds/${id}`, input)
       .pipe(map((response) => response.data));
+  }
+
+  updateFeedWithSourceValues(id: string, input: AffiliateFeedUpdateInput): Observable<AffiliateFeedMappingResponse> {
+    const params = new HttpParams().set('sourceValues', 'true');
+    return this.http.put<AffiliateFeedMappingResponse>(`${this.baseUrl}/feeds/${id}`, input, { params });
   }
 
   syncFeed(id: string): Observable<AffiliateSyncRun> {

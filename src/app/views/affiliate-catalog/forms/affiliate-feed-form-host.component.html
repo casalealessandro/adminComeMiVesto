@@ -1,27 +1,137 @@
 <section class="affiliate-feed-form" aria-live="polite">
-  <ng-container *ngIf="itemData.feed as feed">
-    <div *ngIf="itemData.mode === 'edit'" class="affiliate-feed-form__identity">
+  <ng-container *ngIf="!mappingStep">
+    <ng-container *ngIf="itemData.feed as feed">
+      <div *ngIf="itemData.mode === 'edit'" class="affiliate-feed-form__identity">
+        <div>
+          <span>Programma affiliato</span>
+          <strong>{{ itemData.programName || feed.affiliateProgramId }}</strong>
+        </div>
+        <div>
+          <span>Network Feed ID</span>
+          <strong>{{ feed.networkFeedId }}</strong>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+    <app-dynamic-form
+      [service]="formId"
+      [editData]="itemData.mode === 'edit' ? itemData.feed : undefined"
+      [idData]="itemData.mode === 'create' ? createDefaults : undefined"
+      [showBottomButtons]="true"
+      [inputBtnLeftName]="'Annulla'"
+      [inputBtnRightName]="itemData.mode === 'edit' ? 'Salva modifiche' : 'Crea feed e configura mapping'"
+      [loading]="saving"
+      (submitFormEvent)="handleForm($event)">
+    </app-dynamic-form>
+  </ng-container>
+
+  <ng-container *ngIf="mappingStep">
+    <div class="affiliate-feed-form__mapping-header">
       <div>
-        <span>Programma affiliato</span>
-        <strong>{{ itemData.programName || feed.affiliateProgramId }}</strong>
+        <span>Feed creato</span>
+        <strong>{{ createdFeed?.name }}</strong>
       </div>
       <div>
         <span>Network Feed ID</span>
-        <strong>{{ feed.networkFeedId }}</strong>
+        <strong>{{ createdFeed?.networkFeedId }}</strong>
       </div>
     </div>
+
+    <h5 class="affiliate-feed-form__mapping-title">Associa i valori del feed a ComeMiVesto</h5>
+    <p class="affiliate-feed-form__mapping-help">
+      Le associazioni vengono salvate automaticamente nel campo <code>rulesMapper</code> del feed.
+    </p>
+
+    <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+    <div *ngIf="warning" class="alert alert-warning" role="alert">{{ warning }}</div>
+
+    <ng-container *ngIf="sourceValues as values; else noSourceValues">
+      <p class="affiliate-feed-form__mapping-stats">
+        {{ values.recordsNormalized }} prodotti leggibili su {{ values.recordsRead }} record analizzati ·
+        {{ values.categories.length }} categorie ·
+        {{ values.colors.length }} colori ·
+        {{ values.genders.length }} valori genere
+      </p>
+
+      <div *ngIf="loadingMappingOptions" class="affiliate-feed-form__loading">
+        Caricamento tassonomia ComeMiVesto...
+      </div>
+
+      <ng-container *ngIf="!loadingMappingOptions">
+        <section class="affiliate-feed-form__mapping-section">
+          <h6>Categorie</h6>
+          <div class="affiliate-feed-form__mapping-list">
+            <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.categories; let i = index">
+              <div class="affiliate-feed-form__source-value">{{ source }}</div>
+              <select
+                class="form-select"
+                [(ngModel)]="categoryMappings[source]"
+                [name]="'categoryMapping-' + i">
+                <option value="">Seleziona categoria ComeMiVesto</option>
+                <option [value]="SKIP_CATEGORY_MAPPING">Non importare</option>
+                <option *ngFor="let option of categoryOptions" [value]="option.id">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="affiliate-feed-form__mapping-section">
+          <h6>Colori</h6>
+          <div class="affiliate-feed-form__mapping-list">
+            <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.colors; let i = index">
+              <div class="affiliate-feed-form__source-value">{{ source }}</div>
+              <select
+                class="form-select"
+                [(ngModel)]="colorMappings[source]"
+                [name]="'colorMapping-' + i">
+                <option value="">Non mappato</option>
+                <option *ngFor="let color of colorOptions" [value]="color.id">
+                  {{ color.value }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="affiliate-feed-form__mapping-section">
+          <h6>Genere</h6>
+          <div class="affiliate-feed-form__mapping-list">
+            <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.genders; let i = index">
+              <div class="affiliate-feed-form__source-value">{{ source }}</div>
+              <select
+                class="form-select"
+                [(ngModel)]="genderMappings[source]"
+                [name]="'genderMapping-' + i">
+                <option value="">Non mappato</option>
+                <option value="U">Uomo</option>
+                <option value="D">Donna</option>
+                <option value="U,D">Uomo + Donna</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <div class="affiliate-feed-form__mapping-actions">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="saving" (click)="finishWithoutMapping()">
+            Completa più tardi
+          </button>
+          <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveMapping()">
+            {{ saving ? 'Salvataggio...' : 'Salva mapping e termina' }}
+          </button>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <ng-template #noSourceValues>
+      <div class="affiliate-feed-form__mapping-actions">
+        <button type="button" class="btn btn-primary" [disabled]="saving" (click)="finishWithoutMapping()">
+          Chiudi
+        </button>
+      </div>
+    </ng-template>
   </ng-container>
-
-  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
-
-  <app-dynamic-form
-    [service]="formId"
-    [editData]="itemData.mode === 'edit' ? itemData.feed : undefined"
-    [idData]="itemData.mode === 'create' ? createDefaults : undefined"
-    [showBottomButtons]="true"
-    [inputBtnLeftName]="'Annulla'"
-    [inputBtnRightName]="itemData.mode === 'edit' ? 'Salva modifiche' : 'Crea feed'"
-    [loading]="saving"
-    (submitFormEvent)="handleForm($event)">
-  </app-dynamic-form>
 </section>
