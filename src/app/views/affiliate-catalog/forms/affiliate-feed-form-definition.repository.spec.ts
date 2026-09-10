@@ -41,6 +41,18 @@ describe('Affiliate feed form definitions', () => {
     ]);
   });
 
+  it('exposes rules and rulesMapper as editable text areas in create and edit', () => {
+    const [create, edit] = buildAffiliateFeedFormDefinitions([program]);
+    for (const definition of [create, edit]) {
+      const rules = definition.json.find((field) => field.name === 'rules');
+      const rulesMapper = definition.json.find((field) => field.name === 'rulesMapper');
+      expect(rules?.type).toBe('textArea');
+      expect(rulesMapper?.type).toBe('textArea');
+      expect(rules?.required).toBeFalse();
+      expect(rulesMapper?.required).toBeFalse();
+    }
+  });
+
   it('uses real booleans and the exact supported read modes', () => {
     const [create] = buildAffiliateFeedFormDefinitions([program]);
     const enabled = create.json.find((field) => field.name === 'enabled');
