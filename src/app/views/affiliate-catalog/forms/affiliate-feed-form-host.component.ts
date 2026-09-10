@@ -47,6 +47,8 @@ export function buildAffiliateFeedCreateInput(formData: Record<string, unknown>)
     readMode: formData['readMode'] as AffiliateFeedReadMode,
     locale: normalizedString(formData['locale']),
     market: normalizedString(formData['market']).toUpperCase(),
+    rules: normalizedString(formData['rules']),
+    rulesMapper: normalizedString(formData['rulesMapper']),
   };
 }
 
@@ -59,11 +61,13 @@ export function buildAffiliateFeedUpdateInput(formData: Record<string, unknown>)
     readMode: formData['readMode'] as AffiliateFeedReadMode,
     locale: normalizedString(formData['locale']),
     market: normalizedString(formData['market']).toUpperCase(),
+    rules: normalizedString(formData['rules']),
+    rulesMapper: normalizedString(formData['rulesMapper']),
   };
 }
 
 export function affiliateFeedErrorMessage(status: number): string {
-  if (status === 400) return 'Controlla i dati inseriti nel feed.';
+  if (status === 400) return 'Controlla i dati inseriti nel feed e la sintassi JSON delle regole.';
   if (status === 401 || status === 403) return 'Non sei autorizzato a modificare i feed affiliati.';
   if (status === 404) return 'Il feed affiliato o il programma collegato non è più disponibile.';
   if (status === 409) return 'Esiste già un feed affiliato con questi identificativi.';
@@ -97,6 +101,8 @@ export class AffiliateFeedFormHostComponent {
     enabled: true,
     readMode: 'WHOLE_FEED',
     market: 'IT',
+    rules: '',
+    rulesMapper: '',
   };
 
   get formId(): string {
