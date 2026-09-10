@@ -97,6 +97,7 @@
 
       <dl>
         <div><dt>Adapter</dt><dd>{{ feed.adapterType || 'Predefinito programma' }}</dd></div>
+        <div><dt>Mapping</dt><dd>{{ feed.rulesMapper ? 'Configurato' : 'Da configurare' }}</dd></div>
         <div><dt>Ultimo sync OK</dt><dd>{{ feed.lastSuccessfulSyncAt ? (feed.lastSuccessfulSyncAt | date:'short') : 'Mai' }}</dd></div>
         <div><dt>Ultimo totale</dt><dd>{{ feed.lastTotalHits ?? '—' }}</dd></div>
         <div><dt>Aggiornato</dt><dd>{{ feed.updatedAt | date:'short' }}</dd></div>
@@ -111,6 +112,15 @@
           <span *ngIf="isSyncing(feed.id)" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
           <span *ngIf="!isSyncing(feed.id)" class="mdi mdi-sync" aria-hidden="true"></span>
           {{ isSyncing(feed.id) ? 'Accodamento…' : 'Sincronizza' }}
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          (click)="openMapping(feed)"
+          [disabled]="isSyncing(feed.id)">
+          <span class="mdi mdi-tune-variant" aria-hidden="true"></span>
+          Mapping
         </button>
 
         <button
