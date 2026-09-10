@@ -8,6 +8,7 @@ import { DynamicFormComponent } from '../../../core/forms/dynamic-form/dynamic-f
 import { ComeMiVestoAuditCategory } from '../models/affiliate-catalog-audit.models';
 import {
   AffiliateFeedCreateInput,
+  AffiliateFeedMappingResponse,
   AffiliateFeedSourceValues,
   AffiliateFeedUpdateInput,
   OutfitColorOption,
@@ -48,6 +49,8 @@ export const SKIP_CATEGORY_MAPPING = '__SKIP__';
 
 const normalizedString = (value: unknown): string => String(value ?? '').trim();
 const normalizedCompare = (value: string): string => value.trim().toLocaleLowerCase('it');
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 export function buildAffiliateFeedCreateInput(formData: Record<string, unknown>): AffiliateFeedCreateInput {
   const adapterType = normalizedString(formData['adapterType']);
@@ -221,15 +224,39 @@ export class AffiliateFeedFormHostComponent {
       .createFeed(buildAffiliateFeedCreateInput(formData))
       .pipe(finalize(() => this.saving = false))
       .subscribe({
-        next: (response) => {
-          this.createdFeed = response.data;
-          this.sourceValues = response.sourceValues;
-          this.warning = response.sourceValuesError ?? '';
-          this.mappingStep = true;
-          if (response.sourceValues) this.loadMappingOptions();
-        },
+        next: (response) => this.prepareMappingStep(response),
         error: (error: HttpErrorResponse) => this.error = affiliateFeedErrorMessage(error.status),
       });
+  }
+
+  private updateFeed(formData: Record<string, unknown>): void {
+    const feed = this.itemData.feed;
+    if (!feed?.id) {
+      this.error = 'Feed affiliato non valido.';
+      return;
+    }
+
+    this.saving = true;
+    this.error = '';
+    this.warning = '';
+    this.affiliateCatalogService
+      .updateFeedWithSourceValues(feed.id, buildAffiliateFeedUpdateInput(formData))
+      .pipe(finalize(() => this.saving = false))
+      .subscribe({
+        next: (response) => this.prepareMappingStep(response),
+        error: (error: HttpErrorResponse) => this.error = affiliateFeedErrorMessage(error.status),
+      });
+  }
+
+  private prepareMappingStep(response: AffiliateFeedMappingResponse): void {
+    this.createdFeed = response.data;
+    this.sourceValues = response.sourceValues;
+    this.warning = response.sourceValuesError ?? '';
+    this.mappingStep = true;
+    this.categoryMappings = {};
+    this.colorMappings = {};
+    this.genderMappings = {};
+    if (response.sourceValues) this.loadMappingOptions();
   }
 
   private loadMappingOptions(): void {
@@ -249,16 +276,63 @@ export class AffiliateFeedFormHostComponent {
           }))
           .sort((left, right) => left.label.localeCompare(right.label, 'it', { sensitivity: 'base' }));
         this.colorOptions = [...colors].sort((left, right) => left.value.localeCompare(right.value, 'it', { sensitivity: 'base' }));
+        this.prefillExistingMappings();
         this.prefillExactMappings();
       },
-      error: () => this.warning = 'Feed creato. Non è stato possibile caricare la tassonomia ComeMiVesto per il mapping.',
+      error: () => this.warning = 'Feed salvato. Non è stato possibile caricare la tassonomia ComeMiVesto per il mapping.',
     });
+  }
+
+  private prefillExistingMappings(): void {
+    const source = this.createdFeed?.rulesMapper?.trim();
+    if (!source) return;
+
+    try {
+      const mapper = JSON.parse(source) as unknown;
+      if (!isObject(mapper)) return;
+
+      const categorySection = isObject(mapper['category']) ? mapper['category'] : null;
+      const categoryValues = categorySection && isObject(categorySection['values']) ? categorySection['values'] : null;
+      if (categoryValues) {
+        for (const [feedValue, mapping] of Object.entries(categoryValues)) {
+          if (!isObject(mapping)) continue;
+          if (mapping['skip'] === true) this.categoryMappings[feedValue] = SKIP_CATEGORY_MAPPING;
+          else if (typeof mapping['subcategory'] === 'string') this.categoryMappings[feedValue] = mapping['subcategory'];
+        }
+      }
+
+      const colorSection = isObject(mapper['color']) ? mapper['color'] : null;
+      const colorValues = colorSection && isObject(colorSection['values']) ? colorSection['values'] : null;
+      if (colorValues) {
+        for (const [feedValue, mapping] of Object.entries(colorValues)) {
+          if (typeof mapping === 'string' && mapping.trim()) this.colorMappings[feedValue] = mapping.trim();
+        }
+      }
+
+      const genderSection = isObject(mapper['gender']) ? mapper['gender'] : null;
+      const genderValues = genderSection && isObject(genderSection['values']) ? genderSection['values'] : null;
+      if (genderValues) {
+        for (const [feedValue, mapping] of Object.entries(genderValues)) {
+          const values = Array.isArray(mapping)
+            ? mapping.filter((value): value is string => typeof value === 'string')
+            : typeof mapping === 'string' ? [mapping] : [];
+          const hasU = values.includes('U');
+          const hasD = values.includes('D');
+          if (hasU && hasD) this.genderMappings[feedValue] = 'U,D';
+          else if (hasU) this.genderMappings[feedValue] = 'U';
+          else if (hasD) this.genderMappings[feedValue] = 'D';
+        }
+      }
+    } catch {
+      this.warning = 'Il feed è stato letto, ma il rulesMapper esistente non può essere precompilato nella UI.';
+    }
   }
 
   private prefillExactMappings(): void {
     if (!this.sourceValues) return;
 
     for (const source of this.sourceValues.categories) {
+      if (this.categoryMappings[source]) continue;
       const exact = this.categoryOptions.find((option) => {
         const childName = option.label.split('/').pop()?.trim() ?? option.label;
         return normalizedCompare(childName) === normalizedCompare(source);
@@ -267,33 +341,17 @@ export class AffiliateFeedFormHostComponent {
     }
 
     for (const source of this.sourceValues.colors) {
+      if (this.colorMappings[source]) continue;
       const exact = this.colorOptions.find((option) => normalizedCompare(option.value) === normalizedCompare(source));
       if (exact) this.colorMappings[source] = exact.id;
     }
 
     for (const source of this.sourceValues.genders) {
+      if (this.genderMappings[source]) continue;
       const normalized = normalizedCompare(source);
       if (['male', 'man', 'men', 'uomo'].includes(normalized)) this.genderMappings[source] = 'U';
       else if (['female', 'woman', 'women', 'donna'].includes(normalized)) this.genderMappings[source] = 'D';
       else if (['unisex', 'all'].includes(normalized)) this.genderMappings[source] = 'U,D';
     }
-  }
-
-  private updateFeed(formData: Record<string, unknown>): void {
-    const feed = this.itemData.feed;
-    if (!feed?.id) {
-      this.error = 'Feed affiliato non valido.';
-      return;
-    }
-
-    this.saving = true;
-    this.error = '';
-    this.affiliateCatalogService
-      .updateFeed(feed.id, buildAffiliateFeedUpdateInput(formData))
-      .pipe(finalize(() => this.saving = false))
-      .subscribe({
-        next: (updated) => this.result.emit({ name: 'saved', feed: updated }),
-        error: (error: HttpErrorResponse) => this.error = affiliateFeedErrorMessage(error.status),
-      });
   }
 }
