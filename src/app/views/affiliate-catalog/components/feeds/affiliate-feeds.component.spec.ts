@@ -12,13 +12,13 @@ describe('Affiliate feeds grid configuration', () => {
     expect(columns.some((column) => column.type === 'campoButton')).toBeFalse();
   });
 
-  it('adds sync and edit actions for administrators', () => {
+  it('adds sync, mapping and edit actions for administrators', () => {
     const columns = buildAffiliateFeedColumns(true)[0].data;
     const actions = columns
       .filter((column) => column.type === 'campoButton')
       .map((column) => column.button?.name);
 
-    expect(actions).toEqual(['sync', 'edit']);
+    expect(actions).toEqual(['sync', 'mapping', 'edit']);
   });
 
   it('does not expose a delete action', () => {
