@@ -41,16 +41,17 @@ describe('Affiliate feed form definitions', () => {
     ]);
   });
 
-  it('exposes rules and rulesMapper as editable text areas in create and edit', () => {
+  it('keeps import rules in create and exposes raw rulesMapper only in edit', () => {
     const [create, edit] = buildAffiliateFeedFormDefinitions([program]);
-    for (const definition of [create, edit]) {
-      const rules = definition.json.find((field) => field.name === 'rules');
-      const rulesMapper = definition.json.find((field) => field.name === 'rulesMapper');
-      expect(rules?.type).toBe('textArea');
-      expect(rulesMapper?.type).toBe('textArea');
-      expect(rules?.required).toBeFalse();
-      expect(rulesMapper?.required).toBeFalse();
-    }
+    const createRules = create.json.find((field) => field.name === 'rules');
+    const createMapper = create.json.find((field) => field.name === 'rulesMapper');
+    const editRules = edit.json.find((field) => field.name === 'rules');
+    const editMapper = edit.json.find((field) => field.name === 'rulesMapper');
+
+    expect(createRules?.type).toBe('textArea');
+    expect(createMapper).toBeUndefined();
+    expect(editRules?.type).toBe('textArea');
+    expect(editMapper?.type).toBe('textArea');
   });
 
   it('uses real booleans and the exact supported read modes', () => {
