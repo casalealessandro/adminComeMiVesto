@@ -97,6 +97,22 @@ const editableFields: DynamicFormField[] = [
     maxLength: 10,
     placeholder: 'IT',
   },
+  {
+    name: 'rules',
+    type: 'textArea',
+    typeInput: 'text',
+    label: 'Regole importazione (JSON)',
+    required: false,
+    placeholder: 'Regole di lettura e validità dei prodotti del feed',
+  },
+  {
+    name: 'rulesMapper',
+    type: 'textArea',
+    typeInput: 'text',
+    label: 'Mapping ComeMiVesto (JSON)',
+    required: false,
+    placeholder: 'Mapping categorie, colori e genere verso ComeMiVesto',
+  },
 ];
 
 export function buildAffiliateFeedFormDefinitions(programs: readonly AffiliateProgram[]): FormDefinition[] {
