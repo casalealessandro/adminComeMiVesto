@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AffiliateCatalogAudit } from '../models/affiliate-catalog-audit.models';
 import {
   AffiliateFeed,
   AffiliateProgram,
@@ -22,6 +23,12 @@ import {
 export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/admin/affiliate`;
+
+  getCatalogAudit(): Observable<AffiliateCatalogAudit> {
+    return this.http
+      .get<AffiliateApiResponse<AffiliateCatalogAudit>>(`${this.baseUrl}/catalog-audit`)
+      .pipe(map((response) => response.data));
+  }
 
   getPrograms(): Observable<AffiliateProgram[]> {
     return this.http

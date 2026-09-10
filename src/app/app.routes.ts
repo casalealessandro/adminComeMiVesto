@@ -12,6 +12,7 @@ import { AccessDeniedComponent } from './views/access-denied/access-denied.compo
 import { ColorsComponent } from './views/colors/colors.component';
 import { ReportsComponent } from './views/reports/reports.component';
 import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
+import { AffiliateCatalogAuditComponent } from './views/affiliate-catalog/components/audit/affiliate-catalog-audit.component';
 import { AffiliateProgramsComponent } from './views/affiliate-catalog/components/programs/affiliate-programs.component';
 import { AffiliateFeedsComponent } from './views/affiliate-catalog/components/feeds/affiliate-feeds.component';
 import { AffiliateProductsComponent } from './views/affiliate-catalog/components/products/affiliate-products.component';
@@ -36,6 +37,7 @@ export const routes:Routes = [
         { path: '', redirectTo: 'programs', pathMatch: 'full' },
         { path: 'programs', component: AffiliateProgramsComponent },
         { path: 'feeds', component: AffiliateFeedsComponent },
+        { path: 'audit', component: AffiliateCatalogAuditComponent },
         { path: 'products/:id', component: AffiliateProductDetailComponent },
         { path: 'products', component: AffiliateProductsComponent },
         { path: 'sync-runs/:id', component: AffiliateSyncRunDetailComponent },

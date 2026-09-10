@@ -1,0 +1,201 @@
+<section class="catalog-audit" aria-labelledby="catalog-audit-title" [attr.aria-busy]="loading">
+  <header class="catalog-audit__header">
+    <div>
+      <p class="catalog-audit__eyebrow">Catalogo Affiliati</p>
+      <h2 id="catalog-audit-title">Analisi catalogo</h2>
+      <p class="catalog-audit__description">
+        Fotografia read-only dei prodotti importati e della tassonomia ComeMiVesto. I dati servono a preparare il mapping categorie prima dell’Outfit Engine.
+      </p>
+    </div>
+
+    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
+      <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+      Aggiorna analisi
+    </button>
+  </header>
+
+  <div class="alert alert-info catalog-audit__note" role="note">
+    <span class="mdi mdi-shield-search-outline" aria-hidden="true"></span>
+    <span>Questa vista non modifica il catalogo e non applica ancora alcun mapping automatico.</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger catalog-audit__error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  </div>
+
+  <div *ngIf="loading && !audit" class="catalog-audit__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Analisi del catalogo in corso…
+  </div>
+
+  <ng-container *ngIf="audit as data">
+    <div class="catalog-audit__generated">
+      <span class="mdi mdi-clock-outline" aria-hidden="true"></span>
+      Report generato {{ data.generatedAt | date:'medium' }}
+    </div>
+
+    <section class="catalog-audit__section" aria-labelledby="catalog-summary-title">
+      <div class="catalog-audit__section-heading">
+        <div>
+          <p class="catalog-audit__eyebrow">Panoramica</p>
+          <h3 id="catalog-summary-title">Stato del catalogo</h3>
+        </div>
+      </div>
+
+      <div class="catalog-audit__kpis">
+        <article class="audit-kpi">
+          <span class="mdi mdi-package-variant-closed audit-kpi__icon" aria-hidden="true"></span>
+          <div><strong>{{ data.catalog.summary.total }}</strong><span>Prodotti totali</span></div>
+        </article>
+        <article class="audit-kpi">
+          <span class="mdi mdi-check-circle-outline audit-kpi__icon" aria-hidden="true"></span>
+          <div><strong>{{ data.catalog.summary.active }}</strong><span>Prodotti attivi</span></div>
+          <small>{{ percentage(data.catalog.summary.active, data.catalog.summary.total) }}%</small>
+        </article>
+        <article class="audit-kpi">
+          <span class="mdi mdi-archive-outline audit-kpi__icon" aria-hidden="true"></span>
+          <div><strong>{{ data.catalog.summary.inactive }}</strong><span>Prodotti inattivi</span></div>
+        </article>
+        <article class="audit-kpi" [class.audit-kpi--warning]="data.catalog.summary.withoutCategory > 0">
+          <span class="mdi mdi-tag-off-outline audit-kpi__icon" aria-hidden="true"></span>
+          <div><strong>{{ data.catalog.summary.withoutCategory }}</strong><span>Senza categoria</span></div>
+          <small>{{ percentage(data.catalog.summary.withoutCategory, data.catalog.summary.total) }}%</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="catalog-audit__section" aria-labelledby="catalog-quality-title">
+      <div class="catalog-audit__section-heading">
+        <div>
+          <p class="catalog-audit__eyebrow">Completezza</p>
+          <h3 id="catalog-quality-title">Qualità dati</h3>
+        </div>
+        <span>{{ data.catalog.summary.total }} prodotti analizzati</span>
+      </div>
+
+      <div class="catalog-audit__quality-grid">
+        <article class="quality-card">
+          <div class="quality-card__heading"><span>Immagini</span><strong>{{ percentage(data.catalog.dataQuality.withImages, data.catalog.summary.total) }}%</strong></div>
+          <div class="progress" role="progressbar" aria-label="Prodotti con immagini" [attr.aria-valuenow]="percentage(data.catalog.dataQuality.withImages, data.catalog.summary.total)" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" [style.width.%]="percentage(data.catalog.dataQuality.withImages, data.catalog.summary.total)"></div>
+          </div>
+          <small>{{ data.catalog.dataQuality.withImages }} con immagini · {{ data.catalog.dataQuality.withoutImages }} senza</small>
+        </article>
+
+        <article class="quality-card">
+          <div class="quality-card__heading"><span>Target gender</span><strong>{{ percentage(data.catalog.dataQuality.withGenderTargets, data.catalog.summary.total) }}%</strong></div>
+          <div class="progress" role="progressbar" aria-label="Prodotti con target gender" [attr.aria-valuenow]="percentage(data.catalog.dataQuality.withGenderTargets, data.catalog.summary.total)" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" [style.width.%]="percentage(data.catalog.dataQuality.withGenderTargets, data.catalog.summary.total)"></div>
+          </div>
+          <small>{{ data.catalog.dataQuality.withGenderTargets }} valorizzati · {{ data.catalog.dataQuality.withoutGenderTargets }} mancanti</small>
+        </article>
+
+        <article class="quality-card">
+          <div class="quality-card__heading"><span>Colore normalizzato</span><strong>{{ percentage(data.catalog.dataQuality.withNormalizedColor, data.catalog.summary.total) }}%</strong></div>
+          <div class="progress" role="progressbar" aria-label="Prodotti con colore normalizzato" [attr.aria-valuenow]="percentage(data.catalog.dataQuality.withNormalizedColor, data.catalog.summary.total)" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" [style.width.%]="percentage(data.catalog.dataQuality.withNormalizedColor, data.catalog.summary.total)"></div>
+          </div>
+          <small>{{ data.catalog.dataQuality.withNormalizedColor }} valorizzati · {{ data.catalog.dataQuality.withoutNormalizedColor }} mancanti</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="catalog-audit__section" aria-labelledby="catalog-categories-title">
+      <div class="catalog-audit__section-heading">
+        <div>
+          <p class="catalog-audit__eyebrow">Sorgente affiliate</p>
+          <h3 id="catalog-categories-title">Categorie importate</h3>
+        </div>
+        <span>{{ data.catalog.categories.length }} categorie</span>
+      </div>
+
+      <div *ngIf="!data.catalog.categories.length" class="catalog-audit__empty">
+        <span class="mdi mdi-tag-multiple-outline" aria-hidden="true"></span>
+        Nessuna categoria presente nel catalogo.
+      </div>
+
+      <div class="catalog-audit__category-list" *ngIf="data.catalog.categories.length">
+        <details class="audit-category" *ngFor="let category of data.catalog.categories">
+          <summary>
+            <div class="audit-category__title">
+              <strong>{{ categoryLabel(category.category) }}</strong>
+              <span>{{ category.subcategories.length }} sottocategorie</span>
+            </div>
+            <div class="audit-category__summary">
+              <strong>{{ category.totalProducts }}</strong>
+              <span>prodotti</span>
+            </div>
+          </summary>
+
+          <div class="audit-category__body">
+            <div class="audit-category__metrics">
+              <span><strong>{{ category.activeProducts }}</strong> attivi</span>
+              <span><strong>{{ category.withImages }}</strong> con immagini</span>
+              <span><strong>{{ category.withGender }}</strong> con gender</span>
+              <span><strong>{{ category.withColor }}</strong> con colore</span>
+            </div>
+
+            <div class="audit-subcategories" *ngIf="category.subcategories.length">
+              <div class="audit-subcategory audit-subcategory--head" aria-hidden="true">
+                <span>Sottocategoria</span><span>Prodotti</span><span>Attivi</span><span>Immagini</span><span>Gender</span><span>Colore</span>
+              </div>
+              <div class="audit-subcategory" *ngFor="let subcategory of category.subcategories">
+                <strong>{{ subcategoryLabel(subcategory.subcategory) }}</strong>
+                <span data-label="Prodotti">{{ subcategory.totalProducts }}</span>
+                <span data-label="Attivi">{{ subcategory.activeProducts }}</span>
+                <span data-label="Immagini">{{ subcategory.withImages }}</span>
+                <span data-label="Gender">{{ subcategory.withGender }}</span>
+                <span data-label="Colore">{{ subcategory.withColor }}</span>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="catalog-audit__section" aria-labelledby="cmv-taxonomy-title">
+      <div class="catalog-audit__section-heading">
+        <div>
+          <p class="catalog-audit__eyebrow">Tassonomia portale</p>
+          <h3 id="cmv-taxonomy-title">Categorie ComeMiVesto</h3>
+        </div>
+        <span>{{ data.comeMiVestoCategories.length }} voci</span>
+      </div>
+
+      <div *ngIf="!data.comeMiVestoCategories.length" class="catalog-audit__empty">
+        <span class="mdi mdi-file-tree-outline" aria-hidden="true"></span>
+        Nessuna categoria ComeMiVesto disponibile.
+      </div>
+
+      <div class="taxonomy-grid" *ngIf="data.comeMiVestoCategories.length">
+        <article class="taxonomy-card" *ngFor="let category of rootCategories">
+          <header>
+            <div>
+              <strong>{{ category.categoryName || 'Categoria senza nome' }}</strong>
+              <small>ID: {{ category.id }}</small>
+            </div>
+            <span class="badge" [ngClass]="taxonomyStatusClass(category)">{{ taxonomyStatus(category) }}</span>
+          </header>
+          <div class="taxonomy-card__meta"><span>Gender: {{ taxonomyGender(category) }}</span><span>Ordine: {{ category.order ?? '—' }}</span></div>
+          <div class="taxonomy-card__children" *ngIf="childrenFor(category.id).length">
+            <span class="taxonomy-child" *ngFor="let child of childrenFor(category.id)">
+              <strong>{{ child.categoryName || 'Senza nome' }}</strong>
+              <small>{{ taxonomyGender(child) }}</small>
+            </span>
+          </div>
+          <p *ngIf="!childrenFor(category.id).length" class="taxonomy-card__no-children">Nessuna sottocategoria collegata.</p>
+        </article>
+      </div>
+
+      <div class="catalog-audit__orphans" *ngIf="orphanCategories.length">
+        <h4>Categorie con parent non risolto</h4>
+        <div>
+          <span class="badge text-bg-warning" *ngFor="let category of orphanCategories">
+            {{ category.categoryName || category.id }} → {{ category.parentCategory }}
+          </span>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+</section>
