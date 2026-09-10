@@ -6,6 +6,8 @@ on:
       - 'src/app/views/affiliate-catalog/**'
       - 'src/app/app.routes.ts'
       - 'src/app/app-popup-components.ts'
+      - 'src/app/auth.guard.ts'
+      - 'src/app/auth.guard.spec.ts'
       - 'package.json'
       - 'package-lock.json'
       - 'tsconfig.affiliate-catalog.spec.json'
