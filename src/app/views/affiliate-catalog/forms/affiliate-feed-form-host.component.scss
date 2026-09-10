@@ -3,7 +3,8 @@
   padding: 0.25rem;
 }
 
-.affiliate-feed-form__identity {
+.affiliate-feed-form__identity,
+.affiliate-feed-form__mapping-header {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
@@ -14,27 +15,96 @@
   background: var(--bs-light-bg-subtle, #f8f9fa);
 }
 
-.affiliate-feed-form__identity div {
+.affiliate-feed-form__identity div,
+.affiliate-feed-form__mapping-header div {
   min-width: 0;
 }
 
 .affiliate-feed-form__identity span,
-.affiliate-feed-form__identity strong {
+.affiliate-feed-form__identity strong,
+.affiliate-feed-form__mapping-header span,
+.affiliate-feed-form__mapping-header strong {
   display: block;
 }
 
-.affiliate-feed-form__identity span {
+.affiliate-feed-form__identity span,
+.affiliate-feed-form__mapping-header span {
   margin-bottom: 0.2rem;
   color: var(--bs-secondary-color, #6c757d);
   font-size: 0.78rem;
 }
 
-.affiliate-feed-form__identity strong {
+.affiliate-feed-form__identity strong,
+.affiliate-feed-form__mapping-header strong,
+.affiliate-feed-form__source-value {
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 600px) {
-  .affiliate-feed-form__identity {
+.affiliate-feed-form__mapping-title {
+  margin-bottom: 0.35rem;
+}
+
+.affiliate-feed-form__mapping-help,
+.affiliate-feed-form__mapping-stats {
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.affiliate-feed-form__mapping-stats {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.affiliate-feed-form__loading {
+  padding: 1rem 0;
+}
+
+.affiliate-feed-form__mapping-section {
+  margin-top: 1.25rem;
+}
+
+.affiliate-feed-form__mapping-section h6 {
+  margin-bottom: 0.65rem;
+}
+
+.affiliate-feed-form__mapping-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.affiliate-feed-form__mapping-row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.9fr) minmax(16rem, 1.4fr);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.5rem;
+}
+
+.affiliate-feed-form__source-value {
+  font-weight: 600;
+}
+
+.affiliate-feed-form__mapping-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .affiliate-feed-form__identity,
+  .affiliate-feed-form__mapping-header,
+  .affiliate-feed-form__mapping-row {
     grid-template-columns: 1fr;
+  }
+
+  .affiliate-feed-form__mapping-actions {
+    flex-direction: column-reverse;
+  }
+
+  .affiliate-feed-form__mapping-actions .btn {
+    width: 100%;
   }
 }
