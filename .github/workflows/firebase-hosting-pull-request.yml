@@ -3,6 +3,7 @@ name: Deploy to Firebase Hosting on PR
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
 
 permissions:
   checks: write
@@ -11,7 +12,7 @@ permissions:
 
 jobs:
   build_and_preview:
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -30,9 +31,105 @@ jobs:
       - name: Build development preview
         run: npm run build -- --configuration development
 
+      - name: Authenticate Firebase CLI for preview maintenance
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_COMEMIVESTO_5E5F9 }}
+
+      - name: Remove previews for closed pull requests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          channels_file="${RUNNER_TEMP}/firebase-channels.json"
+          npx --yes firebase-tools@15.30.0 hosting:channel:list \
+            --site admincomemivesto \
+            --project comemivesto-5e5f9 \
+            --json > "${channels_file}"
+
+          jq -r '.result.channels[]?.name // empty' "${channels_file}" | while read -r channel_resource; do
+            channel_id="${channel_resource##*/}"
+
+            # Legacy action-generated channels are named prNN-...; the new
+            # deterministic format is pr-NN. Only PR preview channels are touched.
+            if [[ "${channel_id}" =~ ^pr-?([0-9]+) ]]; then
+              pr_number="${BASH_REMATCH[1]}"
+
+              # Keep the current pull request preview even if its GitHub state
+              # changes while this job is running.
+              if [[ "${pr_number}" == "${{ github.event.pull_request.number }}" ]]; then
+                continue
+              fi
+
+              pr_state="$(
+                curl -fsSL \
+                  -H "Authorization: Bearer ${GH_TOKEN}" \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${pr_number}" \
+                  | jq -r '.state // empty' \
+                  || true
+              )"
+
+              if [[ "${pr_state}" == "closed" ]]; then
+                echo "Deleting stale Firebase preview channel ${channel_id} (PR #${pr_number} is closed)."
+                npx --yes firebase-tools@15.30.0 hosting:channel:delete "${channel_id}" \
+                  --site admincomemivesto \
+                  --project comemivesto-5e5f9 \
+                  --force
+              fi
+            fi
+          done
+
       - name: Deploy preview
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_COMEMIVESTO_5E5F9 }}
           projectId: comemivesto-5e5f9
+          channelId: pr-${{ github.event.pull_request.number }}
+          expires: 24h
+          firebaseToolsVersion: 15.30.0
+
+  cleanup_preview:
+    if: ${{ github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.20.2
+
+      - name: Authenticate Firebase CLI
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_COMEMIVESTO_5E5F9 }}
+
+      - name: Delete pull request preview channel
+        shell: bash
+        env:
+          CHANNEL_ID: pr-${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          channels_file="${RUNNER_TEMP}/firebase-channels.json"
+          npx --yes firebase-tools@15.30.0 hosting:channel:list \
+            --site admincomemivesto \
+            --project comemivesto-5e5f9 \
+            --json > "${channels_file}"
+
+          if jq -e --arg suffix "/${CHANNEL_ID}" \
+            '.result.channels[]? | select(.name | endswith($suffix))' \
+            "${channels_file}" > /dev/null; then
+            npx --yes firebase-tools@15.30.0 hosting:channel:delete "${CHANNEL_ID}" \
+              --site admincomemivesto \
+              --project comemivesto-5e5f9 \
+              --force
+          else
+            echo "Firebase preview channel ${CHANNEL_ID} does not exist; nothing to delete."
+          fi
