@@ -56,6 +56,8 @@ export type AffiliateFeedCreateInput = Pick<
   | 'enabled'
   | 'locale'
   | 'market'
+  | 'rules'
+  | 'rulesMapper'
 > & Partial<Pick<
   AffiliateFeed,
   | 'adapterType'
@@ -70,4 +72,6 @@ export type AffiliateFeedUpdateInput = Partial<Pick<
   | 'readMode'
   | 'locale'
   | 'market'
+  | 'rules'
+  | 'rulesMapper'
 >>;
