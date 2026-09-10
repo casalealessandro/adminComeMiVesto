@@ -9,6 +9,7 @@
   },
   "include": [
     "src/app/views/affiliate-catalog/**/*.spec.ts",
+    "src/app/auth.guard.spec.ts",
     "src/**/*.d.ts"
   ]
 }
