@@ -105,15 +105,16 @@ const editableFields: DynamicFormField[] = [
     required: false,
     placeholder: 'Regole di lettura e validità dei prodotti del feed',
   },
-  {
-    name: 'rulesMapper',
-    type: 'textArea',
-    typeInput: 'text',
-    label: 'Mapping ComeMiVesto (JSON)',
-    required: false,
-    placeholder: 'Mapping categorie, colori e genere verso ComeMiVesto',
-  },
 ];
+
+const rulesMapperField: DynamicFormField = {
+  name: 'rulesMapper',
+  type: 'textArea',
+  typeInput: 'text',
+  label: 'Mapping ComeMiVesto (JSON)',
+  required: false,
+  placeholder: 'Generato dalla configurazione visuale; modificabile manualmente se necessario',
+};
 
 export function buildAffiliateFeedFormDefinitions(programs: readonly AffiliateProgram[]): FormDefinition[] {
   const createFields: DynamicFormField[] = [
@@ -145,7 +146,7 @@ export function buildAffiliateFeedFormDefinitions(programs: readonly AffiliatePr
     {
       id: AFFILIATE_FEED_EDIT_FORM,
       nameForm: 'Modifica feed affiliato',
-      json: [...editableFields],
+      json: [...editableFields, rulesMapperField],
     },
   ];
 }
