@@ -24,6 +24,26 @@ export interface AffiliateCursorPage<T> {
   };
 }
 
+export interface AffiliateFeedSourceValues {
+  recordsRead: number;
+  recordsNormalized: number;
+  categories: string[];
+  colors: string[];
+  genders: string[];
+}
+
+export interface AffiliateFeedCreateResponse extends AffiliateApiResponse<AffiliateFeed> {
+  sourceValues: AffiliateFeedSourceValues | null;
+  sourceValuesError: string | null;
+}
+
+export interface OutfitColorOption {
+  id: string;
+  value: string;
+  parent?: string | null;
+  hex?: string;
+}
+
 export type AffiliateProgramCreateInput = Pick<
   AffiliateProgram,
   | 'network'
