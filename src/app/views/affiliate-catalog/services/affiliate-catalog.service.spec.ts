@@ -8,9 +8,15 @@ import {
   AffiliateSyncRun,
   CatalogProduct,
 } from '../models/affiliate-catalog.models';
+import {
+  AffiliateFeedCreateInput,
+  AffiliateFeedUpdateInput,
+  AffiliateProgramCreateInput,
+  AffiliateProgramUpdateInput,
+} from '../models/affiliate-catalog-api.models';
 import { AffiliateCatalogService } from './affiliate-catalog.service';
 
-describe('AffiliateCatalogService', () => {
+describe('AffiliateCatalogService release contract', () => {
   let service: AffiliateCatalogService;
   let http: HttpTestingController;
   const baseUrl = `${environment.apiBaseUrl}/admin/affiliate`;
@@ -87,6 +93,40 @@ describe('AffiliateCatalogService', () => {
     errors: [],
   };
 
+  const programCreateInput: AffiliateProgramCreateInput = {
+    network: 'TRADEDOUBLER',
+    networkProgramId: 'external-program-1',
+    name: 'Program 1',
+    networkStatus: 'ACTIVE',
+    enabled: true,
+    defaultAdapterType: 'TRADEDOUBLER',
+    market: 'IT',
+    currency: 'EUR',
+    priceSegment: 'MID_RANGE',
+  };
+
+  const programUpdateInput: AffiliateProgramUpdateInput = {
+    name: 'Program updated',
+    enabled: false,
+  };
+
+  const feedCreateInput: AffiliateFeedCreateInput = {
+    networkFeedId: 'external-feed-1',
+    affiliateProgramId: program.id,
+    name: 'Feed 1',
+    enabled: true,
+    adapterType: null,
+    readMode: 'WHOLE_FEED',
+    locale: 'it-IT',
+    market: 'IT',
+  };
+
+  const feedUpdateInput: AffiliateFeedUpdateInput = {
+    name: 'Feed updated',
+    enabled: false,
+    readMode: 'PAGINATED',
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
@@ -109,6 +149,35 @@ describe('AffiliateCatalogService', () => {
     expect(response).toEqual([program]);
   });
 
+  it('loads one program by id and unwraps data', () => {
+    let response: AffiliateProgram | undefined;
+    service.getProgram(program.id).subscribe((value) => response = value);
+
+    const request = http.expectOne(`${baseUrl}/programs/${program.id}`);
+    expect(request.request.method).toBe('GET');
+    request.flush({ data: program });
+
+    expect(response).toEqual(program);
+  });
+
+  it('creates a program with the exact backend DTO', () => {
+    service.createProgram(programCreateInput).subscribe();
+
+    const request = http.expectOne(`${baseUrl}/programs`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(programCreateInput);
+    request.flush({ data: program });
+  });
+
+  it('updates a program with the exact backend DTO', () => {
+    service.updateProgram(program.id, programUpdateInput).subscribe();
+
+    const request = http.expectOne(`${baseUrl}/programs/${program.id}`);
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual(programUpdateInput);
+    request.flush({ data: { ...program, ...programUpdateInput } });
+  });
+
   it('filters feeds by affiliateProgramId only when provided', () => {
     service.getFeeds(program.id).subscribe();
 
@@ -126,6 +195,35 @@ describe('AffiliateCatalogService', () => {
     const request = http.expectOne(`${baseUrl}/feeds`);
     expect(request.request.params.has('affiliateProgramId')).toBeFalse();
     request.flush({ data: [feed] });
+  });
+
+  it('loads one feed by id and unwraps data', () => {
+    let response: AffiliateFeed | undefined;
+    service.getFeed(feed.id).subscribe((value) => response = value);
+
+    const request = http.expectOne(`${baseUrl}/feeds/${feed.id}`);
+    expect(request.request.method).toBe('GET');
+    request.flush({ data: feed });
+
+    expect(response).toEqual(feed);
+  });
+
+  it('creates a feed with the exact backend DTO', () => {
+    service.createFeed(feedCreateInput).subscribe();
+
+    const request = http.expectOne(`${baseUrl}/feeds`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(feedCreateInput);
+    request.flush({ data: feed });
+  });
+
+  it('updates a feed with the exact backend DTO', () => {
+    service.updateFeed(feed.id, feedUpdateInput).subscribe();
+
+    const request = http.expectOne(`${baseUrl}/feeds/${feed.id}`);
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual(feedUpdateInput);
+    request.flush({ data: { ...feed, ...feedUpdateInput } });
   });
 
   it('queues a feed synchronization and unwraps the created sync run', () => {
@@ -159,6 +257,17 @@ describe('AffiliateCatalogService', () => {
     expect(response).toEqual(page);
   });
 
+  it('loads one product by id and unwraps data', () => {
+    let response: CatalogProduct | undefined;
+    service.getProduct(product.id).subscribe((value) => response = value);
+
+    const request = http.expectOne(`${baseUrl}/products/${product.id}`);
+    expect(request.request.method).toBe('GET');
+    request.flush({ data: product });
+
+    expect(response).toEqual(product);
+  });
+
   it('loads sync runs with cursor pagination and preserves the backend page envelope', () => {
     let response: unknown;
     service.getSyncRuns({ limit: 50, cursor: 'next-run' }).subscribe((value) => response = value);
@@ -175,6 +284,17 @@ describe('AffiliateCatalogService', () => {
     request.flush(page);
 
     expect(response).toEqual(page);
+  });
+
+  it('loads one sync run by id and unwraps data', () => {
+    let response: AffiliateSyncRun | undefined;
+    service.getSyncRun(syncRun.id).subscribe((value) => response = value);
+
+    const request = http.expectOne(`${baseUrl}/sync-runs/${syncRun.id}`);
+    expect(request.request.method).toBe('GET');
+    request.flush({ data: syncRun });
+
+    expect(response).toEqual(syncRun);
   });
 
   it('omits cursor pagination parameters when they are not provided', () => {
