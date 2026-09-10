@@ -32,10 +32,12 @@ export interface AffiliateFeedSourceValues {
   genders: string[];
 }
 
-export interface AffiliateFeedCreateResponse extends AffiliateApiResponse<AffiliateFeed> {
+export interface AffiliateFeedMappingResponse extends AffiliateApiResponse<AffiliateFeed> {
   sourceValues: AffiliateFeedSourceValues | null;
   sourceValuesError: string | null;
 }
+
+export type AffiliateFeedCreateResponse = AffiliateFeedMappingResponse;
 
 export interface OutfitColorOption {
   id: string;
