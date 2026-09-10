@@ -38,8 +38,10 @@ export interface AffiliateFeed {
   readMode: AffiliateFeedReadMode;
   locale: string;
   market: string;
-  rules: string;
-  rulesMapper: string;
+  /** Optional only for compatibility with API responses/documents created before feed rules. */
+  rules?: string;
+  /** Optional only for compatibility with API responses/documents created before feed rules. */
+  rulesMapper?: string;
   lastSyncAt: number | null;
   lastSuccessfulSyncAt: number | null;
   lastTotalHits: number | null;
