@@ -70,7 +70,7 @@
                 [(ngModel)]="categoryMappings[source]"
                 [name]="'categoryMapping-' + i">
                 <option value="">Seleziona categoria ComeMiVesto</option>
-                <option [value]="SKIP_CATEGORY_MAPPING">Non importare</option>
+                <option value="__SKIP__">Non importare</option>
                 <option *ngFor="let option of categoryOptions" [value]="option.id">
                   {{ option.label }}
                 </option>
