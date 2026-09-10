@@ -15,6 +15,7 @@ import {
   AffiliateCursorRequest,
   AffiliateFeedCreateInput,
   AffiliateFeedCreateResponse,
+  AffiliateFeedMappingResponse,
   AffiliateFeedUpdateInput,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
@@ -86,6 +87,11 @@ export class AffiliateCatalogService {
     return this.http
       .put<AffiliateApiResponse<AffiliateFeed>>(`${this.baseUrl}/feeds/${id}`, input)
       .pipe(map((response) => response.data));
+  }
+
+  updateFeedWithSourceValues(id: string, input: AffiliateFeedUpdateInput): Observable<AffiliateFeedMappingResponse> {
+    const params = new HttpParams().set('sourceValues', 'true');
+    return this.http.put<AffiliateFeedMappingResponse>(`${this.baseUrl}/feeds/${id}`, input, { params });
   }
 
   syncFeed(id: string): Observable<AffiliateSyncRun> {
