@@ -14,20 +14,27 @@ import {
   AffiliateCursorPage,
   AffiliateCursorRequest,
   AffiliateFeedCreateInput,
+  AffiliateFeedCreateResponse,
   AffiliateFeedUpdateInput,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
+  OutfitColorOption,
 } from '../models/affiliate-catalog-api.models';
 
 @Injectable({ providedIn: 'root' })
 export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiBaseUrl}/admin/affiliate`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
 
   getCatalogAudit(): Observable<AffiliateCatalogAudit> {
     return this.http
       .get<AffiliateApiResponse<AffiliateCatalogAudit>>(`${this.baseUrl}/catalog-audit`)
       .pipe(map((response) => response.data));
+  }
+
+  getOutfitColors(): Observable<OutfitColorOption[]> {
+    return this.http.get<OutfitColorOption[]>(`${this.apiUrl}/gen/outfitColors`);
   }
 
   getPrograms(): Observable<AffiliateProgram[]> {
@@ -71,10 +78,8 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
-  createFeed(input: AffiliateFeedCreateInput): Observable<AffiliateFeed> {
-    return this.http
-      .post<AffiliateApiResponse<AffiliateFeed>>(`${this.baseUrl}/feeds`, input)
-      .pipe(map((response) => response.data));
+  createFeed(input: AffiliateFeedCreateInput): Observable<AffiliateFeedCreateResponse> {
+    return this.http.post<AffiliateFeedCreateResponse>(`${this.baseUrl}/feeds`, input);
   }
 
   updateFeed(id: string, input: AffiliateFeedUpdateInput): Observable<AffiliateFeed> {
