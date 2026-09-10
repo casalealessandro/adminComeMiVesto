@@ -94,6 +94,16 @@ export function buildAffiliateFeedColumns(canManage: boolean): Colonne[] {
         },
       },
       {
+        ...baseColumn('', 'Mapping', 82, 'campoButton'),
+        button: {
+          text: '',
+          name: 'mapping',
+          event: 'mapping',
+          icon: 'mdi mdi-tune-variant',
+          hint: 'Configura mapping feed',
+        },
+      },
+      {
         ...baseColumn('', 'Modifica', 72, 'campoButton'),
         button: {
           text: '',
@@ -216,6 +226,16 @@ export class AffiliateFeedsComponent implements OnInit {
     });
   }
 
+  openMapping(feed: AffiliateFeed): void {
+    if (!this.auth.isAdmin() || !feed?.id) return;
+    this.openForm({
+      mode: 'edit',
+      feed,
+      programName: this.programName(feed),
+      startInMapping: true,
+    });
+  }
+
   requestSync(feed: AffiliateFeed): void {
     if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id)) return;
 
@@ -243,6 +263,10 @@ export class AffiliateFeedsComponent implements OnInit {
       this.requestSync(event.rowData);
       return;
     }
+    if (event.name === 'mapping') {
+      this.openMapping(event.rowData);
+      return;
+    }
     if (event.name === 'edit') this.openEdit(event.rowData);
   }
 
@@ -268,7 +292,11 @@ export class AffiliateFeedsComponent implements OnInit {
 
   private openForm(context: AffiliateFeedFormContext): void {
     const guid = `affiliate-feed-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const title = context.mode === 'edit' ? 'Modifica feed affiliato' : 'Nuovo feed affiliato';
+    const title = context.startInMapping
+      ? 'Configura mapping feed'
+      : context.mode === 'edit'
+        ? 'Modifica feed affiliato'
+        : 'Nuovo feed affiliato';
 
     this.popupService.setNewPopUp(
       guid,
@@ -289,7 +317,11 @@ export class AffiliateFeedsComponent implements OnInit {
       if (result?.name !== 'saved') return;
       this.refresh();
       alert(
-        context.mode === 'edit' ? 'Feed affiliato aggiornato.' : 'Feed affiliato creato.',
+        context.startInMapping
+          ? 'Mapping del feed aggiornato.'
+          : context.mode === 'edit'
+            ? 'Feed affiliato aggiornato.'
+            : 'Feed affiliato creato.',
         'Operazione completata',
       );
     });

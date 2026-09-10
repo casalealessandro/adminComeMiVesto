@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { FORM_DEFINITION_REPOSITORY } from '../../../core/forms/contracts/form-definition-repository';
@@ -27,6 +27,7 @@ export interface AffiliateFeedFormContext {
   mode: AffiliateFeedFormMode;
   feed?: AffiliateFeed;
   programName?: string;
+  startInMapping?: boolean;
 }
 
 export interface AffiliateFeedFormEvent {
@@ -79,6 +80,19 @@ export function buildAffiliateFeedUpdateInput(formData: Record<string, unknown>)
     market: normalizedString(formData['market']).toUpperCase(),
     rules: normalizedString(formData['rules']),
     rulesMapper: normalizedString(formData['rulesMapper']),
+  };
+}
+
+function buildAffiliateFeedUpdateInputFromFeed(feed: AffiliateFeed): AffiliateFeedUpdateInput {
+  return {
+    name: feed.name,
+    enabled: feed.enabled,
+    adapterType: feed.adapterType ?? null,
+    readMode: feed.readMode,
+    locale: feed.locale,
+    market: feed.market,
+    rules: feed.rules ?? '',
+    rulesMapper: feed.rulesMapper ?? '',
   };
 }
 
@@ -144,13 +158,14 @@ export function affiliateFeedErrorMessage(status: number): string {
   templateUrl: './affiliate-feed-form-host.component.html',
   styleUrl: './affiliate-feed-form-host.component.scss',
 })
-export class AffiliateFeedFormHostComponent {
+export class AffiliateFeedFormHostComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
 
   itemData: AffiliateFeedFormContext = { mode: 'create' };
   @Output() result = new EventEmitter<AffiliateFeedFormResult>();
 
   saving = false;
+  loadingSourceValues = false;
   loadingMappingOptions = false;
   mappingStep = false;
   error = '';
@@ -170,6 +185,12 @@ export class AffiliateFeedFormHostComponent {
     rules: '',
     rulesMapper: '',
   };
+
+  ngOnInit(): void {
+    if (this.itemData.startInMapping && this.itemData.feed?.id) {
+      this.loadExistingMapping(this.itemData.feed);
+    }
+  }
 
   get formId(): string {
     return this.itemData.mode === 'edit'
@@ -242,6 +263,21 @@ export class AffiliateFeedFormHostComponent {
     this.affiliateCatalogService
       .updateFeedWithSourceValues(feed.id, buildAffiliateFeedUpdateInput(formData))
       .pipe(finalize(() => this.saving = false))
+      .subscribe({
+        next: (response) => this.prepareMappingStep(response),
+        error: (error: HttpErrorResponse) => this.error = affiliateFeedErrorMessage(error.status),
+      });
+  }
+
+  private loadExistingMapping(feed: AffiliateFeed): void {
+    this.mappingStep = true;
+    this.loadingSourceValues = true;
+    this.error = '';
+    this.warning = '';
+    this.createdFeed = feed;
+    this.affiliateCatalogService
+      .updateFeedWithSourceValues(feed.id, buildAffiliateFeedUpdateInputFromFeed(feed))
+      .pipe(finalize(() => this.loadingSourceValues = false))
       .subscribe({
         next: (response) => this.prepareMappingStep(response),
         error: (error: HttpErrorResponse) => this.error = affiliateFeedErrorMessage(error.status),
