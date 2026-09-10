@@ -38,6 +38,8 @@ export interface AffiliateFeed {
   readMode: AffiliateFeedReadMode;
   locale: string;
   market: string;
+  rules: string;
+  rulesMapper: string;
   lastSyncAt: number | null;
   lastSuccessfulSyncAt: number | null;
   lastTotalHits: number | null;
