@@ -14,6 +14,8 @@ describe('Affiliate feed form mapping', () => {
     readMode: 'PAGINATED',
     locale: ' it-IT ',
     market: ' it ',
+    rules: ' {"version":1} ',
+    rulesMapper: ' {"version":1} ',
   };
 
   it('normalizes create data and maps an empty adapter to null', () => {
@@ -26,10 +28,12 @@ describe('Affiliate feed form mapping', () => {
       readMode: 'PAGINATED',
       locale: 'it-IT',
       market: 'IT',
+      rules: '{"version":1}',
+      rulesMapper: '{"version":1}',
     });
   });
 
-  it('omits immutable feed identity fields from update', () => {
+  it('omits immutable feed identity fields from update and includes rules configuration', () => {
     const update = buildAffiliateFeedUpdateInput({
       ...formData,
       adapterType: ' TRADEDOUBLER ',
@@ -41,10 +45,12 @@ describe('Affiliate feed form mapping', () => {
     expect(update['adapterType']).toBe('TRADEDOUBLER');
     expect(update['locale']).toBe('it-IT');
     expect(update['market']).toBe('IT');
+    expect(update['rules']).toBe('{"version":1}');
+    expect(update['rulesMapper']).toBe('{"version":1}');
   });
 
   it('maps relevant backend statuses to readable messages', () => {
-    expect(affiliateFeedErrorMessage(400)).toContain('dati');
+    expect(affiliateFeedErrorMessage(400)).toContain('JSON');
     expect(affiliateFeedErrorMessage(403)).toContain('autorizzato');
     expect(affiliateFeedErrorMessage(404)).toContain('disponibile');
     expect(affiliateFeedErrorMessage(409)).toContain('già');
