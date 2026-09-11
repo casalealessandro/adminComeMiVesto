@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom, finalize, forkJoin } from 'rxjs';
 import {
@@ -186,10 +186,11 @@ export function createAffiliateProductsProvider(
   templateUrl: './affiliate-products.component.html',
   styleUrl: './affiliate-products.component.scss',
 })
-export class AffiliateProductsComponent implements OnInit {
+export class AffiliateProductsComponent implements OnInit, OnDestroy {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
   private readonly router = inject(Router);
   private dataGrid?: DataGridComponent<AffiliateProductGridRow>;
+  private mobileLoadMoreObserver?: IntersectionObserver;
 
   products: CatalogProduct[] = [];
   gridRows: AffiliateProductGridRow[] = [];
@@ -217,8 +218,32 @@ export class AffiliateProductsComponent implements OnInit {
     queueMicrotask(() => void grid.renderGrid());
   }
 
+  @ViewChild('mobileLoadMoreSentinel')
+  set mobileLoadMoreSentinel(element: ElementRef<HTMLElement> | undefined) {
+    this.mobileLoadMoreObserver?.disconnect();
+    this.mobileLoadMoreObserver = undefined;
+
+    if (!element || typeof IntersectionObserver === 'undefined') return;
+
+    this.mobileLoadMoreObserver = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        void this.loadMore();
+      }
+    }, {
+      root: null,
+      rootMargin: '200px 0px',
+      threshold: 0,
+    });
+
+    this.mobileLoadMoreObserver.observe(element.nativeElement);
+  }
+
   ngOnInit(): void {
     this.refresh();
+  }
+
+  ngOnDestroy(): void {
+    this.mobileLoadMoreObserver?.disconnect();
   }
 
   refresh(): void {
