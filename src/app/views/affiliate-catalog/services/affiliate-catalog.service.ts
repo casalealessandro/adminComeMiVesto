@@ -20,6 +20,7 @@ import {
   AffiliateProductCursorRequest,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
+  CatalogTaxonomyRepairResult,
   OutfitColorOption,
 } from '../models/affiliate-catalog-api.models';
 
@@ -111,6 +112,15 @@ export class AffiliateCatalogService {
   getProduct(id: string): Observable<CatalogProduct> {
     return this.http
       .get<AffiliateApiResponse<CatalogProduct>>(`${this.baseUrl}/products/${id}`)
+      .pipe(map((response) => response.data));
+  }
+
+  repairProductTaxonomies(apply = false): Observable<CatalogTaxonomyRepairResult> {
+    return this.http
+      .post<AffiliateApiResponse<CatalogTaxonomyRepairResult>>(
+        `${this.baseUrl}/products/taxonomy-repair`,
+        { apply },
+      )
       .pipe(map((response) => response.data));
   }
 

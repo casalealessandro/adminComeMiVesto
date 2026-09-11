@@ -10,7 +10,10 @@ import {
   GridLoadRequest,
   GridPage,
 } from '../../../../core/public-api';
-import { AffiliateProductCursorRequest } from '../../models/affiliate-catalog-api.models';
+import {
+  AffiliateProductCursorRequest,
+  CatalogTaxonomyRepairResult,
+} from '../../models/affiliate-catalog-api.models';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -195,6 +198,10 @@ export class AffiliateProductsComponent implements OnInit {
   loading = false;
   productsLoading = false;
   loadingMore = false;
+  taxonomyLoading = false;
+  taxonomyApplying = false;
+  taxonomyRepair: CatalogTaxonomyRepairResult | null = null;
+  taxonomyError = '';
   error = '';
   loadMoreError = '';
   hasMore = false;
@@ -253,6 +260,41 @@ export class AffiliateProductsComponent implements OnInit {
           this.error = 'Impossibile inizializzare i filtri del catalogo affiliato.';
         },
       });
+  }
+
+  analyzeMissingTaxonomies(): void {
+    if (this.taxonomyLoading || this.taxonomyApplying) return;
+    this.taxonomyLoading = true;
+    this.taxonomyError = '';
+    this.affiliateCatalogService
+      .repairProductTaxonomies(false)
+      .pipe(finalize(() => this.taxonomyLoading = false))
+      .subscribe({
+        next: (result) => this.taxonomyRepair = result,
+        error: () => this.taxonomyError = 'Impossibile analizzare le tassonomie mancanti.',
+      });
+  }
+
+  applyTaxonomySuggestions(): void {
+    if (!this.taxonomyRepair?.suggested || this.taxonomyLoading || this.taxonomyApplying) return;
+    this.taxonomyApplying = true;
+    this.taxonomyError = '';
+    this.affiliateCatalogService
+      .repairProductTaxonomies(true)
+      .pipe(finalize(() => this.taxonomyApplying = false))
+      .subscribe({
+        next: (result) => {
+          this.taxonomyRepair = result;
+          if (result.updated > 0) this.refresh();
+        },
+        error: () => this.taxonomyError = 'Impossibile applicare le tassonomie proposte.',
+      });
+  }
+
+  closeTaxonomyRepair(): void {
+    if (this.taxonomyLoading || this.taxonomyApplying) return;
+    this.taxonomyRepair = null;
+    this.taxonomyError = '';
   }
 
   async loadMore(): Promise<void> {

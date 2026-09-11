@@ -30,6 +30,27 @@ export interface AffiliateCursorPage<T> {
   };
 }
 
+export interface CatalogTaxonomySuggestion {
+  productId: string;
+  productName: string;
+  category: string;
+  suggestedSubcategory: string;
+  suggestedSubcategoryName: string;
+  matchedText: string;
+}
+
+export interface CatalogTaxonomyRepairResult {
+  scanned: number;
+  eligible: number;
+  suggested: number;
+  ambiguous: number;
+  noMatch: number;
+  invalidCategory: number;
+  updated: number;
+  preview: CatalogTaxonomySuggestion[];
+  previewTruncated: boolean;
+}
+
 export interface AffiliateFeedSourceValues {
   recordsRead: number;
   recordsNormalized: number;
