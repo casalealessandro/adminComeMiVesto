@@ -140,7 +140,7 @@
 
       <div class="affiliate-product-card__body">
         <div class="affiliate-product-card__topline">
-          <span>{{ product.brand || 'Brand non disponibile' }}</span>
+          <span class="affiliate-product-card__brand">{{ product.brand || 'Brand non disponibile' }}</span>
           <span class="badge" [class.text-bg-success]="product.active" [class.text-bg-secondary]="!product.active">
             {{ product.active ? 'Attivo' : 'Inattivo' }}
           </span>
@@ -149,19 +149,36 @@
         <h3>{{ product.name }}</h3>
         <p class="affiliate-product-card__program">{{ programName(product) }}</p>
 
-        <dl>
-          <div><dt>Categoria</dt><dd>{{ categoryLabel(product) }}</dd></div>
-          <div><dt>Colore</dt><dd>{{ product.normalizedColor || '—' }}</dd></div>
-          <div><dt>Target</dt><dd>{{ genderLabel(product) }}</dd></div>
-          <div><dt>Materiali</dt><dd>{{ materialsLabel(product) }}</dd></div>
-          <div><dt>Feed sorgente</dt><dd>{{ product.sourceFeedIds.length }}</dd></div>
-          <div><dt>Ultima rilevazione</dt><dd>{{ product.lastSeenAt | date:'short' }}</dd></div>
-        </dl>
+        <div class="affiliate-product-card__chips" aria-label="Informazioni principali prodotto">
+          <span *ngIf="product.category || product.subcategory" class="affiliate-product-card__chip">
+            <span class="mdi mdi-tag-outline" aria-hidden="true"></span>
+            {{ categoryLabel(product) }}
+          </span>
+          <span *ngIf="product.normalizedColor" class="affiliate-product-card__chip">
+            <span class="mdi mdi-palette-outline" aria-hidden="true"></span>
+            {{ product.normalizedColor }}
+          </span>
+          <span *ngIf="product.genderTargets?.length" class="affiliate-product-card__chip">
+            <span class="mdi mdi-account-outline" aria-hidden="true"></span>
+            {{ genderLabel(product) }}
+          </span>
+        </div>
 
-        <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-3" (click)="openDetail(product)">
-          <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
-          Dettaglio
-        </button>
+        <footer class="affiliate-product-card__footer">
+          <span *ngIf="product.lastSeenAt" class="affiliate-product-card__last-seen">
+            <span class="mdi mdi-clock-outline" aria-hidden="true"></span>
+            {{ product.lastSeenAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary affiliate-product-card__detail"
+            (click)="openDetail(product)"
+            [attr.aria-label]="'Apri dettaglio di ' + product.name">
+            <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
+            <span>Dettaglio</span>
+          </button>
+        </footer>
       </div>
     </article>
   </div>
