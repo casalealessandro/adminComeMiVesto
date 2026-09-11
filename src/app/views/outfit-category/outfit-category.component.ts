@@ -251,6 +251,12 @@ export class OutfitCategoryComponent {
 
         const formData = resulOutputComponent.formData;
         formData.parentCategory = !formData.parentCategory ? '' : formData.parentCategory
+        if (formData.order !== undefined && formData.order !== null && formData.order !== '') {
+          const order = Number(formData.order);
+          if (Number.isFinite(order)) {
+            formData.order = order;
+          }
+        }
         let res;
         if (resulOutputComponent.inEdit) {
           
