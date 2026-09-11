@@ -185,6 +185,13 @@
         </footer>
       </div>
     </article>
+
+    <div
+      #mobileLoadMoreSentinel
+      *ngIf="hasMore"
+      class="affiliate-products__mobile-sentinel py-1"
+      aria-hidden="true">
+    </div>
   </div>
 
   <div *ngIf="loadMoreError" class="alert alert-danger affiliate-products__load-more-error" role="alert">
