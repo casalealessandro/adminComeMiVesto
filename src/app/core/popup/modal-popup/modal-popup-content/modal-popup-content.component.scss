@@ -2,10 +2,15 @@
   z-index: 500;
   pointer-events: auto;
   background-color: rgba(255, 255, 255, .8);
+  overflow: hidden;
+  overscroll-behavior: none;
 
   .modal-dialog {
 
     max-width: 90%;
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    margin: 1rem auto;
     border: 1px solid var(--primary);
     background: #fff;
     -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
@@ -13,6 +18,13 @@
     border-radius: 4px;
     pointer-events: auto;
     width: fit-content;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    > app-caption {
+      flex: 0 0 auto;
+    }
    
     .caption-container {
       &.modal{
@@ -25,6 +37,10 @@
       border: none;
       box-sizing: border-box;
       background: transparent;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
 
       .formEdit {
         background: var(--bg-grey);
