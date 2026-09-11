@@ -1,14 +1,14 @@
-<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || loadingMore">
+<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || productsLoading || loadingMore">
   <header class="affiliate-products__header">
     <div>
       <p class="affiliate-products__eyebrow">Catalogo Affiliati</p>
       <h2 id="affiliate-products-title">Prodotti</h2>
       <p class="affiliate-products__description">
-        Consulta il catalogo canonico importato dai feed. La vista è in sola lettura e usa la paginazione a cursore esposta dal backend.
+        Consulta il catalogo canonico importato dai feed. La DataGrid usa paginazione e filtri remoti sul backend.
       </p>
     </div>
 
-    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || loadingMore">
+    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || productsLoading || loadingMore">
       <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
       Aggiorna
     </button>
@@ -16,7 +16,7 @@
 
   <div class="alert alert-info affiliate-products__contract" role="note">
     <span class="mdi mdi-information-outline" aria-hidden="true"></span>
-    <span>Ricerca, filtri e ordinamento remoto non sono esposti dall'API Products e non vengono simulati nella UI.</span>
+    <span>I filtri Programma e Categoria vengono applicati all'intero catalogo prima della paginazione. L'ordinamento remoto resta non esposto dall'API Products.</span>
   </div>
 
   <div *ngIf="error" class="alert alert-danger affiliate-products__error" role="alert">
@@ -24,15 +24,15 @@
     <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
   </div>
 
-  <p *ngIf="loading" class="affiliate-products__loading" aria-live="polite">
+  <p *ngIf="loading || productsLoading" class="affiliate-products__loading" aria-live="polite">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-    Caricamento prodotti…
+    {{ loading ? 'Caricamento filtri…' : 'Caricamento prodotti…' }}
   </p>
 
-  <div *ngIf="!loading && !error && !products.length" class="affiliate-products__empty">
+  <div *ngIf="!loading && !productsLoading && !error && !products.length" class="affiliate-products__empty">
     <span class="mdi mdi-hanger" aria-hidden="true"></span>
     <strong>Nessun prodotto disponibile</strong>
-    <span>Il catalogo si popolerà dopo una sincronizzazione feed valida.</span>
+    <span>Il catalogo si popolerà dopo una sincronizzazione feed valida oppure non contiene prodotti per i filtri selezionati.</span>
   </div>
 
   <div *ngIf="!loading && products.length" class="affiliate-products__summary" role="status">
@@ -41,19 +41,19 @@
     <span *ngIf="hasMore" class="badge text-bg-light">altri disponibili</span>
   </div>
 
-  <div class="affiliate-products__desktop" *ngIf="!loading && gridRows.length">
+  <div class="affiliate-products__desktop" *ngIf="!loading && dataProvider && columns.length">
     <app-data-grid
       [idTable]="'affiliate-products-grid'"
       [colonne]="columns"
-      [dataSource]="gridRows"
-      [remoteOperation]="false"
+      [dataProvider]="dataProvider"
+      [remoteOperation]="true"
       [isEditable]="false"
       [isEditableNewRow]="false"
       [isEditableEditRow]="false"
       [isEditableDeleteRow]="false"
       [showToolbarTop]="false"
       [showToolbarBottom]="false"
-      [showFilter]="false"
+      [showFilter]="true"
       [isSearchable]="false"
       [tableHeight]="560"
       (emittendButtonCellClick)="gridAction($event)">
@@ -100,7 +100,7 @@
   </div>
 
   <div *ngIf="!loading && products.length && hasMore" class="affiliate-products__load-more">
-    <button type="button" class="btn btn-outline-primary" (click)="loadMore()" [disabled]="loadingMore">
+    <button type="button" class="btn btn-outline-primary" (click)="loadMore()" [disabled]="loadingMore || productsLoading">
       <span *ngIf="loadingMore" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
       <span *ngIf="!loadingMore" class="mdi mdi-chevron-down" aria-hidden="true"></span>
       {{ loadingMore ? 'Caricamento…' : 'Carica altri' }}

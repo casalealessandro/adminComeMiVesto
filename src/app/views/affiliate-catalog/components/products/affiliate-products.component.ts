@@ -1,8 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, finalize, forkJoin, of } from 'rxjs';
-import { ColData, Colonne, DataGridComponent } from '../../../../core/public-api';
+import { firstValueFrom, finalize, forkJoin } from 'rxjs';
+import {
+  ColData,
+  Colonne,
+  DataGridComponent,
+  GridDataProvider,
+  GridLoadRequest,
+  GridPage,
+} from '../../../../core/public-api';
+import { AffiliateProductCursorRequest } from '../../models/affiliate-catalog-api.models';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -17,11 +25,25 @@ const baseColumn = (
   type,
   colVisible: true,
   allowEditing: false,
+  allowFiltering: false,
   dataField,
   colWidth,
   colCaption,
   edit: false,
   groupDataField: undefined,
+});
+
+const listOptions = (
+  options: any[],
+  valueExp: string,
+  displayExp: string,
+): NonNullable<ColData['lista']> => ({
+  options,
+  valueExp,
+  displayExp,
+  multiple: false,
+  remote: false,
+  parent: null,
 });
 
 export interface AffiliateProductGridRow extends CatalogProduct {
@@ -32,12 +54,38 @@ export interface AffiliateProductGridRow extends CatalogProduct {
   sourceFeedCount: number;
 }
 
-export function buildAffiliateProductColumns(): Colonne[] {
+export interface AffiliateProductsProviderCallbacks {
+  onLoadStart?: (append: boolean) => void;
+  onPage?: (products: CatalogProduct[], append: boolean, hasMore: boolean) => void;
+  onLoadError?: (append: boolean) => void;
+  onLoadEnd?: (append: boolean) => void;
+}
+
+export function buildAffiliateProductColumns(
+  programs: AffiliateProgram[] = [],
+  categories: string[] = [],
+): Colonne[] {
+  const programOptions = [...programs]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((program) => ({ id: program.id, name: program.name }));
+  const categoryOptions = [...new Set(categories.filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b))
+    .map((category) => ({ value: category, label: category }));
+
   const columns: ColData[] = [
     baseColumn('brand', 'Brand', 130),
     baseColumn('name', 'Prodotto', 230),
-    baseColumn('programName', 'Programma', 180),
-    baseColumn('categoryLabel', 'Categoria', 170),
+    {
+      ...baseColumn('affiliateProgramId', 'Programma', 180, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(programOptions, 'id', 'name'),
+    },
+    {
+      ...baseColumn('category', 'Categoria', 150, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(categoryOptions, 'value', 'label'),
+    },
+    baseColumn('subcategory', 'Sottocategoria', 150),
     baseColumn('normalizedColor', 'Colore', 110),
     baseColumn('genderLabel', 'Target', 150),
     baseColumn('sourceFeedCount', 'Feed', 70, 'campoNumber'),
@@ -72,6 +120,62 @@ export function buildAffiliateProductGridRows(
   }));
 }
 
+export function buildAffiliateProductRemoteRequest(request: GridLoadRequest): AffiliateProductCursorRequest {
+  const exactFilter = (field: string): string | undefined => {
+    const filter = request.filters?.find((item) => item.field === field && item.operator === 'eq');
+    if (typeof filter?.value !== 'string') return undefined;
+    const value = filter.value.trim();
+    return value || undefined;
+  };
+
+  const cursor = typeof request.continuation === 'string' && request.continuation
+    ? request.continuation
+    : undefined;
+  const q = request.search?.value?.trim() || undefined;
+  const category = exactFilter('category');
+  const affiliateProgramId = exactFilter('affiliateProgramId');
+
+  return {
+    limit: request.pageSize,
+    ...(cursor ? { cursor } : {}),
+    ...(q ? { q } : {}),
+    ...(category ? { category } : {}),
+    ...(affiliateProgramId ? { affiliateProgramId } : {}),
+  };
+}
+
+export function createAffiliateProductsProvider(
+  service: AffiliateCatalogService,
+  programNames: ReadonlyMap<string, string>,
+  callbacks: AffiliateProductsProviderCallbacks = {},
+): GridDataProvider<AffiliateProductGridRow> {
+  return {
+    async load(request: GridLoadRequest): Promise<GridPage<AffiliateProductGridRow>> {
+      if (request.sort?.length) {
+        throw new Error('Remote sorting is not supported by the affiliate products API');
+      }
+
+      const append = typeof request.continuation === 'string' && request.continuation.length > 0;
+      callbacks.onLoadStart?.(append);
+
+      try {
+        const page = await firstValueFrom(service.getProducts(buildAffiliateProductRemoteRequest(request)));
+        callbacks.onPage?.(page.data, append, page.pagination.hasMore);
+        return {
+          items: buildAffiliateProductGridRows(page.data, programNames),
+          hasMore: page.pagination.hasMore,
+          continuation: page.pagination.nextCursor ?? undefined,
+        };
+      } catch (error) {
+        callbacks.onLoadError?.(append);
+        throw error;
+      } finally {
+        callbacks.onLoadEnd?.(append);
+      }
+    },
+  };
+}
+
 @Component({
   selector: 'app-affiliate-products',
   standalone: true,
@@ -82,18 +186,29 @@ export function buildAffiliateProductGridRows(
 export class AffiliateProductsComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
   private readonly router = inject(Router);
+  private dataGrid?: DataGridComponent<AffiliateProductGridRow>;
 
   products: CatalogProduct[] = [];
   gridRows: AffiliateProductGridRow[] = [];
-  readonly columns = buildAffiliateProductColumns();
+  columns: Colonne[] = [];
+  dataProvider?: GridDataProvider<AffiliateProductGridRow>;
   loading = false;
+  productsLoading = false;
   loadingMore = false;
   error = '';
   loadMoreError = '';
   hasMore = false;
-  nextCursor: string | null = null;
 
   private programNames = new Map<string, string>();
+
+  @ViewChild(DataGridComponent)
+  set productGrid(grid: DataGridComponent<AffiliateProductGridRow> | undefined) {
+    this.dataGrid = grid;
+    if (!grid || !this.dataProvider) return;
+
+    grid.pageSize = AFFILIATE_PRODUCTS_PAGE_SIZE;
+    queueMicrotask(() => void grid.renderGrid());
+  }
 
   ngOnInit(): void {
     this.refresh();
@@ -103,51 +218,46 @@ export class AffiliateProductsComponent implements OnInit {
     if (this.loading || this.loadingMore) return;
 
     this.loading = true;
+    this.productsLoading = true;
     this.error = '';
     this.loadMoreError = '';
+    this.products = [];
+    this.gridRows = [];
+    this.hasMore = false;
+    this.columns = [];
+    this.dataProvider = undefined;
 
     forkJoin({
-      page: this.affiliateCatalogService.getProducts({ limit: AFFILIATE_PRODUCTS_PAGE_SIZE }),
-      programs: this.affiliateCatalogService.getPrograms().pipe(
-        catchError(() => of([] as AffiliateProgram[])),
-      ),
+      programs: this.affiliateCatalogService.getPrograms(),
+      audit: this.affiliateCatalogService.getCatalogAudit(),
     })
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: ({ page, programs }) => {
+        next: ({ programs, audit }) => {
           this.programNames = new Map(programs.map((program) => [program.id, program.name]));
-          this.applyPage(page.data, page.pagination.nextCursor, page.pagination.hasMore, false);
+          const categories = audit.catalog.categories.map((item) => item.category).filter(Boolean);
+          this.columns = buildAffiliateProductColumns(programs, categories);
+          this.dataProvider = createAffiliateProductsProvider(
+            this.affiliateCatalogService,
+            this.programNames,
+            {
+              onLoadStart: (append) => this.onProviderLoadStart(append),
+              onPage: (products, append, hasMore) => this.applyProviderPage(products, append, hasMore),
+              onLoadError: (append) => this.onProviderLoadError(append),
+              onLoadEnd: (append) => this.onProviderLoadEnd(append),
+            },
+          );
         },
         error: () => {
-          this.products = [];
-          this.gridRows = [];
-          this.hasMore = false;
-          this.nextCursor = null;
-          this.error = 'Impossibile caricare i prodotti del catalogo affiliato.';
+          this.productsLoading = false;
+          this.error = 'Impossibile inizializzare i filtri del catalogo affiliato.';
         },
       });
   }
 
-  loadMore(): void {
-    if (this.loading || this.loadingMore || !this.hasMore || !this.nextCursor) return;
-
-    this.loadingMore = true;
-    this.loadMoreError = '';
-    const cursor = this.nextCursor;
-
-    this.affiliateCatalogService.getProducts({
-      limit: AFFILIATE_PRODUCTS_PAGE_SIZE,
-      cursor,
-    })
-      .pipe(finalize(() => this.loadingMore = false))
-      .subscribe({
-        next: (page) => {
-          this.applyPage(page.data, page.pagination.nextCursor, page.pagination.hasMore, true);
-        },
-        error: () => {
-          this.loadMoreError = 'Impossibile caricare altri prodotti. Riprova.';
-        },
-      });
+  async loadMore(): Promise<void> {
+    if (!this.dataGrid || this.loading || this.loadingMore || !this.hasMore) return;
+    await this.dataGrid.loadNextRemotePage();
   }
 
   programName(product: CatalogProduct): string {
@@ -179,15 +289,38 @@ export class AffiliateProductsComponent implements OnInit {
     if (event?.name === 'detail' && event.rowData) this.openDetail(event.rowData);
   }
 
-  private applyPage(
-    items: CatalogProduct[],
-    nextCursor: string | null,
-    hasMore: boolean,
-    append: boolean,
-  ): void {
+  private onProviderLoadStart(append: boolean): void {
+    if (append) {
+      this.loadingMore = true;
+      this.loadMoreError = '';
+      return;
+    }
+
+    this.productsLoading = true;
+    this.error = '';
+  }
+
+  private onProviderLoadError(append: boolean): void {
+    if (append) {
+      this.loadMoreError = 'Impossibile caricare altri prodotti. Riprova.';
+      return;
+    }
+
+    this.error = 'Impossibile caricare i prodotti del catalogo affiliato.';
+  }
+
+  private onProviderLoadEnd(append: boolean): void {
+    if (append) {
+      this.loadingMore = false;
+      return;
+    }
+
+    this.productsLoading = false;
+  }
+
+  private applyProviderPage(items: CatalogProduct[], append: boolean, hasMore: boolean): void {
     const combined = append ? [...this.products, ...items] : [...items];
     this.products = Array.from(new Map(combined.map((product) => [product.id, product])).values());
-    this.nextCursor = nextCursor;
     this.hasMore = hasMore;
     this.gridRows = buildAffiliateProductGridRows(this.products, this.programNames);
   }

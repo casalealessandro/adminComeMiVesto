@@ -16,6 +16,12 @@ export interface AffiliateCursorRequest {
   cursor?: string;
 }
 
+export interface AffiliateProductCursorRequest extends AffiliateCursorRequest {
+  q?: string;
+  category?: string;
+  affiliateProgramId?: string;
+}
+
 export interface AffiliateCursorPage<T> {
   data: T[];
   pagination: {

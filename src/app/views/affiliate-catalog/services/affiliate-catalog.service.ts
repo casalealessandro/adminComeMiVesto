@@ -17,6 +17,7 @@ import {
   AffiliateFeedCreateResponse,
   AffiliateFeedMappingResponse,
   AffiliateFeedUpdateInput,
+  AffiliateProductCursorRequest,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
   OutfitColorOption,
@@ -100,10 +101,10 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
-  getProducts(request?: AffiliateCursorRequest): Observable<AffiliateCursorPage<CatalogProduct>> {
+  getProducts(request?: AffiliateProductCursorRequest): Observable<AffiliateCursorPage<CatalogProduct>> {
     return this.http.get<AffiliateCursorPage<CatalogProduct>>(
       `${this.baseUrl}/products`,
-      { params: this.buildCursorParams(request) },
+      { params: this.buildProductParams(request) },
     );
   }
 
@@ -124,6 +125,20 @@ export class AffiliateCatalogService {
     return this.http
       .get<AffiliateApiResponse<AffiliateSyncRun>>(`${this.baseUrl}/sync-runs/${id}`)
       .pipe(map((response) => response.data));
+  }
+
+  private buildProductParams(request?: AffiliateProductCursorRequest): HttpParams {
+    let params = this.buildCursorParams(request);
+    if (request?.q) {
+      params = params.set('q', request.q);
+    }
+    if (request?.category) {
+      params = params.set('category', request.category);
+    }
+    if (request?.affiliateProgramId) {
+      params = params.set('affiliateProgramId', request.affiliateProgramId);
+    }
+    return params;
   }
 
   private buildCursorParams(request?: AffiliateCursorRequest): HttpParams {
