@@ -49,6 +49,25 @@ describe('Affiliate products', () => {
     lastSeenAt: 3,
   };
 
+  const taxonomyPreview = {
+    scanned: 10,
+    eligible: 8,
+    suggested: 2,
+    ambiguous: 1,
+    noMatch: 5,
+    invalidCategory: 2,
+    updated: 0,
+    preview: [{
+      productId: 'product-2',
+      productName: 'Pantalone cargo',
+      category: 'pants-parent',
+      suggestedSubcategory: 'cargo-child',
+      suggestedSubcategoryName: 'Cargo',
+      matchedText: 'Cargo',
+    }],
+    previewTruncated: false,
+  };
+
   it('keeps the products grid read-only and exposes only Programma and Categoria as filters', () => {
     const columns = buildAffiliateProductColumns([program], ['Clothing', 'Shoes'])[0].data;
     const actions = columns.filter((column) => column.type === 'campoButton');
@@ -126,7 +145,7 @@ describe('Affiliate products', () => {
     expect(onPage).toHaveBeenCalledWith([product], false, true);
   });
 
-  describe('component metadata and detail navigation', () => {
+  describe('component metadata, taxonomy repair and detail navigation', () => {
     let fixture: ComponentFixture<AffiliateProductsComponent>;
     let component: AffiliateProductsComponent;
     let service: jasmine.SpyObj<AffiliateCatalogService>;
@@ -137,6 +156,7 @@ describe('Affiliate products', () => {
         'getProducts',
         'getPrograms',
         'getCatalogAudit',
+        'repairProductTaxonomies',
       ]);
       service.getPrograms.and.returnValue(of([program]));
       service.getCatalogAudit.and.returnValue(of({
@@ -167,6 +187,7 @@ describe('Affiliate products', () => {
         data: [product],
         pagination: { nextCursor: null, hasMore: false },
       }));
+      service.repairProductTaxonomies.and.returnValue(of(taxonomyPreview));
 
       await TestBed.configureTestingModule({
         imports: [AffiliateProductsComponent],
@@ -190,6 +211,33 @@ describe('Affiliate products', () => {
       expect(component.dataProvider).toBeDefined();
       expect(component.columns[0].data.find((column) => column.dataField === 'category')?.lista?.options)
         .toEqual([{ value: 'Clothing', label: 'Clothing' }]);
+    });
+
+    it('analyzes missing taxonomies without applying changes', () => {
+      component.analyzeMissingTaxonomies();
+
+      expect(service.repairProductTaxonomies).toHaveBeenCalledOnceWith(false);
+      expect(component.taxonomyRepair).toEqual(taxonomyPreview);
+    });
+
+    it('applies only after an explicit preview and refreshes products when updates were written', () => {
+      component.taxonomyRepair = taxonomyPreview;
+      service.repairProductTaxonomies.and.returnValue(of({ ...taxonomyPreview, updated: 2 }));
+      const refresh = spyOn(component, 'refresh');
+
+      component.applyTaxonomySuggestions();
+
+      expect(service.repairProductTaxonomies).toHaveBeenCalledOnceWith(true);
+      expect(component.taxonomyRepair?.updated).toBe(2);
+      expect(refresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not call apply when there are no safe suggestions', () => {
+      component.taxonomyRepair = { ...taxonomyPreview, suggested: 0, preview: [] };
+
+      component.applyTaxonomySuggestions();
+
+      expect(service.repairProductTaxonomies).not.toHaveBeenCalled();
     });
 
     it('navigates to the canonical product detail route', () => {
