@@ -302,6 +302,10 @@ export class AffiliateProductsComponent implements OnInit {
     await this.dataGrid.loadNextRemotePage();
   }
 
+  trackByProductId(_index: number, product: CatalogProduct): string {
+    return product.id;
+  }
+
   programName(product: CatalogProduct): string {
     return this.programNames.get(product.affiliateProgramId) || product.affiliateProgramId;
   }
