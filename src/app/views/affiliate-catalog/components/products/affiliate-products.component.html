@@ -1,4 +1,4 @@
-<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || productsLoading || loadingMore">
+<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || productsLoading || loadingMore || taxonomyLoading || taxonomyApplying">
   <header class="affiliate-products__header">
     <div>
       <p class="affiliate-products__eyebrow">Catalogo Affiliati</p>
@@ -8,16 +8,87 @@
       </p>
     </div>
 
-    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || productsLoading || loadingMore">
-      <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
-      Aggiorna
-    </button>
+    <div class="affiliate-products__actions">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="analyzeMissingTaxonomies()"
+        [disabled]="loading || productsLoading || loadingMore || taxonomyLoading || taxonomyApplying">
+        <span *ngIf="taxonomyLoading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span *ngIf="!taxonomyLoading" class="mdi mdi-tag-search-outline" aria-hidden="true"></span>
+        {{ taxonomyLoading ? 'Analisi…' : 'Analizza tassonomie mancanti' }}
+      </button>
+
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || productsLoading || loadingMore">
+        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
   </header>
 
   <div class="alert alert-info affiliate-products__contract" role="note">
     <span class="mdi mdi-information-outline" aria-hidden="true"></span>
     <span>I filtri Programma e Categoria vengono applicati all'intero catalogo prima della paginazione. L'ordinamento remoto resta non esposto dall'API Products.</span>
   </div>
+
+  <div *ngIf="taxonomyError" class="alert alert-danger affiliate-products__error" role="alert">
+    <span>{{ taxonomyError }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="analyzeMissingTaxonomies()" [disabled]="taxonomyLoading || taxonomyApplying">Riprova</button>
+  </div>
+
+  <section *ngIf="taxonomyRepair as repair" class="taxonomy-repair" aria-labelledby="taxonomy-repair-title">
+    <header class="taxonomy-repair__header">
+      <div>
+        <h3 id="taxonomy-repair-title">Tassonomie mancanti</h3>
+        <p>Controllo conservativo: solo prodotti senza sottocategoria, solo figli della categoria già assegnata e match testuale nella descrizione.</p>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeTaxonomyRepair()" [disabled]="taxonomyApplying">Chiudi</button>
+    </header>
+
+    <div class="taxonomy-repair__summary" role="status">
+      <div><strong>{{ repair.scanned }}</strong><span>senza sottocategoria</span></div>
+      <div><strong>{{ repair.eligible }}</strong><span>analizzabili</span></div>
+      <div><strong>{{ repair.suggested }}</strong><span>proposte sicure</span></div>
+      <div><strong>{{ repair.ambiguous }}</strong><span>ambigue</span></div>
+      <div><strong>{{ repair.noMatch }}</strong><span>senza match</span></div>
+      <div><strong>{{ repair.invalidCategory }}</strong><span>categoria non gestibile</span></div>
+    </div>
+
+    <div *ngIf="repair.updated > 0" class="alert alert-success taxonomy-repair__message" role="status">
+      <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
+      Aggiornate {{ repair.updated }} sottocategorie. I prodotti già classificati non verranno sovrascritti da questa operazione.
+    </div>
+
+    <div *ngIf="repair.preview.length" class="taxonomy-repair__preview">
+      <article *ngFor="let suggestion of repair.preview" class="taxonomy-repair__item">
+        <div>
+          <strong>{{ suggestion.productName || suggestion.productId }}</strong>
+          <span>Match descrizione: “{{ suggestion.matchedText }}”</span>
+        </div>
+        <div class="taxonomy-repair__target">
+          <span class="mdi mdi-arrow-right" aria-hidden="true"></span>
+          <strong>{{ suggestion.suggestedSubcategoryName }}</strong>
+        </div>
+      </article>
+    </div>
+
+    <p *ngIf="repair.previewTruncated" class="taxonomy-repair__hint">
+      La preview mostra le prime 100 proposte; l'applicazione considera tutte le proposte sicure rilevate.
+    </p>
+
+    <p *ngIf="!repair.preview.length && repair.updated === 0" class="taxonomy-repair__hint">
+      Nessuna sottocategoria può essere assegnata automaticamente con i criteri conservativi attuali.
+    </p>
+
+    <footer *ngIf="repair.suggested > 0 && repair.updated === 0" class="taxonomy-repair__footer">
+      <span>Nessun prodotto viene modificato finché non confermi questa operazione.</span>
+      <button type="button" class="btn btn-primary" (click)="applyTaxonomySuggestions()" [disabled]="taxonomyApplying || taxonomyLoading">
+        <span *ngIf="taxonomyApplying" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span *ngIf="!taxonomyApplying" class="mdi mdi-check" aria-hidden="true"></span>
+        {{ taxonomyApplying ? 'Applicazione…' : 'Applica ' + repair.suggested + ' proposte sicure' }}
+      </button>
+    </footer>
+  </section>
 
   <div *ngIf="error" class="alert alert-danger affiliate-products__error" role="alert">
     <span>{{ error }}</span>
