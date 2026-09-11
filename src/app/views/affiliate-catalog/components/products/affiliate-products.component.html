@@ -132,10 +132,14 @@
   </div>
 
   <div class="affiliate-products__mobile" *ngIf="!loading && products.length">
-    <article class="affiliate-product-card" *ngFor="let product of products">
+    <article class="affiliate-product-card" *ngFor="let product of products; trackBy: trackByProductId">
       <div class="affiliate-product-card__media">
-        <img *ngIf="productImage(product) as image" [src]="image" [alt]="product.name" loading="lazy">
-        <span *ngIf="!productImage(product)" class="mdi mdi-hanger" aria-hidden="true"></span>
+        <ng-container *ngIf="productImage(product) as image; else noProductImage">
+          <img [src]="image" [alt]="product.name" loading="lazy" decoding="async">
+        </ng-container>
+        <ng-template #noProductImage>
+          <span class="mdi mdi-hanger" aria-hidden="true"></span>
+        </ng-template>
       </div>
 
       <div class="affiliate-product-card__body">
