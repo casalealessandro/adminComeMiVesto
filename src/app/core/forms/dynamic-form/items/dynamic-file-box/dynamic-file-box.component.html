@@ -5,7 +5,7 @@
     <img  #imageElement [src]="value"  class="form-image img-thumbnail"  style="width: 200px; height: 200px;"/> 
     
   </div>
-  <input #fileInput type="file" (change)="onFileSelected($event)" class="d-none" [formControlName]="fieldName">
+  <input #fileInput type="file" (change)="onFileSelected($event)" class="d-none">
   <button  type="button"  class="select-photo" (click)="chooseFile($event)">
     
     Seleziona foto

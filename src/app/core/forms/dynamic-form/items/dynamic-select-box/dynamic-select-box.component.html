@@ -21,14 +21,16 @@
 </ng-container>
 
 <ng-template #selectMultiple>
-  <select
-   class="form-control" 
-    [multiple]="true"
-    [formControlName]="fieldName"
-    (change)="onValueChange($event)"
-    >
-    <option *ngFor="let option of availableOptions" [ngValue]="option[valueExp]">
-      {{ option[displayExp] }}
-    </option>
-  </select>
+  <div [formGroup]="formGroup">
+    <select
+      class="form-control"
+      [multiple]="true"
+      [formControlName]="fieldName"
+      (change)="onValueChange($event)"
+      >
+      <option *ngFor="let option of availableOptions" [ngValue]="option[valueExp]">
+        {{ option[displayExp] }}
+      </option>
+    </select>
+  </div>
 </ng-template>
