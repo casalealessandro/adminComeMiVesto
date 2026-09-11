@@ -213,6 +213,10 @@ describe('Affiliate products', () => {
         .toEqual([{ value: 'Clothing', label: 'Clothing' }]);
     });
 
+    it('tracks mobile cards by the canonical product id', () => {
+      expect(component.trackByProductId(0, product)).toBe(product.id);
+    });
+
     it('analyzes missing taxonomies without applying changes', () => {
       component.analyzeMissingTaxonomies();
 
