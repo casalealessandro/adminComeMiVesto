@@ -73,7 +73,7 @@
     </div>
 
     <p *ngIf="repair.previewTruncated" class="taxonomy-repair__hint">
-      La preview mostra le prime 100 proposte; l'applicazione considera tutte le proposte sicure rilevate.
+      La preview mostra le prime 100 proposte. Per sicurezza vengono applicate solo quelle visualizzate; riesegui l'analisi per il blocco successivo.
     </p>
 
     <p *ngIf="!repair.preview.length && repair.updated === 0" class="taxonomy-repair__hint">
@@ -85,7 +85,7 @@
       <button type="button" class="btn btn-primary" (click)="applyTaxonomySuggestions()" [disabled]="taxonomyApplying || taxonomyLoading">
         <span *ngIf="taxonomyApplying" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
         <span *ngIf="!taxonomyApplying" class="mdi mdi-check" aria-hidden="true"></span>
-        {{ taxonomyApplying ? 'Applicazione…' : 'Applica ' + repair.suggested + ' proposte sicure' }}
+        {{ taxonomyApplying ? 'Applicazione…' : 'Applica ' + repair.preview.length + ' proposte visualizzate' }}
       </button>
     </footer>
   </section>
