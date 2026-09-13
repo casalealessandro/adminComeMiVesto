@@ -108,7 +108,7 @@
               <h3>{{ outfit.title }}</h3>
               <p>{{ outfit.description }}</p>
             </div>
-            <strong class="outfit-card__total">{{ outfitTotal(outfit) | currency:(outfit.products[0]?.currency || 'EUR'):'symbol':'1.0-2' }}</strong>
+            <strong class="outfit-card__total">{{ outfitTotal(outfit) | currency:(outfit.products[0].currency || 'EUR'):'symbol':'1.0-2' }}</strong>
           </div>
 
           <div class="outfit-card__badges">
