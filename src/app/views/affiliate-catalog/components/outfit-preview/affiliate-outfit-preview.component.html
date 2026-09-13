@@ -4,8 +4,8 @@
       <span class="ai-preview__eyebrow">AI Outfit Generator · solo admin</span>
       <h2 id="ai-preview-title">Preview outfit AI</h2>
       <p>
-        Genera tre look dal catalogo reale e confronta l'immagine editoriale con le immagini originali
-        dei prodotti scelti prima di procedere alla persistenza degli outfit.
+        Genera tre look dal catalogo reale, confronta l'immagine editoriale con le immagini originali
+        e salva solo gli outfit che approvi.
       </p>
     </div>
   </header>
@@ -148,6 +148,25 @@
                 <span class="mdi mdi-open-in-new" aria-hidden="true"></span>
               </a>
             </article>
+          </div>
+
+          <div class="outfit-card__publish">
+            <button
+              type="button"
+              class="outfit-card__approve"
+              (click)="publish(outfit)"
+              [disabled]="isPublishing(outfit) || !!publishedId(outfit)">
+              <span class="mdi" [class.mdi-loading]="isPublishing(outfit)" [class.mdi-spin]="isPublishing(outfit)" [class.mdi-check-circle-outline]="!isPublishing(outfit)" aria-hidden="true"></span>
+              {{ publishedId(outfit) ? 'Outfit salvato' : (isPublishing(outfit) ? 'Salvataggio…' : 'Approva e salva') }}
+            </button>
+            <div class="outfit-card__published" *ngIf="publishedId(outfit) as outfitId" role="status">
+              <span class="mdi mdi-check-circle" aria-hidden="true"></span>
+              Salvato in outfits · {{ outfitId }}
+            </div>
+            <div class="outfit-card__publish-error" *ngIf="publishError(outfit) as message" role="alert">
+              <span class="mdi mdi-alert-circle-outline" aria-hidden="true"></span>
+              {{ message }}
+            </div>
           </div>
         </div>
       </article>
