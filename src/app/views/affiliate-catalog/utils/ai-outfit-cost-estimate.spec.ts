@@ -31,18 +31,18 @@ const preview = (): AiOutfitPreviewResult => ({
 });
 
 describe('AI outfit cost estimate', () => {
-  it('prices Terra and Sunburst usage then converts USD to EUR', () => {
+  it('prices measurable Terra calls and converts USD to EUR', () => {
     const cost = estimateAiOutfitCost(preview());
 
     expect(cost).not.toBeNull();
     expect(cost!.stylistUsd).toBeCloseTo(0.00302, 8);
-    expect(cost!.imageGenerationUsd).toBeCloseTo(0.0264, 8);
-    expect(cost!.totalUsd).toBeCloseTo(0.02942, 8);
-    expect(cost!.totalEur).toBeCloseTo(0.02942 * AI_OUTFIT_USD_TO_EUR_RATE, 8);
-    expect(cost!.conservativeImageInputPricing).toBeTrue();
+    expect(cost!.imageOrchestrationUsd).toBeCloseTo(0.0102, 8);
+    expect(cost!.measurableTotalUsd).toBeCloseTo(0.01322, 8);
+    expect(cost!.measurableTotalEur).toBeCloseTo(0.01322 * AI_OUTFIT_USD_TO_EUR_RATE, 8);
+    expect(cost!.includesImageModelCost).toBeFalse();
   });
 
-  it('prices cached input at the dedicated cached rate', () => {
+  it('prices cached input at the dedicated cached Terra rate', () => {
     const value = preview();
     value.usage.stylist = {
       inputTokens: 1_000_000,
@@ -54,16 +54,12 @@ describe('AI outfit cost estimate', () => {
 
     const cost = estimateAiOutfitCost(value);
     expect(cost!.stylistUsd).toBeCloseTo(0.2, 8);
-    expect(cost!.imageGenerationUsd).toBe(0);
+    expect(cost!.imageOrchestrationUsd).toBe(0);
   });
 
-  it('does not invent a price for unknown models', () => {
+  it('does not invent a price for an unknown outer model', () => {
     const value = preview();
     value.model = 'future-model';
-    expect(estimateAiOutfitCost(value)).toBeNull();
-
-    value.model = 'gpt-5.6-terra';
-    value.usage.imageGeneration!.model = 'future-image-model';
     expect(estimateAiOutfitCost(value)).toBeNull();
   });
 });
