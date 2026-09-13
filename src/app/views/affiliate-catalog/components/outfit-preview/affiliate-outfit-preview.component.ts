@@ -14,6 +14,7 @@ import {
 } from '../../models/affiliate-catalog-api.models';
 import { AiOutfitPublishRequest } from '../../models/ai-outfit-publish.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
 
 interface SelectOption<T extends string> {
   value: T;
@@ -174,8 +175,30 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     return outfit.products.reduce((total, product) => total + (Number.isFinite(product.price) ? product.price : 0), 0);
   }
 
+  costEstimate(preview: AiOutfitPreviewResult): AiOutfitCostEstimate | null {
+    return estimateAiOutfitCost(preview);
+  }
+
   formatTokens(value: number | undefined): string {
     return new Intl.NumberFormat('it-IT').format(value ?? 0);
+  }
+
+  formatEuro(value: number): string {
+    return new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 4,
+    }).format(value);
+  }
+
+  formatUsd(value: number): string {
+    return new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 4,
+    }).format(value);
   }
 
   trackOutfit(index: number, outfit: AiOutfitPreviewOutfit): string {
