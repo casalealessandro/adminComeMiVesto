@@ -26,10 +26,13 @@ interface SelectOption<T extends string> {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './affiliate-outfit-preview.component.html',
-  styleUrls: ['./affiliate-outfit-preview.component.scss', './affiliate-outfit-publish.scss'],
+  styleUrls: ['./affiliate-outfit-preview.component.scss', './affiliate-outfit-publish.scss', './affiliate-outfit-count.scss'],
 })
 export class AffiliateOutfitPreviewComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
+
+  readonly minOutfitCount = 3;
+  readonly maxOutfitCount = 6;
 
   readonly genderOptions: SelectOption<AiOutfitPreviewGender>[] = [
     { value: 'MAN', label: 'Uomo' },
@@ -69,6 +72,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     occasion: 'EVERYDAY',
     style: 'CASUAL',
   };
+  outfitCount = 3;
 
   result: AiOutfitPreviewResult | null = null;
   loading = false;
@@ -89,13 +93,21 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   generate(): void {
     if (this.loading) return;
+    const count = Number(this.outfitCount);
+    if (!Number.isInteger(count) || count < this.minOutfitCount || count > this.maxOutfitCount) {
+      this.error = `Il numero di outfit deve essere un intero tra ${this.minOutfitCount} e ${this.maxOutfitCount}.`;
+      return;
+    }
+
     this.loading = true;
     this.error = '';
     this.result = null;
     this.publishing.clear();
     this.published.clear();
     this.publishErrors.clear();
-    const request: AiOutfitPreviewRequest = { ...this.request };
+    const request: AiOutfitPreviewRequest = { ...this.request, count };
+    // Keep the normalized request available to the UI/tests and aligned with the backend response.
+    this.request = request;
 
     this.affiliateCatalogService.generateOutfitPreview(request)
       .pipe(finalize(() => this.loading = false))
