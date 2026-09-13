@@ -61,7 +61,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'getPrograms'],
+      ['generateOutfitPreview', 'publishOutfitPreview', 'getPrograms'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -77,7 +77,15 @@ describe('AffiliateOutfitPreviewComponent', () => {
       createdAt: 1,
       updatedAt: 1,
     }]));
-    service.generateOutfitPreview.and.returnValue(of(previewResult));
+    service.generateOutfitPreview.and.returnValue(of(structuredClone(previewResult)));
+    service.publishOutfitPreview.and.returnValue(of({
+      id: 'outfit-1',
+      title: 'Look 1',
+      imageUrl: 'https://storage.test/outfits/ai/outfit-1.png',
+      status: 'approved',
+      userId: 'comemivesto-ai-outfit',
+      createdAt: 2000,
+    }));
 
     await TestBed.configureTestingModule({
       imports: [AffiliateOutfitPreviewComponent],
@@ -102,15 +110,40 @@ describe('AffiliateOutfitPreviewComponent', () => {
     fixture.detectChanges();
 
     expect(service.generateOutfitPreview).toHaveBeenCalledWith(component.request);
-    expect(component.result).toEqual(previewResult);
+    expect(component.result?.outfits.length).toBe(3);
     expect(component.loading).toBeFalse();
 
     const host: HTMLElement = fixture.nativeElement;
     expect(host.querySelectorAll('.outfit-card').length).toBe(3);
     expect(host.querySelectorAll('.outfit-card__hero img').length).toBe(3);
     expect(host.querySelectorAll('.product-reference').length).toBe(9);
+    expect(host.querySelectorAll('.outfit-card__approve').length).toBe(3);
     expect(host.textContent).toContain('gpt-image-2.5-sunburst');
     expect(host.textContent).toContain('Merchant A');
+  });
+
+  it('publishes only ids and roles, then keeps the permanent image URL in the card', () => {
+    component.generate();
+    const outfit = component.result!.outfits[0];
+    component.publish(outfit);
+    fixture.detectChanges();
+
+    expect(service.publishOutfitPreview).toHaveBeenCalledWith({
+      title: 'Look 1',
+      description: 'Descrizione 1',
+      previewImageUrl: 'https://storage.test/look-1.png',
+      gender: 'U',
+      season: 'P',
+      style: 'C',
+      products: [
+        { catalogProductId: 'p-1-1', role: 'ruolo-1' },
+        { catalogProductId: 'p-1-2', role: 'ruolo-2' },
+        { catalogProductId: 'p-1-3', role: 'ruolo-3' },
+      ],
+    });
+    expect(component.publishedId(outfit)).toBe('outfit-1');
+    expect(outfit.previewImageUrl).toBe('https://storage.test/outfits/ai/outfit-1.png');
+    expect(fixture.nativeElement.textContent).toContain('Salvato in outfits');
   });
 
   it('keeps loading until the expensive preview request completes', () => {
@@ -120,7 +153,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
     component.generate();
     expect(component.loading).toBeTrue();
 
-    response$.next(previewResult);
+    response$.next(structuredClone(previewResult));
     response$.complete();
     expect(component.loading).toBeFalse();
   });
