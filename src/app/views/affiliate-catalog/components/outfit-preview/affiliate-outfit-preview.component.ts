@@ -25,7 +25,7 @@ interface SelectOption<T extends string> {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './affiliate-outfit-preview.component.html',
-  styleUrl: './affiliate-outfit-preview.component.scss',
+  styleUrls: ['./affiliate-outfit-preview.component.scss', './affiliate-outfit-publish.scss'],
 })
 export class AffiliateOutfitPreviewComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
@@ -82,9 +82,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       next: (programs) => {
         this.programNames = new Map(programs.map((program) => [program.id, program.name]));
       },
-      error: () => {
-        // Program names are presentation-only. Preview generation remains available with program IDs.
-      },
+      error: () => {},
     });
   }
 
