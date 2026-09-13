@@ -73,6 +73,74 @@ export interface OutfitColorOption {
   hex?: string;
 }
 
+export type AiOutfitPreviewGender = 'MAN' | 'WOMAN';
+export type AiOutfitPreviewSeason = 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
+export type AiOutfitPreviewOccasion = 'EVERYDAY' | 'OFFICE' | 'APERITIVO' | 'CEREMONY' | 'EVENING' | 'SPORT' | 'TRAVEL';
+export type AiOutfitPreviewStyle = 'CASUAL' | 'BUSINESS' | 'SPORTY' | 'SMART_CASUAL' | 'ELEGANT' | 'ALTERNATIVE' | 'FESTIVAL' | 'CLASSIC' | 'TRENDY' | 'EVENING';
+
+export interface AiOutfitPreviewRequest {
+  gender: AiOutfitPreviewGender;
+  season: AiOutfitPreviewSeason;
+  occasion: AiOutfitPreviewOccasion;
+  style: AiOutfitPreviewStyle;
+}
+
+export interface AiOutfitTokenUsage {
+  inputTokens: number;
+  cachedInputTokens?: number;
+  outputTokens: number;
+  totalTokens: number;
+}
+
+export interface AiOutfitImageUsage extends AiOutfitTokenUsage {
+  model: string;
+  imagesGenerated: number;
+  providerResponseIds: string[];
+}
+
+export interface AiOutfitPreviewUsage extends AiOutfitTokenUsage {
+  stylist: AiOutfitTokenUsage;
+  imageGeneration: AiOutfitImageUsage;
+}
+
+export interface AiOutfitPreviewProduct {
+  catalogProductId: string;
+  affiliateProgramId: string;
+  role: string;
+  name: string;
+  brand: string;
+  category: string;
+  subcategory: string;
+  normalizedColor: string;
+  images: string[];
+  price: number;
+  currency: string;
+  affiliateUrl: string;
+  productUrl: string;
+  availability: string;
+}
+
+export interface AiOutfitPreviewOutfit {
+  title: string;
+  description: string;
+  gender: 'U' | 'D';
+  season: 'E' | 'P' | 'A' | 'I';
+  style: 'C' | 'B' | 'SP' | 'SC' | 'E' | 'AT' | 'FES' | 'CL' | 'TR' | 'SE';
+  products: AiOutfitPreviewProduct[];
+  previewImageUrl: string;
+}
+
+export interface AiOutfitPreviewResult {
+  generatedAt: number;
+  model: string;
+  providerResponseId: string | null;
+  request: AiOutfitPreviewRequest;
+  candidatesEvaluated: number;
+  imagesEvaluated: number;
+  usage: AiOutfitPreviewUsage;
+  outfits: AiOutfitPreviewOutfit[];
+}
+
 export type AffiliateProgramCreateInput = Pick<
   AffiliateProgram,
   | 'network'
