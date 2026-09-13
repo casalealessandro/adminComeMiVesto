@@ -98,14 +98,16 @@ export interface AiOutfitImageUsage extends AiOutfitTokenUsage {
   providerResponseIds: string[];
 }
 
+/** Nested usage fields were added after the first O.2 rollout; optional keeps deploy ordering safe. */
 export interface AiOutfitPreviewUsage extends AiOutfitTokenUsage {
-  stylist: AiOutfitTokenUsage;
-  imageGeneration: AiOutfitImageUsage;
+  stylist?: AiOutfitTokenUsage;
+  imageGeneration?: AiOutfitImageUsage;
 }
 
 export interface AiOutfitPreviewProduct {
   catalogProductId: string;
-  affiliateProgramId: string;
+  /** Added with program-balanced candidate selection; absent only during a rolling backend deployment. */
+  affiliateProgramId?: string;
   role: string;
   name: string;
   brand: string;
