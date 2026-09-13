@@ -25,6 +25,7 @@ import {
   CatalogTaxonomyRepairResult,
   OutfitColorOption,
 } from '../models/affiliate-catalog-api.models';
+import { AiOutfitPublishRequest, AiOutfitPublishedResult } from '../models/ai-outfit-publish.models';
 
 @Injectable({ providedIn: 'root' })
 export class AffiliateCatalogService {
@@ -45,6 +46,12 @@ export class AffiliateCatalogService {
   generateOutfitPreview(input: AiOutfitPreviewRequest): Observable<AiOutfitPreviewResult> {
     return this.http
       .post<AffiliateApiResponse<AiOutfitPreviewResult>>(`${this.baseUrl}/outfit-generator/preview`, input)
+      .pipe(map((response) => response.data));
+  }
+
+  publishOutfitPreview(input: AiOutfitPublishRequest): Observable<AiOutfitPublishedResult> {
+    return this.http
+      .post<AffiliateApiResponse<AiOutfitPublishedResult>>(`${this.baseUrl}/outfit-generator/publish`, input)
       .pipe(map((response) => response.data));
   }
 

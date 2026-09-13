@@ -12,6 +12,7 @@ import {
   AiOutfitPreviewStyle,
   AiOutfitPreviewGender,
 } from '../../models/affiliate-catalog-api.models';
+import { AiOutfitPublishRequest } from '../../models/ai-outfit-publish.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 interface SelectOption<T extends string> {
@@ -24,7 +25,7 @@ interface SelectOption<T extends string> {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './affiliate-outfit-preview.component.html',
-  styleUrl: './affiliate-outfit-preview.component.scss',
+  styleUrls: ['./affiliate-outfit-preview.component.scss', './affiliate-outfit-publish.scss'],
 })
 export class AffiliateOutfitPreviewComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
@@ -72,24 +73,27 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   loading = false;
   error = '';
   programNames = new Map<string, string>();
+  readonly publishing = new Set<string>();
+  readonly published = new Map<string, string>();
+  readonly publishErrors = new Map<string, string>();
 
   ngOnInit(): void {
     this.affiliateCatalogService.getPrograms().subscribe({
       next: (programs) => {
         this.programNames = new Map(programs.map((program) => [program.id, program.name]));
       },
-      error: () => {
-        // Program names are presentation-only. Preview generation remains available with program IDs.
-      },
+      error: () => {},
     });
   }
 
   generate(): void {
     if (this.loading) return;
-
     this.loading = true;
     this.error = '';
     this.result = null;
+    this.publishing.clear();
+    this.published.clear();
+    this.publishErrors.clear();
     const request: AiOutfitPreviewRequest = { ...this.request };
 
     this.affiliateCatalogService.generateOutfitPreview(request)
@@ -105,6 +109,56 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
           this.error = error?.error?.message || 'Impossibile generare la preview AI. Riprova tra poco.';
         },
       });
+  }
+
+  publish(outfit: AiOutfitPreviewOutfit): void {
+    const key = this.outfitKey(outfit);
+    if (this.publishing.has(key) || this.published.has(key)) return;
+
+    const input: AiOutfitPublishRequest = {
+      title: outfit.title,
+      description: outfit.description,
+      previewImageUrl: outfit.previewImageUrl,
+      gender: outfit.gender,
+      season: outfit.season,
+      style: outfit.style,
+      products: outfit.products.map((product) => ({ catalogProductId: product.catalogProductId, role: product.role })),
+    };
+
+    this.publishing.add(key);
+    this.publishErrors.delete(key);
+    this.affiliateCatalogService.publishOutfitPreview(input)
+      .pipe(finalize(() => this.publishing.delete(key)))
+      .subscribe({
+        next: (published) => {
+          this.published.set(key, published.id);
+          outfit.previewImageUrl = published.imageUrl;
+        },
+        error: (error) => {
+          const status = Number(error?.status ?? 0);
+          if (status === 409) {
+            this.publishErrors.set(key, 'Il catalogo o la preview sono cambiati: genera nuovamente questo batch prima di salvarlo.');
+            return;
+          }
+          this.publishErrors.set(key, error?.error?.message || 'Impossibile salvare questo outfit.');
+        },
+      });
+  }
+
+  outfitKey(outfit: AiOutfitPreviewOutfit): string {
+    return `${outfit.title}|${outfit.products.map((product) => product.catalogProductId).join('|')}`;
+  }
+
+  isPublishing(outfit: AiOutfitPreviewOutfit): boolean {
+    return this.publishing.has(this.outfitKey(outfit));
+  }
+
+  publishedId(outfit: AiOutfitPreviewOutfit): string | undefined {
+    return this.published.get(this.outfitKey(outfit));
+  }
+
+  publishError(outfit: AiOutfitPreviewOutfit): string {
+    return this.publishErrors.get(this.outfitKey(outfit)) || '';
   }
 
   programLabel(programId: string | undefined): string {
