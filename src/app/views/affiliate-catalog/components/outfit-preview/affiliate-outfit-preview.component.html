@@ -65,6 +65,11 @@
         <strong>{{ formatTokens(preview.usage.totalTokens) }}</strong>
         <small>{{ preview.usage.imageGeneration ? 'Stylist + immagini' : 'Consumi immagini non disponibili nel backend precedente' }}</small>
       </div>
+      <div class="usage-card usage-card--primary" *ngIf="costEstimate(preview) as cost">
+        <span>Costo stimato batch</span>
+        <strong>≈ {{ formatEuro(cost.totalEur) }}</strong>
+        <small>≈ {{ formatEuro(cost.totalEur / (preview.outfits.length || 1)) }} per look</small>
+      </div>
       <div class="usage-card">
         <span>Stylist · {{ preview.model }}</span>
         <strong>{{ formatTokens(preview.usage.stylist?.totalTokens ?? preview.usage.totalTokens) }}</strong>
@@ -89,6 +94,13 @@
         <small>dato restituito dal provider</small>
       </div>
     </section>
+
+    <div class="ai-preview__meta" *ngIf="costEstimate(preview) as cost">
+      <span>Stima: stylist {{ formatEuro(cost.stylistUsd * cost.usdToEurRate) }} · immagini {{ formatEuro(cost.imageGenerationUsd * cost.usdToEurRate) }}</span>
+      <span>Totale USD {{ formatUsd(cost.totalUsd) }} · cambio 1 USD = {{ cost.usdToEurRate }} EUR</span>
+      <span *ngIf="cost.conservativeImageInputPricing">Input immagini valorizzato alla tariffa più alta per non sottostimare il costo.</span>
+      <span>Prezzi e cambio di riferimento: {{ cost.pricingAsOf | date:'dd/MM/yyyy' }}</span>
+    </div>
 
     <div class="ai-preview__meta">
       <span>Generati {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
