@@ -107,8 +107,9 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       });
   }
 
-  programLabel(programId: string): string {
-    return this.programNames.get(programId) || programId || '—';
+  programLabel(programId: string | undefined): string {
+    if (!programId) return 'Non disponibile';
+    return this.programNames.get(programId) || programId;
   }
 
   productImage(product: AiOutfitPreviewProduct): string {
