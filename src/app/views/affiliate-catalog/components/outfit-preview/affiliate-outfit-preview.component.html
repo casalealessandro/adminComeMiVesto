@@ -61,19 +61,22 @@
   <ng-container *ngIf="result as preview">
     <section class="usage-panel" aria-label="Consumi generazione">
       <div class="usage-card usage-card--primary">
-        <span>Token totali</span>
+        <span>{{ preview.usage.imageGeneration ? 'Token totali' : 'Token stylist' }}</span>
         <strong>{{ formatTokens(preview.usage.totalTokens) }}</strong>
-        <small>Stylist + immagini</small>
+        <small>{{ preview.usage.imageGeneration ? 'Stylist + immagini' : 'Consumi immagini non disponibili nel backend precedente' }}</small>
       </div>
       <div class="usage-card">
         <span>Stylist · {{ preview.model }}</span>
-        <strong>{{ formatTokens(preview.usage.stylist.totalTokens) }}</strong>
-        <small>input {{ formatTokens(preview.usage.stylist.inputTokens) }} · output {{ formatTokens(preview.usage.stylist.outputTokens) }}</small>
+        <strong>{{ formatTokens(preview.usage.stylist?.totalTokens ?? preview.usage.totalTokens) }}</strong>
+        <small>
+          input {{ formatTokens(preview.usage.stylist?.inputTokens ?? preview.usage.inputTokens) }} ·
+          output {{ formatTokens(preview.usage.stylist?.outputTokens ?? preview.usage.outputTokens) }}
+        </small>
       </div>
-      <div class="usage-card">
-        <span>Immagini · {{ preview.usage.imageGeneration.model }}</span>
-        <strong>{{ formatTokens(preview.usage.imageGeneration.totalTokens) }}</strong>
-        <small>{{ preview.usage.imageGeneration.imagesGenerated }} immagini generate</small>
+      <div class="usage-card" *ngIf="preview.usage.imageGeneration as imageUsage">
+        <span>Immagini · {{ imageUsage.model }}</span>
+        <strong>{{ formatTokens(imageUsage.totalTokens) }}</strong>
+        <small>{{ imageUsage.imagesGenerated }} immagini generate</small>
       </div>
       <div class="usage-card">
         <span>Candidati</span>
@@ -136,7 +139,7 @@
                   <span>{{ product.category }}<ng-container *ngIf="product.subcategory"> · {{ product.subcategory }}</ng-container></span>
                   <span>{{ product.price | currency:product.currency:'symbol':'1.0-2' }}</span>
                 </div>
-                <div class="product-reference__source" [title]="product.affiliateProgramId">
+                <div class="product-reference__source" [title]="product.affiliateProgramId || ''">
                   Programma: {{ programLabel(product.affiliateProgramId) }}
                 </div>
               </div>
