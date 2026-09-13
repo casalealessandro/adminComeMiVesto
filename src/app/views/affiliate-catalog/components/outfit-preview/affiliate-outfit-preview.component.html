@@ -63,12 +63,12 @@
       <div class="usage-card usage-card--primary">
         <span>{{ preview.usage.imageGeneration ? 'Token totali' : 'Token stylist' }}</span>
         <strong>{{ formatTokens(preview.usage.totalTokens) }}</strong>
-        <small>{{ preview.usage.imageGeneration ? 'Stylist + immagini' : 'Consumi immagini non disponibili nel backend precedente' }}</small>
+        <small>{{ preview.usage.imageGeneration ? 'Stylist + chiamate immagini' : 'Consumi immagini non disponibili nel backend precedente' }}</small>
       </div>
       <div class="usage-card usage-card--primary" *ngIf="costEstimate(preview) as cost">
-        <span>Costo stimato batch</span>
-        <strong>≈ {{ formatEuro(cost.totalEur) }}</strong>
-        <small>≈ {{ formatEuro(cost.totalEur / (preview.outfits.length || 1)) }} per look</small>
+        <span>Costo token misurabile</span>
+        <strong>≈ {{ formatEuro(cost.measurableTotalEur) }}</strong>
+        <small>≈ {{ formatEuro(cost.measurableTotalEur / (preview.outfits.length || 1)) }} per look · escluso billing Sunburst</small>
       </div>
       <div class="usage-card">
         <span>Stylist · {{ preview.model }}</span>
@@ -79,7 +79,7 @@
         </small>
       </div>
       <div class="usage-card" *ngIf="preview.usage.imageGeneration as imageUsage">
-        <span>Immagini · {{ imageUsage.model }}</span>
+        <span>Chiamate immagini · {{ imageUsage.model }}</span>
         <strong>{{ formatTokens(imageUsage.totalTokens) }}</strong>
         <small>{{ imageUsage.imagesGenerated }} immagini generate</small>
       </div>
@@ -96,9 +96,9 @@
     </section>
 
     <div class="ai-preview__meta" *ngIf="costEstimate(preview) as cost">
-      <span>Stima: stylist {{ formatEuro(cost.stylistUsd * cost.usdToEurRate) }} · immagini {{ formatEuro(cost.imageGenerationUsd * cost.usdToEurRate) }}</span>
-      <span>Totale USD {{ formatUsd(cost.totalUsd) }} · cambio 1 USD = {{ cost.usdToEurRate }} EUR</span>
-      <span *ngIf="cost.conservativeImageInputPricing">Input immagini valorizzato alla tariffa più alta per non sottostimare il costo.</span>
+      <span>Terra stylist {{ formatEuro(cost.stylistUsd * cost.usdToEurRate) }} · orchestrazione immagini {{ formatEuro(cost.imageOrchestrationUsd * cost.usdToEurRate) }}</span>
+      <span>Totale token misurabile {{ formatUsd(cost.measurableTotalUsd) }} · cambio 1 USD = {{ cost.usdToEurRate }} EUR</span>
+      <span>Il costo del modello immagini Sunburst non è incluso: il payload Responses attuale non espone un breakdown di billing sufficiente per calcolarlo con certezza.</span>
       <span>Prezzi e cambio di riferimento: {{ cost.pricingAsOf | date:'dd/MM/yyyy' }}</span>
     </div>
 
