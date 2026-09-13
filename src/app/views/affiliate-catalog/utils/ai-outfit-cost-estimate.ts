@@ -11,24 +11,14 @@ const TERRA_USD_PER_MILLION = {
   output: 12,
 } as const;
 
-/**
- * Sunburst input pricing differs between text and image tokens. The preview API only exposes
- * aggregate input tokens, so use the higher image-input rate to avoid understating the estimate.
- */
-const SUNBURST_CONSERVATIVE_USD_PER_MILLION = {
-  input: 8,
-  cachedInput: 2,
-  output: 30,
-} as const;
-
 export interface AiOutfitCostEstimate {
   stylistUsd: number;
-  imageGenerationUsd: number;
-  totalUsd: number;
-  totalEur: number;
+  imageOrchestrationUsd: number;
+  measurableTotalUsd: number;
+  measurableTotalEur: number;
   usdToEurRate: number;
   pricingAsOf: string;
-  conservativeImageInputPricing: boolean;
+  includesImageModelCost: false;
 }
 
 const usageCostUsd = (
@@ -46,28 +36,30 @@ const usageCostUsd = (
   ) / TOKENS_PER_MILLION;
 };
 
+/**
+ * The preview backend currently exposes token usage from the GPT-5.6 Terra Responses calls.
+ * For the three hero images those counters describe the outer Terra orchestration calls; the
+ * Responses image-generation tool does not expose enough Sunburst billing detail in our payload
+ * to reconstruct its exact cost. Therefore this estimate deliberately prices only measurable
+ * Terra tokens and never presents the result as the complete OpenAI invoice cost.
+ */
 export const estimateAiOutfitCost = (preview: AiOutfitPreviewResult): AiOutfitCostEstimate | null => {
-  const stylistUsage = preview.usage.stylist ?? preview.usage;
   if (preview.model !== 'gpt-5.6-terra') return null;
 
+  const stylistUsage = preview.usage.stylist ?? preview.usage;
   const stylistUsd = usageCostUsd(stylistUsage, TERRA_USD_PER_MILLION);
-  const imageUsage = preview.usage.imageGeneration;
-  let imageGenerationUsd = 0;
+  const imageOrchestrationUsd = preview.usage.imageGeneration
+    ? usageCostUsd(preview.usage.imageGeneration, TERRA_USD_PER_MILLION)
+    : 0;
+  const measurableTotalUsd = stylistUsd + imageOrchestrationUsd;
 
-  if (imageUsage) {
-    const models = imageUsage.model.split(',').map((model) => model.trim()).filter(Boolean);
-    if (!models.length || models.some((model) => model !== 'gpt-image-2.5-sunburst')) return null;
-    imageGenerationUsd = usageCostUsd(imageUsage, SUNBURST_CONSERVATIVE_USD_PER_MILLION);
-  }
-
-  const totalUsd = stylistUsd + imageGenerationUsd;
   return {
     stylistUsd,
-    imageGenerationUsd,
-    totalUsd,
-    totalEur: totalUsd * AI_OUTFIT_USD_TO_EUR_RATE,
+    imageOrchestrationUsd,
+    measurableTotalUsd,
+    measurableTotalEur: measurableTotalUsd * AI_OUTFIT_USD_TO_EUR_RATE,
     usdToEurRate: AI_OUTFIT_USD_TO_EUR_RATE,
     pricingAsOf: AI_OUTFIT_PRICING_AS_OF,
-    conservativeImageInputPricing: Boolean(imageUsage),
+    includesImageModelCost: false,
   };
 };
