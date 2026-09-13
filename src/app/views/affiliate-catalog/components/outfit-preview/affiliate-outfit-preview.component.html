@@ -4,7 +4,7 @@
       <span class="ai-preview__eyebrow">AI Outfit Generator · solo admin</span>
       <h2 id="ai-preview-title">Preview outfit AI</h2>
       <p>
-        Genera tre look dal catalogo reale, confronta l'immagine editoriale con le immagini originali
+        Genera da 3 a 6 look dal catalogo reale, confronta l'immagine editoriale con le immagini originali
         e salva solo gli outfit che approvi.
       </p>
     </div>
@@ -39,16 +39,32 @@
       </select>
     </label>
 
+    <label>
+      <span>Numero outfit</span>
+      <input
+        type="number"
+        name="outfitCount"
+        [(ngModel)]="outfitCount"
+        [min]="minOutfitCount"
+        [max]="maxOutfitCount"
+        step="1"
+        required
+        inputmode="numeric"
+        [disabled]="loading"
+        aria-describedby="outfit-count-help">
+      <small id="outfit-count-help" class="ai-preview__count-help">Da {{ minOutfitCount }} a {{ maxOutfitCount }} · default 3</small>
+    </label>
+
     <button type="submit" class="ai-preview__generate" [disabled]="loading">
       <span class="mdi" [class.mdi-loading]="loading" [class.mdi-spin]="loading" [class.mdi-auto-fix]="!loading" aria-hidden="true"></span>
-      {{ loading ? 'Generazione in corso…' : 'Genera 3 outfit' }}
+      {{ loading ? 'Generazione in corso…' : 'Genera ' + outfitCount + ' outfit' }}
     </button>
   </form>
 
   <div class="ai-preview__loading" *ngIf="loading" role="status" aria-live="polite">
     <span class="mdi mdi-loading mdi-spin" aria-hidden="true"></span>
     <div>
-      <strong>Sto creando i look e le tre immagini editoriali.</strong>
+      <strong>Sto creando {{ request.count || outfitCount }} look e le relative immagini editoriali.</strong>
       <span>La generazione delle immagini può richiedere più tempo della sola selezione dei prodotti.</span>
     </div>
   </div>
@@ -104,7 +120,7 @@
 
     <div class="ai-preview__meta">
       <span>Generati {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
-      <span>{{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style }}</span>
+      <span>{{ preview.outfits.length }} outfit · {{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style }}</span>
     </div>
 
     <section class="outfit-grid" aria-label="Outfit generati">
@@ -188,6 +204,6 @@
   <div class="ai-preview__empty" *ngIf="!loading && !error && !result">
     <span class="mdi mdi-account-tie-hat-outline" aria-hidden="true"></span>
     <strong>Nessuna preview generata</strong>
-    <span>Usa i filtri qui sopra per creare il prossimo batch di tre outfit.</span>
+    <span>Usa i filtri qui sopra per creare il prossimo batch di outfit.</span>
   </div>
 </section>

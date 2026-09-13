@@ -83,6 +83,8 @@ export interface AiOutfitPreviewRequest {
   season: AiOutfitPreviewSeason;
   occasion: AiOutfitPreviewOccasion;
   style: AiOutfitPreviewStyle;
+  /** Optional for rollout compatibility; Admin sends 3-6 and backend defaults to 3 when omitted. */
+  count?: number;
 }
 
 export interface AiOutfitTokenUsage {
