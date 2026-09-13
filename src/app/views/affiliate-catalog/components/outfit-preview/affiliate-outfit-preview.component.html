@@ -105,7 +105,7 @@
               <h3>{{ outfit.title }}</h3>
               <p>{{ outfit.description }}</p>
             </div>
-            <strong class="outfit-card__total">{{ outfitTotal(outfit) | currency:(outfit.products[0]?.currency || 'EUR'):'symbol':'1.0-2':'it-IT' }}</strong>
+            <strong class="outfit-card__total">{{ outfitTotal(outfit) | currency:(outfit.products[0]?.currency || 'EUR'):'symbol':'1.0-2' }}</strong>
           </div>
 
           <div class="outfit-card__badges">
@@ -134,7 +134,7 @@
                 <span class="product-reference__name">{{ product.name }}</span>
                 <div class="product-reference__details">
                   <span>{{ product.category }}<ng-container *ngIf="product.subcategory"> · {{ product.subcategory }}</ng-container></span>
-                  <span>{{ product.price | currency:product.currency:'symbol':'1.0-2':'it-IT' }}</span>
+                  <span>{{ product.price | currency:product.currency:'symbol':'1.0-2' }}</span>
                 </div>
                 <div class="product-reference__source" [title]="product.affiliateProgramId">
                   Programma: {{ programLabel(product.affiliateProgramId) }}
