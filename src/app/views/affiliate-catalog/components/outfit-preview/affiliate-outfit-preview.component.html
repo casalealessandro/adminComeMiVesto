@@ -1,0 +1,162 @@
+<section class="ai-preview" aria-labelledby="ai-preview-title">
+  <header class="ai-preview__header">
+    <div>
+      <span class="ai-preview__eyebrow">AI Outfit Generator · solo admin</span>
+      <h2 id="ai-preview-title">Preview outfit AI</h2>
+      <p>
+        Genera tre look dal catalogo reale e confronta l'immagine editoriale con le immagini originali
+        dei prodotti scelti prima di procedere alla persistenza degli outfit.
+      </p>
+    </div>
+  </header>
+
+  <form class="ai-preview__controls" (ngSubmit)="generate()">
+    <label>
+      <span>Genere</span>
+      <select name="gender" [(ngModel)]="request.gender" [disabled]="loading">
+        <option *ngFor="let option of genderOptions" [ngValue]="option.value">{{ option.label }}</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Stagione</span>
+      <select name="season" [(ngModel)]="request.season" [disabled]="loading">
+        <option *ngFor="let option of seasonOptions" [ngValue]="option.value">{{ option.label }}</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Occasione</span>
+      <select name="occasion" [(ngModel)]="request.occasion" [disabled]="loading">
+        <option *ngFor="let option of occasionOptions" [ngValue]="option.value">{{ option.label }}</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Stile</span>
+      <select name="style" [(ngModel)]="request.style" [disabled]="loading">
+        <option *ngFor="let option of styleOptions" [ngValue]="option.value">{{ option.label }}</option>
+      </select>
+    </label>
+
+    <button type="submit" class="ai-preview__generate" [disabled]="loading">
+      <span class="mdi" [class.mdi-loading]="loading" [class.mdi-spin]="loading" [class.mdi-auto-fix]="!loading" aria-hidden="true"></span>
+      {{ loading ? 'Generazione in corso…' : 'Genera 3 outfit' }}
+    </button>
+  </form>
+
+  <div class="ai-preview__loading" *ngIf="loading" role="status" aria-live="polite">
+    <span class="mdi mdi-loading mdi-spin" aria-hidden="true"></span>
+    <div>
+      <strong>Sto creando i look e le tre immagini editoriali.</strong>
+      <span>La generazione delle immagini può richiedere più tempo della sola selezione dei prodotti.</span>
+    </div>
+  </div>
+
+  <div class="ai-preview__error" *ngIf="error" role="alert">
+    <span class="mdi mdi-alert-circle-outline" aria-hidden="true"></span>
+    {{ error }}
+  </div>
+
+  <ng-container *ngIf="result as preview">
+    <section class="usage-panel" aria-label="Consumi generazione">
+      <div class="usage-card usage-card--primary">
+        <span>{{ preview.usage.imageGeneration ? 'Token totali' : 'Token stylist' }}</span>
+        <strong>{{ formatTokens(preview.usage.totalTokens) }}</strong>
+        <small>{{ preview.usage.imageGeneration ? 'Stylist + immagini' : 'Consumi immagini non disponibili nel backend precedente' }}</small>
+      </div>
+      <div class="usage-card">
+        <span>Stylist · {{ preview.model }}</span>
+        <strong>{{ formatTokens(preview.usage.stylist?.totalTokens ?? preview.usage.totalTokens) }}</strong>
+        <small>
+          input {{ formatTokens(preview.usage.stylist?.inputTokens ?? preview.usage.inputTokens) }} ·
+          output {{ formatTokens(preview.usage.stylist?.outputTokens ?? preview.usage.outputTokens) }}
+        </small>
+      </div>
+      <div class="usage-card" *ngIf="preview.usage.imageGeneration as imageUsage">
+        <span>Immagini · {{ imageUsage.model }}</span>
+        <strong>{{ formatTokens(imageUsage.totalTokens) }}</strong>
+        <small>{{ imageUsage.imagesGenerated }} immagini generate</small>
+      </div>
+      <div class="usage-card">
+        <span>Candidati</span>
+        <strong>{{ preview.candidatesEvaluated }}</strong>
+        <small>{{ preview.imagesEvaluated }} immagini valutate</small>
+      </div>
+      <div class="usage-card" *ngIf="(preview.usage.cachedInputTokens || 0) > 0">
+        <span>Input in cache</span>
+        <strong>{{ formatTokens(preview.usage.cachedInputTokens) }}</strong>
+        <small>dato restituito dal provider</small>
+      </div>
+    </section>
+
+    <div class="ai-preview__meta">
+      <span>Generati {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+      <span>{{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style }}</span>
+    </div>
+
+    <section class="outfit-grid" aria-label="Outfit generati">
+      <article class="outfit-card" *ngFor="let outfit of preview.outfits; let outfitIndex = index; trackBy: trackOutfit">
+        <div class="outfit-card__hero">
+          <img [src]="outfit.previewImageUrl" [alt]="'Preview generata: ' + outfit.title" loading="lazy">
+          <span class="outfit-card__index">Look {{ outfitIndex + 1 }}</span>
+        </div>
+
+        <div class="outfit-card__body">
+          <div class="outfit-card__heading">
+            <div>
+              <h3>{{ outfit.title }}</h3>
+              <p>{{ outfit.description }}</p>
+            </div>
+            <strong class="outfit-card__total">{{ outfitTotal(outfit) | currency:(outfit.products[0].currency || 'EUR'):'symbol':'1.0-2' }}</strong>
+          </div>
+
+          <div class="outfit-card__badges">
+            <span>{{ outfit.gender }}</span>
+            <span>{{ outfit.season }}</span>
+            <span>{{ outfit.style }}</span>
+          </div>
+
+          <div class="reference-title">
+            <span class="mdi mdi-image-multiple-outline" aria-hidden="true"></span>
+            Reference reali usate per il look
+          </div>
+
+          <div class="product-list">
+            <article class="product-reference" *ngFor="let product of outfit.products; trackBy: trackProduct">
+              <div class="product-reference__image">
+                <img *ngIf="productImage(product); else missingImage" [src]="productImage(product)" [alt]="product.name" loading="lazy">
+                <ng-template #missingImage>
+                  <span class="mdi mdi-image-off-outline" aria-hidden="true"></span>
+                </ng-template>
+              </div>
+
+              <div class="product-reference__content">
+                <div class="product-reference__role">{{ product.role }}</div>
+                <strong>{{ product.brand }}</strong>
+                <span class="product-reference__name">{{ product.name }}</span>
+                <div class="product-reference__details">
+                  <span>{{ product.category }}<ng-container *ngIf="product.subcategory"> · {{ product.subcategory }}</ng-container></span>
+                  <span>{{ product.price | currency:product.currency:'symbol':'1.0-2' }}</span>
+                </div>
+                <div class="product-reference__source" [title]="product.affiliateProgramId || ''">
+                  Programma: {{ programLabel(product.affiliateProgramId) }}
+                </div>
+              </div>
+
+              <a class="product-reference__link" [href]="product.affiliateUrl || product.productUrl" target="_blank" rel="noopener noreferrer" aria-label="Apri prodotto affiliato">
+                <span class="mdi mdi-open-in-new" aria-hidden="true"></span>
+              </a>
+            </article>
+          </div>
+        </div>
+      </article>
+    </section>
+  </ng-container>
+
+  <div class="ai-preview__empty" *ngIf="!loading && !error && !result">
+    <span class="mdi mdi-account-tie-hat-outline" aria-hidden="true"></span>
+    <strong>Nessuna preview generata</strong>
+    <span>Usa i filtri qui sopra per creare il prossimo batch di tre outfit.</span>
+  </div>
+</section>

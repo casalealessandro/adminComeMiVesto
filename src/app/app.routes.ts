@@ -19,6 +19,7 @@ import { AffiliateProductsComponent } from './views/affiliate-catalog/components
 import { AffiliateProductDetailComponent } from './views/affiliate-catalog/components/products/affiliate-product-detail.component';
 import { AffiliateSyncRunsComponent } from './views/affiliate-catalog/components/sync-runs/affiliate-sync-runs.component';
 import { AffiliateSyncRunDetailComponent } from './views/affiliate-catalog/components/sync-runs/affiliate-sync-run-detail.component';
+import { AffiliateOutfitPreviewComponent } from './views/affiliate-catalog/components/outfit-preview/affiliate-outfit-preview.component';
 
 
 export const routes:Routes = [
@@ -38,6 +39,7 @@ export const routes:Routes = [
         { path: 'programs', component: AffiliateProgramsComponent },
         { path: 'feeds', component: AffiliateFeedsComponent },
         { path: 'audit', component: AffiliateCatalogAuditComponent },
+        { path: 'outfit-preview', component: AffiliateOutfitPreviewComponent },
         { path: 'products/:id', component: AffiliateProductDetailComponent },
         { path: 'products', component: AffiliateProductsComponent },
         { path: 'sync-runs/:id', component: AffiliateSyncRunDetailComponent },

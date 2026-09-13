@@ -20,6 +20,8 @@ import {
   AffiliateProductCursorRequest,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
+  AiOutfitPreviewRequest,
+  AiOutfitPreviewResult,
   CatalogTaxonomyRepairResult,
   OutfitColorOption,
 } from '../models/affiliate-catalog-api.models';
@@ -38,6 +40,12 @@ export class AffiliateCatalogService {
 
   getOutfitColors(): Observable<OutfitColorOption[]> {
     return this.http.get<OutfitColorOption[]>(`${this.apiUrl}/gen/outfitColors`);
+  }
+
+  generateOutfitPreview(input: AiOutfitPreviewRequest): Observable<AiOutfitPreviewResult> {
+    return this.http
+      .post<AffiliateApiResponse<AiOutfitPreviewResult>>(`${this.baseUrl}/outfit-generator/preview`, input)
+      .pipe(map((response) => response.data));
   }
 
   getPrograms(): Observable<AffiliateProgram[]> {
