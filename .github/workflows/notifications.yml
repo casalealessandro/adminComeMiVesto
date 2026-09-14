@@ -9,6 +9,7 @@ on:
       - 'src/app/app-popup-components.ts'
       - 'package.json'
       - 'package-lock.json'
+      - 'tsconfig.notifications.spec.json'
       - '.github/workflows/notifications.yml'
 
 permissions:
