@@ -23,6 +23,7 @@ export class OverlayComponent {
 
   @Output() closed = new EventEmitter<void>();
   private overlaySubscription: Subscription = new Subscription();
+  private readonly viewportMargin = 10;
 
   constructor(private overlayService: OverlayService) {}
 
@@ -61,8 +62,28 @@ export class OverlayComponent {
     this.isVisible.set(true);
 
     setTimeout(() => {
+      this.keepInsideHorizontalViewport();
       this.overlayContentRef?.nativeElement.classList.add('active');
     }, 10);
+  }
+
+  private keepInsideHorizontalViewport(): void {
+    const overlayElement = this.overlayContentRef?.nativeElement as HTMLElement | undefined;
+    if (!overlayElement) {
+      return;
+    }
+
+    const overlayWidth = overlayElement.getBoundingClientRect().width;
+    const viewportLeft = window.scrollX;
+    const viewportRight = viewportLeft + window.innerWidth;
+    const currentPosition = this.position();
+    const minLeft = viewportLeft + this.viewportMargin;
+    const maxLeft = viewportRight - overlayWidth - this.viewportMargin;
+    const correctedLeft = Math.max(minLeft, Math.min(currentPosition.left, maxLeft));
+
+    if (correctedLeft !== currentPosition.left) {
+      this.position.set({ ...currentPosition, left: correctedLeft });
+    }
   }
 
   ngOnDestroy() {
