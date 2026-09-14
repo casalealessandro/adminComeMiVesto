@@ -1,0 +1,110 @@
+<section class="notifications" aria-labelledby="notifications-title" [attr.aria-busy]="loading">
+  <header class="notifications__header">
+    <div>
+      <p class="notifications__eyebrow">Comunicazione</p>
+      <h1 id="notifications-title">Notifiche</h1>
+      <p class="notifications__description">
+        Gestisci i messaggi che useremo per le notifiche push dell'app ComeMiVesto.
+      </p>
+    </div>
+
+    <div class="notifications__actions">
+      <button type="button" class="btn btn-primary" (click)="openCreate()">
+        <span class="mdi mdi-plus" aria-hidden="true"></span>
+        Nuova notifica
+      </button>
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
+        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert alert-danger notifications__error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  </div>
+
+  <label *ngIf="notifications.length" class="notifications__search">
+    <span>Cerca notifiche</span>
+    <input
+      type="search"
+      class="form-control"
+      [(ngModel)]="search"
+      (ngModelChange)="applySearch()"
+      placeholder="Titolo, testo, tipo o deep link">
+  </label>
+
+  <p *ngIf="loading" class="notifications__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento notifiche…
+  </p>
+
+  <div *ngIf="!loading && !error && !filteredNotifications.length" class="notifications__empty">
+    <span class="mdi mdi-bell-outline" aria-hidden="true"></span>
+    <strong>Nessuna notifica trovata</strong>
+    <span>{{ search ? 'Modifica i criteri di ricerca.' : 'Crea il primo messaggio da utilizzare nelle notifiche push.' }}</span>
+  </div>
+
+  <div class="notifications__desktop" *ngIf="!loading && gridRows.length">
+    <app-data-grid
+      [idTable]="'notifications-grid'"
+      [colonne]="columns"
+      [dataSource]="gridRows"
+      [remoteOperation]="false"
+      [isEditable]="false"
+      [isEditableNewRow]="false"
+      [isEditableEditRow]="false"
+      [isEditableDeleteRow]="false"
+      [showToolbarTop]="false"
+      [showToolbarBottom]="false"
+      [isSearchable]="false"
+      [tableHeight]="520"
+      (emittendButtonCellClick)="gridAction($event)">
+    </app-data-grid>
+  </div>
+
+  <div class="notifications__mobile" *ngIf="!loading && filteredNotifications.length">
+    <article class="notification-card" *ngFor="let notification of filteredNotifications">
+      <div class="notification-card__header">
+        <div>
+          <span class="notification-card__type">
+            {{ notification.type === 'DAILY' ? 'Giornaliera' : 'Manuale' }}
+          </span>
+          <h2>{{ notification.title }}</h2>
+        </div>
+        <span class="badge" [class.text-bg-success]="notification.enabled" [class.text-bg-secondary]="!notification.enabled">
+          {{ notification.enabled ? 'Attiva' : 'Disattivata' }}
+        </span>
+      </div>
+
+      <p class="notification-card__body">{{ notification.body }}</p>
+
+      <dl>
+        <div>
+          <dt>Deep link</dt>
+          <dd>{{ notification.deepLink || 'Nessuno' }}</dd>
+        </div>
+        <div>
+          <dt>Aggiornata</dt>
+          <dd>{{ notification.updatedAt | date:'short' }}</dd>
+        </div>
+      </dl>
+
+      <div class="notification-card__actions">
+        <button type="button" class="btn btn-outline-primary" (click)="openEdit(notification)">
+          <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+          Modifica
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="changingId === notification.id"
+          (click)="toggleEnabled(notification)">
+          <span class="mdi mdi-power" aria-hidden="true"></span>
+          {{ notification.enabled ? 'Disattiva' : 'Attiva' }}
+        </button>
+      </div>
+    </article>
+  </div>
+</section>
