@@ -1,6 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { FormService } from '../../../../services/form.service';
+import { OutfitsService } from '../../../../services/outfit.service';
+import { TaxonomyService } from '../../../../services/taxonomy.service';
 import { AffiliateFeed, AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
@@ -63,11 +66,21 @@ describe('Affiliate product detail', () => {
   };
 
   function configure(service: jasmine.SpyObj<AffiliateCatalogService>) {
+    const outfitService = jasmine.createSpyObj<OutfitsService>('OutfitsService', ['getOutFitCategories']);
+    outfitService.getOutFitCategories.and.returnValue(of([]));
+    const taxonomyService = jasmine.createSpyObj<TaxonomyService>('TaxonomyService', ['getColors']);
+    taxonomyService.getColors.and.returnValue(of([]));
+    const formService = jasmine.createSpyObj<FormService>('FormService', ['getFormFields', 'getData']);
+    formService.getFormFields.and.returnValue(of([]));
+
     return TestBed.configureTestingModule({
       imports: [AffiliateProductDetailComponent],
       providers: [
         provideRouter([]),
         { provide: AffiliateCatalogService, useValue: service },
+        { provide: OutfitsService, useValue: outfitService },
+        { provide: TaxonomyService, useValue: taxonomyService },
+        { provide: FormService, useValue: formService },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: convertToParamMap({ id: product.id }) } },
