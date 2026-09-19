@@ -205,6 +205,27 @@
   }
 }
 
+@media (max-width: 767.98px) {
+  .affiliate-detail__curation-header {
+    align-items: stretch !important;
+    flex-direction: column;
+  }
+
+  .affiliate-detail__curation-badges {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .affiliate-detail__curation-actions {
+    justify-content: stretch !important;
+  }
+
+  .affiliate-detail__curation-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
 @media (max-width: 420px) {
   .affiliate-detail__error {
     align-items: stretch;
