@@ -1,6 +1,7 @@
 import {
   AffiliateFeed,
   AffiliateProgram,
+  CatalogProduct,
 } from './affiliate-catalog.models';
 
 export interface AffiliateApiResponse<T> {
@@ -21,6 +22,11 @@ export interface AffiliateProductCursorRequest extends AffiliateCursorRequest {
   category?: string;
   affiliateProgramId?: string;
 }
+
+export type AffiliateProductUpdateInput = Partial<Pick<
+  CatalogProduct,
+  'enabledForApp' | 'category' | 'subcategory' | 'genderTargets' | 'normalizedColor'
+>>;
 
 export interface AffiliateCursorPage<T> {
   data: T[];
