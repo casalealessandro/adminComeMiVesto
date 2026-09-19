@@ -18,6 +18,7 @@ import {
   AffiliateFeedMappingResponse,
   AffiliateFeedUpdateInput,
   AffiliateProductCursorRequest,
+  AffiliateProductUpdateInput,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
   AiOutfitPreviewRequest,
@@ -127,6 +128,12 @@ export class AffiliateCatalogService {
   getProduct(id: string): Observable<CatalogProduct> {
     return this.http
       .get<AffiliateApiResponse<CatalogProduct>>(`${this.baseUrl}/products/${id}`)
+      .pipe(map((response) => response.data));
+  }
+
+  updateProduct(id: string, input: AffiliateProductUpdateInput): Observable<CatalogProduct> {
+    return this.http
+      .put<AffiliateApiResponse<CatalogProduct>>(`${this.baseUrl}/products/${id}`, input)
       .pipe(map((response) => response.data));
   }
 

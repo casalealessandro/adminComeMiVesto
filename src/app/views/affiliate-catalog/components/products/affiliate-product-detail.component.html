@@ -50,6 +50,122 @@
       </div>
     </div>
 
+    <section class="affiliate-detail__card mb-3">
+      <div class="affiliate-detail__curation-header d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <h3 class="mb-1">Gestione ComeMiVesto</h3>
+          <p class="mb-0 text-muted">
+            Decidi se il prodotto può essere usato nell'app e associa la tassonomia ComeMiVesto.
+          </p>
+        </div>
+        <div class="affiliate-detail__curation-badges d-flex flex-wrap gap-2">
+          <span class="badge" [class.text-bg-success]="item.enabledForApp !== false" [class.text-bg-secondary]="item.enabledForApp === false">
+            {{ item.enabledForApp !== false ? 'Attivo nell’app' : 'Disattivato nell’app' }}
+          </span>
+          <span class="badge" [class.text-bg-primary]="item.classificationLocked" [class.text-bg-light]="!item.classificationLocked">
+            {{ item.classificationLocked ? 'Classificazione manuale' : 'Classificazione feed' }}
+          </span>
+          <span class="badge" [class.text-bg-success]="mappingComplete()" [class.text-bg-warning]="!mappingComplete()">
+            {{ mappingComplete() ? 'Mapping completo' : 'Mapping da completare' }}
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="curationError" class="alert alert-danger py-2" role="alert">
+        {{ curationError }}
+      </div>
+
+      <div class="form-check form-switch mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="enabledForApp"
+          [(ngModel)]="curation.enabledForApp"
+          [disabled]="curationSaving">
+        <label class="form-check-label" for="enabledForApp">
+          Mostra questo prodotto in ComeMiVesto
+        </label>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="productCategory">Categoria ComeMiVesto</label>
+          <select
+            id="productCategory"
+            class="form-select"
+            [(ngModel)]="curation.category"
+            (ngModelChange)="onCategoryChange()"
+            [disabled]="curationSaving">
+            <option value="">Seleziona categoria</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.categoryName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="productSubcategory">Sottocategoria ComeMiVesto</label>
+          <select
+            id="productSubcategory"
+            class="form-select"
+            [(ngModel)]="curation.subcategory"
+            [disabled]="curationSaving || !curation.category">
+            <option value="">Seleziona sottocategoria</option>
+            <option *ngFor="let category of subcategories" [value]="category.id">
+              {{ category.categoryName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="productColor">Colore</label>
+          <select
+            id="productColor"
+            class="form-select"
+            [(ngModel)]="curation.normalizedColor"
+            [disabled]="curationSaving">
+            <option value="">Non assegnato</option>
+            <option *ngFor="let color of colors" [value]="color.id">
+              {{ color.value }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <span class="form-label d-block">Target</span>
+          <div *ngIf="genderOptions.length; else noGenderOptions" class="d-flex flex-wrap gap-3">
+            <div *ngFor="let option of genderOptions" class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="'productGender-' + option.id"
+                [checked]="curation.genderTargets.includes(option.id)"
+                (change)="toggleGender(option.id, $event)"
+                [disabled]="curationSaving">
+              <label class="form-check-label" [for]="'productGender-' + option.id">
+                {{ option.value }}
+              </label>
+            </div>
+          </div>
+          <ng-template #noGenderOptions>
+            <span class="text-muted">Tassonomia gender non disponibile.</span>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="affiliate-detail__curation-actions d-flex justify-content-end mt-3">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="saveCuration()"
+          [disabled]="curationSaving">
+          <span *ngIf="curationSaving" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          <span *ngIf="!curationSaving" class="mdi mdi-content-save-outline" aria-hidden="true"></span>
+          {{ curationSaving ? 'Salvataggio…' : 'Salva gestione ComeMiVesto' }}
+        </button>
+      </div>
+    </section>
+
     <div class="affiliate-detail__grid">
       <section class="affiliate-detail__card">
         <h3>Identità catalogo</h3>

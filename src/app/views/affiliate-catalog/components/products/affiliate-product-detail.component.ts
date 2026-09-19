@@ -1,7 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
+import { DynamicFormField } from '../../../../interface/dynamic-form-field';
+import { FormService } from '../../../../services/form.service';
+import { outfitCategories, OutfitsService } from '../../../../services/outfit.service';
+import { OutfitColor, TaxonomyService } from '../../../../services/taxonomy.service';
+import { alert } from '../../../../widgets/ui-dialogs';
+import { AffiliateProductUpdateInput } from '../../models/affiliate-catalog-api.models';
 import { AffiliateFeed, AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -12,16 +19,27 @@ export function affiliateProductDetailErrorMessage(status?: number): string {
   return 'Impossibile caricare il dettaglio del prodotto affiliato.';
 }
 
+interface ProductCurationForm {
+  enabledForApp: boolean;
+  category: string;
+  subcategory: string;
+  genderTargets: string[];
+  normalizedColor: string;
+}
+
 @Component({
   selector: 'app-affiliate-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './affiliate-product-detail.component.html',
   styleUrl: '../affiliate-detail-layout.scss',
 })
 export class AffiliateProductDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
+  private readonly outfitService = inject(OutfitsService);
+  private readonly taxonomyService = inject(TaxonomyService);
+  private readonly formService = inject(FormService);
 
   productId = '';
   product: CatalogProduct | null = null;
@@ -29,6 +47,14 @@ export class AffiliateProductDetailComponent implements OnInit {
   loading = false;
   error = '';
   images: string[] = [];
+
+  categories: outfitCategories[] = [];
+  subcategories: outfitCategories[] = [];
+  colors: OutfitColor[] = [];
+  genderOptions: Array<{ id: string; value: string }> = [];
+  curation: ProductCurationForm = this.emptyCuration();
+  curationSaving = false;
+  curationError = '';
 
   private feedNames = new Map<string, string>();
 
@@ -47,6 +73,7 @@ export class AffiliateProductDetailComponent implements OnInit {
 
     this.loading = true;
     this.error = '';
+    this.curationError = '';
 
     this.affiliateCatalogService.getProduct(this.productId)
       .pipe(
@@ -58,15 +85,29 @@ export class AffiliateProductDetailComponent implements OnInit {
           feeds: this.affiliateCatalogService.getFeeds(product.affiliateProgramId).pipe(
             catchError(() => of([] as AffiliateFeed[])),
           ),
+          categories: this.outfitService.getOutFitCategories().pipe(
+            catchError(() => of([] as outfitCategories[])),
+          ),
+          colors: this.taxonomyService.getColors().pipe(
+            catchError(() => of([] as OutfitColor[])),
+          ),
+          formFields: this.formService.getFormFields('outfitForm').pipe(
+            catchError(() => of([] as DynamicFormField[])),
+          ),
         })),
         finalize(() => this.loading = false),
       )
       .subscribe({
-        next: ({ product, program, feeds }) => {
+        next: ({ product, program, feeds, categories, colors, formFields }) => {
           this.product = product;
           this.program = program;
           this.images = (product.images ?? []).filter((image) => typeof image === 'string' && image.trim().length > 0);
           this.feedNames = new Map(feeds.map((feed) => [feed.id, feed.name]));
+          this.categories = categories;
+          this.colors = colors;
+          this.curation = this.curationFromProduct(product);
+          this.loadSubcategories(product.category);
+          void this.loadGenderOptions(formFields);
         },
         error: (error: { status?: number }) => {
           this.product = null;
@@ -98,5 +139,126 @@ export class AffiliateProductDetailComponent implements OnInit {
 
   sourceFeedName(feedId: string): string {
     return this.feedNames.get(feedId) || feedId;
+  }
+
+  mappingComplete(): boolean {
+    return Boolean(this.curation.category && this.curation.subcategory);
+  }
+
+  onCategoryChange(): void {
+    this.curation.subcategory = '';
+    this.loadSubcategories(this.curation.category);
+  }
+
+  toggleGender(id: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.curation.genderTargets = checked
+      ? [...new Set([...this.curation.genderTargets, id])]
+      : this.curation.genderTargets.filter((value) => value !== id);
+  }
+
+  saveCuration(): void {
+    if (!this.product || this.curationSaving) return;
+    if (this.curation.enabledForApp && !this.mappingComplete()) {
+      this.curationError = 'Per abilitare il prodotto nell’app devi associare categoria e sottocategoria ComeMiVesto.';
+      return;
+    }
+
+    const input: AffiliateProductUpdateInput = {};
+    if (this.curation.enabledForApp !== (this.product.enabledForApp !== false)) {
+      input.enabledForApp = this.curation.enabledForApp;
+    }
+    if (this.curation.category !== this.product.category) input.category = this.curation.category;
+    if (this.curation.subcategory !== this.product.subcategory) input.subcategory = this.curation.subcategory;
+    if (!this.sameValues(this.curation.genderTargets, this.product.genderTargets ?? [])) {
+      input.genderTargets = [...this.curation.genderTargets];
+    }
+    if (this.curation.normalizedColor !== (this.product.normalizedColor ?? '')) {
+      input.normalizedColor = this.curation.normalizedColor;
+    }
+
+    if (!Object.keys(input).length) {
+      this.curationError = '';
+      return;
+    }
+
+    this.curationSaving = true;
+    this.curationError = '';
+    this.affiliateCatalogService.updateProduct(this.product.id, input)
+      .pipe(finalize(() => this.curationSaving = false))
+      .subscribe({
+        next: (product) => {
+          this.product = product;
+          this.curation = this.curationFromProduct(product);
+          this.loadSubcategories(product.category);
+          alert('Prodotto aggiornato per ComeMiVesto.', 'Operazione completata');
+        },
+        error: (error: { status?: number }) => {
+          if (error?.status === 409) {
+            this.curationError = 'Categoria, sottocategoria o colore non sono validi per la tassonomia ComeMiVesto.';
+            return;
+          }
+          if (error?.status === 401 || error?.status === 403) {
+            this.curationError = 'Non sei autorizzato a modificare questo prodotto.';
+            return;
+          }
+          this.curationError = 'Aggiornamento prodotto non riuscito.';
+        },
+      });
+  }
+
+  private loadSubcategories(categoryId: string): void {
+    this.subcategories = [];
+    if (!categoryId) return;
+
+    this.outfitService.getOutFitCategories(categoryId).subscribe({
+      next: (categories) => this.subcategories = categories,
+      error: () => this.curationError = 'Impossibile caricare le sottocategorie ComeMiVesto.',
+    });
+  }
+
+  private async loadGenderOptions(fields: DynamicFormField[]): Promise<void> {
+    const select = fields.find((field) => field.name === 'gender')?.selectOptions;
+    if (!select) {
+      this.genderOptions = [];
+      return;
+    }
+
+    try {
+      const values = select.remote && select.api
+        ? await this.formService.getData(select.api)
+        : (select.options || []);
+      this.genderOptions = (Array.isArray(values) ? values : values?.data || []).map((item: any) => ({
+        id: String(item[select.valueExp || 'id']),
+        value: String(item[select.displayExp || 'value']),
+      }));
+    } catch {
+      this.genderOptions = [];
+      this.curationError = 'Impossibile caricare la tassonomia gender.';
+    }
+  }
+
+  private curationFromProduct(product: CatalogProduct): ProductCurationForm {
+    return {
+      enabledForApp: product.enabledForApp !== false,
+      category: product.category ?? '',
+      subcategory: product.subcategory ?? '',
+      genderTargets: [...(product.genderTargets ?? [])],
+      normalizedColor: product.normalizedColor ?? '',
+    };
+  }
+
+  private emptyCuration(): ProductCurationForm {
+    return {
+      enabledForApp: true,
+      category: '',
+      subcategory: '',
+      genderTargets: [],
+      normalizedColor: '',
+    };
+  }
+
+  private sameValues(left: string[], right: string[]): boolean {
+    return [...left].sort().join('|') === [...right].sort().join('|');
   }
 }

@@ -65,6 +65,8 @@ export interface CatalogProduct {
   images: string[];
   sourceFeedIds: string[];
   active: boolean;
+  enabledForApp?: boolean;
+  classificationLocked?: boolean;
   createdAt: number;
   updatedAt: number;
   lastSeenAt: number;
