@@ -422,13 +422,9 @@
     height: 108px;
   }
 
-  .affiliate-product-card__detail span:last-child {
-    display: none;
-  }
-
   .affiliate-product-card__detail {
-    width: 34px;
-    padding: 0;
+    min-width: 7rem;
+    min-height: 40px;
     justify-content: center;
   }
 
