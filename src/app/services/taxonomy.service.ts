@@ -15,7 +15,20 @@ export class TaxonomyService {
   createColor(color: OutfitColor): Observable<unknown> { return this.http.post(`${this.base}/outfitColors`, color); }
   updateColor(id: string, color: Omit<OutfitColor, 'id'>): Observable<unknown> { return this.http.put(`${this.base}/outfitColors/${encodeURIComponent(id)}`, { value: color.value, hex: color.hex, parent: color.parent }); }
   deleteColor(id: string): Observable<unknown> { return this.http.delete(`${this.base}/outfitColors/${encodeURIComponent(id)}`); }
-  getStyles(): Observable<OutfitStyle[]> { return this.http.get<any>(`${this.base}/outfitStyles`).pipe(map(value => Array.isArray(value) ? value : value.data || [])); }
+  getStyles(): Observable<OutfitStyle[]> {
+    return this.http.get<any>(`${this.base}/outfitStyles`).pipe(
+      map(value => Array.isArray(value) ? value : value.data || []),
+      map(styles => styles.map((style: any) => ({
+        ...style,
+        parent: style.parent ?? null,
+        order: Number(style.order) || 0,
+        gender: Array.isArray(style.gender)
+          ? style.gender.filter((item: unknown): item is 'U' | 'D' => item === 'U' || item === 'D')
+          : [],
+        images: style.images && typeof style.images === 'object' ? style.images : undefined,
+      })))
+    );
+  }
   createStyle(style: OutfitStyle): Observable<unknown> { return this.http.post(`${this.base}/outfitStyles`, style); }
   updateStyle(id: string, style: OutfitStyleUpdate): Observable<unknown> { return this.http.put(`${this.base}/outfitStyles/${encodeURIComponent(id)}`, style); }
   deleteStyle(id: string): Observable<unknown> { return this.http.delete(`${this.base}/outfitStyles/${encodeURIComponent(id)}`); }

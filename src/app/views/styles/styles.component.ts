@@ -235,7 +235,7 @@ export class StylesComponent {
       ...style,
       imageU: this.imageUrl(style.images?.U) ?? '',
       imageD: this.imageUrl(style.images?.D) ?? '',
-      genderLabel: style.gender.map(item => item === 'U' ? 'Uomo' : 'Donna').join(', '),
+      genderLabel: (style.gender ?? []).map(item => item === 'U' ? 'Uomo' : 'Donna').join(', ') || '—',
     }));
   }
 
