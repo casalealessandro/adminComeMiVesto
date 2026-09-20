@@ -71,6 +71,8 @@
       <button class="btn-close" type="button" aria-label="Chiudi" (click)="closeEditor()" [disabled]="loading || processingImage !== null"></button>
     </header>
 
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
     <app-dynamic-form
       *ngIf="formVisible"
       [service]="formId"
