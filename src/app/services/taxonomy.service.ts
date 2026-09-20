@@ -4,6 +4,10 @@ import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface OutfitColor { id: string; value: string; hex: string; parent: string | null; }
+export interface OutfitStyleImage { imageBase64: string; imageMimeType: string; imageFileName: string; }
+export interface OutfitStyleImages { U?: OutfitStyleImage | null; D?: OutfitStyleImage | null; }
+export interface OutfitStyle { id: string; value: string; parent: null; order: number; gender: Array<'U' | 'D'>; images?: OutfitStyleImages; }
+export type OutfitStyleUpdate = Omit<OutfitStyle, 'id' | 'images'> & { images?: OutfitStyleImages };
 @Injectable({ providedIn: 'root' })
 export class TaxonomyService {
   private http = inject(HttpClient); private base = `${environment.apiBaseUrl}/gen`;
@@ -11,4 +15,8 @@ export class TaxonomyService {
   createColor(color: OutfitColor): Observable<unknown> { return this.http.post(`${this.base}/outfitColors`, color); }
   updateColor(id: string, color: Omit<OutfitColor, 'id'>): Observable<unknown> { return this.http.put(`${this.base}/outfitColors/${encodeURIComponent(id)}`, { value: color.value, hex: color.hex, parent: color.parent }); }
   deleteColor(id: string): Observable<unknown> { return this.http.delete(`${this.base}/outfitColors/${encodeURIComponent(id)}`); }
+  getStyles(): Observable<OutfitStyle[]> { return this.http.get<any>(`${this.base}/outfitStyles`).pipe(map(value => Array.isArray(value) ? value : value.data || [])); }
+  createStyle(style: OutfitStyle): Observable<unknown> { return this.http.post(`${this.base}/outfitStyles`, style); }
+  updateStyle(id: string, style: OutfitStyleUpdate): Observable<unknown> { return this.http.put(`${this.base}/outfitStyles/${encodeURIComponent(id)}`, style); }
+  deleteStyle(id: string): Observable<unknown> { return this.http.delete(`${this.base}/outfitStyles/${encodeURIComponent(id)}`); }
 }

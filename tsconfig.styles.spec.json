@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/styles-spec",
+    "types": ["jasmine", "@angular/localize"]
+  },
+  "include": [
+    "src/app/views/styles/**/*.spec.ts",
+    "src/app/services/taxonomy.service.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

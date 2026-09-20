@@ -1,0 +1,45 @@
+<main class="styles">
+  <h1>Stili</h1>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="toolbar" *ngIf="!formVisible">
+    <button type="button" class="btn btn-primary" (click)="edit()"><span class="mdi mdi-plus"></span> Nuovo stile</button>
+  </div>
+
+  <section class="editor" *ngIf="formVisible">
+    <app-dynamic-form
+      [service]="formId"
+      [editData]="editing"
+      [loading]="loading || processingImage !== null"
+      inputBtnLeftName="Annulla"
+      inputBtnRightName="Salva"
+      (submitFormEvent)="handleForm($event)">
+    </app-dynamic-form>
+
+    <div class="image-editors">
+      <section *ngFor="let gender of genders" class="image-editor">
+        <h2>Immagine {{ gender === 'U' ? 'Uomo' : 'Donna' }}</h2>
+        <img *ngIf="imageUrl(editing.images?.[gender]) as url; else noFormImage" [src]="url" [alt]="'Anteprima ' + gender">
+        <ng-template #noFormImage><div class="placeholder">Nessuna immagine</div></ng-template>
+        <div class="image-actions">
+          <label class="btn btn-outline-primary">{{ editing.images?.[gender] ? 'Sostituisci' : 'Carica' }}<input type="file" accept="image/*" (change)="selectImage($event, gender)" hidden></label>
+          <button *ngIf="editing.images?.[gender]" type="button" class="btn btn-outline-danger" (click)="removeImage(gender)">Rimuovi</button>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <p *ngIf="!formVisible && loading" class="loading"><span class="spinner-border spinner-border-sm"></span> Caricamento stili…</p>
+  <p *ngIf="!formVisible && !loading && !styles.length" class="empty">Nessuno stile disponibile.</p>
+  <div class="desktop-grid" *ngIf="!formVisible && !loading && gridRows.length">
+    <app-data-grid [idTable]="'styles-grid'" [colonne]="columns" [dataSource]="gridRows" [remoteOperation]="false" [isEditable]="false" [isEditableNewRow]="false" [isEditableEditRow]="false" [isEditableDeleteRow]="false" [showToolbarTop]="false" [showToolbarBottom]="false" [isSearchable]="false" [tableHeight]="520" (emittendButtonCellClick)="gridAction($event)"></app-data-grid>
+  </div>
+
+  <div class="mobile-cards" *ngIf="!formVisible && !loading && styles.length">
+    <article *ngFor="let style of styles">
+      <header><div><strong>{{ style.value }}</strong><code>{{ style.id }} · ordine {{ style.order }}</code></div><span>{{ style.gender.includes('U') ? 'Uomo' : '' }}{{ style.gender.length === 2 ? ', ' : '' }}{{ style.gender.includes('D') ? 'Donna' : '' }}</span></header>
+      <div class="style-images"><section><h3>Uomo</h3><img *ngIf="imageUrl(style.images?.U) as url; else noManImage" [src]="url"><ng-template #noManImage><div class="placeholder">Nessuna immagine</div></ng-template></section><section><h3>Donna</h3><img *ngIf="imageUrl(style.images?.D) as url; else noWomanImage" [src]="url"><ng-template #noWomanImage><div class="placeholder">Nessuna immagine</div></ng-template></section></div>
+      <footer><button class="btn btn-sm btn-outline-primary" (click)="edit(style)">Modifica</button><button class="btn btn-sm btn-outline-danger" (click)="remove(style)">Elimina</button></footer>
+    </article>
+  </div>
+</main>
