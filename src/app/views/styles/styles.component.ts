@@ -52,7 +52,7 @@ export class StylesComponent {
   editing: OutfitStyle = this.emptyStyle();
   editingOriginalId: string | null = null;
   imageChanged: Record<StyleGender, boolean> = { U: false, D: false };
-  formVisible = false;
+  formVisible = true;
   loading = false;
   processingImage: StyleGender | null = null;
   error = '';
@@ -69,13 +69,11 @@ export class StylesComponent {
   edit(style?: OutfitStyle): void {
     this.editingOriginalId = style?.id ?? null;
     this.editing = style ? { ...style, gender: [...style.gender], images: { ...style.images } } : this.emptyStyle();
-    this.imageChanged = { U: false, D: false }; this.error = '';
-    this.formVisible = true;
-    if (isStyleIdReadonly(this.editingOriginalId)) this.disableEditingId();
+    this.imageChanged = { U: false, D: false }; this.error = ''; this.recreateForm();
   }
 
   handleForm(event: { name: string; formData: Record<string, unknown> }): void {
-    if (event.name === 'cancelForm') { this.closeEditor(); return; }
+    if (event.name === 'cancelForm') { this.edit(); return; }
     if (event.name !== 'submitForm') return;
     const gender = Array.isArray(event.formData['gender']) ? event.formData['gender'].filter(value => value === 'U' || value === 'D') as StyleGender[] : [];
     this.editing = {
@@ -118,12 +116,18 @@ export class StylesComponent {
     this.loading = true; this.error = '';
     const request = this.editingOriginalId ? this.api.updateStyle(this.editingOriginalId, buildStyleUpdate(this.editing, this.imageChanged)) : this.api.createStyle(this.createPayload());
     request.pipe(finalize(() => this.loading = false)).subscribe({
-      next: () => { alert('Stile salvato.', 'Operazione completata'); this.closeEditor(); this.load(); },
+      next: () => { alert('Stile salvato.', 'Operazione completata'); this.edit(); this.load(); },
       error: error => { this.error = error.status === 400 ? 'Dati non validi.' : error.status === 409 ? 'Lo stile è utilizzato o è in conflitto.' : 'Salvataggio non riuscito.'; },
     });
   }
 
-  private closeEditor(): void { this.formVisible = false; this.editingOriginalId = null; this.editing = this.emptyStyle(); this.imageChanged = { U: false, D: false }; }
+  private recreateForm(): void {
+    this.formVisible = false;
+    setTimeout(() => {
+      this.formVisible = true;
+      if (isStyleIdReadonly(this.editingOriginalId)) this.disableEditingId();
+    });
+  }
   private disableEditingId(attempt = 0): void {
     const idControl = this.dynamicForm?.form.get('id');
     if (idControl) { idControl.disable(); return; }

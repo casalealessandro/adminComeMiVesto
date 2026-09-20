@@ -1,6 +1,5 @@
 .styles { padding: 1.25rem; max-width: 1200px; margin: auto; }
 .editor, .mobile-cards article { border: 1px solid #ddd; padding: 1rem; border-radius: .75rem; }
-.toolbar { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
 .image-editors, .style-images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
 .image-editor { padding: .75rem; background: #f8f9fa; border-radius: .5rem; }
 h2, h3 { font-size: 1rem; }

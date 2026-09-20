@@ -2,12 +2,9 @@
   <h1>Stili</h1>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div class="toolbar" *ngIf="!formVisible">
-    <button type="button" class="btn btn-primary" (click)="edit()"><span class="mdi mdi-plus"></span> Nuovo stile</button>
-  </div>
-
-  <section class="editor" *ngIf="formVisible">
+  <section class="editor">
     <app-dynamic-form
+      *ngIf="formVisible"
       [service]="formId"
       [editData]="editing"
       [loading]="loading || processingImage !== null"
@@ -29,13 +26,13 @@
     </div>
   </section>
 
-  <p *ngIf="!formVisible && loading" class="loading"><span class="spinner-border spinner-border-sm"></span> Caricamento stili…</p>
-  <p *ngIf="!formVisible && !loading && !styles.length" class="empty">Nessuno stile disponibile.</p>
-  <div class="desktop-grid" *ngIf="!formVisible && !loading && gridRows.length">
+  <p *ngIf="loading" class="loading"><span class="spinner-border spinner-border-sm"></span> Caricamento stili…</p>
+  <p *ngIf="!loading && !styles.length" class="empty">Nessuno stile disponibile.</p>
+  <div class="desktop-grid" *ngIf="!loading && gridRows.length">
     <app-data-grid [idTable]="'styles-grid'" [colonne]="columns" [dataSource]="gridRows" [remoteOperation]="false" [isEditable]="false" [isEditableNewRow]="false" [isEditableEditRow]="false" [isEditableDeleteRow]="false" [showToolbarTop]="false" [showToolbarBottom]="false" [isSearchable]="false" [tableHeight]="520" (emittendButtonCellClick)="gridAction($event)"></app-data-grid>
   </div>
 
-  <div class="mobile-cards" *ngIf="!formVisible && !loading && styles.length">
+  <div class="mobile-cards" *ngIf="!loading && styles.length">
     <article *ngFor="let style of styles">
       <header><div><strong>{{ style.value }}</strong><code>{{ style.id }} · ordine {{ style.order }}</code></div><span>{{ style.gender.includes('U') ? 'Uomo' : '' }}{{ style.gender.length === 2 ? ', ' : '' }}{{ style.gender.includes('D') ? 'Donna' : '' }}</span></header>
       <div class="style-images"><section><h3>Uomo</h3><img *ngIf="imageUrl(style.images?.U) as url; else noManImage" [src]="url"><ng-template #noManImage><div class="placeholder">Nessuna immagine</div></ng-template></section><section><h3>Donna</h3><img *ngIf="imageUrl(style.images?.D) as url; else noWomanImage" [src]="url"><ng-template #noWomanImage><div class="placeholder">Nessuna immagine</div></ng-template></section></div>
