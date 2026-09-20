@@ -20,9 +20,7 @@
     width: fit-content;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow: hidden;
 
     > app-caption {
       flex: 0 0 auto;
@@ -43,6 +41,7 @@
       min-height: 0;
       overflow: auto;
       overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
 
       .formEdit {
         background: var(--bg-grey);
@@ -153,4 +152,20 @@
 
 ::ng-deep.modal-content .modal-data-grid-wrapper {
   margin: auto;
+}
+
+@media (max-width: 600px) {
+  ::ng-deep.popup {
+    .modal-dialog {
+      width: calc(100vw - 1rem) !important;
+      max-width: calc(100vw - 1rem) !important;
+      max-height: calc(100dvh - 1rem);
+      margin: 0.5rem auto;
+    }
+
+    .modal-content {
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
 }
