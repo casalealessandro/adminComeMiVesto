@@ -1,10 +1,9 @@
 <section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || productsLoading || loadingMore || taxonomyLoading || taxonomyApplying">
   <header class="affiliate-products__header">
     <div>
-      <p class="affiliate-products__eyebrow">Catalogo Affiliati</p>
       <h2 id="affiliate-products-title">Prodotti</h2>
       <p class="affiliate-products__description">
-        Consulta il catalogo canonico importato dai feed. La DataGrid usa paginazione e filtri remoti sul backend.
+        Consulta e gestisci i prodotti importati dai feed.
       </p>
     </div>
 
@@ -26,10 +25,6 @@
     </div>
   </header>
 
-  <div class="alert alert-info affiliate-products__contract" role="note">
-    <span class="mdi mdi-information-outline" aria-hidden="true"></span>
-    <span>I filtri Programma e Categoria vengono applicati all'intero catalogo prima della paginazione. L'ordinamento remoto resta non esposto dall'API Products.</span>
-  </div>
 
   <div *ngIf="taxonomyError" class="alert alert-danger affiliate-products__error" role="alert">
     <span>{{ taxonomyError }}</span>
@@ -40,7 +35,7 @@
     <header class="taxonomy-repair__header">
       <div>
         <h3 id="taxonomy-repair-title">Tassonomie mancanti</h3>
-        <p>Controllo conservativo: solo prodotti senza sottocategoria, solo figli della categoria già assegnata e match testuale nella descrizione.</p>
+        <p>Controlla i prodotti senza sottocategoria e propone solo associazioni sicure.</p>
       </div>
       <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeTaxonomyRepair()" [disabled]="taxonomyApplying">Chiudi</button>
     </header>
