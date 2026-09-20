@@ -1,10 +1,9 @@
 <section class="affiliate-sync-runs" aria-labelledby="affiliate-sync-runs-title" [attr.aria-busy]="loading || loadingMore">
   <header class="affiliate-sync-runs__header">
     <div>
-      <p class="affiliate-sync-runs__eyebrow">Catalogo Affiliati</p>
       <h2 id="affiliate-sync-runs-title">Sincronizzazioni</h2>
       <p class="affiliate-sync-runs__description">
-        Consulta la cronologia dei run di sincronizzazione, ordinata dal backend dal più recente al meno recente.
+        Consulta lo storico delle sincronizzazioni dei feed.
       </p>
     </div>
 
@@ -14,10 +13,6 @@
     </button>
   </header>
 
-  <div class="alert alert-info affiliate-sync-runs__contract" role="note">
-    <span class="mdi mdi-information-outline" aria-hidden="true"></span>
-    <span>Il backend espone solo paginazione a cursore: filtri, ordinamenti aggiuntivi e polling automatico non vengono simulati nella UI.</span>
-  </div>
 
   <div *ngIf="error" class="alert alert-danger affiliate-sync-runs__error" role="alert">
     <span>{{ error }}</span>
