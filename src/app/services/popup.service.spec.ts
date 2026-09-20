@@ -98,12 +98,12 @@ describe('PopUpService characterization', () => {
     );
   });
 
-  it('uses a numeric viewport width on mobile so PopupContent can append px safely', () => {
+  it('keeps the requested popup width on mobile and lets the popup CSS handle the responsive layout', () => {
     spyOnProperty(window, 'innerWidth', 'get').and.returnValue(500);
 
     service.setNewPopUp('popup-mobile', 'DynamicFormComponent', null, 800);
 
-    expect(service.currentPopupsSet[0].popUpWidth).toBe(500);
+    expect(service.currentPopupsSet[0].popUpWidth).toBe(800);
   });
 
   it('forwards output events through the shared output stream', () => {
