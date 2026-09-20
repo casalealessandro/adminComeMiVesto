@@ -10,6 +10,7 @@ import { authGuard } from './auth.guard';
 import { LoginComponent } from './views/login/login.component';
 import { AccessDeniedComponent } from './views/access-denied/access-denied.component';
 import { ColorsComponent } from './views/colors/colors.component';
+import { StylesComponent } from './views/styles/styles.component';
 import { ReportsComponent } from './views/reports/reports.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
@@ -30,6 +31,7 @@ export const routes:Routes = [
     { path: 'login', component: LoginComponent},
     { path: 'access-denied', component: AccessDeniedComponent},
     { path: 'colors', component: ColorsComponent, canActivate:[authGuard]},
+    { path: 'styles', component: StylesComponent, canActivate:[authGuard]},
     { path: 'reports', component: ReportsComponent, canActivate:[authGuard]},
     { path: 'notifications', component: NotificationsComponent, canActivate:[authGuard]},
     {
