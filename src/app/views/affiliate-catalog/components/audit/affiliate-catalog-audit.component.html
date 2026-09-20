@@ -1,10 +1,9 @@
 <section class="catalog-audit" aria-labelledby="catalog-audit-title" [attr.aria-busy]="loading">
   <header class="catalog-audit__header">
     <div>
-      <p class="catalog-audit__eyebrow">Catalogo Affiliati</p>
       <h2 id="catalog-audit-title">Analisi catalogo</h2>
       <p class="catalog-audit__description">
-        Fotografia read-only dei prodotti importati e della tassonomia ComeMiVesto. I dati servono a preparare il mapping categorie prima dell’Outfit Engine.
+        Controlla lo stato del catalogo, la qualità dei dati e le categorie ComeMiVesto.
       </p>
     </div>
 
@@ -14,10 +13,6 @@
     </button>
   </header>
 
-  <div class="alert alert-info catalog-audit__note" role="note">
-    <span class="mdi mdi-shield-search-outline" aria-hidden="true"></span>
-    <span>Questa vista non modifica il catalogo e non applica ancora alcun mapping automatico.</span>
-  </div>
 
   <div *ngIf="error" class="alert alert-danger catalog-audit__error" role="alert">
     <span>{{ error }}</span>
