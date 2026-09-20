@@ -1,11 +1,9 @@
 <section class="ai-preview" aria-labelledby="ai-preview-title">
   <header class="ai-preview__header">
     <div>
-      <span class="ai-preview__eyebrow">AI Outfit Generator · solo admin</span>
       <h2 id="ai-preview-title">Preview outfit AI</h2>
       <p>
-        Genera da 3 a 6 look dal catalogo reale, confronta l'immagine editoriale con le immagini originali
-        e salva solo gli outfit che approvi.
+        Genera da 3 a 6 look dal catalogo e salva solo gli outfit che approvi.
       </p>
     </div>
   </header>
@@ -52,7 +50,7 @@
         inputmode="numeric"
         [disabled]="loading"
         aria-describedby="outfit-count-help">
-      <small id="outfit-count-help" class="ai-preview__count-help">Da {{ minOutfitCount }} a {{ maxOutfitCount }} · default 3</small>
+      <small id="outfit-count-help" class="ai-preview__count-help">Da {{ minOutfitCount }} a {{ maxOutfitCount }}</small>
     </label>
 
     <button type="submit" class="ai-preview__generate" [disabled]="loading">
