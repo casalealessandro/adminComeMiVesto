@@ -1,6 +1,19 @@
+:host {
+  display: block;
+  min-height: 0;
+}
+
 .affiliate-feed-form {
   min-width: 0;
   padding: 0.25rem;
+}
+
+.affiliate-feed-form--mapping {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 6rem);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .affiliate-feed-form__identity,
@@ -13,6 +26,13 @@
   border: 1px solid var(--bs-border-color, #dee2e6);
   border-radius: 0.5rem;
   background: var(--bs-light-bg-subtle, #f8f9fa);
+}
+
+.affiliate-feed-form__mapping-header,
+.affiliate-feed-form__mapping-title,
+.affiliate-feed-form__mapping-help,
+.affiliate-feed-form--mapping > .alert {
+  flex: 0 0 auto;
 }
 
 .affiliate-feed-form__identity div,
@@ -49,6 +69,19 @@
   color: var(--bs-secondary-color, #6c757d);
 }
 
+.affiliate-feed-form__mapping-help {
+  margin-bottom: 0.75rem;
+}
+
+.affiliate-feed-form__mapping-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
 .affiliate-feed-form__mapping-stats {
   margin-bottom: 1rem;
   font-size: 0.9rem;
@@ -60,6 +93,10 @@
 
 .affiliate-feed-form__mapping-section {
   margin-top: 1.25rem;
+}
+
+.affiliate-feed-form__mapping-section:first-of-type {
+  margin-top: 0;
 }
 
 .affiliate-feed-form__mapping-section h6 {
@@ -87,13 +124,21 @@
 
 .affiliate-feed-form__mapping-actions {
   display: flex;
+  flex: 0 0 auto;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 0.65rem;
-  margin-top: 1.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--bs-border-color, #dee2e6);
+  background: var(--bs-body-bg, #fff);
 }
 
 @media (max-width: 700px) {
+  .affiliate-feed-form--mapping {
+    max-height: calc(100dvh - 5rem);
+  }
+
   .affiliate-feed-form__identity,
   .affiliate-feed-form__mapping-header,
   .affiliate-feed-form__mapping-row {
