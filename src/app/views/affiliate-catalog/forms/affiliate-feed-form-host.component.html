@@ -1,4 +1,7 @@
-<section class="affiliate-feed-form" aria-live="polite">
+<section
+  class="affiliate-feed-form"
+  [class.affiliate-feed-form--mapping]="mappingStep"
+  aria-live="polite">
   <ng-container *ngIf="!mappingStep">
     <ng-container *ngIf="itemData.feed as feed">
       <div *ngIf="itemData.mode === 'edit'" class="affiliate-feed-form__identity">
@@ -47,98 +50,102 @@
     <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
     <div *ngIf="warning" class="alert alert-warning" role="alert">{{ warning }}</div>
 
-    <div *ngIf="loadingSourceValues" class="affiliate-feed-form__loading" role="status">
-      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-      Lettura valori dal feed affiliato...
-    </div>
+    <div class="affiliate-feed-form__mapping-scroll">
+      <div *ngIf="loadingSourceValues" class="affiliate-feed-form__loading" role="status">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        Lettura valori dal feed affiliato...
+      </div>
 
-    <ng-container *ngIf="!loadingSourceValues">
-      <ng-container *ngIf="sourceValues as values; else noSourceValues">
-        <p class="affiliate-feed-form__mapping-stats">
-          {{ values.recordsNormalized }} prodotti leggibili su {{ values.recordsRead }} record analizzati ·
-          {{ values.categories.length }} categorie ·
-          {{ values.colors.length }} colori ·
-          {{ values.genders.length }} valori genere
-        </p>
+      <ng-container *ngIf="!loadingSourceValues">
+        <ng-container *ngIf="sourceValues as values">
+          <p class="affiliate-feed-form__mapping-stats">
+            {{ values.recordsNormalized }} prodotti leggibili su {{ values.recordsRead }} record analizzati ·
+            {{ values.categories.length }} categorie ·
+            {{ values.colors.length }} colori ·
+            {{ values.genders.length }} valori genere
+          </p>
 
-        <div *ngIf="loadingMappingOptions" class="affiliate-feed-form__loading">
-          Caricamento tassonomia ComeMiVesto...
-        </div>
-
-        <ng-container *ngIf="!loadingMappingOptions">
-          <section class="affiliate-feed-form__mapping-section">
-            <h6>Categorie</h6>
-            <div class="affiliate-feed-form__mapping-list">
-              <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.categories; let i = index">
-                <div class="affiliate-feed-form__source-value">{{ source }}</div>
-                <select
-                  class="form-select"
-                  [(ngModel)]="categoryMappings[source]"
-                  [name]="'categoryMapping-' + i">
-                  <option value="">Seleziona categoria ComeMiVesto</option>
-                  <option value="__SKIP__">Non importare</option>
-                  <option *ngFor="let option of categoryOptions" [value]="option.id">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-            </div>
-          </section>
-
-          <section class="affiliate-feed-form__mapping-section">
-            <h6>Colori</h6>
-            <div class="affiliate-feed-form__mapping-list">
-              <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.colors; let i = index">
-                <div class="affiliate-feed-form__source-value">{{ source }}</div>
-                <select
-                  class="form-select"
-                  [(ngModel)]="colorMappings[source]"
-                  [name]="'colorMapping-' + i">
-                  <option value="">Non mappato</option>
-                  <option *ngFor="let color of colorOptions" [value]="color.id">
-                    {{ color.value }}
-                  </option>
-                </select>
-              </div>
-            </div>
-          </section>
-
-          <section class="affiliate-feed-form__mapping-section">
-            <h6>Genere</h6>
-            <div class="affiliate-feed-form__mapping-list">
-              <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.genders; let i = index">
-                <div class="affiliate-feed-form__source-value">{{ source }}</div>
-                <select
-                  class="form-select"
-                  [(ngModel)]="genderMappings[source]"
-                  [name]="'genderMapping-' + i">
-                  <option value="">Non mappato</option>
-                  <option value="U">Uomo</option>
-                  <option value="D">Donna</option>
-                  <option value="U,D">Uomo + Donna</option>
-                </select>
-              </div>
-            </div>
-          </section>
-
-          <div class="affiliate-feed-form__mapping-actions">
-            <button type="button" class="btn btn-outline-secondary" [disabled]="saving" (click)="finishWithoutMapping()">
-              Completa più tardi
-            </button>
-            <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveMapping()">
-              {{ saving ? 'Salvataggio...' : 'Salva mapping e termina' }}
-            </button>
+          <div *ngIf="loadingMappingOptions" class="affiliate-feed-form__loading">
+            Caricamento tassonomia ComeMiVesto...
           </div>
+
+          <ng-container *ngIf="!loadingMappingOptions">
+            <section class="affiliate-feed-form__mapping-section">
+              <h6>Categorie</h6>
+              <div class="affiliate-feed-form__mapping-list">
+                <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.categories; let i = index">
+                  <div class="affiliate-feed-form__source-value">{{ source }}</div>
+                  <select
+                    class="form-select"
+                    [(ngModel)]="categoryMappings[source]"
+                    [name]="'categoryMapping-' + i">
+                    <option value="">Seleziona categoria ComeMiVesto</option>
+                    <option value="__SKIP__">Non importare</option>
+                    <option *ngFor="let option of categoryOptions" [value]="option.id">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            <section class="affiliate-feed-form__mapping-section">
+              <h6>Colori</h6>
+              <div class="affiliate-feed-form__mapping-list">
+                <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.colors; let i = index">
+                  <div class="affiliate-feed-form__source-value">{{ source }}</div>
+                  <select
+                    class="form-select"
+                    [(ngModel)]="colorMappings[source]"
+                    [name]="'colorMapping-' + i">
+                    <option value="">Non mappato</option>
+                    <option *ngFor="let color of colorOptions" [value]="color.id">
+                      {{ color.value }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </section>
+
+            <section class="affiliate-feed-form__mapping-section">
+              <h6>Genere</h6>
+              <div class="affiliate-feed-form__mapping-list">
+                <div class="affiliate-feed-form__mapping-row" *ngFor="let source of values.genders; let i = index">
+                  <div class="affiliate-feed-form__source-value">{{ source }}</div>
+                  <select
+                    class="form-select"
+                    [(ngModel)]="genderMappings[source]"
+                    [name]="'genderMapping-' + i">
+                    <option value="">Non mappato</option>
+                    <option value="U">Uomo</option>
+                    <option value="D">Donna</option>
+                    <option value="U,D">Uomo + Donna</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+          </ng-container>
         </ng-container>
       </ng-container>
-    </ng-container>
+    </div>
 
-    <ng-template #noSourceValues>
-      <div class="affiliate-feed-form__mapping-actions">
+    <div
+      *ngIf="!loadingSourceValues && !loadingMappingOptions"
+      class="affiliate-feed-form__mapping-actions">
+      <ng-container *ngIf="sourceValues; else closeMapping">
+        <button type="button" class="btn btn-outline-secondary" [disabled]="saving" (click)="finishWithoutMapping()">
+          Completa più tardi
+        </button>
+        <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveMapping()">
+          {{ saving ? 'Salvataggio...' : 'Salva mapping e termina' }}
+        </button>
+      </ng-container>
+
+      <ng-template #closeMapping>
         <button type="button" class="btn btn-primary" [disabled]="saving" (click)="finishWithoutMapping()">
           Chiudi
         </button>
-      </div>
-    </ng-template>
+      </ng-template>
+    </div>
   </ng-container>
 </section>
