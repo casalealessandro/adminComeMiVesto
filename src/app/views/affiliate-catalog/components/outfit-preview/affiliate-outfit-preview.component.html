@@ -11,9 +11,22 @@
   <form class="ai-preview__controls" (ngSubmit)="generate()">
     <label>
       <span>Genere</span>
-      <select name="gender" [(ngModel)]="request.gender" [disabled]="loading">
+      <select name="gender" [ngModel]="request.gender" (ngModelChange)="onGenderChange($event)" [disabled]="loading">
         <option *ngFor="let option of genderOptions" [ngValue]="option.value">{{ option.label }}</option>
       </select>
+    </label>
+
+    <label>
+      <span>Creator AI</span>
+      <select name="creatorUid" [(ngModel)]="request.creatorUid" [disabled]="loading || creatorsLoading">
+        <option [ngValue]="undefined">Compatibilità legacy · ComeMiVesto AI</option>
+        <option *ngFor="let creator of availableCreators()" [ngValue]="creator.uid">
+          {{ creator.displayName }}
+        </option>
+      </select>
+      <small class="ai-preview__control-help" *ngIf="!creatorsLoading && !availableCreators().length">
+        Nessun creator AI attivo compatibile con il genere selezionato.
+      </small>
     </label>
 
     <label>
@@ -152,6 +165,15 @@
             <span>{{ outfit.gender }}</span>
             <span>{{ outfit.season }}</span>
             <span>{{ outfit.style }}</span>
+          </div>
+
+          <div class="outfit-card__creator" *ngIf="creatorByUid(outfit.creatorUid || preview.request.creatorUid) as creator">
+            <img [src]="creator.photoURL || fallbackAvatar" [alt]="creator.displayName">
+            <div>
+              <span>Pubblicato da</span>
+              <strong>{{ creator.displayName }}</strong>
+              <small>Virtual fashion creator · {{ creator.gender === 'D' ? 'Donna' : 'Uomo' }}</small>
+            </div>
           </div>
 
           <div class="reference-title">
