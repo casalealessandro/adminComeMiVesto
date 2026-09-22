@@ -123,8 +123,19 @@
 
     <section class="outfit-grid" aria-label="Outfit generati">
       <article class="outfit-card" *ngFor="let outfit of preview.outfits; let outfitIndex = index; trackBy: trackOutfit">
-        <div class="outfit-card__hero">
+        <div class="outfit-card__hero" (click)="moveSelectedTag($event, outfit)">
           <img [src]="outfit.previewImageUrl" [alt]="'Preview generata: ' + outfit.title" loading="lazy">
+          <button
+            type="button"
+            class="outfit-card__tag-pin"
+            *ngFor="let product of outfit.products; let productIndex = index; trackBy: trackProduct"
+            [ngStyle]="tagStyle(product, productIndex)"
+            [class.outfit-card__tag-pin--selected]="isSelectedTag(outfit, product)"
+            [attr.aria-label]="'Pin ' + (productIndex + 1) + ': ' + product.name"
+            [title]="product.name"
+            (click)="selectProductTag(outfit, product, $event)">
+            {{ productIndex + 1 }}
+          </button>
           <span class="outfit-card__index">Look {{ outfitIndex + 1 }}</span>
         </div>
 
@@ -158,7 +169,16 @@
               </div>
 
               <div class="product-reference__content">
-                <div class="product-reference__role">{{ product.role }}</div>
+                <div class="product-reference__role">
+                  <span>{{ product.role }}</span>
+                  <button
+                    type="button"
+                    class="product-reference__tag-action"
+                    [class.product-reference__tag-action--selected]="isSelectedTag(outfit, product)"
+                    (click)="selectProductTag(outfit, product, $event)">
+                    Pin {{ outfit.products.indexOf(product) + 1 }}
+                  </button>
+                </div>
                 <strong>{{ product.brand }}</strong>
                 <span class="product-reference__name">{{ product.name }}</span>
                 <div class="product-reference__details">
@@ -174,6 +194,11 @@
                 <span class="mdi mdi-open-in-new" aria-hidden="true"></span>
               </a>
             </article>
+          </div>
+
+          <div class="outfit-card__tag-help">
+            <span class="mdi mdi-crosshairs-gps" aria-hidden="true"></span>
+            I pin sono posizionati automaticamente. Per correggerne uno, seleziona il relativo prodotto e poi tocca il punto corretto sull'immagine.
           </div>
 
           <div class="outfit-card__publish">
