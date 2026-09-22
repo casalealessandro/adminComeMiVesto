@@ -244,12 +244,26 @@ describe('Affiliate products', () => {
       expect(service.repairProductTaxonomies).not.toHaveBeenCalled();
     });
 
-    it('navigates to the canonical product detail route', () => {
+    it('preserves active filters when navigating to the product detail', async () => {
       const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+      (component as any).dataGrid = {
+        providerFilterValue: (field: string) => field === 'affiliateProgramId' ? program.id : 'Clothing',
+      };
 
-      component.openDetail(product);
+      await component.openDetail(product);
 
-      expect(navigate).toHaveBeenCalledWith(['/affiliate-catalog/products', product.id]);
+      expect(navigate.calls.argsFor(0)[1]).toEqual(jasmine.objectContaining({
+        queryParams: {
+          affiliateProgramId: program.id,
+          category: 'Clothing',
+        },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      }));
+      expect(navigate.calls.argsFor(1)).toEqual([
+        ['/affiliate-catalog/products', product.id],
+        { queryParamsHandling: 'preserve' },
+      ]);
     });
   });
 });
