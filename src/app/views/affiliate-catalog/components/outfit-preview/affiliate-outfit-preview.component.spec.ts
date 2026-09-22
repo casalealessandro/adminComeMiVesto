@@ -142,6 +142,29 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(host.textContent).toContain('Merchant A');
   });
 
+  it('sends an optional maximum total budget with the generation request', () => {
+    component.outfitCount = 1;
+    component.maxTotalPrice = 250;
+
+    component.generate();
+
+    expect(component.error).toBe('');
+    expect(service.generateOutfitPreview).toHaveBeenCalledWith(jasmine.objectContaining({
+      count: 1,
+      maxTotalPrice: 250,
+    }));
+  });
+
+  it('rejects an invalid maximum total budget before calling the backend', () => {
+    service.generateOutfitPreview.calls.reset();
+    component.maxTotalPrice = 0;
+
+    component.generate();
+
+    expect(component.error).toContain('tetto massimo');
+    expect(service.generateOutfitPreview).not.toHaveBeenCalled();
+  });
+
   it('allows generating a single outfit', () => {
     component.outfitCount = 1;
     service.generateOutfitPreview.and.returnValue(of({
