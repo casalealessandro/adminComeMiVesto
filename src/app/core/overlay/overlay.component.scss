@@ -1,49 +1,50 @@
-// Definisci variabili per rendere i colori e gli stili più facili da personalizzare
-$overlay-bg-color: rgba(0, 0, 0, 0.3);
-$content-bg-color: #fff;
-$box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-$border-radius: 4px;
-
 .overlay-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
- 
-    cursor: pointer;
-    &.bg-overlay{
-        background-color:  $overlay-bg-color;
-    }
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  cursor: pointer;
+
+  &.bg-overlay {
+    background: rgb(15 23 42 / .36);
+    backdrop-filter: blur(1px);
+  }
 }
 
 .overlay-content {
-    position: absolute;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 1px;
+  min-height: 1px;
+  max-width: min(420px, calc(100vw - 1.25rem));
+  padding: .4rem;
+  overflow: hidden;
+  background: var(--bianco, #fff);
+  border: 1px solid var(--border_color, #e2e8f0);
+  border-radius: .7rem;
+  box-shadow: 0 16px 38px rgb(15 23 42 / .16);
+  opacity: 0;
+  transform: translateY(-6px) scale(.99);
+  transform-origin: top;
+  transition: opacity .14s ease, transform .14s ease;
 
-    min-width: 1px;
-    min-height: 1px;
-
-    background-color:$content-bg-color;
-    box-shadow: $box-shadow;
-    padding: 10px;
-    border-radius: $border-radius;
-    display: flex;
-    flex-direction: column;
-    // Anima la comparsa del contenuto per un effetto più fluido
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    opacity: 0;
-    transform: translateY(-10px);
-   
-    &.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  &.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-// Se necessario, aggiungi breakpoint per dispositivi mobili
 @media (max-width: 768px) {
-    .overlay-content {
-        width: 90vw;
-        left: 5vw !important;
-    }
+  .overlay-content {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    left: .5rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-content {
+    transition: none;
+  }
 }
