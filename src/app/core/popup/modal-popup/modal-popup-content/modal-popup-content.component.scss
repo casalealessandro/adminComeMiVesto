@@ -1,5 +1,5 @@
 ::ng-deep.popup {
-  z-index: 500;
+  z-index: 2000;
   pointer-events: auto;
   background-color: rgba(255, 255, 255, .8);
   overflow: hidden;
@@ -60,7 +60,7 @@
 
 ::ng-deep.position-bottom {
   .modal-dialog {
-    z-index: 501;
+    z-index: 1;
     bottom: 2rem;
     left: 0;
     right: 0;
