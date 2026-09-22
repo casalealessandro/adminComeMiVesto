@@ -63,7 +63,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'publishOutfitPreview', 'getPrograms'],
+      ['generateOutfitPreview', 'publishOutfitPreview', 'getPrograms', 'getAiCreators'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -76,6 +76,21 @@ describe('AffiliateOutfitPreviewComponent', () => {
       market: 'IT',
       currency: 'EUR',
       priceSegment: 'MID_RANGE',
+      createdAt: 1,
+      updatedAt: 1,
+    }]));
+    service.getAiCreators.and.returnValue(of([{
+      uid: 'creator-d',
+      email: 'creator@example.com',
+      displayName: 'Creator Donna',
+      nome: 'Creator',
+      cognome: 'Donna',
+      bio: 'Virtual fashion creator',
+      photoURL: 'https://example.test/avatar.jpg',
+      gender: 'D',
+      styleAffinity: ['C', 'SC'],
+      personaPrompt: 'Look casual contemporanei.',
+      active: true,
       createdAt: 1,
       updatedAt: 1,
     }]));
@@ -147,6 +162,14 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(component.publishedId(outfit)).toBe('outfit-1');
     expect(outfit.previewImageUrl).toBe('https://storage.test/outfits/ai/outfit-1.png');
     expect(fixture.nativeElement.textContent).toContain('Salvato in outfits');
+  });
+
+  it('filters active creators by requested gender and clears incompatible selection', () => {
+    component.onGenderChange('WOMAN');
+    expect(component.availableCreators().map((creator) => creator.uid)).toEqual(['creator-d']);
+    component.request.creatorUid = 'creator-d';
+    component.onGenderChange('MAN');
+    expect(component.request.creatorUid).toBeUndefined();
   });
 
   it('keeps loading until the expensive preview request completes', () => {
