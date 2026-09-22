@@ -204,6 +204,32 @@
   object-fit: contain;
 }
 
+.outfit-card__tag-pin {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(13, 110, 253, .9);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 800;
+  box-shadow: 0 .15rem .55rem rgba(0, 0, 0, .28);
+  cursor: pointer;
+}
+
+.outfit-card__tag-pin--selected {
+  width: 2.2rem;
+  height: 2.2rem;
+  outline: 3px solid rgba(255, 193, 7, .6);
+  background: var(--bs-warning, #ffc107);
+  color: #212529;
+}
+
 .outfit-card__index {
   position: absolute;
   top: .75rem;
@@ -305,10 +331,42 @@
 }
 
 .product-reference__role {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
   color: var(--bs-primary, #0d6efd);
   font-size: .7rem;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.product-reference__tag-action {
+  min-height: 1.8rem;
+  padding: .2rem .45rem;
+  border: 1px solid var(--bs-primary, #0d6efd);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bs-primary, #0d6efd);
+  font-size: .68rem;
+  font-weight: 700;
+}
+
+.product-reference__tag-action--selected {
+  background: var(--bs-primary, #0d6efd);
+  color: #fff;
+}
+
+.outfit-card__tag-help {
+  display: flex;
+  gap: .45rem;
+  align-items: flex-start;
+  padding: .65rem .75rem;
+  border-radius: .65rem;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: .78rem;
+  line-height: 1.35;
 }
 
 .product-reference__name,
