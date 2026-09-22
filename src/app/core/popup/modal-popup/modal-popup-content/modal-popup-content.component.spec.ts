@@ -84,6 +84,11 @@ describe('NicaPopupContentComponent characterization', () => {
     }
   });
 
+  it('uses a popup-specific caption class instead of Bootstrap modal on the nested caption', () => {
+    const template = require('./modal-popup-content.component.html');
+    expect(String(template)).not.toContain("[cssClass]=\"'modal'\"");
+  });
+
   it('bridges object EventEmitter values to PopUpService with popup metadata', async () => {
     const { component, popupService, runtimeInstance } = setup();
     await component.ngOnInit();
