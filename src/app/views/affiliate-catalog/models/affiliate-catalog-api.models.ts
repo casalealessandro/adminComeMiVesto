@@ -91,6 +91,8 @@ export interface AiOutfitPreviewRequest {
   style: AiOutfitPreviewStyle;
   /** Optional for rollout compatibility; Admin sends 3-6 and backend defaults to 3 when omitted. */
   count?: number;
+  /** Real Firebase UID of the managed AI creator selected for this batch. */
+  creatorUid?: string;
 }
 
 export interface AiOutfitTokenUsage {
@@ -141,6 +143,7 @@ export interface AiOutfitPreviewOutfit {
   style: 'C' | 'B' | 'SP' | 'SC' | 'E' | 'AT' | 'FES' | 'CL' | 'TR' | 'SE';
   products: AiOutfitPreviewProduct[];
   previewImageUrl: string;
+  creatorUid?: string;
 }
 
 export interface AiOutfitPreviewResult {
