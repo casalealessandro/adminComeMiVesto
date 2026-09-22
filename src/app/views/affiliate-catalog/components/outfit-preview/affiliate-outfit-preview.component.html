@@ -51,6 +51,22 @@
     </label>
 
     <label>
+      <span>Tetto massimo outfit (€)</span>
+      <input
+        type="number"
+        name="maxTotalPrice"
+        [(ngModel)]="maxTotalPrice"
+        min="0.01"
+        max="100000"
+        step="10"
+        inputmode="decimal"
+        placeholder="Nessun limite"
+        [disabled]="loading"
+        aria-describedby="outfit-budget-help">
+      <small id="outfit-budget-help" class="ai-preview__count-help">Totale massimo dei capi del singolo look</small>
+    </label>
+
+    <label>
       <span>Numero outfit</span>
       <input
         type="number"
@@ -76,6 +92,7 @@
     <span class="mdi mdi-loading mdi-spin" aria-hidden="true"></span>
     <div>
       <strong>Sto creando {{ request.count || outfitCount }} look e le relative immagini editoriali.</strong>
+      <span *ngIf="request.maxTotalPrice">Budget massimo per outfit: {{ request.maxTotalPrice | currency:'EUR':'symbol':'1.0-2' }}.</span>
       <span>La generazione delle immagini può richiedere più tempo della sola selezione dei prodotti.</span>
     </div>
   </div>
@@ -119,6 +136,7 @@
             <span>{{ draft.outfit.gender }}</span>
             <span>{{ draft.outfit.season }}</span>
             <span>{{ draft.outfit.style }}</span>
+            <span *ngIf="draft.request.maxTotalPrice">Max {{ draft.request.maxTotalPrice | currency:'EUR':'symbol':'1.0-2' }}</span>
             <span *ngIf="draftCreator(draft) as creator">{{ creator.displayName }}</span>
           </div>
           <button type="button" class="btn btn-primary draft-card__open" (click)="resumeDraft(draft)">
@@ -177,6 +195,7 @@
     <div class="ai-preview__meta">
       <span>{{ resumedDraftId ? 'Bozza generata' : 'Generati' }} {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
       <span>{{ preview.outfits.length }} outfit · {{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style }}</span>
+      <span *ngIf="preview.request.maxTotalPrice">Budget max {{ preview.request.maxTotalPrice | currency:'EUR':'symbol':'1.0-2' }} / outfit</span>
       <span *ngIf="resumedDraftId">Bozza persistita · {{ resumedDraftId }}</span>
     </div>
 

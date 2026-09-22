@@ -76,6 +76,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     style: 'CASUAL',
   };
   outfitCount = 3;
+  maxTotalPrice: number | null = null;
 
   result: AiOutfitPreviewResult | null = null;
   loading = false;
@@ -135,6 +136,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     this.resumedDraftId = draft.id;
     this.request = { ...draft.request };
     this.outfitCount = draft.request.count ?? 1;
+    this.maxTotalPrice = draft.request.maxTotalPrice ?? null;
     this.error = '';
     this.publishing.clear();
     this.published.clear();
@@ -165,6 +167,14 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       return;
     }
 
+    const maxTotalPrice = this.maxTotalPrice === null || this.maxTotalPrice === undefined
+      ? undefined
+      : Number(this.maxTotalPrice);
+    if (maxTotalPrice !== undefined && (!Number.isFinite(maxTotalPrice) || maxTotalPrice <= 0 || maxTotalPrice > 100000)) {
+      this.error = 'Il tetto massimo dell\'outfit deve essere un importo positivo.';
+      return;
+    }
+
     this.loading = true;
     this.error = '';
     this.result = null;
@@ -172,7 +182,12 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     this.publishing.clear();
     this.published.clear();
     this.publishErrors.clear();
-    const request: AiOutfitPreviewRequest = { ...this.request, count };
+    const request: AiOutfitPreviewRequest = {
+      ...this.request,
+      count,
+      ...(maxTotalPrice !== undefined ? { maxTotalPrice: Math.round(maxTotalPrice * 100) / 100 } : {}),
+    };
+    if (maxTotalPrice === undefined) delete request.maxTotalPrice;
     // Keep the normalized request available to the UI/tests and aligned with the backend response.
     this.request = request;
 
