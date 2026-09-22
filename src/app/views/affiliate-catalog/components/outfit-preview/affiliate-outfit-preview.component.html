@@ -3,7 +3,7 @@
     <div>
       <h2 id="ai-preview-title">Preview outfit AI</h2>
       <p>
-        Genera da 3 a 6 look dal catalogo e salva solo gli outfit che approvi.
+        Genera da 1 a 6 look dal catalogo. Le preview vengono salvate come bozze e puoi approvarle anche in un secondo momento.
       </p>
     </div>
   </header>
@@ -85,8 +85,53 @@
     {{ error }}
   </div>
 
+  <section class="draft-queue" *ngIf="draftsLoading || pendingDrafts.length" aria-label="Outfit AI in attesa di approvazione">
+    <div class="draft-queue__heading">
+      <div>
+        <span class="draft-queue__eyebrow">Bozze salvate</span>
+        <h3>In attesa di approvazione</h3>
+        <p>Le preview generate restano disponibili anche dopo aver chiuso o ricaricato la pagina.</p>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-primary" (click)="loadDrafts()" [disabled]="draftsLoading">
+        <span class="mdi" [class.mdi-loading]="draftsLoading" [class.mdi-spin]="draftsLoading" [class.mdi-refresh]="!draftsLoading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+
+    <div class="draft-queue__loading" *ngIf="draftsLoading && !pendingDrafts.length" role="status">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      Caricamento bozze…
+    </div>
+
+    <div class="draft-queue__grid" *ngIf="pendingDrafts.length">
+      <article class="draft-card" *ngFor="let draft of pendingDrafts; trackBy: trackDraft">
+        <img [src]="draft.outfit.previewImageUrl" [alt]="draft.outfit.title" loading="lazy">
+        <div class="draft-card__body">
+          <div class="draft-card__title">
+            <div>
+              <span>Generato {{ draft.generatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              <strong>{{ draft.outfit.title }}</strong>
+            </div>
+            <span class="badge text-bg-warning">PENDING</span>
+          </div>
+          <p>{{ draft.outfit.description }}</p>
+          <div class="draft-card__meta">
+            <span>{{ draft.outfit.gender }}</span>
+            <span>{{ draft.outfit.season }}</span>
+            <span>{{ draft.outfit.style }}</span>
+            <span *ngIf="draftCreator(draft) as creator">{{ creator.displayName }}</span>
+          </div>
+          <button type="button" class="btn btn-primary draft-card__open" (click)="resumeDraft(draft)">
+            <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
+            Apri e approva
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+
   <ng-container *ngIf="result as preview">
-    <section class="usage-panel" aria-label="Consumi generazione">
+    <section class="usage-panel" *ngIf="!resumedDraftId" aria-label="Consumi generazione">
       <div class="usage-card usage-card--primary">
         <span>{{ preview.usage.imageGeneration ? 'Token totali' : 'Token stylist' }}</span>
         <strong>{{ formatTokens(preview.usage.totalTokens) }}</strong>
@@ -122,7 +167,7 @@
       </div>
     </section>
 
-    <div class="ai-preview__meta" *ngIf="costEstimate(preview) as cost">
+    <div class="ai-preview__meta" *ngIf="!resumedDraftId && costEstimate(preview) as cost">
       <span>Terra stylist {{ formatEuro(cost.stylistUsd * cost.usdToEurRate) }} · orchestrazione immagini {{ formatEuro(cost.imageOrchestrationUsd * cost.usdToEurRate) }}</span>
       <span>Totale token misurabile {{ formatUsd(cost.measurableTotalUsd) }} · cambio 1 USD = {{ cost.usdToEurRate }} EUR</span>
       <span>Il costo del modello immagini Sunburst non è incluso: il payload Responses attuale non espone un breakdown di billing sufficiente per calcolarlo con certezza.</span>
@@ -130,8 +175,9 @@
     </div>
 
     <div class="ai-preview__meta">
-      <span>Generati {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+      <span>{{ resumedDraftId ? 'Bozza generata' : 'Generati' }} {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
       <span>{{ preview.outfits.length }} outfit · {{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style }}</span>
+      <span *ngIf="resumedDraftId">Bozza persistita · {{ resumedDraftId }}</span>
     </div>
 
     <section class="outfit-grid" aria-label="Outfit generati">
@@ -246,9 +292,9 @@
     </section>
   </ng-container>
 
-  <div class="ai-preview__empty" *ngIf="!loading && !error && !result">
+  <div class="ai-preview__empty" *ngIf="!loading && !error && !result && !pendingDrafts.length && !draftsLoading">
     <span class="mdi mdi-account-tie-hat-outline" aria-hidden="true"></span>
-    <strong>Nessuna preview generata</strong>
-    <span>Usa i filtri qui sopra per creare il prossimo batch di outfit.</span>
+    <strong>Nessuna preview da approvare</strong>
+    <span>Usa i filtri qui sopra per creare il prossimo outfit o batch.</span>
   </div>
 </section>

@@ -89,7 +89,7 @@ export interface AiOutfitPreviewRequest {
   season: AiOutfitPreviewSeason;
   occasion: AiOutfitPreviewOccasion;
   style: AiOutfitPreviewStyle;
-  /** Optional for rollout compatibility; Admin sends 3-6 and backend defaults to 3 when omitted. */
+  /** Optional for rollout compatibility; Admin sends 1-6 and backend defaults to 3 when omitted. */
   count?: number;
   /** Real Firebase UID of the managed AI creator selected for this batch. */
   creatorUid?: string;
@@ -136,6 +136,8 @@ export interface AiOutfitPreviewProduct {
 }
 
 export interface AiOutfitPreviewOutfit {
+  /** Persisted aiOutfitDrafts document ID assigned by the backend. */
+  draftId?: string;
   title: string;
   description: string;
   gender: 'U' | 'D';
@@ -155,6 +157,27 @@ export interface AiOutfitPreviewResult {
   imagesEvaluated: number;
   usage: AiOutfitPreviewUsage;
   outfits: AiOutfitPreviewOutfit[];
+}
+
+export interface AiOutfitDraft {
+  id: string;
+  batchId: string;
+  batchIndex: number;
+  status: 'PENDING' | 'APPROVED';
+  generatedAt: number;
+  createdAt: number;
+  updatedAt: number;
+  generatedBy: string;
+  model: string;
+  providerResponseId: string | null;
+  request: AiOutfitPreviewRequest;
+  candidatesEvaluated: number;
+  imagesEvaluated: number;
+  usage: AiOutfitPreviewUsage;
+  outfit: AiOutfitPreviewOutfit;
+  publishedOutfitId?: string;
+  approvedBy?: string;
+  approvedAt?: number;
 }
 
 export type AffiliateProgramCreateInput = Pick<

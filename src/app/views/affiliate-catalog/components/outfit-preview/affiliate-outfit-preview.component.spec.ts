@@ -28,6 +28,7 @@ const previewResult: AiOutfitPreviewResult = {
     },
   },
   outfits: [1, 2, 3].map((index) => ({
+    draftId: `draft-${index}`,
     title: `Look ${index}`,
     description: `Descrizione ${index}`,
     gender: 'U' as const,
@@ -63,7 +64,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'publishOutfitPreview', 'getPrograms', 'getAiCreators'],
+      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'getPrograms', 'getAiCreators'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -94,6 +95,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
       createdAt: 1,
       updatedAt: 1,
     }]));
+    service.getPendingOutfitDrafts.and.returnValue(of([]));
     service.generateOutfitPreview.and.returnValue(of(structuredClone(previewResult)));
     service.publishOutfitPreview.and.returnValue(of({
       id: 'outfit-1',
@@ -140,6 +142,21 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(host.textContent).toContain('Merchant A');
   });
 
+  it('allows generating a single outfit', () => {
+    component.outfitCount = 1;
+    service.generateOutfitPreview.and.returnValue(of({
+      ...structuredClone(previewResult),
+      request: { ...previewResult.request, count: 1 },
+      outfits: [structuredClone(previewResult.outfits[0])],
+    }));
+
+    component.generate();
+
+    expect(component.error).toBe('');
+    expect(service.generateOutfitPreview).toHaveBeenCalledWith(jasmine.objectContaining({ count: 1 }));
+    expect(component.result?.outfits.length).toBe(1);
+  });
+
   it('publishes ids, canonical roles and normalized coordinates, then keeps the permanent image URL in the card', () => {
     component.generate();
     const outfit = component.result!.outfits[0];
@@ -153,6 +170,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
       gender: 'U',
       season: 'P',
       style: 'C',
+      draftId: 'draft-1',
       products: [
         { catalogProductId: 'p-1-1', role: 'TOP', x: 0.38, y: 0.34 },
         { catalogProductId: 'p-1-2', role: 'BOTTOM', x: 0.62, y: 0.61 },

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { PopUpService } from '../../../../core/popup/popup.service';
 import { AuthService } from '../../../../services/auth.service';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AffiliateAiCreatorsComponent } from './affiliate-ai-creators.component';
@@ -8,55 +9,26 @@ describe('AffiliateAiCreatorsComponent', () => {
   let fixture: ComponentFixture<AffiliateAiCreatorsComponent>;
   let component: AffiliateAiCreatorsComponent;
   let service: jasmine.SpyObj<AffiliateCatalogService>;
+  let popup: jasmine.SpyObj<PopUpService>;
 
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['getAiCreators', 'createAiCreator', 'updateAiCreator', 'uploadAiCreatorPhoto'],
+      ['getAiCreators'],
     );
+    popup = jasmine.createSpyObj<PopUpService>(
+      'PopUpService',
+      ['setNewPopUp', 'getOutputComponent', 'destroyCurrentOpenPopUpByGuid'],
+    );
+
     service.getAiCreators.and.returnValue(of([]));
-    service.createAiCreator.and.callFake((input) => of({
-      uid: 'creator-1',
-      ...input,
-      photoURL: input.photoURL || '',
-      createdAt: 1,
-      updatedAt: 1,
-    }));
-    service.uploadAiCreatorPhoto.and.callFake((uid) => of({
-      uid,
-      email: 'creator@example.com',
-      displayName: 'Creator Donna',
-      nome: 'Creator',
-      cognome: 'Donna',
-      bio: 'Virtual fashion creator',
-      photoURL: 'https://storage.test/profile.jpg',
-      gender: 'D',
-      styleAffinity: ['C', 'SC'],
-      personaPrompt: 'Casual contemporaneo e smart casual.',
-      active: true,
-      createdAt: 1,
-      updatedAt: 2,
-    }));
-    service.updateAiCreator.and.callFake((uid, input) => of({
-      uid,
-      email: 'creator@example.com',
-      displayName: input.displayName || 'Creator',
-      nome: input.nome || 'Nome',
-      cognome: input.cognome || 'Cognome',
-      bio: input.bio || 'Bio',
-      photoURL: input.photoURL || '',
-      gender: input.gender || 'D',
-      styleAffinity: input.styleAffinity || ['C'],
-      personaPrompt: input.personaPrompt || 'Persona',
-      active: input.active ?? true,
-      createdAt: 1,
-      updatedAt: 2,
-    }));
+    popup.getOutputComponent.and.returnValue(new Promise(() => {}));
 
     await TestBed.configureTestingModule({
       imports: [AffiliateAiCreatorsComponent],
       providers: [
         { provide: AffiliateCatalogService, useValue: service },
+        { provide: PopUpService, useValue: popup },
         { provide: AuthService, useValue: { isAdmin: () => true } },
       ],
     }).compileComponents();
@@ -71,55 +43,43 @@ describe('AffiliateAiCreatorsComponent', () => {
     expect(component.creators).toEqual([]);
   });
 
-  it('creates a real creator payload and keeps at least one style affinity', () => {
+  it('opens the DynamicForm host for a new creator', () => {
     component.openCreate();
-    Object.assign(component.draft, {
+
+    expect(popup.setNewPopUp).toHaveBeenCalled();
+    const args = popup.setNewPopUp.calls.mostRecent().args;
+    expect(args[1]).toBe('AffiliateAiCreatorFormHostComponent');
+    expect(args[2]).toEqual({ mode: 'create' });
+    expect(args[3]).toBe(760);
+  });
+
+  it('opens the DynamicForm host with edit data for an existing creator', () => {
+    const creator = {
+      uid: 'creator-1',
       email: 'creator@example.com',
       displayName: 'Creator Donna',
       nome: 'Creator',
       cognome: 'Donna',
-      bio: 'Virtual fashion creator di ComeMiVesto.',
-      gender: 'D',
-      styleAffinity: ['C', 'SC'],
-      personaPrompt: 'Casual contemporaneo e smart casual.',
+      bio: 'Virtual fashion creator',
+      photoURL: '',
+      gender: 'D' as const,
+      styleAffinity: ['C' as const, 'SC' as const],
+      personaPrompt: 'Casual contemporaneo.',
       active: true,
-    });
-    component.save();
+      createdAt: 1,
+      updatedAt: 1,
+    };
 
-    expect(service.createAiCreator).toHaveBeenCalledWith(jasmine.objectContaining({
-      email: 'creator@example.com',
-      gender: 'D',
-      styleAffinity: ['C', 'SC'],
-    }));
-    expect(component.creators[0].uid).toBe('creator-1');
+    component.openEdit(creator);
+
+    const args = popup.setNewPopUp.calls.mostRecent().args;
+    expect(args[1]).toBe('AffiliateAiCreatorFormHostComponent');
+    expect(args[2]).toEqual({ mode: 'edit', creator });
   });
 
-  it('uploads a selected photo after creating the real creator account', () => {
-    component.openCreate();
-    Object.assign(component.draft, {
-      email: 'creator@example.com',
-      displayName: 'Creator Donna',
-      nome: 'Creator',
-      cognome: 'Donna',
-      bio: 'Virtual fashion creator di ComeMiVesto.',
-      gender: 'D',
-      styleAffinity: ['C', 'SC'],
-      personaPrompt: 'Casual contemporaneo e smart casual.',
-      active: true,
-    });
-    component.pendingPhoto = new Blob(['jpeg'], { type: 'image/jpeg' });
-    component.save();
-
-    expect(service.uploadAiCreatorPhoto).toHaveBeenCalledWith(
-      'creator-1',
-      jasmine.any(Blob),
-    );
-    expect(component.creators[0].photoURL).toBe('https://storage.test/profile.jpg');
-  });
-
-  it('does not allow removing the last style affinity', () => {
-    component.draft.styleAffinity = ['C'];
-    component.toggleStyle('C');
-    expect(component.draft.styleAffinity).toEqual(['C']);
+  it('keeps creator labels aligned with canonical values', () => {
+    expect(component.genderLabel('D')).toBe('Donna');
+    expect(component.genderLabel('U')).toBe('Uomo');
+    expect(component.styleLabel('SC')).toBe('Smart casual');
   });
 });

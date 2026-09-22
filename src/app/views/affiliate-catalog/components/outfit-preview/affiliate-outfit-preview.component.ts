@@ -3,6 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import {
+  AiOutfitDraft,
   AiOutfitPreviewOccasion,
   AiOutfitPreviewOutfit,
   AiOutfitPreviewProduct,
@@ -32,7 +33,7 @@ interface SelectOption<T extends string> {
 export class AffiliateOutfitPreviewComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
 
-  readonly minOutfitCount = 3;
+  readonly minOutfitCount = 1;
   readonly maxOutfitCount = 6;
   readonly fallbackAvatar = 'https://ionicframework.com/docs/img/demos/avatar.svg';
 
@@ -82,6 +83,9 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   programNames = new Map<string, string>();
   creators: AiCreator[] = [];
   creatorsLoading = false;
+  pendingDrafts: AiOutfitDraft[] = [];
+  draftsLoading = false;
+  resumedDraftId: string | null = null;
   readonly publishing = new Set<string>();
   readonly published = new Map<string, string>();
   readonly publishErrors = new Map<string, string>();
@@ -101,6 +105,40 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
         next: (creators) => this.creators = creators,
         error: () => {},
       });
+    this.loadDrafts();
+  }
+
+  loadDrafts(): void {
+    if (this.draftsLoading) return;
+    this.draftsLoading = true;
+    this.affiliateCatalogService.getPendingOutfitDrafts()
+      .pipe(finalize(() => this.draftsLoading = false))
+      .subscribe({
+        next: (drafts) => this.pendingDrafts = drafts,
+        error: () => {},
+      });
+  }
+
+  resumeDraft(draft: AiOutfitDraft): void {
+    const result: AiOutfitPreviewResult = {
+      generatedAt: draft.generatedAt,
+      model: draft.model,
+      providerResponseId: draft.providerResponseId,
+      request: { ...draft.request },
+      candidatesEvaluated: draft.candidatesEvaluated,
+      imagesEvaluated: draft.imagesEvaluated,
+      usage: draft.usage,
+      outfits: [{ ...draft.outfit, draftId: draft.id }],
+    };
+    this.ensureTagPositions(result);
+    this.result = result;
+    this.resumedDraftId = draft.id;
+    this.request = { ...draft.request };
+    this.outfitCount = draft.request.count ?? 1;
+    this.error = '';
+    this.publishing.clear();
+    this.published.clear();
+    this.publishErrors.clear();
   }
 
   availableCreators(): AiCreator[] {
@@ -130,6 +168,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.result = null;
+    this.resumedDraftId = null;
     this.publishing.clear();
     this.published.clear();
     this.publishErrors.clear();
@@ -143,6 +182,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
         next: (result) => {
           this.ensureTagPositions(result);
           this.result = result;
+          this.loadDrafts();
         },
         error: (error) => {
           const status = Number(error?.status ?? 0);
@@ -168,6 +208,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       season: outfit.season,
       style: outfit.style,
       ...(creatorUid ? { creatorUid } : {}),
+      ...(outfit.draftId ? { draftId: outfit.draftId } : {}),
       products: outfit.products.map((product) => ({
         catalogProductId: product.catalogProductId,
         role: product.role,
@@ -183,6 +224,9 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
         next: (published) => {
           this.published.set(key, published.id);
           outfit.previewImageUrl = published.imageUrl;
+          if (outfit.draftId) {
+            this.pendingDrafts = this.pendingDrafts.filter((draft) => draft.id !== outfit.draftId);
+          }
         },
         error: (error) => {
           const status = Number(error?.status ?? 0);
@@ -196,7 +240,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   }
 
   outfitKey(outfit: AiOutfitPreviewOutfit): string {
-    return `${outfit.title}|${outfit.products.map((product) => product.catalogProductId).join('|')}`;
+    return outfit.draftId || `${outfit.title}|${outfit.products.map((product) => product.catalogProductId).join('|')}`;
   }
 
   selectProductTag(outfit: AiOutfitPreviewOutfit, product: AiOutfitPreviewProduct, event?: Event): void {
@@ -327,6 +371,14 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       minimumFractionDigits: 3,
       maximumFractionDigits: 4,
     }).format(value);
+  }
+
+  draftCreator(draft: AiOutfitDraft): AiCreator | undefined {
+    return this.creatorByUid(draft.outfit.creatorUid || draft.request.creatorUid);
+  }
+
+  trackDraft(_index: number, draft: AiOutfitDraft): string {
+    return draft.id;
   }
 
   trackOutfit(index: number, outfit: AiOutfitPreviewOutfit): string {

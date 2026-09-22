@@ -21,6 +21,7 @@ import {
   AffiliateProductUpdateInput,
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
+  AiOutfitDraft,
   AiOutfitPreviewRequest,
   AiOutfitPreviewResult,
   CatalogTaxonomyRepairResult,
@@ -48,6 +49,13 @@ export class AffiliateCatalogService {
   generateOutfitPreview(input: AiOutfitPreviewRequest): Observable<AiOutfitPreviewResult> {
     return this.http
       .post<AffiliateApiResponse<AiOutfitPreviewResult>>(`${this.baseUrl}/outfit-generator/preview`, input)
+      .pipe(map((response) => response.data));
+  }
+
+  getPendingOutfitDrafts(limit = 100): Observable<AiOutfitDraft[]> {
+    const params = new HttpParams().set('limit', String(limit));
+    return this.http
+      .get<AffiliateApiResponse<AiOutfitDraft[]>>(`${this.baseUrl}/outfit-generator/drafts`, { params })
       .pipe(map((response) => response.data));
   }
 
