@@ -129,6 +129,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       candidatesEvaluated: draft.candidatesEvaluated,
       imagesEvaluated: draft.imagesEvaluated,
       usage: draft.usage,
+      ...(draft.creatorSnapshot ? { creatorSnapshot: { ...draft.creatorSnapshot } } : {}),
       outfits: [{ ...draft.outfit, draftId: draft.id }],
     };
     this.ensureTagPositions(result);
