@@ -5,7 +5,7 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 1100;
+  z-index: var(--cmv-layer-header, 1100);
   width: 100%;
   height: var(--header_height, 65px);
   background: var(--cmv-color-surface, #fff);
