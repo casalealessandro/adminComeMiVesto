@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { DynamicFormComponent } from '../../../core/forms/dynamic-form/dynamic-form.component';
-import { FORM_DEFINITION_REPOSITORY } from '../../../core/forms/contracts/form-definition-repository';
 import {
   AiCreator,
   AiCreatorCreateInput,
@@ -11,11 +10,6 @@ import {
   AiCreatorUpdateInput,
 } from '../models/ai-creator.models';
 import { AffiliateCatalogService } from '../services/affiliate-catalog.service';
-import {
-  AFFILIATE_AI_CREATOR_CREATE_FORM,
-  AFFILIATE_AI_CREATOR_EDIT_FORM,
-  AffiliateAiCreatorFormDefinitionRepository,
-} from './affiliate-ai-creator-form-definition.repository';
 
 export type AffiliateAiCreatorFormMode = 'create' | 'edit';
 
@@ -85,12 +79,6 @@ export function aiCreatorErrorMessage(status: number): string {
   selector: 'app-affiliate-ai-creator-form-host',
   standalone: true,
   imports: [CommonModule, DynamicFormComponent],
-  providers: [
-    {
-      provide: FORM_DEFINITION_REPOSITORY,
-      useClass: AffiliateAiCreatorFormDefinitionRepository,
-    },
-  ],
   templateUrl: './affiliate-ai-creator-form-host.component.html',
   styleUrl: './affiliate-ai-creator-form-host.component.scss',
 })
@@ -109,11 +97,7 @@ export class AffiliateAiCreatorFormHostComponent {
     active: true,
   };
 
-  get formId(): string {
-    return this.itemData.mode === 'edit'
-      ? AFFILIATE_AI_CREATOR_EDIT_FORM
-      : AFFILIATE_AI_CREATOR_CREATE_FORM;
-  }
+  readonly formId = 'affiliateAiCreator';
 
   handleForm(event: AffiliateAiCreatorFormEvent): void {
     if (event.name === 'cancelForm') {
