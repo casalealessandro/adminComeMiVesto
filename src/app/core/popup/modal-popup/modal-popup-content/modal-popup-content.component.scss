@@ -1,154 +1,102 @@
 ::ng-deep.popup {
   z-index: var(--cmv-layer-modal, 2000);
   pointer-events: auto;
-  background-color: rgba(255, 255, 255, .8);
   overflow: hidden;
   overscroll-behavior: none;
+  padding: 1rem;
+  background: rgb(15 23 42 / .42);
+  backdrop-filter: blur(2px);
 
   .modal-dialog {
-
-    max-width: 90%;
-    max-height: calc(100vh - 2rem);
-    max-height: calc(100dvh - 2rem);
-    margin: 1rem auto;
-    border: 1px solid var(--primary);
-    background: #fff;
-    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
-    border-radius: 4px;
-    pointer-events: auto;
-    width: fit-content;
     display: flex;
     flex-direction: column;
+    width: fit-content;
+    max-width: min(92vw, 1200px);
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    margin: 0 auto;
     overflow: hidden;
+    pointer-events: auto;
+    background: var(--bianco, #fff);
+    border: 1px solid var(--border_color, #e2e8f0);
+    border-radius: .85rem;
+    box-shadow: 0 24px 64px rgb(15 23 42 / .22);
 
     > app-caption {
       flex: 0 0 auto;
     }
-   
-    .caption-container {
-      &.popup-caption{
-          
-          border: 1px solid var(--border_color);
-        
-      }
+
+    .caption-container.popup-caption {
+      min-height: 54px;
+      border: 0;
+      border-bottom: 1px solid var(--border_color, #e2e8f0);
+      border-radius: 0;
+      background: var(--bianco, #fff);
     }
+
     .modal-content {
-      border: none;
-      box-sizing: border-box;
-      background: transparent;
       flex: 1 1 auto;
       min-height: 0;
       overflow: auto;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+      background: var(--bianco, #fff);
+      border: 0;
 
       .formEdit {
-        background: var(--bg-grey);
+        background: var(--bg-grey, #f8fafc);
       }
-
-      
-
-
-
     }
-
-
-
   }
 }
 
 ::ng-deep.position-bottom {
+  display: flex !important;
+  align-items: flex-end;
+
   .modal-dialog {
-    z-index: 1;
-    bottom: 2rem;
-    left: 0;
-    right: 0;
-    position: fixed;
-    max-width: 96%;
-    background: transparent;
-  }
-
-  /* Per l' apertura popup */
-
-}
-
-.fade-in-fwd {
-  -webkit-animation: fade-in-fwd 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-  animation: fade-in-fwd 0.4s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-}
-
-@-webkit-keyframes fade-in-fwd {
-  0% {
-    -webkit-transform: translateZ(-80px);
-    transform: translateZ(-80px);
-    opacity: 0;
-  }
-
-  100% {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    opacity: 1;
+    position: relative;
+    inset: auto;
+    width: min(96vw, 1200px);
+    max-width: 96vw;
+    margin: 0 auto;
+    background: var(--bianco, #fff);
   }
 }
 
-@keyframes fade-in-fwd {
-  0% {
-    -webkit-transform: translateZ(-80px);
-    transform: translateZ(-80px);
-    opacity: 0;
-  }
-
-  100% {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    opacity: 1;
-  }
-}
-
-
-
-/* Per la chisura popup */
-.fade-out-bck {
-  -webkit-animation: fade-out-bck 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
-  animation: fade-out-bck 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
-}
-
-
-@keyframes fade-out-bck {
-  0% {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    opacity: 1;
-  }
-
-  100% {
-    -webkit-transform: translateZ(-80px);
-    transform: translateZ(-80px);
-    opacity: 0;
-  }
-}
-
-/**Slide**/
+.fade-in-fwd,
 .slide-center {
-  -webkit-animation: slide-center-fw 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) none;
-  animation: slide-center-fw 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) none;
+  animation: popup-enter .18s ease-out both;
 }
 
+.fade-out-bck {
+  animation: popup-exit .16s ease-in both;
+}
 
-
-@keyframes slide-center-fw {
-  0% {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
+@keyframes popup-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(.985);
   }
 
-  100% {
-    -webkit-transform: translateZ(160px);
-    transform: translateZ(160px);
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
+@keyframes popup-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(.99);
+  }
+}
 
 ::ng-deep.modal-content .modal-data-grid-wrapper {
   margin: auto;
@@ -156,16 +104,27 @@
 
 @media (max-width: 600px) {
   ::ng-deep.popup {
+    padding: .5rem;
+
     .modal-dialog {
       width: calc(100vw - 1rem) !important;
       max-width: calc(100vw - 1rem) !important;
       max-height: calc(100dvh - 1rem);
-      margin: 0.5rem auto;
+      margin: 0 auto;
+      border-radius: .7rem;
     }
 
     .modal-content {
       min-width: 0;
       max-width: 100%;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-fwd,
+  .slide-center,
+  .fade-out-bck {
+    animation: none;
   }
 }
