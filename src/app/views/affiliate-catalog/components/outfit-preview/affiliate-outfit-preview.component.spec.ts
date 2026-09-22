@@ -142,6 +142,24 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(host.textContent).toContain('Merchant A');
   });
 
+  it('shows when the creator profile photo was used as visual identity reference', () => {
+    service.generateOutfitPreview.and.returnValue(of({
+      ...structuredClone(previewResult),
+      creatorSnapshot: {
+        uid: 'creator-d',
+        displayName: 'Creator Donna',
+        photoURL: 'https://example.test/avatar.jpg',
+        visualIdentityApplied: true,
+      },
+    }));
+
+    component.generate();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Identità visiva creator applicata');
+    expect(fixture.nativeElement.textContent).toContain('Creator Donna');
+  });
+
   it('sends an optional maximum total budget with the generation request', () => {
     component.outfitCount = 1;
     component.maxTotalPrice = 250;
