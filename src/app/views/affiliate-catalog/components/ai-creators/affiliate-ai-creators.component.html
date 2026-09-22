@@ -63,10 +63,33 @@
           <option value="U">Uomo</option>
         </select>
       </label>
-      <label>
-        <span>Foto profilo HTTPS</span>
-        <input class="form-control" type="url" [(ngModel)]="draft.photoURL" placeholder="https://…">
-      </label>
+      <div class="creator-form__photo">
+        <span class="creator-form__label">Foto profilo</span>
+        <div class="creator-photo-picker">
+          <img [src]="profilePhotoPreview()" [alt]="draft.displayName || 'Anteprima foto creator'">
+          <div>
+            <input
+              #photoInput
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+              (change)="onPhotoSelected($event)">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              (click)="photoInput.click()"
+              [disabled]="saving">
+              <span class="mdi mdi-camera-outline" aria-hidden="true"></span>
+              {{ pendingPhoto ? 'Sostituisci foto' : 'Carica foto' }}
+            </button>
+            <small>JPG, PNG o WebP · massimo 5 MB. L'immagine viene ritagliata quadrata e ottimizzata automaticamente.</small>
+            <span *ngIf="pendingPhoto" class="creator-photo-picker__ready">
+              <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
+              Foto pronta per il caricamento
+            </span>
+          </div>
+        </div>
+      </div>
       <label class="creator-form__wide">
         <span>Bio pubblica *</span>
         <textarea class="form-control" rows="3" maxlength="500" [(ngModel)]="draft.bio"

@@ -49,6 +49,8 @@ export class AffiliateAiCreatorsComponent implements OnInit {
   formOpen = false;
   editingUid: string | null = null;
   draft: AiCreatorCreateInput = this.emptyDraft();
+  pendingPhoto: Blob | null = null;
+  photoPreviewUrl: string | null = null;
 
   ngOnInit(): void {
     this.refresh();
@@ -69,6 +71,7 @@ export class AffiliateAiCreatorsComponent implements OnInit {
   openCreate(): void {
     if (!this.auth.isAdmin()) return;
     this.editingUid = null;
+    this.resetPendingPhoto();
     this.draft = this.emptyDraft();
     this.formOpen = true;
     this.error = '';
@@ -77,6 +80,7 @@ export class AffiliateAiCreatorsComponent implements OnInit {
   openEdit(creator: AiCreator): void {
     if (!this.auth.isAdmin()) return;
     this.editingUid = creator.uid;
+    this.resetPendingPhoto();
     this.draft = {
       email: creator.email,
       displayName: creator.displayName,
@@ -97,6 +101,7 @@ export class AffiliateAiCreatorsComponent implements OnInit {
     if (this.saving) return;
     this.formOpen = false;
     this.editingUid = null;
+    this.resetPendingPhoto();
     this.draft = this.emptyDraft();
   }
 
@@ -111,16 +116,37 @@ export class AffiliateAiCreatorsComponent implements OnInit {
       ? this.affiliateCatalogService.updateAiCreator(this.editingUid, this.toUpdateInput(payload))
       : this.affiliateCatalogService.createAiCreator(payload);
 
-    request.pipe(finalize(() => this.saving = false)).subscribe({
+    request.subscribe({
       next: (creator) => {
-        const index = this.creators.findIndex((item) => item.uid === creator.uid);
-        if (index >= 0) this.creators[index] = creator;
-        else this.creators = [...this.creators, creator];
-        this.formOpen = false;
-        this.editingUid = null;
-        this.draft = this.emptyDraft();
+        if (!this.pendingPhoto) {
+          this.finishSave(creator);
+          return;
+        }
+
+        this.affiliateCatalogService.uploadAiCreatorPhoto(creator.uid, this.pendingPhoto).subscribe({
+          next: (updatedCreator) => this.finishSave(updatedCreator),
+          error: () => {
+            this.saving = false;
+            this.editingUid = creator.uid;
+            this.draft = {
+              email: creator.email,
+              displayName: creator.displayName,
+              nome: creator.nome,
+              cognome: creator.cognome,
+              bio: creator.bio,
+              photoURL: creator.photoURL,
+              gender: creator.gender,
+              styleAffinity: [...creator.styleAffinity],
+              personaPrompt: creator.personaPrompt,
+              active: creator.active,
+            };
+            this.refresh();
+            this.error = 'Creator salvato, ma il caricamento della foto non è riuscito. Riprova dalla modifica del creator.';
+          },
+        });
       },
       error: (error) => {
+        this.saving = false;
         const status = Number(error?.status ?? 0);
         if (status === 409) this.error = 'Esiste già un account con questa email oppure il creator non è utilizzabile.';
         else if (status === 422) this.error = 'Nome, bio o immagine del profilo non superano i controlli di moderazione.';
@@ -128,6 +154,33 @@ export class AffiliateAiCreatorsComponent implements OnInit {
         else this.error = error?.error?.message || 'Impossibile salvare il creator AI.';
       },
     });
+  }
+
+  async onPhotoSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type) || file.size > 5 * 1024 * 1024) {
+      this.error = 'Seleziona un’immagine JPG, PNG o WebP di massimo 5 MB.';
+      return;
+    }
+
+    try {
+      const photo = await this.prepareProfilePhoto(file);
+      this.resetPendingPhoto();
+      this.pendingPhoto = photo;
+      this.photoPreviewUrl = URL.createObjectURL(photo);
+      this.error = '';
+    } catch {
+      this.error = 'Non è stato possibile preparare la foto profilo.';
+    }
+  }
+
+  profilePhotoPreview(): string {
+    return this.photoPreviewUrl || this.draft.photoURL || this.fallbackAvatar;
   }
 
   toggleStyle(style: AiCreatorStyle): void {
@@ -159,6 +212,66 @@ export class AffiliateAiCreatorsComponent implements OnInit {
     return creator.uid;
   }
 
+  private finishSave(creator: AiCreator): void {
+    const index = this.creators.findIndex((item) => item.uid === creator.uid);
+    if (index >= 0) this.creators[index] = creator;
+    else this.creators = [...this.creators, creator];
+    this.saving = false;
+    this.formOpen = false;
+    this.editingUid = null;
+    this.resetPendingPhoto();
+    this.draft = this.emptyDraft();
+  }
+
+  private resetPendingPhoto(): void {
+    if (this.photoPreviewUrl) URL.revokeObjectURL(this.photoPreviewUrl);
+    this.pendingPhoto = null;
+    this.photoPreviewUrl = null;
+  }
+
+  private prepareProfilePhoto(file: File): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('file-read'));
+      reader.onload = () => {
+        const image = new Image();
+        image.onerror = () => reject(new Error('image-load'));
+        image.onload = () => {
+          const cropSize = Math.min(image.naturalWidth, image.naturalHeight);
+          const targetSize = Math.min(512, cropSize);
+          const sourceX = (image.naturalWidth - cropSize) / 2;
+          const sourceY = (image.naturalHeight - cropSize) / 2;
+          const canvas = document.createElement('canvas');
+          canvas.width = targetSize;
+          canvas.height = targetSize;
+          const context = canvas.getContext('2d');
+          if (!context) {
+            reject(new Error('canvas'));
+            return;
+          }
+          context.drawImage(
+            image,
+            sourceX,
+            sourceY,
+            cropSize,
+            cropSize,
+            0,
+            0,
+            targetSize,
+            targetSize,
+          );
+          canvas.toBlob(
+            (blob) => blob ? resolve(blob) : reject(new Error('jpeg')),
+            'image/jpeg',
+            0.88,
+          );
+        };
+        image.src = String(reader.result || '');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   private emptyDraft(): AiCreatorCreateInput {
     return {
       email: '',
@@ -181,7 +294,6 @@ export class AffiliateAiCreatorsComponent implements OnInit {
       nome: this.draft.nome.trim(),
       cognome: this.draft.cognome.trim(),
       bio: this.draft.bio.trim(),
-      photoURL: this.draft.photoURL?.trim() || undefined,
       gender: this.draft.gender,
       styleAffinity: [...this.draft.styleAffinity],
       personaPrompt: this.draft.personaPrompt.trim(),
@@ -192,15 +304,11 @@ export class AffiliateAiCreatorsComponent implements OnInit {
       this.error = 'Compila tutti i campi obbligatori e seleziona almeno uno stile.';
       return null;
     }
-    if (payload.photoURL && !/^https:\/\//i.test(payload.photoURL)) {
-      this.error = 'La foto profilo deve usare un URL HTTPS.';
-      return null;
-    }
     return payload;
   }
 
   private toUpdateInput(payload: AiCreatorCreateInput): AiCreatorUpdateInput {
-    const { email: _email, ...update } = payload;
+    const { email: _email, photoURL: _photoURL, ...update } = payload;
     return update;
   }
 }

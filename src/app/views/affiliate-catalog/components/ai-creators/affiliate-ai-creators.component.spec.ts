@@ -12,7 +12,7 @@ describe('AffiliateAiCreatorsComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['getAiCreators', 'createAiCreator', 'updateAiCreator'],
+      ['getAiCreators', 'createAiCreator', 'updateAiCreator', 'uploadAiCreatorPhoto'],
     );
     service.getAiCreators.and.returnValue(of([]));
     service.createAiCreator.and.callFake((input) => of({
@@ -21,6 +21,21 @@ describe('AffiliateAiCreatorsComponent', () => {
       photoURL: input.photoURL || '',
       createdAt: 1,
       updatedAt: 1,
+    }));
+    service.uploadAiCreatorPhoto.and.callFake((uid) => of({
+      uid,
+      email: 'creator@example.com',
+      displayName: 'Creator Donna',
+      nome: 'Creator',
+      cognome: 'Donna',
+      bio: 'Virtual fashion creator',
+      photoURL: 'https://storage.test/profile.jpg',
+      gender: 'D',
+      styleAffinity: ['C', 'SC'],
+      personaPrompt: 'Casual contemporaneo e smart casual.',
+      active: true,
+      createdAt: 1,
+      updatedAt: 2,
     }));
     service.updateAiCreator.and.callFake((uid, input) => of({
       uid,
@@ -77,6 +92,29 @@ describe('AffiliateAiCreatorsComponent', () => {
       styleAffinity: ['C', 'SC'],
     }));
     expect(component.creators[0].uid).toBe('creator-1');
+  });
+
+  it('uploads a selected photo after creating the real creator account', () => {
+    component.openCreate();
+    Object.assign(component.draft, {
+      email: 'creator@example.com',
+      displayName: 'Creator Donna',
+      nome: 'Creator',
+      cognome: 'Donna',
+      bio: 'Virtual fashion creator di ComeMiVesto.',
+      gender: 'D',
+      styleAffinity: ['C', 'SC'],
+      personaPrompt: 'Casual contemporaneo e smart casual.',
+      active: true,
+    });
+    component.pendingPhoto = new Blob(['jpeg'], { type: 'image/jpeg' });
+    component.save();
+
+    expect(service.uploadAiCreatorPhoto).toHaveBeenCalledWith(
+      'creator-1',
+      jasmine.any(Blob),
+    );
+    expect(component.creators[0].photoURL).toBe('https://storage.test/profile.jpg');
   });
 
   it('does not allow removing the last style affinity', () => {

@@ -186,6 +186,13 @@ describe('AffiliateCatalogService release contract', () => {
     expect(updateRequest.request.method).toBe('PUT');
     expect(updateRequest.request.body).toEqual({ active: false });
     updateRequest.flush({ data: { ...creator, active: false } });
+
+    service.uploadAiCreatorPhoto('creator/1', new Blob(['jpeg'], { type: 'image/jpeg' })).subscribe();
+    const photoRequest = http.expectOne(`${baseUrl}/ai-creators/creator%2F1/photo`);
+    expect(photoRequest.request.method).toBe('PUT');
+    expect(photoRequest.request.headers.get('Content-Type')).toBe('image/jpeg');
+    expect(photoRequest.request.body instanceof Blob).toBeTrue();
+    photoRequest.flush({ data: { ...creator, photoURL: 'https://storage.test/profile.jpg' } });
   });
 
   it('loads programs from the configured API base and unwraps data without adding auth headers', () => {
