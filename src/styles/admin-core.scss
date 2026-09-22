@@ -4,27 +4,23 @@
     box-sizing: border-box;
     border-width: 0;
     border-style: solid;
-    border-color: #e5e7eb;
+    border-color: var(--cmv-color-border, #e5e7eb);
 }
 
 body {
     height: 100%;
-    font-family: 'Public Sans', sans-serif !important;
+    font-family: var(--cmv-font-family, 'Public Sans', sans-serif);
     letter-spacing: .025em;
-    font-size: .875rem;
+    font-size: var(--cmv-font-size-body, .875rem);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #475569;
-    line-height: 1.25rem;
-    background-color: var(--bg-grey);
+    color: var(--cmv-color-text, #475569);
+    line-height: var(--cmv-line-height-body, 1.5);
+    background-color: var(--cmv-color-bg, #f4f7fa);
 }
 
 img {
     max-width: 100%;
-}
-
-a {
-    color: var(--blueSoft) !important;
 }
 
 h2,
@@ -37,20 +33,14 @@ h3,
     font-size: 1rem;
 }
 
-div {
-    position: relative;
-    max-width: 100%;
-}
-
 .icon-button {
     background: none;
     border: none;
     color: var(--primary);
-
 }
 
 .del {
-    color: rgba(185, 28, 28, 1)
+    color: var(--cmv-color-danger, rgba(185, 28, 28, 1));
 }
 
 .ana-button {
@@ -83,7 +73,7 @@ div {
     background: var(--bg-grey);
     width: 100%;
     height: 100%;
-    z-index: +300;
+    z-index: 300;
 
     .c-loader {
         width: 50px;
@@ -114,11 +104,12 @@ div {
     font-weight: 500;
 }
 
-
-
-
-*:focus {
-    outline: none;
+/* Never remove focus globally. Keyboard users must have an explicit,
+ * themeable focus indicator.
+ */
+:focus-visible {
+    outline: 3px solid var(--cmv-focus-ring, rgb(37 99 235 / .28));
+    outline-offset: 2px;
 }
 
 .no-padding {
@@ -139,8 +130,7 @@ div {
     max-width: 100% !important;
 }
 
-
-/* Sovrascrivi lo stile predefinito dell'autocompletamento */
+/* Preserve readable autofill text without suppressing focus indication. */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -151,12 +141,9 @@ input:-webkit-autofill:active {
     box-shadow: inset 0 0 20px 20px transparent;
 }
 
-
 .flx-align-end {
     justify-content: end;
 }
-
-
 
 .nav-link {
     padding: 0.1rem;
@@ -167,7 +154,6 @@ input:-webkit-autofill:active {
 .text {
     font-size: .94rem;
 }
-
 
 .items-center {
     align-items: center;
@@ -185,7 +171,7 @@ input:-webkit-autofill:active {
     transform: translate(-50%, -50%);
 
     .ui-modal-dialog-content {
-        margin: 0px 10px;
+        margin: 0 10px;
 
         .ui-modal-title {
             position: relative;
@@ -193,7 +179,6 @@ input:-webkit-autofill:active {
             display: block;
             box-sizing: border-box;
             overflow: visible;
-            -webkit-box-shadow: none;
             box-shadow: none;
             max-height: 27px;
             border-bottom: 1px solid var(--bg-grey);
@@ -203,11 +188,9 @@ input:-webkit-autofill:active {
         }
 
         .ui-modal-body-message {
-
             box-sizing: content-box;
             padding: 10px;
             font-size: 14px;
-
         }
 
         .ui-modal-footer-message {
@@ -237,58 +220,51 @@ input:-webkit-autofill:active {
                     background-color: var(--bg-grey);
                 }
             }
-
         }
-
-
     }
 }
 
 .accordion-button {
     &:not(.collapsed) {
-    
         background-color: var(--table-th-bg);
-      
     }
-
-    
-
 }
+
 .mi-container {
     &.menu-over {
-        .menu-container{
+        .menu-container {
             position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      transform: translateX(-100%);
-      z-index: 1000;
-      &.open {
-        transform: translateX(0);
-      }
+            top: 0;
+            left: 0;
+            height: 100%;
+            transform: translateX(-100%);
+            z-index: 1000;
+
+            &.open {
+                transform: translateX(0);
+            }
         }
-      
     }
+
     &.menu-side {
-        .menu-container{
+        .menu-container {
             transform: none;
             height: 100vh;
             position: relative;
-            .nav-item  {
-                .menu-label{
+
+            .nav-item {
+                .menu-label {
                     display: none;
                 }
             }
         }
-      
     }
+
     &.menu-push {
-        .menu-container{
+        .menu-container {
             height: 100vh;
             transform: none;
             position: relative;
         }
-       
     }
-
 }
