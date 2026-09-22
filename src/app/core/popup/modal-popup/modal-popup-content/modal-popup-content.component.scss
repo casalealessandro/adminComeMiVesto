@@ -1,5 +1,5 @@
 ::ng-deep.popup {
-  z-index: 2000;
+  z-index: var(--cmv-layer-modal, 2000);
   pointer-events: auto;
   background-color: rgba(255, 255, 255, .8);
   overflow: hidden;
