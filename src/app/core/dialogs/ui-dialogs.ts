@@ -112,13 +112,13 @@ export const confirm = (messageHtml: string, title: string, callback?: (resp?: a
   cancelButton.type = 'button';
   okButton.classList.add('ui-modal-button', 'ui-modal-button-primary');
   cancelButton.classList.add('ui-modal-button');
-  okButton.textContent = 'Sì';
+  okButton.textContent = 'Si';
   cancelButton.textContent = 'No';
 
   const footer = alertElement.querySelector('.ui-modal-footer-message')!;
   footer.innerHTML = '';
-  footer.appendChild(cancelButton);
   footer.appendChild(okButton);
+  footer.appendChild(cancelButton);
 
   const previousFocus = prepareDialog(alertElement);
   let isClosed = false;
