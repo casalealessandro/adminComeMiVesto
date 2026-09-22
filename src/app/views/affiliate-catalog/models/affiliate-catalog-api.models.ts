@@ -117,6 +117,9 @@ export interface AiOutfitPreviewProduct {
   /** Added with program-balanced candidate selection; absent only during a rolling backend deployment. */
   affiliateProgramId?: string;
   role: string;
+  /** Normalized tag position; optional only while frontend/backend deployments overlap. */
+  x?: number;
+  y?: number;
   name: string;
   brand: string;
   category: string;
