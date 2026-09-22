@@ -34,6 +34,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   readonly minOutfitCount = 3;
   readonly maxOutfitCount = 6;
+  readonly fallbackAvatar = 'https://ionicframework.com/docs/img/demos/avatar.svg';
 
   readonly genderOptions: SelectOption<AiOutfitPreviewGender>[] = [
     { value: 'MAN', label: 'Uomo' },
