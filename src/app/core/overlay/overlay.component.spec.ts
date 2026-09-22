@@ -39,6 +39,41 @@ describe('OverlayComponent characterization', () => {
     expect(overlayElement.classList.contains('active')).toBeTrue();
   }));
 
+  it('uses the transient shell layer when no modal is active', fakeAsync(() => {
+    service.openOverlay({
+      position: { top: 100, left: 200 },
+      contentTemplate: {} as any,
+      showBgOverlay: false,
+      index: 'shell-overlay'
+    });
+
+    expect(component.zIndex()).toBe(1200);
+    expect(component.backdropZIndex()).toBe(1199);
+    tick(10);
+  }));
+
+  it('raises an overlay above the highest active modal without using an extreme global z-index', fakeAsync(() => {
+    const modal = document.createElement('div');
+    modal.className = 'modal popup';
+    modal.style.zIndex = '2100';
+    document.body.appendChild(modal);
+
+    try {
+      service.openOverlay({
+        position: { top: 100, left: 200 },
+        contentTemplate: {} as any,
+        showBgOverlay: false,
+        index: 'modal-overlay'
+      });
+
+      expect(component.zIndex()).toBe(2200);
+      expect(component.backdropZIndex()).toBe(2199);
+      tick(10);
+    } finally {
+      modal.remove();
+    }
+  }));
+
   it('keeps the requested horizontal position when the overlay fits in the viewport', fakeAsync(() => {
     spyOn(overlayElement, 'getBoundingClientRect').and.returnValue({
       x: 0,
