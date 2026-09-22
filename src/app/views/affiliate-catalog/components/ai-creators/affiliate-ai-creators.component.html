@@ -1,0 +1,143 @@
+<section class="ai-creators" aria-labelledby="ai-creators-title" [attr.aria-busy]="loading || saving">
+  <header class="ai-creators__header">
+    <div>
+      <h2 id="ai-creators-title">Creator AI</h2>
+      <p>Gestisci creator virtuali con un vero profilo ComeMiVesto. Gli account sono creator Firebase reali ma non possono effettuare il login.</p>
+    </div>
+    <div class="ai-creators__actions">
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-primary" (click)="openCreate()">
+        <span class="mdi mdi-account-plus-outline" aria-hidden="true"></span>
+        Nuovo creator AI
+      </button>
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
+        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <p *ngIf="loading && !creators.length" class="ai-creators__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento creator AI…
+  </p>
+
+  <div *ngIf="!loading && !creators.length && !formOpen" class="ai-creators__empty">
+    <span class="mdi mdi-account-star-outline" aria-hidden="true"></span>
+    <strong>Nessun creator AI configurato</strong>
+    <span>Crea i profili editoriali che firmeranno gli outfit generati.</span>
+  </div>
+
+  <section class="creator-form" *ngIf="formOpen" aria-labelledby="creator-form-title">
+    <div class="creator-form__heading">
+      <div>
+        <span class="ai-creators__eyebrow">{{ editingUid ? 'Modifica' : 'Nuovo profilo' }}</span>
+        <h3 id="creator-form-title">{{ editingUid ? draft.displayName : 'Crea creator AI' }}</h3>
+      </div>
+      <button type="button" class="btn-close" aria-label="Chiudi" (click)="closeForm()" [disabled]="saving"></button>
+    </div>
+
+    <div class="creator-form__grid">
+      <label>
+        <span>Email account *</span>
+        <input class="form-control" type="email" [(ngModel)]="draft.email" [readonly]="!!editingUid" autocomplete="off">
+        <small *ngIf="editingUid">L'email identifica l'account Firebase e non è modificabile da questa sezione.</small>
+      </label>
+      <label>
+        <span>Display name *</span>
+        <input class="form-control" [(ngModel)]="draft.displayName" maxlength="100">
+      </label>
+      <label>
+        <span>Nome *</span>
+        <input class="form-control" [(ngModel)]="draft.nome" maxlength="100">
+      </label>
+      <label>
+        <span>Cognome *</span>
+        <input class="form-control" [(ngModel)]="draft.cognome" maxlength="100">
+      </label>
+      <label>
+        <span>Genere *</span>
+        <select class="form-select" [(ngModel)]="draft.gender">
+          <option value="D">Donna</option>
+          <option value="U">Uomo</option>
+        </select>
+      </label>
+      <label>
+        <span>Foto profilo HTTPS</span>
+        <input class="form-control" type="url" [(ngModel)]="draft.photoURL" placeholder="https://…">
+      </label>
+      <label class="creator-form__wide">
+        <span>Bio pubblica *</span>
+        <textarea class="form-control" rows="3" maxlength="500" [(ngModel)]="draft.bio"
+          placeholder="Es. Virtual fashion creator di ComeMiVesto."></textarea>
+      </label>
+      <div class="creator-form__wide">
+        <span class="creator-form__label">Affinità stilistiche *</span>
+        <div class="creator-form__styles">
+          <button
+            *ngFor="let option of styleOptions"
+            type="button"
+            class="creator-style"
+            [class.creator-style--selected]="hasStyle(option.value)"
+            [attr.aria-pressed]="hasStyle(option.value)"
+            (click)="toggleStyle(option.value)">
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
+      <label class="creator-form__wide">
+        <span>Personalità / linea editoriale *</span>
+        <textarea class="form-control" rows="5" maxlength="1500" [(ngModel)]="draft.personaPrompt"
+          placeholder="Descrivi gusto, palette, occasioni preferite e modo in cui deve comporre i look."></textarea>
+        <small>Questo testo entra nel prompt stylist lato server; non viene mostrato nel profilo pubblico.</small>
+      </label>
+      <label class="creator-form__active">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="draft.active">
+        <span>Creator attivo per nuove generazioni</span>
+      </label>
+    </div>
+
+    <footer class="creator-form__footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeForm()" [disabled]="saving">Annulla</button>
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving">
+        <span *ngIf="saving" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        {{ saving ? 'Salvataggio…' : (editingUid ? 'Salva modifiche' : 'Crea creator') }}
+      </button>
+    </footer>
+  </section>
+
+  <div class="ai-creators__grid" *ngIf="creators.length">
+    <article class="creator-card" *ngFor="let creator of creators; trackBy: trackCreator">
+      <header>
+        <img [src]="creator.photoURL || fallbackAvatar" [alt]="creator.displayName">
+        <div>
+          <span class="ai-creators__eyebrow">Virtual creator</span>
+          <h3>{{ creator.displayName }}</h3>
+          <p>{{ creator.email }}</p>
+        </div>
+        <span class="badge" [class.text-bg-success]="creator.active" [class.text-bg-secondary]="!creator.active">
+          {{ creator.active ? 'Attivo' : 'In pausa' }}
+        </span>
+      </header>
+
+      <p class="creator-card__bio">{{ creator.bio }}</p>
+      <div class="creator-card__meta">
+        <span class="badge text-bg-light">{{ genderLabel(creator.gender) }}</span>
+        <span class="badge text-bg-light">CREATOR</span>
+        <span class="badge text-bg-light">UID {{ creator.uid }}</span>
+      </div>
+      <div class="creator-card__styles">
+        <span *ngFor="let style of creator.styleAffinity">{{ styleLabel(style) }}</span>
+      </div>
+      <div class="creator-card__persona">
+        <strong>Linea editoriale</strong>
+        <p>{{ creator.personaPrompt }}</p>
+      </div>
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-sm btn-outline-primary" (click)="openEdit(creator)">
+        <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+        Modifica
+      </button>
+    </article>
+  </div>
+</section>

@@ -37,7 +37,9 @@ const previewResult: AiOutfitPreviewResult = {
     products: [1, 2, 3].map((productIndex) => ({
       catalogProductId: `p-${index}-${productIndex}`,
       affiliateProgramId: index % 2 ? 'program-a' : 'program-b',
-      role: `ruolo-${productIndex}`,
+      role: ['TOP', 'BOTTOM', 'SHOES'][productIndex - 1],
+      x: [0.38, 0.62, 0.42][productIndex - 1],
+      y: [0.34, 0.61, 0.86][productIndex - 1],
       name: `Prodotto ${productIndex}`,
       brand: 'Brand',
       category: 'Categoria',
@@ -61,7 +63,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'publishOutfitPreview', 'getPrograms'],
+      ['generateOutfitPreview', 'publishOutfitPreview', 'getPrograms', 'getAiCreators'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -74,6 +76,21 @@ describe('AffiliateOutfitPreviewComponent', () => {
       market: 'IT',
       currency: 'EUR',
       priceSegment: 'MID_RANGE',
+      createdAt: 1,
+      updatedAt: 1,
+    }]));
+    service.getAiCreators.and.returnValue(of([{
+      uid: 'creator-d',
+      email: 'creator@example.com',
+      displayName: 'Creator Donna',
+      nome: 'Creator',
+      cognome: 'Donna',
+      bio: 'Virtual fashion creator',
+      photoURL: 'https://example.test/avatar.jpg',
+      gender: 'D',
+      styleAffinity: ['C', 'SC'],
+      personaPrompt: 'Look casual contemporanei.',
+      active: true,
       createdAt: 1,
       updatedAt: 1,
     }]));
@@ -116,13 +133,14 @@ describe('AffiliateOutfitPreviewComponent', () => {
     const host: HTMLElement = fixture.nativeElement;
     expect(host.querySelectorAll('.outfit-card').length).toBe(3);
     expect(host.querySelectorAll('.outfit-card__hero img').length).toBe(3);
+    expect(host.querySelectorAll('.outfit-card__tag-pin').length).toBe(9);
     expect(host.querySelectorAll('.product-reference').length).toBe(9);
     expect(host.querySelectorAll('.outfit-card__approve').length).toBe(3);
     expect(host.textContent).toContain('gpt-image-2.5-sunburst');
     expect(host.textContent).toContain('Merchant A');
   });
 
-  it('publishes only ids and roles, then keeps the permanent image URL in the card', () => {
+  it('publishes ids, canonical roles and normalized coordinates, then keeps the permanent image URL in the card', () => {
     component.generate();
     const outfit = component.result!.outfits[0];
     component.publish(outfit);
@@ -136,14 +154,22 @@ describe('AffiliateOutfitPreviewComponent', () => {
       season: 'P',
       style: 'C',
       products: [
-        { catalogProductId: 'p-1-1', role: 'ruolo-1' },
-        { catalogProductId: 'p-1-2', role: 'ruolo-2' },
-        { catalogProductId: 'p-1-3', role: 'ruolo-3' },
+        { catalogProductId: 'p-1-1', role: 'TOP', x: 0.38, y: 0.34 },
+        { catalogProductId: 'p-1-2', role: 'BOTTOM', x: 0.62, y: 0.61 },
+        { catalogProductId: 'p-1-3', role: 'SHOES', x: 0.42, y: 0.86 },
       ],
     });
     expect(component.publishedId(outfit)).toBe('outfit-1');
     expect(outfit.previewImageUrl).toBe('https://storage.test/outfits/ai/outfit-1.png');
     expect(fixture.nativeElement.textContent).toContain('Salvato in outfits');
+  });
+
+  it('filters active creators by requested gender and clears incompatible selection', () => {
+    component.onGenderChange('WOMAN');
+    expect(component.availableCreators().map((creator) => creator.uid)).toEqual(['creator-d']);
+    component.request.creatorUid = 'creator-d';
+    component.onGenderChange('MAN');
+    expect(component.request.creatorUid).toBeUndefined();
   });
 
   it('keeps loading until the expensive preview request completes', () => {

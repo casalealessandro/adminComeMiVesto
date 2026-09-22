@@ -1,0 +1,47 @@
+.ai-creators { min-width: 0; }
+.ai-creators__header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.ai-creators__header h2,.creator-form h3,.creator-card h3 { margin:0; }
+.ai-creators__header p { max-width:58rem; margin:.35rem 0 0; color:var(--bs-secondary-color,#6c757d); }
+.ai-creators__actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+.ai-creators__loading,.ai-creators__empty { display:flex; align-items:center; gap:.6rem; padding:1rem; border:1px solid var(--bs-border-color,#dee2e6); border-radius:.75rem; }
+.ai-creators__empty { min-height:10rem; flex-direction:column; justify-content:center; text-align:center; color:var(--bs-secondary-color,#6c757d); }
+.ai-creators__empty .mdi { font-size:2rem; }
+.ai-creators__eyebrow { color:var(--bs-primary,#0d6efd); font-size:.72rem; font-weight:750; letter-spacing:.07em; text-transform:uppercase; }
+.ai-creators__grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:.85rem; margin-top:1rem; }
+.creator-card { min-width:0; padding:1rem; border:1px solid var(--bs-border-color,#dee2e6); border-radius:.85rem; background:var(--bs-body-bg,#fff); }
+.creator-card>header { display:grid; grid-template-columns:54px minmax(0,1fr) auto; gap:.75rem; align-items:center; }
+.creator-card img { width:54px; height:54px; border-radius:50%; object-fit:cover; background:var(--bs-tertiary-bg,#f8f9fa); }
+.creator-card header p { margin:.15rem 0 0; color:var(--bs-secondary-color,#6c757d); font-size:.78rem; overflow-wrap:anywhere; }
+.creator-card__bio { margin:.9rem 0; }
+.creator-card__meta,.creator-card__styles { display:flex; flex-wrap:wrap; gap:.4rem; }
+.creator-card__meta .badge { max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+.creator-card__styles { margin:.65rem 0; }
+.creator-card__styles span { padding:.25rem .5rem; border-radius:999px; background:var(--bs-tertiary-bg,#f8f9fa); font-size:.75rem; }
+.creator-card__persona { margin:.75rem 0; padding:.7rem; border-radius:.6rem; background:var(--bs-tertiary-bg,#f8f9fa); }
+.creator-card__persona p { margin:.25rem 0 0; color:var(--bs-secondary-color,#6c757d); font-size:.82rem; white-space:pre-line; }
+.creator-form { margin-bottom:1rem; padding:1rem; border:1px solid var(--bs-primary,#0d6efd); border-radius:.85rem; background:var(--bs-body-bg,#fff); }
+.creator-form__heading,.creator-form__footer { display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start; }
+.creator-form__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; margin-top:1rem; }
+.creator-form label { display:grid; gap:.3rem; }
+.creator-form label>span,.creator-form__label { font-size:.82rem; font-weight:650; }
+.creator-form small { color:var(--bs-secondary-color,#6c757d); }
+.creator-form__wide { grid-column:1/-1; }
+.creator-form__styles { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.35rem; }
+.creator-style { min-height:36px; padding:.35rem .65rem; border:1px solid var(--bs-border-color,#ced4da); border-radius:999px; background:transparent; color:var(--bs-body-color,#212529); }
+.creator-style--selected { border-color:var(--bs-primary,#0d6efd); background:var(--bs-primary,#0d6efd); color:#fff; }
+.creator-form__active { grid-column:1/-1; display:flex!important; grid-template-columns:auto 1fr; align-items:center; justify-content:flex-start; }
+.creator-form__footer { justify-content:flex-end; margin-top:1rem; }
+.spin { display:inline-block; animation:ai-creator-spin .9s linear infinite; }
+@keyframes ai-creator-spin { to { transform:rotate(360deg); } }
+@media(max-width:767.98px){
+  .ai-creators__header { flex-direction:column; }
+  .ai-creators__actions { width:100%; }
+  .ai-creators__actions .btn,.creator-form__footer .btn,.creator-card>.btn { min-height:44px; flex:1; }
+  .creator-form__grid { grid-template-columns:1fr; }
+  .creator-form__wide,.creator-form__active { grid-column:auto; }
+}
+@media(max-width:420px){
+  .creator-card>header { grid-template-columns:48px minmax(0,1fr); }
+  .creator-card>header>.badge { grid-column:1/-1; justify-self:start; }
+  .creator-card img { width:48px; height:48px; }
+}

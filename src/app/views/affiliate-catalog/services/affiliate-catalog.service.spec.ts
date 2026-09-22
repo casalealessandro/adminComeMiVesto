@@ -14,12 +14,42 @@ import {
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
 } from '../models/affiliate-catalog-api.models';
+import { AiCreator, AiCreatorCreateInput } from '../models/ai-creator.models';
 import { AffiliateCatalogService } from './affiliate-catalog.service';
 
 describe('AffiliateCatalogService release contract', () => {
   let service: AffiliateCatalogService;
   let http: HttpTestingController;
   const baseUrl = `${environment.apiBaseUrl}/admin/affiliate`;
+
+  const creator: AiCreator = {
+    uid: 'creator-1',
+    email: 'creator@example.com',
+    displayName: 'Creator Test',
+    nome: 'Creator',
+    cognome: 'Test',
+    bio: 'Virtual fashion creator',
+    photoURL: 'https://example.test/avatar.jpg',
+    gender: 'D',
+    styleAffinity: ['C', 'SC'],
+    personaPrompt: 'Look contemporanei.',
+    active: true,
+    createdAt: 1,
+    updatedAt: 2,
+  };
+
+  const creatorCreateInput: AiCreatorCreateInput = {
+    email: creator.email,
+    displayName: creator.displayName,
+    nome: creator.nome,
+    cognome: creator.cognome,
+    bio: creator.bio,
+    photoURL: creator.photoURL,
+    gender: creator.gender,
+    styleAffinity: [...creator.styleAffinity],
+    personaPrompt: creator.personaPrompt,
+    active: true,
+  };
 
   const program: AffiliateProgram = {
     id: 'program-1',
@@ -136,6 +166,27 @@ describe('AffiliateCatalogService release contract', () => {
   });
 
   afterEach(() => http.verify());
+
+  it('loads, creates and updates AI creators through affiliate admin endpoints', () => {
+    let creators: AiCreator[] | undefined;
+    service.getAiCreators().subscribe((value) => creators = value);
+    const listRequest = http.expectOne(`${baseUrl}/ai-creators`);
+    expect(listRequest.request.method).toBe('GET');
+    listRequest.flush({ data: [creator] });
+    expect(creators).toEqual([creator]);
+
+    service.createAiCreator(creatorCreateInput).subscribe();
+    const createRequest = http.expectOne(`${baseUrl}/ai-creators`);
+    expect(createRequest.request.method).toBe('POST');
+    expect(createRequest.request.body).toEqual(creatorCreateInput);
+    createRequest.flush({ data: creator });
+
+    service.updateAiCreator('creator/1', { active: false }).subscribe();
+    const updateRequest = http.expectOne(`${baseUrl}/ai-creators/creator%2F1`);
+    expect(updateRequest.request.method).toBe('PUT');
+    expect(updateRequest.request.body).toEqual({ active: false });
+    updateRequest.flush({ data: { ...creator, active: false } });
+  });
 
   it('loads programs from the configured API base and unwraps data without adding auth headers', () => {
     let response: AffiliateProgram[] | undefined;
