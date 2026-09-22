@@ -39,6 +39,17 @@
     --cmv-shadow-sm: 0 1px 2px rgb(15 23 42 / .05);
     --cmv-shadow-card: 0 8px 24px rgb(15 23 42 / .04);
 
+    /* Layer system
+     * content < menu backdrop < sidebar < header < transient overlay < modal < critical dialog
+     */
+    --cmv-layer-content: 0;
+    --cmv-layer-menu-backdrop: 1000;
+    --cmv-layer-sidebar: 1010;
+    --cmv-layer-header: 1100;
+    --cmv-layer-overlay: 1200;
+    --cmv-layer-modal: 2000;
+    --cmv-layer-dialog: 3000;
+
     /* Layout */
     --height_caption: 35px;
     --height_footer: 40px;
