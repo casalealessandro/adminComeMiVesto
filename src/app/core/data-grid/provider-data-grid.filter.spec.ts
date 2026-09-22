@@ -267,6 +267,7 @@ describe('ProviderDataGridComponent column filters', () => {
         return { items: [], hasMore: false };
       },
     };
+    component.colsHeader = [];
 
     component.setProviderInitialFilters({
       categoryId: 20,
