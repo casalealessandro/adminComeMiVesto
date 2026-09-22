@@ -63,6 +63,27 @@ describe('NicaPopupContentComponent characterization', () => {
     expect(component.popUpWidth).toBe('800px');
   });
 
+  it('keeps popup stacking above the authenticated shell and increments nested modal layers', async () => {
+    const { component } = setup();
+
+    await component.ngOnInit();
+
+    expect(component.zIndexModalDialog).toBeGreaterThan(1100);
+
+    const existingModal = document.createElement('div');
+    existingModal.className = 'modal';
+    existingModal.style.zIndex = '2500';
+    document.body.appendChild(existingModal);
+
+    try {
+      const nested = setup().component;
+      await nested.ngOnInit();
+      expect(nested.zIndexModalDialog).toBe(2501);
+    } finally {
+      existingModal.remove();
+    }
+  });
+
   it('bridges object EventEmitter values to PopUpService with popup metadata', async () => {
     const { component, popupService, runtimeInstance } = setup();
     await component.ngOnInit();
