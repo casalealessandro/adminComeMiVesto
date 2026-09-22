@@ -13,6 +13,7 @@ import {
   AiOutfitPreviewGender,
 } from '../../models/affiliate-catalog-api.models';
 import { AiOutfitPublishRequest } from '../../models/ai-outfit-publish.models';
+import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
 
@@ -78,6 +79,8 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   loading = false;
   error = '';
   programNames = new Map<string, string>();
+  creators: AiCreator[] = [];
+  creatorsLoading = false;
   readonly publishing = new Set<string>();
   readonly published = new Map<string, string>();
   readonly publishErrors = new Map<string, string>();
@@ -90,6 +93,29 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       },
       error: () => {},
     });
+    this.creatorsLoading = true;
+    this.affiliateCatalogService.getAiCreators()
+      .pipe(finalize(() => this.creatorsLoading = false))
+      .subscribe({
+        next: (creators) => this.creators = creators,
+        error: () => {},
+      });
+  }
+
+  availableCreators(): AiCreator[] {
+    const gender = this.request.gender === 'WOMAN' ? 'D' : 'U';
+    return this.creators.filter((creator) => creator.active && creator.gender === gender);
+  }
+
+  onGenderChange(gender: AiOutfitPreviewGender): void {
+    this.request.gender = gender;
+    if (this.request.creatorUid && !this.availableCreators().some((creator) => creator.uid === this.request.creatorUid)) {
+      this.request.creatorUid = undefined;
+    }
+  }
+
+  creatorByUid(uid: string | undefined): AiCreator | undefined {
+    return uid ? this.creators.find((creator) => creator.uid === uid) : undefined;
   }
 
   generate(): void {
@@ -132,6 +158,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     const key = this.outfitKey(outfit);
     if (this.publishing.has(key) || this.published.has(key)) return;
 
+    const creatorUid = outfit.creatorUid || this.result?.request.creatorUid || this.request.creatorUid;
     const input: AiOutfitPublishRequest = {
       title: outfit.title,
       description: outfit.description,
@@ -139,6 +166,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       gender: outfit.gender,
       season: outfit.season,
       style: outfit.style,
+      ...(creatorUid ? { creatorUid } : {}),
       products: outfit.products.map((product) => ({
         catalogProductId: product.catalogProductId,
         role: product.role,
