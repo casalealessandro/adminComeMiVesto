@@ -1,14 +1,13 @@
-<div #imageContainer class="image-container"  [formGroup]="formGroup">
-  <!-- Loader che viene mostrato durante il caricamento dell'immagine -->
+<div #imageContainer class="image-container" [formGroup]="formGroup">
   <span *ngIf="imageLoading()">Caricamento..</span>
+
   <div *ngIf="value">
-    <img  #imageElement [src]="value"  class="form-image img-thumbnail"  style="width: 200px; height: 200px;"/> 
-    
+    <img #imageElement [src]="value" class="form-image img-thumbnail" alt="Anteprima file selezionato" />
   </div>
+
   <input #fileInput type="file" (change)="onFileSelected($event)" class="d-none">
-  <button  type="button"  class="select-photo" (click)="chooseFile($event)">
-    
+
+  <button type="button" class="select-photo" (click)="chooseFile($event)">
     Seleziona foto
-  
   </button>
 </div>
