@@ -1,24 +1,30 @@
 .scrollbar-container {
-    
-    overflow-y: auto; /* Scorrimento verticale */
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto; /* This primitive is intentionally vertical. */
     padding: 0;
+
     /* Firefox */
-    scrollbar-width: thin; /* Imposta la scrollbar sottile */
+    scrollbar-width: thin;
     scrollbar-color: #e3e3e3 #ffffff;
-  
-    /* Chrome, Edge e Safari */
+
+    /* Chrome, Edge and Safari */
     &::-webkit-scrollbar {
-      width: 6px; /* Riduci la larghezza della scrollbar */
+      width: 6px;
     }
-  
+
+    &::-webkit-scrollbar:horizontal {
+      height: 0;
+    }
+
     &::-webkit-scrollbar-track {
       background: #ffffff;
     }
-  
+
     &::-webkit-scrollbar-thumb {
       background-color: #e3e3e3;
-      border-radius: 10px; /* Riduci il raggio per un aspetto più compatto */
-      border: 2px solid #ffffff; /* Riduci lo spessore del bordo per evitare che sembri troppo largo */
+      border-radius: 10px;
+      border: 2px solid #ffffff;
     }
-  }
-  
+}
