@@ -1,4 +1,4 @@
-<section class="ai-creators" aria-labelledby="ai-creators-title" [attr.aria-busy]="loading || saving">
+<section class="ai-creators" aria-labelledby="ai-creators-title" [attr.aria-busy]="loading">
   <header class="ai-creators__header">
     <div>
       <h2 id="ai-creators-title">Creator AI</h2>
@@ -23,112 +23,11 @@
     Caricamento creator AI…
   </p>
 
-  <div *ngIf="!loading && !creators.length && !formOpen" class="ai-creators__empty">
+  <div *ngIf="!loading && !creators.length" class="ai-creators__empty">
     <span class="mdi mdi-account-star-outline" aria-hidden="true"></span>
     <strong>Nessun creator AI configurato</strong>
     <span>Crea i profili editoriali che firmeranno gli outfit generati.</span>
   </div>
-
-  <section class="creator-form" *ngIf="formOpen" aria-labelledby="creator-form-title">
-    <div class="creator-form__heading">
-      <div>
-        <span class="ai-creators__eyebrow">{{ editingUid ? 'Modifica' : 'Nuovo profilo' }}</span>
-        <h3 id="creator-form-title">{{ editingUid ? draft.displayName : 'Crea creator AI' }}</h3>
-      </div>
-      <button type="button" class="btn-close" aria-label="Chiudi" (click)="closeForm()" [disabled]="saving"></button>
-    </div>
-
-    <div class="creator-form__grid">
-      <label>
-        <span>Email account *</span>
-        <input class="form-control" type="email" [(ngModel)]="draft.email" [readonly]="!!editingUid" autocomplete="off">
-        <small *ngIf="editingUid">L'email identifica l'account Firebase e non è modificabile da questa sezione.</small>
-      </label>
-      <label>
-        <span>Display name *</span>
-        <input class="form-control" [(ngModel)]="draft.displayName" maxlength="100">
-      </label>
-      <label>
-        <span>Nome *</span>
-        <input class="form-control" [(ngModel)]="draft.nome" maxlength="100">
-      </label>
-      <label>
-        <span>Cognome *</span>
-        <input class="form-control" [(ngModel)]="draft.cognome" maxlength="100">
-      </label>
-      <label>
-        <span>Genere *</span>
-        <select class="form-select" [(ngModel)]="draft.gender">
-          <option value="D">Donna</option>
-          <option value="U">Uomo</option>
-        </select>
-      </label>
-      <div class="creator-form__photo">
-        <span class="creator-form__label">Foto profilo</span>
-        <div class="creator-photo-picker">
-          <img [src]="profilePhotoPreview()" [alt]="draft.displayName || 'Anteprima foto creator'">
-          <div>
-            <input
-              #photoInput
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              hidden
-              (change)="onPhotoSelected($event)">
-            <button
-              type="button"
-              class="btn btn-outline-primary"
-              (click)="photoInput.click()"
-              [disabled]="saving">
-              <span class="mdi mdi-camera-outline" aria-hidden="true"></span>
-              {{ pendingPhoto ? 'Sostituisci foto' : 'Carica foto' }}
-            </button>
-            <small>JPG, PNG o WebP · massimo 5 MB. L'immagine viene ritagliata quadrata e ottimizzata automaticamente.</small>
-            <span *ngIf="pendingPhoto" class="creator-photo-picker__ready">
-              <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
-              Foto pronta per il caricamento
-            </span>
-          </div>
-        </div>
-      </div>
-      <label class="creator-form__wide">
-        <span>Bio pubblica *</span>
-        <textarea class="form-control" rows="3" maxlength="500" [(ngModel)]="draft.bio"
-          placeholder="Es. Virtual fashion creator di ComeMiVesto."></textarea>
-      </label>
-      <div class="creator-form__wide">
-        <span class="creator-form__label">Affinità stilistiche *</span>
-        <div class="creator-form__styles">
-          <button
-            *ngFor="let option of styleOptions"
-            type="button"
-            class="creator-style"
-            [class.creator-style--selected]="hasStyle(option.value)"
-            [attr.aria-pressed]="hasStyle(option.value)"
-            (click)="toggleStyle(option.value)">
-            {{ option.label }}
-          </button>
-        </div>
-      </div>
-      <label class="creator-form__wide">
-        <span>Personalità / linea editoriale *</span>
-        <textarea class="form-control" rows="5" maxlength="1500" [(ngModel)]="draft.personaPrompt"
-          placeholder="Descrivi gusto, palette, occasioni preferite e modo in cui deve comporre i look."></textarea>
-        <small>Questo testo entra nel prompt stylist lato server; non viene mostrato nel profilo pubblico.</small>
-      </label>
-      <label class="creator-form__active">
-        <input class="form-check-input" type="checkbox" [(ngModel)]="draft.active">
-        <span>Creator attivo per nuove generazioni</span>
-      </label>
-    </div>
-
-    <footer class="creator-form__footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeForm()" [disabled]="saving">Annulla</button>
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving">
-        <span *ngIf="saving" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        {{ saving ? 'Salvataggio…' : (editingUid ? 'Salva modifiche' : 'Crea creator') }}
-      </button>
-    </footer>
-  </section>
 
   <div class="ai-creators__grid" *ngIf="creators.length">
     <article class="creator-card" *ngFor="let creator of creators; trackBy: trackCreator">
