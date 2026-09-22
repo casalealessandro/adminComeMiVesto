@@ -1,6 +1,5 @@
 const dialogTemplate = `
- 
-    <div class="ui-modal-dialog ">
+    <div class="ui-modal-dialog">
       <div class="ui-modal-dialog-content">
         <div class="ui-modal-title">
           <span>{{title}}</span>
@@ -9,14 +8,22 @@ const dialogTemplate = `
           {{message}}
         </div>
         <div class="ui-modal-footer-message">
-          <button class="ui-modal-button ok-button btn">OK</button>
+          <button class="ui-modal-button ok-button btn" type="button">OK</button>
         </div>
       </div>
     </div>
- 
 `;
 
 let dialogTitleSequence = 0;
+
+const resolveOverlayLayer = (): string => {
+  const activeModalLayers = Array.from(document.querySelectorAll('.modal.popup'))
+    .map(element => parseFloat(window.getComputedStyle(element).zIndex))
+    .filter(zIndex => Number.isFinite(zIndex));
+
+  const highestModalLayer = activeModalLayers.length ? Math.max(...activeModalLayers) : 0;
+  return String(highestModalLayer > 0 ? highestModalLayer + 100 : 1200);
+};
 
 const prepareDialog = (dialogElement: HTMLElement): HTMLElement | null => {
   const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -24,6 +31,7 @@ const prepareDialog = (dialogElement: HTMLElement): HTMLElement | null => {
 
   dialogElement.setAttribute('role', 'dialog');
   dialogElement.setAttribute('aria-modal', 'true');
+  dialogElement.classList.add('core-dialog-layer');
 
   if (titleElement) {
     const titleId = `ui-modal-title-${++dialogTitleSequence}`;
@@ -100,14 +108,17 @@ export const confirm = (messageHtml: string, title: string, callback?: (resp?: a
 
   const okButton = document.createElement('button');
   const cancelButton = document.createElement('button');
-  okButton.classList.add('ui-modal-button');
+  okButton.type = 'button';
+  cancelButton.type = 'button';
+  okButton.classList.add('ui-modal-button', 'ui-modal-button-primary');
   cancelButton.classList.add('ui-modal-button');
-  okButton.textContent = 'Si';
+  okButton.textContent = 'Sì';
   cancelButton.textContent = 'No';
 
-  alertElement.querySelector('.ui-modal-footer-message')!.innerHTML = '';
-  alertElement.querySelector('.ui-modal-footer-message')!.appendChild(okButton);
-  alertElement.querySelector('.ui-modal-footer-message')!.appendChild(cancelButton);
+  const footer = alertElement.querySelector('.ui-modal-footer-message')!;
+  footer.innerHTML = '';
+  footer.appendChild(cancelButton);
+  footer.appendChild(okButton);
 
   const previousFocus = prepareDialog(alertElement);
   let isClosed = false;
@@ -134,52 +145,50 @@ export const confirm = (messageHtml: string, title: string, callback?: (resp?: a
   mountAndFocusDialog(alertElement);
 };
 
-export const showPopover = (messageHtml: string, targetElement: HTMLElement, position: 'top' | 'left' | 'right' | 'bottom' = 'bottom'): void => {
+export const showPopover = (
+  messageHtml: string,
+  targetElement: HTMLElement,
+  position: 'top' | 'left' | 'right' | 'bottom' = 'bottom'
+): void => {
   const popover = document.createElement('div');
+  popover.classList.add('core-popover');
   popover.innerHTML = messageHtml;
-
-  // Applica lo stile base del popover
   popover.style.position = 'absolute';
-  popover.style.backgroundColor = '#ffffff';
-  popover.style.border = '1px solid #000000';
-  popover.style.padding = '10px';
-  const activeModalLayers = Array.from(document.querySelectorAll('.modal.popup'))
-    .map(element => parseFloat(window.getComputedStyle(element).zIndex))
-    .filter(zIndex => Number.isFinite(zIndex));
-  const highestModalLayer = activeModalLayers.length ? Math.max(...activeModalLayers) : 0;
-  popover.style.zIndex = String(highestModalLayer > 0 ? highestModalLayer + 100 : 1200);
+  popover.style.zIndex = resolveOverlayLayer();
+  popover.style.visibility = 'hidden';
 
-  // Calcola le coordinate del popover in base alla posizione specificata
+  document.body.appendChild(popover);
+
   const targetRect = targetElement.getBoundingClientRect();
+  const popoverRect = popover.getBoundingClientRect();
   let top = 0;
   let left = 0;
 
   switch (position) {
     case 'top':
-      top = targetRect.top - popover.offsetHeight;
-      left = targetRect.left + targetRect.width / 2 - popover.offsetWidth / 2;
+      top = targetRect.top + window.scrollY - popoverRect.height - 8;
+      left = targetRect.left + window.scrollX + targetRect.width / 2 - popoverRect.width / 2;
       break;
     case 'left':
-      top = targetRect.top + targetRect.height / 2 - popover.offsetHeight / 2;
-      left = targetRect.left - popover.offsetWidth;
+      top = targetRect.top + window.scrollY + targetRect.height / 2 - popoverRect.height / 2;
+      left = targetRect.left + window.scrollX - popoverRect.width - 8;
       break;
     case 'right':
-      top = targetRect.top + targetRect.height / 2 - popover.offsetHeight / 2;
-      left = targetRect.left + targetRect.width;
+      top = targetRect.top + window.scrollY + targetRect.height / 2 - popoverRect.height / 2;
+      left = targetRect.right + window.scrollX + 8;
       break;
     case 'bottom':
-      top = targetRect.top + targetRect.height;
-      left = targetRect.left + targetRect.width / 2 - popover.offsetWidth / 2;
-      break;
     default:
-      top = targetRect.top + targetRect.height;
-      left = targetRect.left + targetRect.width / 2 - popover.offsetWidth / 2;
+      top = targetRect.bottom + window.scrollY + 8;
+      left = targetRect.left + window.scrollX + targetRect.width / 2 - popoverRect.width / 2;
+      break;
   }
 
-  // Applica le coordinate calcolate al popover
+  const viewportMargin = 8;
+  const maxLeft = window.scrollX + window.innerWidth - popoverRect.width - viewportMargin;
+  left = Math.max(window.scrollX + viewportMargin, Math.min(left, maxLeft));
+
   popover.style.top = `${top}px`;
   popover.style.left = `${left}px`;
-
-  // Aggiungi il popover al DOM
-  document.body.appendChild(popover);
+  popover.style.visibility = 'visible';
 };
