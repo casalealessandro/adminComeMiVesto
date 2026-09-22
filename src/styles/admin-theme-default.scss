@@ -1,32 +1,80 @@
-/* Default Starter Kit theme tokens.
- * Host applications can override these values without changing Core structure.
+/* ComeMiVesto Admin host theme.
+ *
+ * Core components should consume semantic tokens instead of owning the final
+ * visual identity. Keep the legacy aliases below until every Core component
+ * has migrated to the cmv-* token names.
  */
 :root {
-    --primary: #080808;
-    --primary_border: #0304054f;
+    /* Typography */
+    --cmv-font-family: 'Public Sans', Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --cmv-font-size-body: .875rem;
+    --cmv-line-height-body: 1.5;
 
-    --blueSoft: rgb(100 116 139 / 1);
-    --bg-grey: #f4f7fa;
-    --link-nav: #f3f1E9;
-    --bianco: #fff;
-    --giallo: #edcd5f;
-    --table-th-bg: rgb(248 250 252 / 1);
-    --border_color: #e2e8f099;
-    --back: #080808;
+    /* Surfaces and text */
+    --cmv-color-bg: #f8fafc;
+    --cmv-color-surface: #ffffff;
+    --cmv-color-surface-muted: #f8fafc;
+    --cmv-color-text: #475569;
+    --cmv-color-text-strong: #0f172a;
+    --cmv-color-text-muted: #64748b;
+    --cmv-color-border: #e2e8f0;
+    --cmv-color-border-subtle: rgb(226 232 240 / .6);
 
-    /**Altezza Globale degli elementi di layout***/
+    /* Brand and interaction */
+    --cmv-color-primary: #080808;
+    --cmv-color-primary-hover: #1f2937;
+    --cmv-color-link: #2563eb;
+    --cmv-color-link-hover: #1d4ed8;
+    --cmv-color-danger: #b91c1c;
+    --cmv-color-warning: #b45309;
+    --cmv-color-success: #166534;
+    --cmv-focus-ring: rgb(37 99 235 / .28);
 
-    --height_caption: 27px;
-    --height_footer: 40px;
+    /* Shape and elevation */
+    --cmv-radius-xs: .375rem;
+    --cmv-radius-sm: .5rem;
+    --cmv-radius-md: .75rem;
+    --cmv-radius-lg: 1rem;
+    --cmv-radius-pill: 999px;
+    --cmv-shadow-sm: 0 1px 2px rgb(15 23 42 / .05);
+    --cmv-shadow-card: 0 8px 24px rgb(15 23 42 / .04);
+
+    /* Layout */
     --height_caption: 35px;
+    --height_footer: 40px;
     --height_menuFunzioni: 60px;
-    --header_height: 145px;
+    --header_height: 65px;
     --height_combined: calc(var(--header_height) + var(--height_footer));
-
-    /**Lagrghezza Globale degli elementi di layout***/
-
     --width_container: 2200px;
-        /***Utils***/
 
+    /* Legacy Core aliases.
+     * Remove only after the corresponding Core selectors consume cmv-* tokens.
+     */
+    --primary: var(--cmv-color-primary);
+    --primary_border: rgb(3 4 5 / .31);
+    --blueSoft: var(--cmv-color-text-muted);
+    --bg-grey: var(--cmv-color-bg);
+    --link-nav: #f3f1e9;
+    --bianco: var(--cmv-color-surface);
+    --giallo: #edcd5f;
+    --table-th-bg: var(--cmv-color-surface-muted);
+    --border_color: var(--cmv-color-border-subtle);
+    --back: var(--cmv-color-primary);
+}
 
+/* Host-owned global presentation.
+ * Reusable Core styles intentionally avoid !important so the application can
+ * theme them through normal cascade and specificity.
+ */
+body {
+    color: var(--cmv-color-text);
+    background-color: var(--cmv-color-bg);
+}
+
+a {
+    color: var(--cmv-color-link);
+}
+
+a:hover {
+    color: var(--cmv-color-link-hover);
 }
