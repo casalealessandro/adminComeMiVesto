@@ -1,3 +1,10 @@
+export interface DynamicFormFieldLayout {
+  /** Stable, technical identifier used by the builder to group consecutive fields. */
+  rowId?: string;
+  /** Explicit width on the twelve-column layout grid. Absence means AUTO. */
+  colSpan?: number;
+}
+
 export interface DynamicFormField {
   htmlId?: string;
   name: string;
@@ -17,6 +24,7 @@ export interface DynamicFormField {
   checkBoxOptions?: CheckBoxOptions;
   fileBoxOptions?: FileBoxOptions;
   funcButton?: boolean;
+  layout?: DynamicFormFieldLayout;
 }
 
 export interface SelectOptions {
@@ -62,12 +70,25 @@ type LegacyDynamicFormField = Omit<DynamicFormField, 'fileBoxOptions'> & {
 
 /** Converts saved legacy field names to the canonical camelCase contract. */
 export function normalizeDynamicFormField(field: LegacyDynamicFormField): DynamicFormField {
-  const { minlength, maxlength, fileBoxOptions, ...canonicalField } = field;
+  const { minlength, maxlength, fileBoxOptions, layout, ...canonicalField } = field;
   const normalized: DynamicFormField = {
     ...canonicalField,
     minLength: field.minLength ?? minlength,
     maxLength: field.maxLength ?? maxlength
   };
+
+  if (layout && typeof layout === 'object') {
+    const normalizedLayout: DynamicFormFieldLayout = {};
+    if (typeof layout.rowId === 'string' && layout.rowId.trim()) {
+      normalizedLayout.rowId = layout.rowId;
+    }
+    if (field.type !== 'hiddenBox' && Number.isInteger(layout.colSpan) && layout.colSpan! >= 1 && layout.colSpan! <= 12) {
+      normalizedLayout.colSpan = layout.colSpan;
+    }
+    if (Object.keys(normalizedLayout).length) {
+      normalized.layout = normalizedLayout;
+    }
+  }
 
   if (fileBoxOptions) {
     const { maxheight, isBase64, isbase64, ...canonicalFileBoxOptions } = fileBoxOptions;
