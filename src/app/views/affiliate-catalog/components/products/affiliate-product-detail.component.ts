@@ -19,6 +19,25 @@ export function affiliateProductDetailErrorMessage(status?: number): string {
   return 'Impossibile caricare il dettaglio del prodotto affiliato.';
 }
 
+export type CatalogGenderTarget = 'U' | 'D';
+
+export function normalizeCatalogGenderTarget(value: unknown): CatalogGenderTarget | null {
+  const normalized = String(value ?? '').trim().toLowerCase();
+
+  if (['u', 'm', 'male', 'man', 'men', 'uomo'].includes(normalized)) return 'U';
+  if (['d', 'f', 'female', 'woman', 'women', 'donna'].includes(normalized)) return 'D';
+
+  return null;
+}
+
+export function normalizeCatalogGenderTargets(values: readonly unknown[] | null | undefined): CatalogGenderTarget[] {
+  const normalized = (values ?? [])
+    .map((value) => normalizeCatalogGenderTarget(value))
+    .filter((value): value is CatalogGenderTarget => value !== null);
+
+  return [...new Set(normalized)];
+}
+
 interface ProductCurationForm {
   enabledForApp: boolean;
   category: string;
@@ -151,10 +170,13 @@ export class AffiliateProductDetailComponent implements OnInit {
   }
 
   toggleGender(id: string, event: Event): void {
+    const target = normalizeCatalogGenderTarget(id);
+    if (!target) return;
+
     const checked = (event.target as HTMLInputElement).checked;
     this.curation.genderTargets = checked
-      ? [...new Set([...this.curation.genderTargets, id])]
-      : this.curation.genderTargets.filter((value) => value !== id);
+      ? [...new Set([...this.curation.genderTargets, target])]
+      : this.curation.genderTargets.filter((value) => value !== target);
   }
 
   saveCuration(): void {
@@ -228,10 +250,15 @@ export class AffiliateProductDetailComponent implements OnInit {
       const values = select.remote && select.api
         ? await this.formService.getData(select.api)
         : (select.options || []);
-      this.genderOptions = (Array.isArray(values) ? values : values?.data || []).map((item: any) => ({
-        id: String(item[select.valueExp || 'id']),
-        value: String(item[select.displayExp || 'value']),
-      }));
+      const options = (Array.isArray(values) ? values : values?.data || []).flatMap((item: any) => {
+        const rawId = item[select.valueExp || 'id'];
+        const label = String(item[select.displayExp || 'value'] ?? rawId ?? '');
+        const id = normalizeCatalogGenderTarget(rawId) ?? normalizeCatalogGenderTarget(label);
+
+        return id ? [{ id, value: label }] : [];
+      });
+
+      this.genderOptions = [...new Map(options.map((option) => [option.id, option])).values()];
     } catch {
       this.genderOptions = [];
       this.curationError = 'Impossibile caricare la tassonomia gender.';
@@ -243,7 +270,7 @@ export class AffiliateProductDetailComponent implements OnInit {
       enabledForApp: product.enabledForApp !== false,
       category: product.category ?? '',
       subcategory: product.subcategory ?? '',
-      genderTargets: [...(product.genderTargets ?? [])],
+      genderTargets: normalizeCatalogGenderTargets(product.genderTargets),
       normalizedColor: product.normalizedColor ?? '',
     };
   }
