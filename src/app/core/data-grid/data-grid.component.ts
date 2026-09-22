@@ -2656,6 +2656,24 @@ export class DataGridComponent<T = any> implements OnDestroy {
     this.rowsData.set(sortedRows);
   }
 
+  public setProviderInitialFilters(filters: Record<string, unknown>): void {
+    if (!this.dataProvider || !this.remoteOperation) return;
+
+    this.gridEngine.providerFilters = [];
+
+    Object.entries(filters ?? {}).forEach(([field, value]) => {
+      const column = DataGridUtils.getProviderFilterColumn(this.colsHeader, this.colonne, field);
+      if (!column) return;
+
+      const filter = buildGridColumnFilter(value, column);
+      this.gridEngine.setProviderColumnFilter(field, filter);
+    });
+  }
+
+  public providerFilterValue(field: string): unknown {
+    return this.gridEngine.providerFilters.find(filter => filter.field === field)?.value ?? '';
+  }
+
   async applyProviderSearch(value: string): Promise<boolean> {
     if (!this.dataProvider || !this.remoteOperation) return false;
 
