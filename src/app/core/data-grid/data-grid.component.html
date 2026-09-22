@@ -200,6 +200,7 @@
                      <div *ngSwitchCase="'campoBoolean'" class="editor no-border">
                         <div class="editor-content no-border">
                            <select class="texteditor-input no-border"
+                              [value]="providerFilterValue(colHeader.dataField)"
                               [attr.data-grid-filter-field]="colHeader.dataField"
                               [attr.data-grid-filter-type]="colHeader.type"
                               (change)="searchData($event)">
@@ -213,6 +214,7 @@
                      <div *ngSwitchCase="'campoLista'" class="editor no-border">
                         <div class="editor-content no-border">
                            <select class="texteditor-input no-border"
+                              [value]="providerFilterValue(colHeader.dataField)"
                               [attr.data-grid-filter-field]="colHeader.dataField"
                               [attr.data-grid-filter-type]="colHeader.type"
                               (change)="searchData($event)">
