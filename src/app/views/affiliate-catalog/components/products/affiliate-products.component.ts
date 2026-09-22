@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom, finalize, forkJoin } from 'rxjs';
 import {
   ColData,
@@ -189,6 +189,7 @@ export function createAffiliateProductsProvider(
 export class AffiliateProductsComponent implements OnInit, OnDestroy {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private dataGrid?: DataGridComponent<AffiliateProductGridRow>;
   private mobileLoadMoreObserver?: IntersectionObserver;
 
@@ -208,6 +209,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   hasMore = false;
 
   private programNames = new Map<string, string>();
+  private restoredFilters: Record<string, string> = {};
 
   @ViewChild(DataGridComponent)
   set productGrid(grid: DataGridComponent<AffiliateProductGridRow> | undefined) {
@@ -215,6 +217,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     if (!grid || !this.dataProvider) return;
 
     grid.pageSize = AFFILIATE_PRODUCTS_PAGE_SIZE;
+    grid.setProviderInitialFilters(this.restoredFilters);
     queueMicrotask(() => void grid.renderGrid());
   }
 
@@ -239,6 +242,14 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const affiliateProgramId = this.route.snapshot.queryParamMap.get('affiliateProgramId')?.trim();
+    const category = this.route.snapshot.queryParamMap.get('category')?.trim();
+
+    this.restoredFilters = {
+      ...(affiliateProgramId ? { affiliateProgramId } : {}),
+      ...(category ? { category } : {}),
+    };
+
     this.refresh();
   }
 
@@ -351,13 +362,29 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     return product.materials?.filter(Boolean).join(', ') || '—';
   }
 
-  openDetail(product: CatalogProduct): void {
+  async openDetail(product: CatalogProduct): Promise<void> {
     if (!product?.id) return;
-    void this.router.navigate(['/affiliate-catalog/products', product.id]);
+
+    const queryParams = {
+      affiliateProgramId: this.dataGrid?.providerFilterValue('affiliateProgramId') || null,
+      category: this.dataGrid?.providerFilterValue('category') || null,
+    };
+
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+
+    await this.router.navigate(
+      ['/affiliate-catalog/products', product.id],
+      { queryParamsHandling: 'preserve' },
+    );
   }
 
   gridAction(event: { name?: string; rowData?: AffiliateProductGridRow }): void {
-    if (event?.name === 'detail' && event.rowData) this.openDetail(event.rowData);
+    if (event?.name === 'detail' && event.rowData) void this.openDetail(event.rowData);
   }
 
   private onProviderLoadStart(append: boolean): void {
