@@ -81,7 +81,7 @@ export class NicaPopupContentComponent implements OnInit, AfterViewInit, OnChang
 
   }
   get getMaxZIndex() {
-    const modalZIndexes = Array.from(document.querySelectorAll('.modal'))
+    const modalZIndexes = Array.from(document.querySelectorAll('.modal.popup'))
       .filter(el => !el.classList.contains('modal-dialog'))
       .map(el => parseFloat(window.getComputedStyle(el).zIndex))
       .filter(zIndex => Number.isFinite(zIndex));
