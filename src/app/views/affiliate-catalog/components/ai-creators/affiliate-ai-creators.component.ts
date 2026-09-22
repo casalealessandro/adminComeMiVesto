@@ -116,7 +116,9 @@ export class AffiliateAiCreatorsComponent implements OnInit {
         const index = this.creators.findIndex((item) => item.uid === creator.uid);
         if (index >= 0) this.creators[index] = creator;
         else this.creators = [...this.creators, creator];
-        this.closeForm();
+        this.formOpen = false;
+        this.editingUid = null;
+        this.draft = this.emptyDraft();
       },
       error: (error) => {
         const status = Number(error?.status ?? 0);
