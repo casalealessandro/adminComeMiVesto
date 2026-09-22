@@ -1,31 +1,92 @@
+:host {
+  display: block;
+  min-height: 100%;
+}
+
 .menu-container {
-    width: auto;
-    transition: transform 0.3s ease;
-    background-color: #fff;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    overflow: hidden;   
+  width: 100%;
+  min-height: 100%;
+  padding: .85rem .65rem 1rem;
+  background: var(--cmv-color-surface, #fff);
+}
+
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu-item {
+  min-width: 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  min-height: 44px;
+  padding: .65rem .75rem;
+  overflow: hidden;
+  color: var(--cmv-color-text, #475569);
+  border-radius: var(--cmv-radius-sm, .5rem);
+  font-size: .86rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.nav-link:hover {
+  color: var(--cmv-color-text-strong, #0f172a);
+  background: var(--cmv-color-surface-muted, #f8fafc);
+}
+
+.nav-link.active {
+  color: var(--cmv-color-text-strong, #0f172a);
+  background: #f1f5f9;
+  box-shadow: inset 3px 0 0 var(--cmv-color-primary, #080808);
+}
+
+.menu-icon {
+  display: inline-grid;
+  flex: 0 0 24px;
+  width: 24px;
+  place-items: center;
+  font-size: 1.25rem;
+}
+
+.menu-label {
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host-context(.menu-side) .menu-container {
+  padding-inline: .5rem;
+}
+
+:host-context(.menu-side) .nav-link {
+  justify-content: center;
+  padding-inline: .5rem;
+}
+
+:host-context(.menu-side) .menu-icon {
+  flex-basis: 28px;
+  width: 28px;
+  font-size: 1.35rem;
+}
+
+:host-context(.menu-side) .menu-label {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link {
+    transition: none;
   }
-  .menu-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    margin-top: 70px;
-  }
-  .menu-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    cursor: pointer;
-    &:hover {
-      background-color: #f0f0f0;
-    }
-    span {
-      margin-right: 0px;
-      font-size: 16px;
-    }
-    .menu-icon{
-      font-size: 20px;
-      margin-right: 10px;
-    }
-  }
-  
+}

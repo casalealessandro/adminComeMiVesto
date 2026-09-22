@@ -1,18 +1,23 @@
-<link
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-  rel="stylesheet"
-/>
 <div class="caption-container" [ngClass]="cssClass">
-  <!--  TITOLO  -->
   <div class="item-wrap wrap-item-title">
     <h2 class="page-title">{{ caption }}</h2>
   </div>
 
-  <div class="items-class">
+  <div class="items-class" *ngIf="showSearchInput || showButtonInput">
     <div class="input-container">
-      <input type="text" [(ngModel)]="inputValue" *ngIf="showSearchInput" />
-      <button *ngIf="showButtonInput" (click)="onButtonChange($event)">
-        <i class="fas fa-search"></i>
+      <input
+        type="search"
+        [(ngModel)]="inputValue"
+        *ngIf="showSearchInput"
+        aria-label="Cerca"
+        placeholder="Cerca"
+      />
+      <button
+        type="button"
+        *ngIf="showButtonInput"
+        aria-label="Avvia ricerca"
+        (click)="onButtonChange($event)">
+        <span class="mdi mdi-magnify" aria-hidden="true"></span>
       </button>
     </div>
   </div>
@@ -29,7 +34,7 @@
           *ngIf="cButton.visible"
           (click)="toolbarButtonClick(cButton)"
         >
-          <i *ngIf="cButton.icon" [class]="cButton.icon"></i>
+          <i *ngIf="cButton.icon" [class]="cButton.icon" aria-hidden="true"></i>
           {{ cButton.text || cButton.name }}
         </button>
       </ng-container>
@@ -42,17 +47,18 @@
         [ngClass]="addButton.cssClass || ''"
         (click)="onClickAddButton(addButton)"
       >
-        <i [class]="addButton.icon"></i>
+        <i [class]="addButton.icon" aria-hidden="true"></i>
         {{ addButton.text || addButton.name }}
       </button>
 
       <button
-        class="icon-button"
+        type="button"
+        class="icon-button close-button"
         *ngIf="isClosable"
         (click)="onClickCrocetta($event)"
       >
-        <i class="mdi mdi-window-close"></i>
-        Chiudi
+        <span class="mdi mdi-close" aria-hidden="true"></span>
+        <span>Chiudi</span>
       </button>
     </div>
   </div>

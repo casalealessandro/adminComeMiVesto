@@ -1,20 +1,18 @@
-<div class="menu-container" [class.open]="getIsMenuOpen()">
-  <ul class="nav nav-pills nav-flush flex-column mb-auto text-center menu-list">
-    <li class="nav-item menu-item" *ngFor="let menuItem of allMenu">
+<nav class="menu-container" [class.open]="getIsMenuOpen()" aria-label="Navigazione principale">
+  <ul class="menu-list">
+    <li class="menu-item" *ngFor="let menuItem of allMenu">
       <a
         [routerLink]="['/', menuItem.path]"
         routerLinkActive="active"
         ariaCurrentWhenActive="page"
         class="nav-link"
-        data-bs-toggle="tooltip"
-        data-bs-placement="right"
         [attr.aria-label]="menuItem.label"
-        [attr.data-bs-original-title]="menuItem.label"
+        [attr.title]="menuItem.label"
         (click)="navigateTo(menuItem.path)"
       >
-        <span [ngClass]="menuItem.icon" class="menu-icon"></span>
-        <span class="menu-label text">{{ menuItem.label }}</span>
+        <span [ngClass]="menuItem.icon" class="menu-icon" aria-hidden="true"></span>
+        <span class="menu-label">{{ menuItem.label }}</span>
       </a>
     </li>
   </ul>
-</div>
+</nav>
