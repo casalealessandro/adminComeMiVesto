@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -72,6 +72,16 @@ export class AffiliateCatalogService {
   updateAiCreator(uid: string, input: AiCreatorUpdateInput): Observable<AiCreator> {
     return this.http
       .put<AffiliateApiResponse<AiCreator>>(`${this.baseUrl}/ai-creators/${encodeURIComponent(uid)}`, input)
+      .pipe(map((response) => response.data));
+  }
+
+  uploadAiCreatorPhoto(uid: string, photo: Blob): Observable<AiCreator> {
+    return this.http
+      .put<AffiliateApiResponse<AiCreator>>(
+        `${this.baseUrl}/ai-creators/${encodeURIComponent(uid)}/photo`,
+        photo,
+        { headers: new HttpHeaders({ 'Content-Type': 'image/jpeg' }) },
+      )
       .pipe(map((response) => response.data));
   }
 
