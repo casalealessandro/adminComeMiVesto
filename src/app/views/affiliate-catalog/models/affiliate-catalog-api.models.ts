@@ -93,6 +93,8 @@ export interface AiOutfitPreviewRequest {
   count?: number;
   /** Real Firebase UID of the managed AI creator selected for this batch. */
   creatorUid?: string;
+  /** Optional maximum total price in EUR for each generated outfit. */
+  maxTotalPrice?: number;
 }
 
 export interface AiOutfitTokenUsage {
