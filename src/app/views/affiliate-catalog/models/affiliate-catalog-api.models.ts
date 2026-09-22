@@ -150,6 +150,13 @@ export interface AiOutfitPreviewOutfit {
   creatorUid?: string;
 }
 
+export interface AiOutfitCreatorSnapshot {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  visualIdentityApplied: boolean;
+}
+
 export interface AiOutfitPreviewResult {
   generatedAt: number;
   model: string;
@@ -158,6 +165,7 @@ export interface AiOutfitPreviewResult {
   candidatesEvaluated: number;
   imagesEvaluated: number;
   usage: AiOutfitPreviewUsage;
+  creatorSnapshot?: AiOutfitCreatorSnapshot;
   outfits: AiOutfitPreviewOutfit[];
 }
 
@@ -176,6 +184,7 @@ export interface AiOutfitDraft {
   candidatesEvaluated: number;
   imagesEvaluated: number;
   usage: AiOutfitPreviewUsage;
+  creatorSnapshot?: AiOutfitCreatorSnapshot;
   outfit: AiOutfitPreviewOutfit;
   publishedOutfitId?: string;
   approvedBy?: string;
