@@ -81,6 +81,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   readonly publishing = new Set<string>();
   readonly published = new Map<string, string>();
   readonly publishErrors = new Map<string, string>();
+  readonly selectedProductByOutfit = new Map<string, string>();
 
   ngOnInit(): void {
     this.affiliateCatalogService.getPrograms().subscribe({
@@ -112,7 +113,10 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     this.affiliateCatalogService.generateOutfitPreview(request)
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: (result) => this.result = result,
+        next: (result) => {
+          this.ensureTagPositions(result);
+          this.result = result;
+        },
         error: (error) => {
           const status = Number(error?.status ?? 0);
           if (status === 403) {
@@ -135,7 +139,11 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       gender: outfit.gender,
       season: outfit.season,
       style: outfit.style,
-      products: outfit.products.map((product) => ({ catalogProductId: product.catalogProductId, role: product.role })),
+      products: outfit.products.map((product) => ({
+        catalogProductId: product.catalogProductId,
+        role: product.role,
+        ...(this.hasNormalizedPosition(product) ? { x: product.x, y: product.y } : {}),
+      })),
     };
 
     this.publishing.add(key);
@@ -160,6 +168,85 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   outfitKey(outfit: AiOutfitPreviewOutfit): string {
     return `${outfit.title}|${outfit.products.map((product) => product.catalogProductId).join('|')}`;
+  }
+
+  selectProductTag(outfit: AiOutfitPreviewOutfit, product: AiOutfitPreviewProduct, event?: Event): void {
+    event?.stopPropagation();
+    if (this.publishedId(outfit)) return;
+    this.selectedProductByOutfit.set(this.outfitKey(outfit), product.catalogProductId);
+  }
+
+  isSelectedTag(outfit: AiOutfitPreviewOutfit, product: AiOutfitPreviewProduct): boolean {
+    return this.selectedProductByOutfit.get(this.outfitKey(outfit)) === product.catalogProductId;
+  }
+
+  tagStyle(product: AiOutfitPreviewProduct, index: number): Record<string, string> {
+    const position = this.positionForProduct(product, index);
+    return { left: `${position.x * 100}%`, top: `${position.y * 100}%` };
+  }
+
+  moveSelectedTag(event: MouseEvent, outfit: AiOutfitPreviewOutfit): void {
+    if (this.publishedId(outfit)) return;
+    const selectedId = this.selectedProductByOutfit.get(this.outfitKey(outfit));
+    if (!selectedId) return;
+    const product = outfit.products.find((item) => item.catalogProductId === selectedId);
+    const host = event.currentTarget as HTMLElement | null;
+    const image = host?.querySelector('img') as HTMLImageElement | null;
+    if (!product || !image || !image.naturalWidth || !image.naturalHeight) return;
+
+    const rect = image.getBoundingClientRect();
+    const naturalRatio = image.naturalWidth / image.naturalHeight;
+    const boxRatio = rect.width / rect.height;
+    let renderedWidth = rect.width;
+    let renderedHeight = rect.height;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    if (naturalRatio > boxRatio) {
+      renderedHeight = rect.width / naturalRatio;
+      offsetY = (rect.height - renderedHeight) / 2;
+    } else {
+      renderedWidth = rect.height * naturalRatio;
+      offsetX = (rect.width - renderedWidth) / 2;
+    }
+
+    const x = (event.clientX - rect.left - offsetX) / renderedWidth;
+    const y = (event.clientY - rect.top - offsetY) / renderedHeight;
+    if (x < 0 || x > 1 || y < 0 || y > 1) return;
+    product.x = Math.round(x * 1000) / 1000;
+    product.y = Math.round(y * 1000) / 1000;
+  }
+
+  private ensureTagPositions(result: AiOutfitPreviewResult): void {
+    result.outfits.forEach((outfit) => outfit.products.forEach((product, index) => {
+      if (this.hasNormalizedPosition(product)) return;
+      const fallback = this.positionForRole(product.role, index);
+      product.x = fallback.x;
+      product.y = fallback.y;
+    }));
+  }
+
+  private hasNormalizedPosition(product: AiOutfitPreviewProduct): product is AiOutfitPreviewProduct & { x: number; y: number } {
+    return Number.isFinite(product.x) && Number.isFinite(product.y)
+      && (product.x as number) >= 0 && (product.x as number) <= 1
+      && (product.y as number) >= 0 && (product.y as number) <= 1;
+  }
+
+  private positionForProduct(product: AiOutfitPreviewProduct, index: number): { x: number; y: number } {
+    return this.hasNormalizedPosition(product) ? { x: product.x, y: product.y } : this.positionForRole(product.role, index);
+  }
+
+  private positionForRole(role: string, index: number): { x: number; y: number } {
+    const normalized = (role || '').trim().toUpperCase();
+    const x = [0.38, 0.62, 0.42, 0.58][Math.abs(index) % 4];
+    if (normalized === 'SHOES' || /(SHOE|SNEAKER|BOOT|SCARP|STIVAL)/.test(normalized)) return { x, y: 0.86 };
+    if (normalized === 'BOTTOM' || /(PANT|TROUSER|JEAN|SHORT|BERMUDA|SKIRT|GONNA|PANTAL)/.test(normalized)) return { x, y: 0.61 };
+    if (normalized === 'HEADWEAR' || /(HAT|CAP|GLASSES|OCCHIAL|EARRING|NECKLACE|COLLAN)/.test(normalized)) return { x, y: 0.18 };
+    if (normalized === 'BAG' || /(BAG|BORS)/.test(normalized)) return { x: index % 2 === 0 ? 0.72 : 0.28, y: 0.48 };
+    if (normalized === 'ACCESSORY' || /(BELT|CINTUR|WATCH|OROLOG|ACCESSOR)/.test(normalized)) return { x, y: 0.45 };
+    if (normalized === 'DRESS' || /(DRESS|ABITO|VESTITO)/.test(normalized)) return { x, y: 0.48 };
+    if (normalized === 'OUTERWEAR' || /(OUTER|JACKET|BLAZER|COAT|TRENCH|GIACC|CAPPOTT)/.test(normalized)) return { x, y: 0.36 };
+    return { x, y: 0.34 };
   }
 
   isPublishing(outfit: AiOutfitPreviewOutfit): boolean {
