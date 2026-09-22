@@ -137,6 +137,7 @@
             <span>{{ draft.outfit.season }}</span>
             <span>{{ draft.outfit.style }}</span>
             <span *ngIf="draft.request.maxTotalPrice">Max {{ draft.request.maxTotalPrice | currency:'EUR':'symbol':'1.0-2' }}</span>
+            <span *ngIf="draft.creatorSnapshot?.visualIdentityApplied">Identità visiva applicata</span>
             <span *ngIf="draftCreator(draft) as creator">{{ creator.displayName }}</span>
           </div>
           <button type="button" class="btn btn-primary draft-card__open" (click)="resumeDraft(draft)">
@@ -196,6 +197,7 @@
       <span>{{ resumedDraftId ? 'Bozza generata' : 'Generati' }} {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
       <span>{{ preview.outfits.length }} outfit · {{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style }}</span>
       <span *ngIf="preview.request.maxTotalPrice">Budget max {{ preview.request.maxTotalPrice | currency:'EUR':'symbol':'1.0-2' }} / outfit</span>
+      <span *ngIf="preview.creatorSnapshot?.visualIdentityApplied">Identità visiva creator applicata · {{ preview.creatorSnapshot?.displayName }}</span>
       <span *ngIf="resumedDraftId">Bozza persistita · {{ resumedDraftId }}</span>
     </div>
 
@@ -238,6 +240,7 @@
               <span>Pubblicato da</span>
               <strong>{{ creator.displayName }}</strong>
               <small>Virtual fashion creator · {{ creator.gender === 'D' ? 'Donna' : 'Uomo' }}</small>
+              <small *ngIf="preview.creatorSnapshot?.visualIdentityApplied">Foto profilo usata come riferimento visivo</small>
             </div>
           </div>
 
