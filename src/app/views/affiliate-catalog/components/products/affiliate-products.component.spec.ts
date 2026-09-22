@@ -36,7 +36,7 @@ describe('Affiliate products', () => {
     brand: 'Brand',
     name: 'Product',
     description: 'Description',
-    genderTargets: ['WOMEN', 'UNISEX'],
+    genderTargets: ['U', 'D'],
     category: 'Clothing',
     subcategory: 'Shirts',
     normalizedColor: 'BLUE',
@@ -90,7 +90,7 @@ describe('Affiliate products', () => {
     expect(rows[0].programName).toBe(program.name);
     expect(rows[0].activeLabel).toBe('Sì');
     expect(rows[0].categoryLabel).toBe('Clothing / Shirts');
-    expect(rows[0].genderLabel).toBe('WOMEN, UNISEX');
+    expect(rows[0].genderLabel).toBe('U, D');
     expect(rows[0].sourceFeedCount).toBe(2);
   });
 
