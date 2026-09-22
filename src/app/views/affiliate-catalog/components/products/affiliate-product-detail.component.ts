@@ -3,14 +3,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
-import { DynamicFormField } from '../../../../interface/dynamic-form-field';
-import { FormService } from '../../../../services/form.service';
-import { outfitCategories, OutfitsService } from '../../../../services/outfit.service';
-import { OutfitColor, TaxonomyService } from '../../../../services/taxonomy.service';
+import { DynamicFormComponent } from '../../../../core/forms/dynamic-form/dynamic-form.component';
 import { alert } from '../../../../widgets/ui-dialogs';
 import { AffiliateProductUpdateInput } from '../../models/affiliate-catalog-api.models';
 import { AffiliateFeed, AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+
+export const AFFILIATE_PRODUCT_CURATION_FORM = 'affiliateProductCurationForm';
 
 export function affiliateProductDetailErrorMessage(status?: number): string {
   if (status === 401 || status === 403) return 'Non sei autorizzato a consultare questo prodotto.';
@@ -20,6 +19,18 @@ export function affiliateProductDetailErrorMessage(status?: number): string {
 }
 
 export type CatalogGenderTarget = 'U' | 'D';
+
+export interface AffiliateProductCurationFormData {
+  category: string;
+  subcategory: string;
+  normalizedColor: string;
+  genderTargets: CatalogGenderTarget[];
+}
+
+export interface AffiliateProductCurationFormEvent {
+  name: 'submitForm' | 'cancelForm';
+  formData: Record<string, unknown>;
+}
 
 export function normalizeCatalogGenderTarget(value: unknown): CatalogGenderTarget | null {
   const normalized = String(value ?? '').trim().toLowerCase();
@@ -38,27 +49,54 @@ export function normalizeCatalogGenderTargets(values: readonly unknown[] | null 
   return [...new Set(normalized)];
 }
 
-interface ProductCurationForm {
-  enabledForApp: boolean;
-  category: string;
-  subcategory: string;
-  genderTargets: string[];
-  normalizedColor: string;
+export function buildAffiliateProductCurationFormData(product: CatalogProduct): AffiliateProductCurationFormData {
+  return {
+    category: product.category ?? '',
+    subcategory: product.subcategory ?? '',
+    normalizedColor: product.normalizedColor ?? '',
+    genderTargets: normalizeCatalogGenderTargets(product.genderTargets),
+  };
+}
+
+export function buildAffiliateProductCurationUpdate(
+  product: CatalogProduct,
+  enabledForApp: boolean,
+  formData: Record<string, unknown>,
+): AffiliateProductUpdateInput {
+  const category = String(formData['category'] ?? '').trim();
+  const subcategory = String(formData['subcategory'] ?? '').trim();
+  const normalizedColor = String(formData['normalizedColor'] ?? '').trim();
+  const rawGenderTargets = Array.isArray(formData['genderTargets']) ? formData['genderTargets'] : [];
+  const genderTargets = normalizeCatalogGenderTargets(rawGenderTargets);
+  const currentGenderTargets = normalizeCatalogGenderTargets(product.genderTargets);
+
+  const input: AffiliateProductUpdateInput = {};
+
+  if (enabledForApp !== (product.enabledForApp !== false)) input.enabledForApp = enabledForApp;
+  if (category !== (product.category ?? '')) input.category = category;
+  if (subcategory !== (product.subcategory ?? '')) input.subcategory = subcategory;
+  if (normalizedColor !== (product.normalizedColor ?? '')) input.normalizedColor = normalizedColor;
+  if (!sameValues(genderTargets, currentGenderTargets)) input.genderTargets = genderTargets;
+
+  return input;
+}
+
+function sameValues(left: readonly string[], right: readonly string[]): boolean {
+  return [...left].sort().join('|') === [...right].sort().join('|');
 }
 
 @Component({
   selector: 'app-affiliate-product-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, DynamicFormComponent],
   templateUrl: './affiliate-product-detail.component.html',
   styleUrl: '../affiliate-detail-layout.scss',
 })
 export class AffiliateProductDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
-  private readonly outfitService = inject(OutfitsService);
-  private readonly taxonomyService = inject(TaxonomyService);
-  private readonly formService = inject(FormService);
+
+  readonly curationFormId = AFFILIATE_PRODUCT_CURATION_FORM;
 
   productId = '';
   product: CatalogProduct | null = null;
@@ -67,11 +105,8 @@ export class AffiliateProductDetailComponent implements OnInit {
   error = '';
   images: string[] = [];
 
-  categories: outfitCategories[] = [];
-  subcategories: outfitCategories[] = [];
-  colors: OutfitColor[] = [];
-  genderOptions: Array<{ id: string; value: string }> = [];
-  curation: ProductCurationForm = this.emptyCuration();
+  enabledForApp = true;
+  curationData: AffiliateProductCurationFormData | null = null;
   curationSaving = false;
   curationError = '';
 
@@ -93,6 +128,7 @@ export class AffiliateProductDetailComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.curationError = '';
+    this.curationData = null;
 
     this.affiliateCatalogService.getProduct(this.productId)
       .pipe(
@@ -104,34 +140,23 @@ export class AffiliateProductDetailComponent implements OnInit {
           feeds: this.affiliateCatalogService.getFeeds(product.affiliateProgramId).pipe(
             catchError(() => of([] as AffiliateFeed[])),
           ),
-          categories: this.outfitService.getOutFitCategories().pipe(
-            catchError(() => of([] as outfitCategories[])),
-          ),
-          colors: this.taxonomyService.getColors().pipe(
-            catchError(() => of([] as OutfitColor[])),
-          ),
-          formFields: this.formService.getFormFields('outfitForm').pipe(
-            catchError(() => of([] as DynamicFormField[])),
-          ),
         })),
         finalize(() => this.loading = false),
       )
       .subscribe({
-        next: ({ product, program, feeds, categories, colors, formFields }) => {
+        next: ({ product, program, feeds }) => {
           this.product = product;
           this.program = program;
           this.images = (product.images ?? []).filter((image) => typeof image === 'string' && image.trim().length > 0);
           this.feedNames = new Map(feeds.map((feed) => [feed.id, feed.name]));
-          this.categories = categories;
-          this.colors = colors;
-          this.curation = this.curationFromProduct(product);
-          this.loadSubcategories(product.category);
-          void this.loadGenderOptions(formFields);
+          this.enabledForApp = product.enabledForApp !== false;
+          this.curationData = buildAffiliateProductCurationFormData(product);
         },
         error: (error: { status?: number }) => {
           this.product = null;
           this.program = null;
           this.images = [];
+          this.curationData = null;
           this.feedNames.clear();
           this.error = affiliateProductDetailErrorMessage(error?.status);
         },
@@ -160,45 +185,17 @@ export class AffiliateProductDetailComponent implements OnInit {
     return this.feedNames.get(feedId) || feedId;
   }
 
-  mappingComplete(): boolean {
-    return Boolean(this.curation.category && this.curation.subcategory);
-  }
+  handleCurationForm(event: AffiliateProductCurationFormEvent): void {
+    if (event.name !== 'submitForm' || !this.product || this.curationSaving) return;
 
-  onCategoryChange(): void {
-    this.curation.subcategory = '';
-    this.loadSubcategories(this.curation.category);
-  }
-
-  toggleGender(id: string, event: Event): void {
-    const target = normalizeCatalogGenderTarget(id);
-    if (!target) return;
-
-    const checked = (event.target as HTMLInputElement).checked;
-    this.curation.genderTargets = checked
-      ? [...new Set([...this.curation.genderTargets, target])]
-      : this.curation.genderTargets.filter((value) => value !== target);
-  }
-
-  saveCuration(): void {
-    if (!this.product || this.curationSaving) return;
-    if (this.curation.enabledForApp && !this.mappingComplete()) {
+    const category = String(event.formData['category'] ?? '').trim();
+    const subcategory = String(event.formData['subcategory'] ?? '').trim();
+    if (this.enabledForApp && (!category || !subcategory)) {
       this.curationError = 'Per abilitare il prodotto nell’app devi associare categoria e sottocategoria ComeMiVesto.';
       return;
     }
 
-    const input: AffiliateProductUpdateInput = {};
-    if (this.curation.enabledForApp !== (this.product.enabledForApp !== false)) {
-      input.enabledForApp = this.curation.enabledForApp;
-    }
-    if (this.curation.category !== this.product.category) input.category = this.curation.category;
-    if (this.curation.subcategory !== this.product.subcategory) input.subcategory = this.curation.subcategory;
-    if (!this.sameValues(this.curation.genderTargets, this.product.genderTargets ?? [])) {
-      input.genderTargets = [...this.curation.genderTargets];
-    }
-    if (this.curation.normalizedColor !== (this.product.normalizedColor ?? '')) {
-      input.normalizedColor = this.curation.normalizedColor;
-    }
-
+    const input = buildAffiliateProductCurationUpdate(this.product, this.enabledForApp, event.formData);
     if (!Object.keys(input).length) {
       this.curationError = '';
       return;
@@ -211,11 +208,15 @@ export class AffiliateProductDetailComponent implements OnInit {
       .subscribe({
         next: (product) => {
           this.product = product;
-          this.curation = this.curationFromProduct(product);
-          this.loadSubcategories(product.category);
+          this.enabledForApp = product.enabledForApp !== false;
+          this.curationData = buildAffiliateProductCurationFormData(product);
           alert('Prodotto aggiornato per ComeMiVesto.', 'Operazione completata');
         },
         error: (error: { status?: number }) => {
+          if (error?.status === 400) {
+            this.curationError = 'I dati della classificazione non rispettano il contratto ComeMiVesto.';
+            return;
+          }
           if (error?.status === 409) {
             this.curationError = 'Categoria, sottocategoria o colore non sono validi per la tassonomia ComeMiVesto.';
             return;
@@ -227,65 +228,5 @@ export class AffiliateProductDetailComponent implements OnInit {
           this.curationError = 'Aggiornamento prodotto non riuscito.';
         },
       });
-  }
-
-  private loadSubcategories(categoryId: string): void {
-    this.subcategories = [];
-    if (!categoryId) return;
-
-    this.outfitService.getOutFitCategories(categoryId).subscribe({
-      next: (categories) => this.subcategories = categories,
-      error: () => this.curationError = 'Impossibile caricare le sottocategorie ComeMiVesto.',
-    });
-  }
-
-  private async loadGenderOptions(fields: DynamicFormField[]): Promise<void> {
-    const select = fields.find((field) => field.name === 'gender')?.selectOptions;
-    if (!select) {
-      this.genderOptions = [];
-      return;
-    }
-
-    try {
-      const values = select.remote && select.api
-        ? await this.formService.getData(select.api)
-        : (select.options || []);
-      const options = (Array.isArray(values) ? values : values?.data || []).flatMap((item: any) => {
-        const rawId = item[select.valueExp || 'id'];
-        const label = String(item[select.displayExp || 'value'] ?? rawId ?? '');
-        const id = normalizeCatalogGenderTarget(rawId) ?? normalizeCatalogGenderTarget(label);
-
-        return id ? [{ id, value: label }] : [];
-      });
-
-      this.genderOptions = [...new Map(options.map((option) => [option.id, option])).values()];
-    } catch {
-      this.genderOptions = [];
-      this.curationError = 'Impossibile caricare la tassonomia gender.';
-    }
-  }
-
-  private curationFromProduct(product: CatalogProduct): ProductCurationForm {
-    return {
-      enabledForApp: product.enabledForApp !== false,
-      category: product.category ?? '',
-      subcategory: product.subcategory ?? '',
-      genderTargets: normalizeCatalogGenderTargets(product.genderTargets),
-      normalizedColor: product.normalizedColor ?? '',
-    };
-  }
-
-  private emptyCuration(): ProductCurationForm {
-    return {
-      enabledForApp: true,
-      category: '',
-      subcategory: '',
-      genderTargets: [],
-      normalizedColor: '',
-    };
-  }
-
-  private sameValues(left: string[], right: string[]): boolean {
-    return [...left].sort().join('|') === [...right].sort().join('|');
   }
 }
