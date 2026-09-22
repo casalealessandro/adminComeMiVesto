@@ -7,6 +7,7 @@ export interface AiOutfitPublishRequest {
   gender: AiOutfitPreviewOutfit['gender'];
   season: AiOutfitPreviewOutfit['season'];
   style: AiOutfitPreviewOutfit['style'];
+  creatorUid?: string;
   products: Array<{
     catalogProductId: string;
     role: string;
