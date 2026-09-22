@@ -42,7 +42,9 @@ export class NicaPopupContentComponent implements OnInit, AfterViewInit, OnChang
   showCaptionHeader: boolean = false;
   showCaptionFooter: boolean = false;
   isPanelVisible: boolean = false;
-  zIndex: number = 500;
+  /** Base layer reserved for modal popups. Must remain above the authenticated shell. */
+  readonly popupBaseZIndex = 2000;
+  zIndex: number = this.popupBaseZIndex;
   zIndexModalDialog!: number;
   classFade: any;
   popUpWidth: any = null
@@ -79,23 +81,12 @@ export class NicaPopupContentComponent implements OnInit, AfterViewInit, OnChang
 
   }
   get getMaxZIndex() {
-    let element  = document.querySelectorAll('.modal');
-    let allZIndex: number[] = []
-    element.forEach(el=>{
-      if(!el.classList.contains('modal-dialog')){
-        allZIndex.push(parseFloat(window.getComputedStyle(el).zIndex))
-      }
-    })
+    const modalZIndexes = Array.from(document.querySelectorAll('.modal'))
+      .filter(el => !el.classList.contains('modal-dialog'))
+      .map(el => parseFloat(window.getComputedStyle(el).zIndex))
+      .filter(zIndex => Number.isFinite(zIndex));
 
-    return Math.max(...allZIndex);
-
-    return Math.max(
-      ...Array.from(document.querySelectorAll('div.dx-overlay-content'), el =>
-       
-        parseFloat(window.getComputedStyle(el).zIndex),
-      ).filter(zIndex => !Number.isNaN(zIndex)),
-      0,
-    );
+    return Math.max(this.popupBaseZIndex, ...modalZIndexes);
   }
   async ngOnInit() {
     //https://interactjs.io/docs/draggable/
