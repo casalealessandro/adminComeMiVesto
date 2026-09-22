@@ -91,7 +91,7 @@ describe('AffiliateCatalogService release contract', () => {
     brand: 'Brand',
     name: 'Product',
     description: 'Description',
-    genderTargets: ['UNISEX'],
+    genderTargets: ['U', 'D'],
     category: 'Clothing',
     subcategory: 'Shirts',
     normalizedColor: 'BLUE',
