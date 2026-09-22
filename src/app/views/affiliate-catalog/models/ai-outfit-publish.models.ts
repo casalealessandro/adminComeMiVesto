@@ -10,6 +10,8 @@ export interface AiOutfitPublishRequest {
   products: Array<{
     catalogProductId: string;
     role: string;
+    x?: number;
+    y?: number;
   }>;
 }
 
