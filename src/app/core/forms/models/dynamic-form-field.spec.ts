@@ -41,28 +41,4 @@ describe('DynamicFormField metadata normalization', () => {
     expect(serialized.radioOptions).toEqual(radioOptions);
     expect(serialized.selectOptions).toBeUndefined();
   });
-
-  it('does not add layout metadata to a legacy field', () => {
-    expect(normalizeDynamicFormField(base).layout).toBeUndefined();
-  });
-
-  it('preserves valid layout metadata', () => {
-    expect(normalizeDynamicFormField({ ...base, layout: { rowId: 'abc', colSpan: 2 } }).layout)
-      .toEqual({ rowId: 'abc', colSpan: 2 });
-  });
-
-  [0, 13, 2.5].forEach(colSpan => {
-    it(`omits invalid colSpan ${colSpan}`, () => {
-      expect(normalizeDynamicFormField({ ...base, layout: { colSpan } }).layout).toBeUndefined();
-      expect(normalizeDynamicFormField({ ...base, layout: { rowId: 'abc', colSpan } }).layout)
-        .toEqual({ rowId: 'abc' });
-    });
-  });
-
-  it('removes colSpan from hidden fields while preserving their row association', () => {
-    const hidden = normalizeDynamicFormField({
-      ...base, type: 'hiddenBox', typeInput: 'hidden', layout: { rowId: 'abc', colSpan: 4 }
-    });
-    expect(hidden.layout).toEqual({ rowId: 'abc' });
-  });
 });

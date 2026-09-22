@@ -1,92 +1,102 @@
-<app-anagrafica-wrapper [caption]="formTitle">
+<app-anagrafica-wrapper 
+[caption]="formTitle">
   <div class="text border-bottom">
     <h2><span class="mdi mdi-chevron-right"></span>{{formTitle}} {{formName}}</h2>
+
   </div>
 
-  <div class="row mt-3 mb-3">
-    <label class="col-sm-2 col-form-label font-medium" for="formName">Form Name <span class="badge bg-secondary">Richiesto</span></label>
-    <div class="col-sm-10"><input id="formName" type="text" class="form-control" [(ngModel)]="formName"></div>
+  <div class="row  mt-3 mb-3 ">
+    <label class="col-sm-2 col-form-label font-medium" for="formName">Form Name <span
+        class="badge bg-secondary">Richiesto</span></label>
+    <div class="col-sm-10">
+      <input id="formName" type="text" class="form-control" [(ngModel)]="formName" placeholder="">
+    </div>
+
+
   </div>
 
-  <div class="structure-heading text pt-3 mt-3">
+  <div class="text pt-3 mt-3">
     <h3><span class="mdi mdi-chevron-right"></span>Struttura form</h3>
-    <button type="button" class="btn ana-button" (click)="createRow()"><span class="mdi mdi-table-row-plus-after"></span> Aggiungi riga</button>
   </div>
 
-  <div class="content-formbuilder">
-    <aside class="field-palette" aria-label="Tipi di campo">
-      <div class="palette-hint">{{ activeRowId ? 'Aggiungi alla riga selezionata' : 'Seleziona o aggiungi una riga' }}</div>
-      <ul class="list-group elements">
-        <li *ngFor="let element of elements; index as i" class="list-group-item d-flex justify-content-between align-items-center"
-          [class.disabled]="!activeRowId" (click)="activeRowId && onAdd($event,i)">
-          <span><span class="iconE" [ngClass]="elementIcons[element.type]"></span>{{ element.label }}</span>
-          <button type="button" class="btn icon-button ms-2" [disabled]="!activeRowId" (click)="onAdd($event,i)" [attr.aria-label]="'Aggiungi ' + element.label">
+  <div class="content-formbuilder form-view ">
+
+
+    <!-- Aggiungi Elemento -->
+    <ul class="list-group elements">
+      <li *ngFor="let element of elements, index as i "
+        class="list-group-item d-flex justify-content-between align-items-center" (click)="onAdd($event,i)">
+        <span class="iconE" [ngClass]="elementIcons[element.type]"></span>
+        {{ element.label }}
+
+        <div>
+          <button type="button" class="btn icon-button ms-2" (click)="onAdd($event,i)">
             <span class="mdi mdi-plus-circle-outline"></span>
           </button>
-        </li>
-      </ul>
-    </aside>
 
-    <div class="form-view">
-      <div *ngIf="rows.length === 0" class="empty-form">Nessuna riga configurata</div>
-      <section *ngFor="let row of rows; index as rowIndex" class="builder-row" [class.active]="activeRowId === row.id" [class.invalid]="!isRowWidthValid(row.fields)" (click)="selectRow(row)">
-        <header class="row-header">
-          <div><strong>Riga {{ rowIndex + 1 }}</strong></div>
-          <div class="row-actions" (click)="$event.stopPropagation()">
-            <button type="button" class="icon-button" (click)="moveRow(rowIndex,-1)" [disabled]="rowIndex === 0" aria-label="Sposta riga su"><span class="mdi mdi-arrow-up"></span></button>
-            <button type="button" class="icon-button" (click)="moveRow(rowIndex,1)" [disabled]="rowIndex === rows.length - 1" aria-label="Sposta riga giù"><span class="mdi mdi-arrow-down"></span></button>
-            <button type="button" class="icon-button removeEl" (click)="removeRow(row)" aria-label="Elimina riga"><span class="mdi mdi-close"></span></button>
+        </div>
+
+      </li>
+
+    </ul>
+    <div class="form-view ">
+      <div *ngIf="formElements.length === 0" class="empty-form">
+        Nessun campo configurato
+      </div>
+
+      <div class="row">
+
+        <div class="element" *ngFor="let element of formElements, index as iEl "
+          (click)="openPropertiesModal(element,iEl)">
+          <div class="form-element mb-3">
+            <span>{{ element.label }}</span>
+            <div class="form-element-badges" *ngIf="element.selectOptions || element.radioOptions">
+              <span class="badge bg-secondary" *ngIf="element.selectOptions?.remote || element.radioOptions?.remote">REMOTE</span>
+              <span class="badge bg-light text-dark" *ngIf="(element.selectOptions && !element.selectOptions.remote) || (element.radioOptions && !element.radioOptions.remote)">STATIC</span>
+              <span class="badge bg-light text-dark" *ngIf="element.selectOptions?.parent || element.radioOptions?.parent">
+                PARENT: {{ element.selectOptions?.parent || element.radioOptions?.parent }}
+              </span>
+            </div>
           </div>
-        </header>
 
-        <div *ngIf="!row.fields.length" class="empty-row">Riga vuota: scegli un tipo di campo dalla palette.</div>
-        <div class="row-fields">
-          <article class="element" *ngFor="let element of row.visibleFields; index as fieldIndex"
-            [style.--field-span]="element.layout?.colSpan || null" (click)="$event.stopPropagation(); openPropertiesModal(element,row.visibleIndexes[fieldIndex])">
-            <div class="form-element">
-              <strong>{{ element.label || element.name || 'Nuovo campo' }}</strong>
-              <label class="width-control" (click)="$event.stopPropagation()">
-                <span>Larghezza</span>
-                <select class="form-select form-select-sm" [disabled]="!element.layout?.rowId" [ngModel]="element.layout?.colSpan || 'auto'" (ngModelChange)="setColumnSpan(row.visibleIndexes[fieldIndex], $event)">
-                  <option value="auto">AUTO</option>
-                  <option *ngFor="let span of columnSpans" [value]="span">{{span}} / 12</option>
-                </select>
-              </label>
-              <div class="form-element-badges" *ngIf="element.selectOptions || element.radioOptions">
-                <span class="badge bg-secondary" *ngIf="element.selectOptions?.remote || element.radioOptions?.remote">REMOTE</span>
-                <span class="badge bg-light text-dark" *ngIf="(element.selectOptions && !element.selectOptions.remote) || (element.radioOptions && !element.radioOptions.remote)">STATIC</span>
-              </div>
-            </div>
-            <div class="element-actions" (click)="$event.stopPropagation()">
-              <button type="button" class="icon-button" (click)="moveElement(row.visibleIndexes[fieldIndex],-1)" [disabled]="fieldIndex === 0" aria-label="Sposta campo a sinistra"><span class="mdi mdi-arrow-left"></span></button>
-              <button type="button" class="icon-button" (click)="moveElement(row.visibleIndexes[fieldIndex],1)" [disabled]="fieldIndex === row.visibleFields.length - 1" aria-label="Sposta campo a destra"><span class="mdi mdi-arrow-right"></span></button>
-              <button type="button" class="icon-button" (click)="duplicateElement(row.visibleIndexes[fieldIndex])" aria-label="Duplica campo"><span class="mdi mdi-content-copy"></span></button>
-              <button type="button" class="icon-button removeEl" (click)="onRemove(row.visibleIndexes[fieldIndex])" aria-label="Elimina campo"><span class="mdi mdi-close"></span></button>
-            </div>
-          </article>
+          <div class="element-actions" (click)="$event.stopPropagation()">
+            <button type="button" class="icon-button ms-2" (click)="moveElement(iEl,-1)" [disabled]="iEl === 0">
+              <span class="mdi mdi-arrow-up"></span>
+            </button>
+            <button type="button" class="icon-button ms-2" (click)="moveElement(iEl,1)" [disabled]="iEl === formElements.length - 1">
+              <span class="mdi mdi-arrow-down"></span>
+            </button>
+            <button type="button" class="icon-button ms-2" (click)="duplicateElement(iEl)">
+              <span class="mdi mdi-content-copy"></span>
+            </button>
+            <button type="button" class="icon-button ms-2 removeEl" (click)="onRemove(iEl)">
+              <span class="mdi mdi-close"></span>
+            </button>
+          </div>
+
         </div>
-        <div class="hidden-fields" *ngIf="row.hiddenFields.length">
-          <div class="hidden-fields-title">Campi tecnici</div>
-          <article class="hidden-element" *ngFor="let element of row.hiddenFields; index as hiddenIndex"
-            (click)="$event.stopPropagation(); openPropertiesModal(element,row.hiddenIndexes[hiddenIndex])">
-            <span class="badge bg-secondary">HIDDEN</span>
-            <span>{{ element.label || element.name || 'Nuovo campo nascosto' }}</span>
-            <div class="element-actions" (click)="$event.stopPropagation()">
-              <button type="button" class="icon-button" (click)="moveElement(row.hiddenIndexes[hiddenIndex],-1)" [disabled]="hiddenIndex === 0" aria-label="Sposta campo nascosto indietro"><span class="mdi mdi-arrow-left"></span></button>
-              <button type="button" class="icon-button" (click)="moveElement(row.hiddenIndexes[hiddenIndex],1)" [disabled]="hiddenIndex === row.hiddenFields.length - 1" aria-label="Sposta campo nascosto avanti"><span class="mdi mdi-arrow-right"></span></button>
-              <button type="button" class="icon-button" (click)="duplicateElement(row.hiddenIndexes[hiddenIndex])" aria-label="Duplica campo nascosto"><span class="mdi mdi-content-copy"></span></button>
-              <button type="button" class="icon-button removeEl" (click)="onRemove(row.hiddenIndexes[hiddenIndex])" aria-label="Elimina campo nascosto"><span class="mdi mdi-close"></span></button>
-            </div>
-          </article>
-        </div>
-        <div *ngIf="!isRowWidthValid(row.fields)" class="row-error" role="alert">La somma delle larghezze personalizzate supera 12.</div>
-        <button *ngIf="!row.fields.length || row.fields[0].layout?.rowId" type="button" class="btn btn-link add-field" (click)="$event.stopPropagation(); selectRow(row)"><span class="mdi mdi-plus"></span> aggiungi campo</button>
-      </section>
+
+      </div>
+
     </div>
+
   </div>
 
-  <div class="formbuilder-button gap-3 mt-3">
-    <button type="button" class="ana-button btn" (click)="returnPrev()"><span class="mdi mdi-keyboard-return"></span> Indietro</button>
-    <button type="button" class="ana-button btn" (click)="saveForm(formName)" [disabled]="!formName || !formName.trim()"><span class="mdi mdi-content-save-outline"></span> Salva</button>
+  <!-- Salva il form -->
+
+  <div class="formbuilder-button gap-3 mt-1">
+
+    <button type="button" class="ana-button btn" (click)="returnPrev()">
+      <span class="mdi mdi-keyboard-return"></span>
+      Indietro
+    </button>
+    <button type="button" class="ana-button btn" (click)="saveForm(formName)" [disabled]="!formName || !formName.trim()">
+      <span class="mdi mdi-content-save-outline"></span>
+      Salva
+    </button>
+
+
+
   </div>
+
 </app-anagrafica-wrapper>
