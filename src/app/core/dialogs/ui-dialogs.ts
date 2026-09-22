@@ -60,6 +60,7 @@ export const alert = (messageHtml: string, title: string, callback?: (resp?: any
   const alertElement = document.createElement('div');
   alertElement.classList.add('modal');
   alertElement.style.display = 'block';
+  alertElement.style.zIndex = 'var(--cmv-layer-dialog, 3000)';
   alertElement.innerHTML = dialog;
 
   const previousFocus = prepareDialog(alertElement);
@@ -94,6 +95,7 @@ export const confirm = (messageHtml: string, title: string, callback?: (resp?: a
   const alertElement = document.createElement('div');
   alertElement.classList.add('modal');
   alertElement.style.display = 'block';
+  alertElement.style.zIndex = 'var(--cmv-layer-dialog, 3000)';
   alertElement.innerHTML = dialog;
 
   const okButton = document.createElement('button');
@@ -141,6 +143,11 @@ export const showPopover = (messageHtml: string, targetElement: HTMLElement, pos
   popover.style.backgroundColor = '#ffffff';
   popover.style.border = '1px solid #000000';
   popover.style.padding = '10px';
+  const activeModalLayers = Array.from(document.querySelectorAll('.modal.popup'))
+    .map(element => parseFloat(window.getComputedStyle(element).zIndex))
+    .filter(zIndex => Number.isFinite(zIndex));
+  const highestModalLayer = activeModalLayers.length ? Math.max(...activeModalLayers) : 0;
+  popover.style.zIndex = String(highestModalLayer > 0 ? highestModalLayer + 100 : 1200);
 
   // Calcola le coordinate del popover in base alla posizione specificata
   const targetRect = targetElement.getBoundingClientRect();
