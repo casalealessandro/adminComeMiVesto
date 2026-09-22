@@ -9,6 +9,8 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 import {
   AffiliateProductDetailComponent,
   affiliateProductDetailErrorMessage,
+  normalizeCatalogGenderTarget,
+  normalizeCatalogGenderTargets,
 } from './affiliate-product-detail.component';
 
 describe('Affiliate product detail', () => {
@@ -52,7 +54,7 @@ describe('Affiliate product detail', () => {
     brand: 'Brand',
     name: 'Product',
     description: 'Description',
-    genderTargets: ['WOMEN'],
+    genderTargets: ['D'],
     category: 'Clothing',
     subcategory: 'Shirts',
     normalizedColor: 'BLUE',
@@ -131,5 +133,30 @@ describe('Affiliate product detail', () => {
 
   it('maps a missing product to a stable user-facing message', () => {
     expect(affiliateProductDetailErrorMessage(404)).toBe('Il prodotto richiesto non è più disponibile.');
+  });
+
+  it('normalizes form and legacy gender aliases to the backend U/D contract', () => {
+    expect(normalizeCatalogGenderTarget('male')).toBe('U');
+    expect(normalizeCatalogGenderTarget('Uomo')).toBe('U');
+    expect(normalizeCatalogGenderTarget('female')).toBe('D');
+    expect(normalizeCatalogGenderTarget('Donna')).toBe('D');
+    expect(normalizeCatalogGenderTarget('unknown')).toBeNull();
+    expect(normalizeCatalogGenderTargets(['male', 'U', 'female', 'D'])).toEqual(['U', 'D']);
+  });
+
+  it('normalizes legacy product gender values before curation payloads are built', async () => {
+    const legacyProduct = { ...product, genderTargets: ['male', 'U'] };
+    const service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', [
+      'getProduct', 'getProgram', 'getFeeds',
+    ]);
+    service.getProduct.and.returnValue(of(legacyProduct));
+    service.getProgram.and.returnValue(of(program));
+    service.getFeeds.and.returnValue(of([feed]));
+    await configure(service);
+
+    const fixture = TestBed.createComponent(AffiliateProductDetailComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.curation.genderTargets).toEqual(['U']);
   });
 });
