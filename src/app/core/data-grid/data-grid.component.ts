@@ -2662,7 +2662,15 @@ export class DataGridComponent<T = any> implements OnDestroy {
     this.gridEngine.providerFilters = [];
 
     Object.entries(filters ?? {}).forEach(([field, value]) => {
-      const column = DataGridUtils.getProviderFilterColumn(this.colsHeader, this.colonne, field);
+      const originalColumn = DataGridUtils.getOriginalColumn(this.colonne, field);
+      const column = DataGridUtils.getProviderFilterColumn(this.colsHeader, this.colonne, field)
+        ?? (originalColumn ? {
+          field,
+          type: originalColumn.type,
+          filterable: originalColumn.allowFiltering === false ? false : undefined,
+          filterOperator: originalColumn.filterOperator,
+        } : undefined);
+
       if (!column) return;
 
       const filter = buildGridColumnFilter(value, column);
