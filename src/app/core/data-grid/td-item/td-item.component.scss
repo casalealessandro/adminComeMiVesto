@@ -53,7 +53,7 @@
     background-color: rgba(0, 0, 0, 0.8);
     color: white;
     border-radius: 5px;
-    z-index: 1000;
+    z-index: var(--cmv-layer-overlay, 1200);
 }
 .editor-buttons-content{
     display: flex;
