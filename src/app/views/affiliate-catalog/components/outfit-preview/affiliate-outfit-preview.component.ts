@@ -167,7 +167,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       return;
     }
 
-    const maxTotalPrice = this.maxTotalPrice === null || this.maxTotalPrice === undefined || this.maxTotalPrice === ('' as any)
+    const maxTotalPrice = this.maxTotalPrice === null || this.maxTotalPrice === undefined
       ? undefined
       : Number(this.maxTotalPrice);
     if (maxTotalPrice !== undefined && (!Number.isFinite(maxTotalPrice) || maxTotalPrice <= 0 || maxTotalPrice > 100000)) {
