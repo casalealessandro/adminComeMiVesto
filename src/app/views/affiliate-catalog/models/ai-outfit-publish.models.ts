@@ -8,6 +8,7 @@ export interface AiOutfitPublishRequest {
   season: AiOutfitPreviewOutfit['season'];
   style: AiOutfitPreviewOutfit['style'];
   creatorUid?: string;
+  draftId?: string;
   products: Array<{
     catalogProductId: string;
     role: string;
