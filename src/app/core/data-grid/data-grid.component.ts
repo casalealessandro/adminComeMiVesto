@@ -2657,9 +2657,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
   }
 
   public setProviderInitialFilters(filters: Record<string, unknown>): void {
-    if (!this.dataProvider || !this.remoteOperation) return;
-
-    this.gridEngine.providerFilters = [];
+    if (!this.dataProvider || !this.remoteOperation || this.gridEngine.providerFilters.length > 0) return;
 
     Object.entries(filters ?? {}).forEach(([field, value]) => {
       const originalColumn = DataGridUtils.getOriginalColumn(this.colonne, field);
