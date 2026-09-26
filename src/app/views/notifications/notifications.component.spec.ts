@@ -1,6 +1,10 @@
 import { buildNotificationInput } from './forms/notification-form-host.component';
-import { NotificationMessage } from './models/notification.models';
-import { buildNotificationColumns, buildNotificationGridRows } from './notifications.component';
+import { NotificationMessage, NotificationRecipient } from './models/notification.models';
+import {
+  buildNotificationColumns,
+  buildNotificationGridRows,
+  buildNotificationRecipientRows,
+} from './notifications.component';
 
 describe('NotificationsComponent helpers', () => {
   const notification: NotificationMessage = {
@@ -20,11 +24,32 @@ describe('NotificationsComponent helpers', () => {
     expect(row.deepLinkLabel).toBe('—');
   });
 
-  it('keeps edit and toggle actions in the grid', () => {
+  it('keeps edit, toggle and send actions in the grid', () => {
     const actions = buildNotificationColumns()[0].data
       ?.filter((column) => column.type === 'campoButton')
       .map((column) => column.button?.name);
-    expect(actions).toEqual(['edit', 'toggle']);
+    expect(actions).toEqual(['edit', 'toggle', 'send']);
+  });
+
+  it('builds recipient status rows without exposing push tokens', () => {
+    const recipient: NotificationRecipient = {
+      userId: 'user-1',
+      email: 'user@example.com',
+      displayName: 'Mario',
+      enabled: true,
+      dailyEnabled: false,
+      preferenceConfigured: true,
+      activeDeviceCount: 2,
+      platforms: ['android', 'ios'],
+      lastSeenAt: 3,
+    };
+
+    const [row] = buildNotificationRecipientRows([recipient]);
+    expect(row.enabledLabel).toBe('Attive');
+    expect(row.dailyEnabledLabel).toBe('No');
+    expect(row.platformsLabel).toBe('Android, iOS');
+    expect(row.preferenceLabel).toBe('Personalizzate');
+    expect((row as any).token).toBeUndefined();
   });
 
   it('builds the backend input using the existing form semantics', () => {

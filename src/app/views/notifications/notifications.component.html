@@ -1,10 +1,10 @@
-<section class="notifications" aria-labelledby="notifications-title" [attr.aria-busy]="loading">
+<section class="notifications" aria-labelledby="notifications-title" [attr.aria-busy]="loading || recipientsLoading">
   <header class="notifications__header">
     <div>
       <p class="notifications__eyebrow">Comunicazione</p>
       <h1 id="notifications-title">Notifiche</h1>
       <p class="notifications__description">
-        Gestisci i messaggi che useremo per le notifiche push dell'app ComeMiVesto.
+        Gestisci i messaggi push dell'app ComeMiVesto, verifica i destinatari registrati e avvia gli invii manuali.
       </p>
     </div>
 
@@ -13,8 +13,8 @@
         <span class="mdi mdi-plus" aria-hidden="true"></span>
         Nuova notifica
       </button>
-      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
-        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || recipientsLoading">
+        <span class="mdi mdi-refresh" [class.spin]="loading || recipientsLoading" aria-hidden="true"></span>
         Aggiorna
       </button>
     </div>
@@ -22,7 +22,7 @@
 
   <div *ngIf="error" class="alert alert-danger notifications__error" role="alert">
     <span>{{ error }}</span>
-    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refreshNotifications()">Riprova</button>
   </div>
 
   <label *ngIf="notifications.length" class="notifications__search">
@@ -104,7 +104,101 @@
           <span class="mdi mdi-power" aria-hidden="true"></span>
           {{ notification.enabled ? 'Disattiva' : 'Attiva' }}
         </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="!notification.enabled || sendingId === notification.id"
+          (click)="sendNotification(notification)">
+          <span class="mdi mdi-send-outline" aria-hidden="true"></span>
+          {{ sendingId === notification.id ? 'Invio…' : 'Invia' }}
+        </button>
       </div>
     </article>
   </div>
+
+  <section class="notification-recipients" aria-labelledby="notification-recipients-title">
+    <div class="notification-recipients__header">
+      <div>
+        <p class="notifications__eyebrow">Stato delivery</p>
+        <h2 id="notification-recipients-title">Utenti notifiche</h2>
+        <p>
+          Utenti con almeno un device FCM attivo. Lo stato mostra le preferenze applicative effettive usate dal backend prima dell'invio.
+        </p>
+      </div>
+      <div class="notification-recipients__summary" aria-label="Riepilogo destinatari">
+        <span class="badge text-bg-primary">{{ recipients.length }} registrati</span>
+        <span class="badge text-bg-success">{{ enabledRecipientCount }} notificabili</span>
+        <span class="badge text-bg-info">{{ dailyRecipientCount }} giornaliere</span>
+      </div>
+    </div>
+
+    <div *ngIf="recipientError" class="alert alert-danger notifications__error" role="alert">
+      <span>{{ recipientError }}</span>
+      <button type="button" class="btn btn-sm btn-outline-danger" (click)="refreshRecipients()">Riprova</button>
+    </div>
+
+    <p *ngIf="recipientsLoading" class="notifications__loading" aria-live="polite">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      Caricamento destinatari…
+    </p>
+
+    <div *ngIf="!recipientsLoading && !recipientError && !recipientGridRows.length" class="notifications__empty">
+      <span class="mdi mdi-cellphone-off" aria-hidden="true"></span>
+      <strong>Nessun destinatario push registrato</strong>
+      <span>Quando un utente autorizza le notifiche e registra un token FCM comparirà qui.</span>
+    </div>
+
+    <div class="notifications__desktop" *ngIf="!recipientsLoading && recipientGridRows.length">
+      <app-data-grid
+        [idTable]="'notification-recipients-grid'"
+        [colonne]="recipientColumns"
+        [dataSource]="recipientGridRows"
+        [remoteOperation]="false"
+        [isEditable]="false"
+        [isEditableNewRow]="false"
+        [isEditableEditRow]="false"
+        [isEditableDeleteRow]="false"
+        [showToolbarTop]="false"
+        [showToolbarBottom]="false"
+        [isSearchable]="false"
+        [tableHeight]="420">
+      </app-data-grid>
+    </div>
+
+    <div class="notifications__mobile" *ngIf="!recipientsLoading && recipientGridRows.length">
+      <article class="recipient-card" *ngFor="let recipient of recipientGridRows">
+        <div class="recipient-card__header">
+          <div>
+            <strong>{{ recipient.displayName }}</strong>
+            <span>{{ recipient.email }}</span>
+          </div>
+          <span class="badge" [class.text-bg-success]="recipient.enabled" [class.text-bg-secondary]="!recipient.enabled">
+            {{ recipient.enabledLabel }}
+          </span>
+        </div>
+        <dl>
+          <div>
+            <dt>Giornaliere</dt>
+            <dd>{{ recipient.dailyEnabledLabel }}</dd>
+          </div>
+          <div>
+            <dt>Piattaforme</dt>
+            <dd>{{ recipient.platformsLabel }}</dd>
+          </div>
+          <div>
+            <dt>Device attivi</dt>
+            <dd>{{ recipient.activeDeviceCount }}</dd>
+          </div>
+          <div>
+            <dt>Preferenze</dt>
+            <dd>{{ recipient.preferenceLabel }}</dd>
+          </div>
+          <div>
+            <dt>Ultimo device</dt>
+            <dd>{{ recipient.lastSeenAt | date:'short' }}</dd>
+          </div>
+        </dl>
+      </article>
+    </div>
+  </section>
 </section>
