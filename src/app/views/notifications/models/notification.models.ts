@@ -1,4 +1,5 @@
 export type NotificationType = 'DAILY' | 'MANUAL';
+export type NotificationPlatform = 'android' | 'ios';
 
 export interface NotificationMessage {
   id: string;
@@ -17,6 +18,28 @@ export interface NotificationInput {
   deepLink?: string;
   type: NotificationType;
   enabled: boolean;
+}
+
+export interface NotificationRecipient {
+  userId: string;
+  email: string;
+  displayName: string;
+  enabled: boolean;
+  dailyEnabled: boolean;
+  preferenceConfigured: boolean;
+  activeDeviceCount: number;
+  platforms: NotificationPlatform[];
+  lastSeenAt: number;
+}
+
+export interface NotificationDeliveryResult {
+  notificationId: string;
+  recipientCount: number;
+  deviceCount: number;
+  successCount: number;
+  failureCount: number;
+  invalidDeviceCount: number;
+  sentAt: number;
 }
 
 export interface NotificationApiResponse<T> {
