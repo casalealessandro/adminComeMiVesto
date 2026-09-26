@@ -15,7 +15,12 @@
     max-height: calc(100vh - 2rem);
     max-height: calc(100dvh - 2rem);
     margin: 0 auto;
-    overflow: hidden;
+    // Keep the dialog itself as the scroll fallback. Dynamically injected
+    // content can bring its own sizing/layout rules and may therefore prevent
+    // .modal-content from becoming the flex scroll container.
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     pointer-events: auto;
     background: var(--bianco, #fff);
     border: 1px solid var(--border_color, #e2e8f0);
