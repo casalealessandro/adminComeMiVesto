@@ -2713,7 +2713,10 @@ export class DataGridComponent<T = any> implements OnDestroy {
     if (!column) return false;
 
     const previousFilters = this.gridEngine.snapshotProviderFilters();
-    const filter = buildGridColumnFilter(value, column);
+    const normalizedValue = typeof value === 'string'
+      ? DataGridUtils.resolveProviderFilterInputValue(this.colsHeader, this.colonne, field, value)
+      : value;
+    const filter = buildGridColumnFilter(normalizedValue, column);
 
     this.gridEngine.setProviderColumnFilter(field, filter);
 
