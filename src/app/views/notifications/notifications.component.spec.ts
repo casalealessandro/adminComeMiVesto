@@ -3,6 +3,7 @@ import { NotificationMessage, NotificationRecipient } from './models/notificatio
 import {
   buildNotificationColumns,
   buildNotificationGridRows,
+  buildNotificationRecipientColumns,
   buildNotificationRecipientRows,
 } from './notifications.component';
 
@@ -29,6 +30,24 @@ describe('NotificationsComponent helpers', () => {
       ?.filter((column) => column.type === 'campoButton')
       .map((column) => column.button?.name);
     expect(actions).toEqual(['edit', 'toggle', 'send']);
+  });
+
+  it('uses the normalized user label as the sortable recipient identity column', () => {
+    expect(buildNotificationRecipientColumns()[0].data?.[0].dataField).toBe('userLabel');
+
+    const [row] = buildNotificationRecipientRows([{
+      userId: 'uid-fallback',
+      email: '',
+      displayName: '',
+      enabled: true,
+      dailyEnabled: true,
+      preferenceConfigured: false,
+      activeDeviceCount: 0,
+      platforms: [],
+      lastSeenAt: 0,
+    }]);
+
+    expect(row.userLabel).toBe('uid-fallback');
   });
 
   it('separates push preference, active device and effective delivery state', () => {
@@ -58,12 +77,14 @@ describe('NotificationsComponent helpers', () => {
     ];
 
     const [registered, defaultUser] = buildNotificationRecipientRows(recipients);
+    expect(registered.userLabel).toBe('Mario');
     expect(registered.preferenceLabel).toBe('Attive');
     expect(registered.deviceLabel).toBe('Sì (2)');
     expect(registered.deliveryLabel).toBe('Sì');
     expect(registered.dailyEnabledLabel).toBe('No');
     expect(registered.platformsLabel).toBe('Android, iOS');
 
+    expect(defaultUser.userLabel).toBe('Default User');
     expect(defaultUser.preferenceLabel).toBe('Default');
     expect(defaultUser.deviceLabel).toBe('No');
     expect(defaultUser.deliveryLabel).toBe('No');
