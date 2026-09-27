@@ -355,6 +355,17 @@ describe('AffiliateCatalogService release contract', () => {
     expect(response).toEqual(syncRun);
   });
 
+  it('loads product categories from the affiliate catalog endpoint', () => {
+    let response: string[] | undefined;
+    service.getProductCategories().subscribe((value) => response = value);
+
+    const request = http.expectOne(`${baseUrl}/product-categories`);
+    expect(request.request.method).toBe('GET');
+    request.flush({ data: ['Clothing', 'Shoes'] });
+
+    expect(response).toEqual(['Clothing', 'Shoes']);
+  });
+
   it('omits cursor pagination parameters when they are not provided', () => {
     service.getProducts().subscribe();
 
