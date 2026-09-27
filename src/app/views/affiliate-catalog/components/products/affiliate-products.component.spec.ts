@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { GridLoadRequest } from '../../../../core/public-api';
+import { OutfitsService } from '../../../../services/outfit.service';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
@@ -149,40 +150,25 @@ describe('Affiliate products', () => {
     let fixture: ComponentFixture<AffiliateProductsComponent>;
     let component: AffiliateProductsComponent;
     let service: jasmine.SpyObj<AffiliateCatalogService>;
+    let outfitsService: jasmine.SpyObj<OutfitsService>;
     let router: Router;
 
     beforeEach(async () => {
       service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', [
         'getProducts',
         'getPrograms',
-        'getCatalogAudit',
         'repairProductTaxonomies',
       ]);
       service.getPrograms.and.returnValue(of([program]));
-      service.getCatalogAudit.and.returnValue(of({
-        generatedAt: 1,
-        catalog: {
-          summary: { total: 1, active: 1, inactive: 0, withoutCategory: 0 },
-          dataQuality: {
-            withImages: 1,
-            withoutImages: 0,
-            withGenderTargets: 1,
-            withoutGenderTargets: 0,
-            withNormalizedColor: 1,
-            withoutNormalizedColor: 0,
-          },
-          categories: [{
-            category: 'Clothing',
-            totalProducts: 1,
-            activeProducts: 1,
-            withImages: 1,
-            withGender: 1,
-            withColor: 1,
-            subcategories: [],
-          }],
-        },
-        comeMiVestoCategories: [],
-      }));
+      outfitsService = jasmine.createSpyObj<OutfitsService>('OutfitsService', ['getOutFitCategories']);
+      outfitsService.getOutFitCategories.and.returnValue(of([{
+        id: 'Clothing',
+        categoryName: 'Clothing',
+        parentCategory: null,
+        status: '1',
+        order: 1,
+        gender: ['U', 'D'],
+      } as any]));
       service.getProducts.and.returnValue(of({
         data: [product],
         pagination: { nextCursor: null, hasMore: false },
@@ -194,6 +180,7 @@ describe('Affiliate products', () => {
         providers: [
           provideRouter([]),
           { provide: AffiliateCatalogService, useValue: service },
+          { provide: OutfitsService, useValue: outfitsService },
         ],
       }).compileComponents();
 
@@ -206,7 +193,7 @@ describe('Affiliate products', () => {
       component.refresh();
 
       expect(service.getPrograms).toHaveBeenCalledTimes(1);
-      expect(service.getCatalogAudit).toHaveBeenCalledTimes(1);
+      expect(outfitsService.getOutFitCategories).toHaveBeenCalledTimes(1);
       expect(service.getProducts).not.toHaveBeenCalled();
       expect(component.dataProvider).toBeDefined();
       expect(component.columns[0].data.find((column) => column.dataField === 'category')?.lista?.options)
