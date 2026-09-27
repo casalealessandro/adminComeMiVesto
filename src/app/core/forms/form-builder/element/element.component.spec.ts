@@ -8,6 +8,20 @@ describe('ElementComponent characterization', () => {
     const fixture = TestBed.createComponent(ElementComponent); const component = fixture.componentInstance;
     component.formField = { name: 'field', type, typeInput: 'text', label: 'Field', ...extra }; component.ngOnInit(); return component;
   }
+  it('offers the HTML time input type in the property editor', () => {
+    const fixture = TestBed.createComponent(ElementComponent);
+    const component = fixture.componentInstance;
+    component.formField = { name: 'scheduleTime', type: 'textBox', typeInput: 'time', label: 'Ora' } as any;
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    const values = Array.from(
+      fixture.nativeElement.querySelectorAll('select[name="typeInput"] option'),
+    ).map((option: any) => option.value);
+
+    expect(values).toContain('time');
+  });
+
   it('configures hiddenBox state and hidden input type', () => {
     const component = create('hiddenBox'); expect(component.showHiddenBox).toBeTrue(); expect(component.formField.typeInput).toBe('hidden');
   });
