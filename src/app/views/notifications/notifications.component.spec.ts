@@ -1,3 +1,4 @@
+import { DataGridUtils } from '../../core/data-grid/data-grid-utils';
 import { buildNotificationInput } from './forms/notification-form-host.component';
 import { NotificationMessage, NotificationRecipient } from './models/notification.models';
 import {
@@ -90,6 +91,55 @@ describe('NotificationsComponent helpers', () => {
     expect(defaultUser.deliveryLabel).toBe('No');
     expect(defaultUser.dailyEnabledLabel).toBe('Default');
     expect((registered as any).token).toBeUndefined();
+  });
+
+  it('supports local recipient filters on the fields exposed by the notification grid', () => {
+    const rows = buildNotificationRecipientRows([
+      {
+        userId: 'user-1',
+        email: 'anna@example.com',
+        displayName: 'Anna',
+        enabled: true,
+        dailyEnabled: true,
+        preferenceConfigured: true,
+        activeDeviceCount: 1,
+        platforms: ['ios'],
+        lastSeenAt: 10,
+      },
+      {
+        userId: 'user-2',
+        email: 'mario@example.com',
+        displayName: 'Mario',
+        enabled: false,
+        dailyEnabled: false,
+        preferenceConfigured: true,
+        activeDeviceCount: 0,
+        platforms: [],
+        lastSeenAt: 0,
+      },
+      {
+        userId: 'user-3',
+        email: 'default@example.com',
+        displayName: '',
+        enabled: true,
+        dailyEnabled: true,
+        preferenceConfigured: false,
+        activeDeviceCount: 0,
+        platforms: [],
+        lastSeenAt: 0,
+      },
+    ]);
+
+    expect(DataGridUtils.filterNonRemoteDataSource(rows, 'userLabel', 'anna').map(row => row.userId))
+      .toEqual(['user-1']);
+    expect(DataGridUtils.filterNonRemoteDataSource(rows, 'preferenceLabel', 'disattivate').map(row => row.userId))
+      .toEqual(['user-2']);
+    expect(DataGridUtils.filterNonRemoteDataSource(rows, 'deviceLabel', 'sì').map(row => row.userId))
+      .toEqual(['user-1']);
+    expect(DataGridUtils.filterNonRemoteDataSource(rows, 'deliveryLabel', 'no').map(row => row.userId))
+      .toEqual(['user-2', 'user-3']);
+    expect(DataGridUtils.filterNonRemoteDataSource(rows, 'platformsLabel', 'ios').map(row => row.userId))
+      .toEqual(['user-1']);
   });
 
   it('builds the backend input using the existing form semantics', () => {
