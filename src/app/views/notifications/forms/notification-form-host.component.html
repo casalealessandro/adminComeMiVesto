@@ -1,0 +1,14 @@
+<section class="notification-form" aria-live="polite">
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <app-dynamic-form
+    [service]="formId"
+    [editData]="itemData.mode === 'edit' ? itemData.notification : undefined"
+    [idData]="itemData.mode === 'create' ? createDefaults : undefined"
+    [showBottomButtons]="true"
+    [inputBtnLeftName]="'Annulla'"
+    [inputBtnRightName]="itemData.mode === 'edit' ? 'Salva modifiche' : 'Crea notifica'"
+    [loading]="saving"
+    (submitFormEvent)="handleForm($event)">
+  </app-dynamic-form>
+</section>

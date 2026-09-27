@@ -1,0 +1,65 @@
+<section class="ai-creators" aria-labelledby="ai-creators-title" [attr.aria-busy]="loading">
+  <header class="ai-creators__header">
+    <div>
+      <h2 id="ai-creators-title">Creator AI</h2>
+      <p>Gestisci creator virtuali con un vero profilo ComeMiVesto. Gli account sono creator Firebase reali ma non possono effettuare il login.</p>
+    </div>
+    <div class="ai-creators__actions">
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-primary" (click)="openCreate()">
+        <span class="mdi mdi-account-plus-outline" aria-hidden="true"></span>
+        Nuovo creator AI
+      </button>
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
+        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <p *ngIf="loading && !creators.length" class="ai-creators__loading" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Caricamento creator AI…
+  </p>
+
+  <div *ngIf="!loading && !creators.length" class="ai-creators__empty">
+    <span class="mdi mdi-account-star-outline" aria-hidden="true"></span>
+    <strong>Nessun creator AI configurato</strong>
+    <span>Crea i profili editoriali che firmeranno gli outfit generati.</span>
+  </div>
+
+  <div class="ai-creators__grid" *ngIf="creators.length">
+    <article class="creator-card" *ngFor="let creator of creators; trackBy: trackCreator">
+      <header>
+        <img [src]="creator.photoURL || fallbackAvatar" [alt]="creator.displayName">
+        <div>
+          <span class="ai-creators__eyebrow">Virtual creator</span>
+          <h3>{{ creator.displayName }}</h3>
+          <p>{{ creator.email }}</p>
+        </div>
+        <span class="badge" [class.text-bg-success]="creator.active" [class.text-bg-secondary]="!creator.active">
+          {{ creator.active ? 'Attivo' : 'In pausa' }}
+        </span>
+      </header>
+
+      <p class="creator-card__bio">{{ creator.bio }}</p>
+      <div class="creator-card__meta">
+        <span class="badge text-bg-light">{{ genderLabel(creator.gender) }}</span>
+        <span class="badge text-bg-light">CREATOR</span>
+        <span class="badge text-bg-light">UID {{ creator.uid }}</span>
+      </div>
+      <div class="creator-card__styles">
+        <span *ngFor="let style of creator.styleAffinity">{{ styleLabel(style) }}</span>
+      </div>
+      <div class="creator-card__persona">
+        <strong>Linea editoriale</strong>
+        <p>{{ creator.personaPrompt }}</p>
+      </div>
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-sm btn-outline-primary" (click)="openEdit(creator)">
+        <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+        Modifica
+      </button>
+    </article>
+  </div>
+</section>

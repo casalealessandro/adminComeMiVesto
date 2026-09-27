@@ -1,9 +1,10 @@
-# Firebase Hosting production deploy
-name: Deploy to Firebase Hosting on merge
+# Firebase Hosting deploy by branch
+name: Deploy to Firebase Hosting on branch push
 
 on:
   push:
     branches:
+      - develop
       - main
 
 jobs:
@@ -23,13 +24,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Build for current branch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          case "${GITHUB_REF_NAME}" in
+            develop)
+              echo "Building develop with Angular development configuration (apiDev)."
+              npm run build -- --configuration development
+              ;;
+            main)
+              echo "Building main with Angular production configuration (api)."
+              npm run build -- --configuration production
+              ;;
+            *)
+              echo "Unsupported branch: ${GITHUB_REF_NAME}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Deploy develop preview
+        if: github.ref == 'refs/heads/develop'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_COMEMIVESTO_5E5F9 }}
+          projectId: comemivesto-5e5f9
+          channelId: develop
+          expires: 30d
+          firebaseToolsVersion: 15.30.0
 
       - name: Deploy live
+        if: github.ref == 'refs/heads/main'
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_COMEMIVESTO_5E5F9 }}
           channelId: live
           projectId: comemivesto-5e5f9
+          firebaseToolsVersion: 15.30.0

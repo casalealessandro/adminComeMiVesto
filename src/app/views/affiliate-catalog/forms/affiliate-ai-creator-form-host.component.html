@@ -1,0 +1,30 @@
+<section class="affiliate-ai-creator-form" aria-live="polite">
+  <div *ngIf="itemData.mode === 'edit' && itemData.creator as creator" class="affiliate-ai-creator-form__identity">
+    <div>
+      <span>Email account</span>
+      <strong>{{ creator.email }}</strong>
+    </div>
+    <div>
+      <span>UID Firebase</span>
+      <strong>{{ creator.uid }}</strong>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <app-dynamic-form
+    [service]="formId"
+    [editData]="itemData.mode === 'edit' ? itemData.creator : undefined"
+    [idData]="itemData.mode === 'create' ? createDefaults : undefined"
+    [showBottomButtons]="true"
+    [inputBtnLeftName]="'Annulla'"
+    [inputBtnRightName]="itemData.mode === 'edit' ? 'Salva modifiche' : 'Crea creator'"
+    [loading]="saving"
+    (submitFormEvent)="handleForm($event)">
+  </app-dynamic-form>
+
+  <p class="affiliate-ai-creator-form__hint">
+    La foto profilo usa il FileBox del Forms Core. Il file selezionato viene ridimensionato dal form,
+    convertito in JPEG e caricato dal backend con moderazione prima della pubblicazione.
+  </p>
+</section>

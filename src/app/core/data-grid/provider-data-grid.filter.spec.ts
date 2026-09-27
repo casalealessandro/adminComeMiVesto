@@ -259,6 +259,56 @@ describe('ProviderDataGridComponent column filters', () => {
     });
   });
 
+  it('should restore provider filters before the first remote load', async () => {
+    const requests: GridLoadRequest[] = [];
+    component.dataProvider = {
+      load: async request => {
+        requests.push(request);
+        return { items: [], hasMore: false };
+      },
+    };
+    component.colsHeader = [];
+
+    component.setProviderInitialFilters({
+      categoryId: 20,
+      active: true,
+    });
+
+    await component.loadRemoteRecords();
+
+    expect(requests[0]).toEqual({
+      pageSize: 20,
+      filters: [
+        { field: 'categoryId', operator: 'eq', value: 20 },
+        { field: 'active', operator: 'eq', value: true },
+      ],
+    });
+    expect(component.providerFilterValue('categoryId')).toBe(20);
+    expect(component.providerFilterValue('active')).toBeTrue();
+  });
+
+  it('should not overwrite an active provider filter when initial filters are applied again', async () => {
+    const requests: GridLoadRequest[] = [];
+    component.dataProvider = {
+      load: async request => {
+        requests.push(request);
+        return { items: [], hasMore: false };
+      },
+    };
+
+    await component.applyProviderColumnFilter('categoryId', '20');
+    component.setProviderInitialFilters({ categoryId: 10 });
+    await component.loadRemoteRecords();
+
+    expect(requests[1]).toEqual({
+      pageSize: 20,
+      filters: [
+        { field: 'categoryId', operator: 'eq', value: 20 },
+      ],
+    });
+    expect(component.providerFilterValue('categoryId')).toBe(20);
+  });
+
   it('should keep global search independent from showFilter', async () => {
     component.showFilter = false;
     const requests: GridLoadRequest[] = [];

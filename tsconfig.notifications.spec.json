@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/notifications-spec",
+    "types": [
+      "jasmine",
+      "@angular/localize"
+    ]
+  },
+  "include": [
+    "src/app/views/notifications/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

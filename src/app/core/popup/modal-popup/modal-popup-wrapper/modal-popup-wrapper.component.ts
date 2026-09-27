@@ -2,6 +2,7 @@ import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { PopUpService } from '../../../services/popup.service';
 import { CommonModule } from '@angular/common';
 import { NicaPopupContentComponent } from '../modal-popup-content/modal-popup-content.component';
+import { OverlayService } from '../../../overlay/overlay.service';
 
 @Component({
   selector: 'app-modal-popup-wrapper',
@@ -16,6 +17,7 @@ export class PopupWrapperComponent implements OnInit {
   classSlideCenter: string = 'slide-center';
   classFadeIn: string = 'fade-in-fwd';
   popUpService = inject(PopUpService);
+  overlayService = inject(OverlayService);
 
   private focusOrigins = new Map<string, HTMLElement | null>();
 
@@ -23,6 +25,7 @@ export class PopupWrapperComponent implements OnInit {
     this.popUpService.popupsSet.subscribe(currentSetPopups => {
       currentSetPopups.forEach((res, i) => {
         if (res.action == 'added') {
+          this.overlayService.closeOverlay();
           this.rememberFocusOrigin(res);
           res.action = 'setted';
           res.class = this.classSlideCenter;

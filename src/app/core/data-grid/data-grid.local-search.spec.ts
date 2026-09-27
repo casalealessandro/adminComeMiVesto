@@ -105,6 +105,33 @@ describe('DataGridComponent local search', () => {
     expect(component.dataSource()).toEqual(source);
   });
 
+  it('should not reset filtered rows when Angular effects are flushed', async () => {
+    fixture.detectChanges();
+
+    await component.searchData({
+      target: {
+        dataset: { gridFilterField: 'name' },
+        value: 'cam',
+        tagName: 'INPUT',
+      },
+    });
+
+    fixture.detectChanges();
+
+    expect(component.rowsData()).toEqual([source[2]]);
+  });
+
+  it('should not reset locally sorted rows when Angular effects are flushed', () => {
+    fixture.detectChanges();
+
+    component.sortColumn('name');
+    fixture.detectChanges();
+
+    expect(component.rowsData().map((row: any) => row.name)).toEqual(['Camicia', 'Giacca Blu', 'Pantalone']);
+    expect(component.sortedColumn).toBe('name');
+    expect(component.sortDirection).toBe('asc');
+  });
+
   it('should not apply the local datasource filter when base DataGrid is configured for remote operations', async () => {
     component.remoteOperation = true;
     component.rowsData.set([...source]);

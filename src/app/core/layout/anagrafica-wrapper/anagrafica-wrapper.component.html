@@ -23,27 +23,31 @@
         <div class="col-lg-12 wrapForm">
           <div class="text">
             <h2 *ngIf="subTitle">
-              <span class="mdi mdi-database"></span>{{ subTitle }}
+              <span class="mdi mdi-database" aria-hidden="true"></span>
+              {{ subTitle }}
             </h2>
           </div>
+
           <div
             *ngIf="tip"
             class="alert alert-primary d-flex align-items-center alert-dismissible fade show"
             role="alert"
           >
-            <span class="mdi mdi-lightbulb-alert-outline me-2"></span>
+            <span class="mdi mdi-lightbulb-alert-outline me-2" aria-hidden="true"></span>
             {{ tip }}
             <button
               type="button"
               class="btn-close"
               data-bs-dismiss="alert"
-              aria-label="Close"
+              aria-label="Chiudi suggerimento"
             ></button>
           </div>
+
           <ng-container *ngIf="showSpinner">
-            <p>Carimento in corso...</p>
+            <p>Caricamento in corso...</p>
           </ng-container>
-          <ng-content id="ng-content"> </ng-content>
+
+          <ng-content id="ng-content"></ng-content>
         </div>
       </div>
     </div>

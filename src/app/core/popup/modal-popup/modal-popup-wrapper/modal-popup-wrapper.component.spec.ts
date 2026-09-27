@@ -2,14 +2,20 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { PopupWrapperComponent } from './modal-popup-wrapper.component';
 import { PopUpService } from '../../../services/popup.service';
+import { OverlayService } from '../../../overlay/overlay.service';
 
 describe('PopupWrapperComponent characterization', () => {
   let popupState: BehaviorSubject<any[]>;
   let component: PopupWrapperComponent;
   let popupService: any;
+  let overlayService: any;
 
   beforeEach(() => {
     popupState = new BehaviorSubject<any[]>([]);
+    overlayService = {
+      closeOverlay: jasmine.createSpy('closeOverlay')
+    };
+
     popupService = {
       popupsSet: popupState.asObservable(),
       destroyCurrentOpenPopUpByGuid: jasmine.createSpy('destroyCurrentOpenPopUpByGuid'),
@@ -23,6 +29,10 @@ describe('PopupWrapperComponent characterization', () => {
         {
           provide: PopUpService,
           useValue: popupService
+        },
+        {
+          provide: OverlayService,
+          useValue: overlayService
         }
       ]
     });
@@ -45,6 +55,7 @@ describe('PopupWrapperComponent characterization', () => {
     expect(component.popups[0]).toBe(popup);
     expect(popup.action).toBe('setted');
     expect(popup.class).toBe(component.classSlideCenter);
+    expect(overlayService.closeOverlay).toHaveBeenCalled();
   }));
 
   it('keeps multiple added popups in the order received', fakeAsync(() => {

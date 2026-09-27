@@ -57,7 +57,6 @@ export class PopUpService {
 
   setNewPopUp(id: string, componentName: any, data: any, popUpWidth: any = '800', accessoringData?: any, instancedData?: any, showCaptionFooter = false, showCaptionHeader = false, title = '', position = 'center', isClosablePopUp = false) {
 
-    if (typeof window !== 'undefined' && window.innerWidth <= 600) popUpWidth = window.innerWidth;
 
     if (!id) {
       id = Math.random().toString().replace("0.", "")

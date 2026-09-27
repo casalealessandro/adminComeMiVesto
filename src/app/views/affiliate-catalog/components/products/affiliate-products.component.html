@@ -1,38 +1,104 @@
-<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || loadingMore">
+<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || productsLoading || loadingMore || taxonomyLoading || taxonomyApplying">
   <header class="affiliate-products__header">
     <div>
-      <p class="affiliate-products__eyebrow">Catalogo Affiliati</p>
       <h2 id="affiliate-products-title">Prodotti</h2>
       <p class="affiliate-products__description">
-        Consulta il catalogo canonico importato dai feed. La vista è in sola lettura e usa la paginazione a cursore esposta dal backend.
+        Consulta e gestisci i prodotti importati dai feed.
       </p>
     </div>
 
-    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || loadingMore">
-      <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
-      Aggiorna
-    </button>
+    <div class="affiliate-products__actions">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="analyzeMissingTaxonomies()"
+        [disabled]="loading || productsLoading || loadingMore || taxonomyLoading || taxonomyApplying">
+        <span *ngIf="taxonomyLoading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span *ngIf="!taxonomyLoading" class="mdi mdi-tag-search-outline" aria-hidden="true"></span>
+        {{ taxonomyLoading ? 'Analisi…' : 'Analizza tassonomie mancanti' }}
+      </button>
+
+      <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || productsLoading || loadingMore">
+        <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
   </header>
 
-  <div class="alert alert-info affiliate-products__contract" role="note">
-    <span class="mdi mdi-information-outline" aria-hidden="true"></span>
-    <span>Ricerca, filtri e ordinamento remoto non sono esposti dall'API Products e non vengono simulati nella UI.</span>
+
+  <div *ngIf="taxonomyError" class="alert alert-danger affiliate-products__error" role="alert">
+    <span>{{ taxonomyError }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="analyzeMissingTaxonomies()" [disabled]="taxonomyLoading || taxonomyApplying">Riprova</button>
   </div>
+
+  <section *ngIf="taxonomyRepair as repair" class="taxonomy-repair" aria-labelledby="taxonomy-repair-title">
+    <header class="taxonomy-repair__header">
+      <div>
+        <h3 id="taxonomy-repair-title">Tassonomie mancanti</h3>
+        <p>Controlla i prodotti senza sottocategoria e propone solo associazioni sicure.</p>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeTaxonomyRepair()" [disabled]="taxonomyApplying">Chiudi</button>
+    </header>
+
+    <div class="taxonomy-repair__summary" role="status">
+      <div><strong>{{ repair.scanned }}</strong><span>senza sottocategoria</span></div>
+      <div><strong>{{ repair.eligible }}</strong><span>analizzabili</span></div>
+      <div><strong>{{ repair.suggested }}</strong><span>proposte sicure</span></div>
+      <div><strong>{{ repair.ambiguous }}</strong><span>ambigue</span></div>
+      <div><strong>{{ repair.noMatch }}</strong><span>senza match</span></div>
+      <div><strong>{{ repair.invalidCategory }}</strong><span>categoria non gestibile</span></div>
+    </div>
+
+    <div *ngIf="repair.updated > 0" class="alert alert-success taxonomy-repair__message" role="status">
+      <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
+      Aggiornate {{ repair.updated }} sottocategorie. I prodotti già classificati non verranno sovrascritti da questa operazione.
+    </div>
+
+    <div *ngIf="repair.preview.length" class="taxonomy-repair__preview">
+      <article *ngFor="let suggestion of repair.preview" class="taxonomy-repair__item">
+        <div>
+          <strong>{{ suggestion.productName || suggestion.productId }}</strong>
+          <span>Match descrizione: “{{ suggestion.matchedText }}”</span>
+        </div>
+        <div class="taxonomy-repair__target">
+          <span class="mdi mdi-arrow-right" aria-hidden="true"></span>
+          <strong>{{ suggestion.suggestedSubcategoryName }}</strong>
+        </div>
+      </article>
+    </div>
+
+    <p *ngIf="repair.previewTruncated" class="taxonomy-repair__hint">
+      La preview mostra le prime 100 proposte. Per sicurezza vengono applicate solo quelle visualizzate; riesegui l'analisi per il blocco successivo.
+    </p>
+
+    <p *ngIf="!repair.preview.length && repair.updated === 0" class="taxonomy-repair__hint">
+      Nessuna sottocategoria può essere assegnata automaticamente con i criteri conservativi attuali.
+    </p>
+
+    <footer *ngIf="repair.suggested > 0 && repair.updated === 0" class="taxonomy-repair__footer">
+      <span>Nessun prodotto viene modificato finché non confermi questa operazione.</span>
+      <button type="button" class="btn btn-primary" (click)="applyTaxonomySuggestions()" [disabled]="taxonomyApplying || taxonomyLoading">
+        <span *ngIf="taxonomyApplying" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span *ngIf="!taxonomyApplying" class="mdi mdi-check" aria-hidden="true"></span>
+        {{ taxonomyApplying ? 'Applicazione…' : 'Applica ' + repair.preview.length + ' proposte visualizzate' }}
+      </button>
+    </footer>
+  </section>
 
   <div *ngIf="error" class="alert alert-danger affiliate-products__error" role="alert">
     <span>{{ error }}</span>
     <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
   </div>
 
-  <p *ngIf="loading" class="affiliate-products__loading" aria-live="polite">
+  <p *ngIf="loading || productsLoading" class="affiliate-products__loading" aria-live="polite">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-    Caricamento prodotti…
+    {{ loading ? 'Caricamento filtri…' : 'Caricamento prodotti…' }}
   </p>
 
-  <div *ngIf="!loading && !error && !products.length" class="affiliate-products__empty">
+  <div *ngIf="!loading && !productsLoading && !error && !products.length" class="affiliate-products__empty">
     <span class="mdi mdi-hanger" aria-hidden="true"></span>
     <strong>Nessun prodotto disponibile</strong>
-    <span>Il catalogo si popolerà dopo una sincronizzazione feed valida.</span>
+    <span>Il catalogo si popolerà dopo una sincronizzazione feed valida oppure non contiene prodotti per i filtri selezionati.</span>
   </div>
 
   <div *ngIf="!loading && products.length" class="affiliate-products__summary" role="status">
@@ -41,19 +107,19 @@
     <span *ngIf="hasMore" class="badge text-bg-light">altri disponibili</span>
   </div>
 
-  <div class="affiliate-products__desktop" *ngIf="!loading && gridRows.length">
+  <div class="affiliate-products__desktop" *ngIf="!loading && dataProvider && columns.length">
     <app-data-grid
       [idTable]="'affiliate-products-grid'"
       [colonne]="columns"
-      [dataSource]="gridRows"
-      [remoteOperation]="false"
+      [dataProvider]="dataProvider"
+      [remoteOperation]="true"
       [isEditable]="false"
       [isEditableNewRow]="false"
       [isEditableEditRow]="false"
       [isEditableDeleteRow]="false"
       [showToolbarTop]="false"
       [showToolbarBottom]="false"
-      [showFilter]="false"
+      [showFilter]="true"
       [isSearchable]="false"
       [tableHeight]="560"
       (emittendButtonCellClick)="gridAction($event)">
@@ -61,15 +127,19 @@
   </div>
 
   <div class="affiliate-products__mobile" *ngIf="!loading && products.length">
-    <article class="affiliate-product-card" *ngFor="let product of products">
+    <article class="affiliate-product-card" *ngFor="let product of products; trackBy: trackByProductId">
       <div class="affiliate-product-card__media">
-        <img *ngIf="productImage(product) as image" [src]="image" [alt]="product.name" loading="lazy">
-        <span *ngIf="!productImage(product)" class="mdi mdi-hanger" aria-hidden="true"></span>
+        <ng-container *ngIf="productImage(product) as image; else noProductImage">
+          <img [src]="image" [alt]="product.name" loading="lazy" decoding="async">
+        </ng-container>
+        <ng-template #noProductImage>
+          <span class="mdi mdi-hanger" aria-hidden="true"></span>
+        </ng-template>
       </div>
 
       <div class="affiliate-product-card__body">
         <div class="affiliate-product-card__topline">
-          <span>{{ product.brand || 'Brand non disponibile' }}</span>
+          <span class="affiliate-product-card__brand">{{ product.brand || 'Brand non disponibile' }}</span>
           <span class="badge" [class.text-bg-success]="product.active" [class.text-bg-secondary]="!product.active">
             {{ product.active ? 'Attivo' : 'Inattivo' }}
           </span>
@@ -78,21 +148,45 @@
         <h3>{{ product.name }}</h3>
         <p class="affiliate-product-card__program">{{ programName(product) }}</p>
 
-        <dl>
-          <div><dt>Categoria</dt><dd>{{ categoryLabel(product) }}</dd></div>
-          <div><dt>Colore</dt><dd>{{ product.normalizedColor || '—' }}</dd></div>
-          <div><dt>Target</dt><dd>{{ genderLabel(product) }}</dd></div>
-          <div><dt>Materiali</dt><dd>{{ materialsLabel(product) }}</dd></div>
-          <div><dt>Feed sorgente</dt><dd>{{ product.sourceFeedIds.length }}</dd></div>
-          <div><dt>Ultima rilevazione</dt><dd>{{ product.lastSeenAt | date:'short' }}</dd></div>
-        </dl>
+        <div class="affiliate-product-card__chips" aria-label="Informazioni principali prodotto">
+          <span *ngIf="product.category || product.subcategory" class="affiliate-product-card__chip">
+            <span class="mdi mdi-tag-outline" aria-hidden="true"></span>
+            {{ categoryLabel(product) }}
+          </span>
+          <span *ngIf="product.normalizedColor" class="affiliate-product-card__chip">
+            <span class="mdi mdi-palette-outline" aria-hidden="true"></span>
+            {{ product.normalizedColor }}
+          </span>
+          <span *ngIf="product.genderTargets?.length" class="affiliate-product-card__chip">
+            <span class="mdi mdi-account-outline" aria-hidden="true"></span>
+            {{ genderLabel(product) }}
+          </span>
+        </div>
 
-        <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-3" (click)="openDetail(product)">
-          <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
-          Dettaglio
-        </button>
+        <footer class="affiliate-product-card__footer">
+          <span *ngIf="product.lastSeenAt" class="affiliate-product-card__last-seen">
+            <span class="mdi mdi-clock-outline" aria-hidden="true"></span>
+            {{ product.lastSeenAt | date:'dd/MM/yyyy HH:mm' }}
+          </span>
+
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary affiliate-product-card__detail"
+            (click)="openDetail(product)"
+            [attr.aria-label]="'Gestisci prodotto ' + product.name">
+            <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
+            <span>Gestisci</span>
+          </button>
+        </footer>
       </div>
     </article>
+
+    <div
+      #mobileLoadMoreSentinel
+      *ngIf="hasMore"
+      class="affiliate-products__mobile-sentinel py-1"
+      aria-hidden="true">
+    </div>
   </div>
 
   <div *ngIf="loadMoreError" class="alert alert-danger affiliate-products__load-more-error" role="alert">
@@ -100,7 +194,7 @@
   </div>
 
   <div *ngIf="!loading && products.length && hasMore" class="affiliate-products__load-more">
-    <button type="button" class="btn btn-outline-primary" (click)="loadMore()" [disabled]="loadingMore">
+    <button type="button" class="btn btn-outline-primary" (click)="loadMore()" [disabled]="loadingMore || productsLoading">
       <span *ngIf="loadingMore" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
       <span *ngIf="!loadingMore" class="mdi mdi-chevron-down" aria-hidden="true"></span>
       {{ loadingMore ? 'Caricamento…' : 'Carica altri' }}

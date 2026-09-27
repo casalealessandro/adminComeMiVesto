@@ -46,7 +46,10 @@ describe('MenuComponent E.2 navigation boundary', () => {
       { path: 'outfit-list', label: 'Lista outfit ', icon: 'mdi mdi-wardrobe-outline' },
       { path: 'outfit-category', label: 'Lista categorie outfit ', icon: 'mdi mdi-wardrobe-outline' },
       { path: 'colors', label: 'Colori outfit', icon: 'mdi mdi-palette-outline' },
+      { path: 'styles', label: 'Stili', icon: 'mdi mdi-wardrobe-outline' },
       { path: 'reports', label: 'Segnalazioni', icon: 'mdi mdi-flag-outline' },
+      { path: 'notifications', label: 'Notifiche', icon: 'mdi mdi-bell-outline' },
+      { path: 'affiliate-catalog', label: 'Catalogo Affiliati', icon: 'mdi mdi-link-variant' },
       { path: 'outfit-product-list', label: 'Gestione prodotti e feed', icon: 'mdi mdi-tshirt-v-outline' }
     ]);
   });

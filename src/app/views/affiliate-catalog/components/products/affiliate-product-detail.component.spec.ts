@@ -1,11 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { FORM_DEFINITION_REPOSITORY } from '../../../../core/forms/contracts/form-definition-repository';
+import { FORM_OPTIONS_PROVIDER } from '../../../../core/forms/contracts/form-options-provider';
 import { AffiliateFeed, AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
+  AFFILIATE_PRODUCT_CURATION_FORM,
   AffiliateProductDetailComponent,
   affiliateProductDetailErrorMessage,
+  buildAffiliateProductCurationFormData,
+  buildAffiliateProductCurationUpdate,
+  normalizeCatalogGenderTarget,
+  normalizeCatalogGenderTargets,
 } from './affiliate-product-detail.component';
 
 describe('Affiliate product detail', () => {
@@ -49,7 +56,7 @@ describe('Affiliate product detail', () => {
     brand: 'Brand',
     name: 'Product',
     description: 'Description',
-    genderTargets: ['WOMEN'],
+    genderTargets: ['D'],
     category: 'Clothing',
     subcategory: 'Shirts',
     normalizedColor: 'BLUE',
@@ -63,11 +70,20 @@ describe('Affiliate product detail', () => {
   };
 
   function configure(service: jasmine.SpyObj<AffiliateCatalogService>) {
+    const formRepository = {
+      getFormFields: jasmine.createSpy('getFormFields').and.returnValue(of([])),
+    };
+    const formOptions = {
+      getData: jasmine.createSpy('getData').and.resolveTo([]),
+    };
+
     return TestBed.configureTestingModule({
       imports: [AffiliateProductDetailComponent],
       providers: [
         provideRouter([]),
         { provide: AffiliateCatalogService, useValue: service },
+        { provide: FORM_DEFINITION_REPOSITORY, useValue: formRepository },
+        { provide: FORM_OPTIONS_PROVIDER, useValue: formOptions },
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { paramMap: convertToParamMap({ id: product.id }) } },
@@ -76,7 +92,7 @@ describe('Affiliate product detail', () => {
     }).compileComponents();
   }
 
-  it('loads the canonical product endpoint and resolves accessory labels best-effort', async () => {
+  it('loads the canonical product endpoint and prepares the dedicated DynamicForm data', async () => {
     const service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', [
       'getProduct', 'getProgram', 'getFeeds',
     ]);
@@ -93,6 +109,13 @@ describe('Affiliate product detail', () => {
     expect(service.getProgram).toHaveBeenCalledOnceWith(program.id);
     expect(service.getFeeds).toHaveBeenCalledOnceWith(program.id);
     expect(component.product).toEqual(product);
+    expect(component.curationFormId).toBe(AFFILIATE_PRODUCT_CURATION_FORM);
+    expect(component.curationData).toEqual({
+      category: 'Clothing',
+      subcategory: 'Shirts',
+      normalizedColor: 'BLUE',
+      genderTargets: ['D'],
+    });
     expect(component.programName()).toBe(program.name);
     expect(component.sourceFeedName(feed.id)).toBe(feed.name);
   });
@@ -118,5 +141,49 @@ describe('Affiliate product detail', () => {
 
   it('maps a missing product to a stable user-facing message', () => {
     expect(affiliateProductDetailErrorMessage(404)).toBe('Il prodotto richiesto non è più disponibile.');
+  });
+
+  it('normalizes form and legacy gender aliases to the backend U/D contract', () => {
+    expect(normalizeCatalogGenderTarget('male')).toBe('U');
+    expect(normalizeCatalogGenderTarget('Uomo')).toBe('U');
+    expect(normalizeCatalogGenderTarget('female')).toBe('D');
+    expect(normalizeCatalogGenderTarget('Donna')).toBe('D');
+    expect(normalizeCatalogGenderTarget('unknown')).toBeNull();
+    expect(normalizeCatalogGenderTargets(['male', 'U', 'female', 'D'])).toEqual(['U', 'D']);
+  });
+
+  it('normalizes legacy catalog values before passing editData to DynamicForm', () => {
+    expect(buildAffiliateProductCurationFormData({
+      ...product,
+      genderTargets: ['male', 'U'],
+    })).toEqual({
+      category: 'Clothing',
+      subcategory: 'Shirts',
+      normalizedColor: 'BLUE',
+      genderTargets: ['U'],
+    });
+  });
+
+  it('builds only the changed backend fields from the DynamicForm submission', () => {
+    expect(buildAffiliateProductCurationUpdate(product, true, {
+      category: 'M_Maglieria',
+      subcategory: 'felpe',
+      normalizedColor: 'G',
+      genderTargets: ['U'],
+    })).toEqual({
+      category: 'M_Maglieria',
+      subcategory: 'felpe',
+      normalizedColor: 'G',
+      genderTargets: ['U'],
+    });
+  });
+
+  it('can persist the visibility switch together with an unchanged DynamicForm', () => {
+    expect(buildAffiliateProductCurationUpdate(product, false, {
+      category: product.category,
+      subcategory: product.subcategory,
+      normalizedColor: product.normalizedColor,
+      genderTargets: product.genderTargets,
+    })).toEqual({ enabledForApp: false });
   });
 });

@@ -1,4 +1,11 @@
-/* Host global style entry point. Keep this order stable to preserve the current rendered CSS cascade. */
+/* Host global style entry point.
+ *
+ * Cascade contract:
+ *   1. Bootstrap supplies the vendor baseline.
+ *   2. Admin Core supplies reusable structural rules.
+ *   3. The host theme is loaded last so the application owns visual tokens
+ *      and can override Core presentation without editing reusable code.
+ */
 @import 'bootstrap/scss/bootstrap';
-@import 'styles/admin-theme-default';
 @import 'styles/admin-core';
+@import 'styles/admin-theme-default';

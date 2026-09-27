@@ -1,13 +1,12 @@
-<link
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-  rel="stylesheet"
-/>
-
 <header id="header" class="header">
   <div class="header-container">
     <div class="item-left">
-      <button class="hamburger" (click)="onToggleMenu()">
-        <span class="mdi mdi-menu"></span>
+      <button
+        type="button"
+        class="hamburger"
+        aria-label="Apri o chiudi il menu di navigazione"
+        (click)="onToggleMenu()">
+        <span class="mdi mdi-menu" aria-hidden="true"></span>
       </button>
     </div>
 
@@ -16,14 +15,24 @@
         <img [src]="headerConfig.logoUrl" [alt]="headerConfig.logoAlt" class="logo-image" />
       </div>
     </div>
+
     <div class="item-right">
       <div class="profile-info">
-        <button (click)="toggleDropDown($event)" class="button-info">
+        <button
+          type="button"
+          (click)="toggleDropDown($event)"
+          class="button-info"
+          aria-label="Apri menu profilo">
           <img
             [src]="userProfile?.photoURL || headerConfig.defaultAvatarUrl"
             [alt]="userProfile?.displayName || 'Profilo'"
             class="profile-img"
           />
+          <span class="profile-copy" *ngIf="userProfile?.profileLabel">
+            <span class="profile-label">{{ userProfile?.profileLabel }}</span>
+            <span class="profile-action">Account</span>
+          </span>
+          <span class="mdi mdi-chevron-down profile-chevron" aria-hidden="true"></span>
         </button>
       </div>
     </div>
@@ -33,15 +42,17 @@
 <ng-template #dynamicContent let-close="close">
   <div class="dropdown-window" (mouseleave)="toggleDropDownF($event)">
     <div class="dropdown-content">
-      <h3 class="userProfile">
-        <i class="fas fa-user"></i>
-        {{ userProfile?.profileLabel }}
-      </h3>
-      <h3></h3>
-      <div class="dropdown-item" (click)="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        Logout
+      <div class="user-profile">
+        <span class="mdi mdi-account-circle-outline" aria-hidden="true"></span>
+        <div>
+          <strong>{{ userProfile?.profileLabel || userProfile?.displayName || 'Profilo' }}</strong>
+          <span>ComeMiVesto Admin</span>
+        </div>
       </div>
+      <button type="button" class="dropdown-item" (click)="logout()">
+        <span class="mdi mdi-logout" aria-hidden="true"></span>
+        Logout
+      </button>
     </div>
   </div>
 </ng-template>

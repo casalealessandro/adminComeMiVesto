@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
+import { GridLoadRequest } from '../../../../core/public-api';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
@@ -8,6 +9,8 @@ import {
   AffiliateProductsComponent,
   buildAffiliateProductColumns,
   buildAffiliateProductGridRows,
+  buildAffiliateProductRemoteRequest,
+  createAffiliateProductsProvider,
 } from './affiliate-products.component';
 
 describe('Affiliate products', () => {
@@ -33,7 +36,7 @@ describe('Affiliate products', () => {
     brand: 'Brand',
     name: 'Product',
     description: 'Description',
-    genderTargets: ['WOMEN', 'UNISEX'],
+    genderTargets: ['U', 'D'],
     category: 'Clothing',
     subcategory: 'Shirts',
     normalizedColor: 'BLUE',
@@ -46,24 +49,48 @@ describe('Affiliate products', () => {
     lastSeenAt: 3,
   };
 
-  it('keeps the products grid read-only with detail as the only action', () => {
-    const columns = buildAffiliateProductColumns()[0].data;
+  const taxonomyPreview = {
+    scanned: 10,
+    eligible: 8,
+    suggested: 2,
+    ambiguous: 1,
+    noMatch: 5,
+    invalidCategory: 2,
+    updated: 0,
+    preview: [{
+      productId: 'product-2',
+      productName: 'Pantalone cargo',
+      category: 'pants-parent',
+      suggestedSubcategory: 'cargo-child',
+      suggestedSubcategoryName: 'Cargo',
+      matchedText: 'Cargo',
+    }],
+    previewTruncated: false,
+  };
+
+  it('keeps the products grid read-only and exposes only Programma and Categoria as filters', () => {
+    const columns = buildAffiliateProductColumns([program], ['Clothing', 'Shoes'])[0].data;
     const actions = columns.filter((column) => column.type === 'campoButton');
+    const filterable = columns.filter((column) => column.allowFiltering === true);
 
     expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
+    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category']);
+    expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
+    expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
   });
 
-  it('maps program labels and display-only product summaries', () => {
+  it('maps program labels and display-only product summaries without changing canonical data', () => {
     const rows = buildAffiliateProductGridRows(
       [product],
       new Map([[program.id, program.name]]),
     );
 
+    expect(rows[0].affiliateProgramId).toBe(program.id);
     expect(rows[0].programName).toBe(program.name);
     expect(rows[0].activeLabel).toBe('Sì');
     expect(rows[0].categoryLabel).toBe('Clothing / Shirts');
-    expect(rows[0].genderLabel).toBe('WOMEN, UNISEX');
+    expect(rows[0].genderLabel).toBe('U, D');
     expect(rows[0].sourceFeedCount).toBe(2);
   });
 
@@ -72,7 +99,53 @@ describe('Affiliate products', () => {
     expect(rows[0].programName).toBe(program.id);
   });
 
-  describe('cursor pagination and detail navigation', () => {
+  it('translates DataGrid continuation and exact column filters into the products API contract', () => {
+    const request: GridLoadRequest = {
+      pageSize: AFFILIATE_PRODUCTS_PAGE_SIZE,
+      continuation: 'cursor-2',
+      filters: [
+        { field: 'affiliateProgramId', operator: 'eq', value: program.id },
+        { field: 'category', operator: 'eq', value: 'Clothing' },
+      ],
+    };
+
+    expect(buildAffiliateProductRemoteRequest(request)).toEqual({
+      limit: AFFILIATE_PRODUCTS_PAGE_SIZE,
+      cursor: 'cursor-2',
+      affiliateProgramId: program.id,
+      category: 'Clothing',
+    });
+  });
+
+  it('maps backend cursor pages into the provider-neutral DataGrid page', async () => {
+    const service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', ['getProducts']);
+    service.getProducts.and.returnValue(of({
+      data: [product],
+      pagination: { nextCursor: 'cursor-2', hasMore: true },
+    }));
+    const onPage = jasmine.createSpy('onPage');
+    const provider = createAffiliateProductsProvider(
+      service,
+      new Map([[program.id, program.name]]),
+      { onPage },
+    );
+
+    const page = await provider.load({
+      pageSize: AFFILIATE_PRODUCTS_PAGE_SIZE,
+      filters: [{ field: 'affiliateProgramId', operator: 'eq', value: program.id }],
+    });
+
+    expect(service.getProducts).toHaveBeenCalledOnceWith({
+      limit: AFFILIATE_PRODUCTS_PAGE_SIZE,
+      affiliateProgramId: program.id,
+    });
+    expect(page.items[0].programName).toBe(program.name);
+    expect(page.hasMore).toBeTrue();
+    expect(page.continuation).toBe('cursor-2');
+    expect(onPage).toHaveBeenCalledWith([product], false, true);
+  });
+
+  describe('component metadata, taxonomy repair and detail navigation', () => {
     let fixture: ComponentFixture<AffiliateProductsComponent>;
     let component: AffiliateProductsComponent;
     let service: jasmine.SpyObj<AffiliateCatalogService>;
@@ -82,18 +155,16 @@ describe('Affiliate products', () => {
       service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', [
         'getProducts',
         'getPrograms',
+        'getProductCategories',
+        'repairProductTaxonomies',
       ]);
       service.getPrograms.and.returnValue(of([program]));
-      service.getProducts.and.returnValues(
-        of({
-          data: [product],
-          pagination: { nextCursor: 'cursor-2', hasMore: true },
-        }),
-        of({
-          data: [{ ...product, id: 'product-2', name: 'Product 2' }],
-          pagination: { nextCursor: null, hasMore: false },
-        }),
-      );
+      service.getProductCategories.and.returnValue(of(['Clothing']));
+      service.getProducts.and.returnValue(of({
+        data: [product],
+        pagination: { nextCursor: null, hasMore: false },
+      }));
+      service.repairProductTaxonomies.and.returnValue(of(taxonomyPreview));
 
       await TestBed.configureTestingModule({
         imports: [AffiliateProductsComponent],
@@ -108,36 +179,68 @@ describe('Affiliate products', () => {
       router = TestBed.inject(Router);
     });
 
-    it('loads the first backend page with the canonical page size', () => {
+    it('loads reusable filter metadata without preloading a product page in the component', () => {
       component.refresh();
 
-      expect(service.getProducts).toHaveBeenCalledOnceWith({
-        limit: AFFILIATE_PRODUCTS_PAGE_SIZE,
-      });
-      expect(component.products.length).toBe(1);
-      expect(component.hasMore).toBeTrue();
-      expect(component.nextCursor).toBe('cursor-2');
+      expect(service.getPrograms).toHaveBeenCalledTimes(1);
+      expect(service.getProductCategories).toHaveBeenCalledTimes(1);
+      expect(service.getProducts).not.toHaveBeenCalled();
+      expect(component.dataProvider).toBeDefined();
+      expect(component.columns[0].data.find((column) => column.dataField === 'category')?.lista?.options)
+        .toEqual([{ value: 'Clothing', label: 'Clothing' }]);
     });
 
-    it('uses only the opaque nextCursor when loading the next page', () => {
-      component.refresh();
-      component.loadMore();
-
-      expect(service.getProducts.calls.argsFor(1)).toEqual([{
-        limit: AFFILIATE_PRODUCTS_PAGE_SIZE,
-        cursor: 'cursor-2',
-      }]);
-      expect(component.products.map((item) => item.id)).toEqual(['product-1', 'product-2']);
-      expect(component.hasMore).toBeFalse();
-      expect(component.nextCursor).toBeNull();
+    it('tracks mobile cards by the canonical product id', () => {
+      expect(component.trackByProductId(0, product)).toBe(product.id);
     });
 
-    it('navigates to the canonical product detail route', () => {
+    it('analyzes missing taxonomies without applying changes', () => {
+      component.analyzeMissingTaxonomies();
+
+      expect(service.repairProductTaxonomies).toHaveBeenCalledOnceWith(false);
+      expect(component.taxonomyRepair).toEqual(taxonomyPreview);
+    });
+
+    it('applies only after an explicit preview and refreshes products when updates were written', () => {
+      component.taxonomyRepair = taxonomyPreview;
+      service.repairProductTaxonomies.and.returnValue(of({ ...taxonomyPreview, updated: 2 }));
+      const refresh = spyOn(component, 'refresh');
+
+      component.applyTaxonomySuggestions();
+
+      expect(service.repairProductTaxonomies).toHaveBeenCalledOnceWith(true);
+      expect(component.taxonomyRepair?.updated).toBe(2);
+      expect(refresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not call apply when there are no safe suggestions', () => {
+      component.taxonomyRepair = { ...taxonomyPreview, suggested: 0, preview: [] };
+
+      component.applyTaxonomySuggestions();
+
+      expect(service.repairProductTaxonomies).not.toHaveBeenCalled();
+    });
+
+    it('preserves active filters when navigating to the product detail', async () => {
       const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+      (component as any).dataGrid = {
+        providerFilterValue: (field: string) => field === 'affiliateProgramId' ? program.id : 'Clothing',
+      };
 
-      component.openDetail(product);
+      await component.openDetail(product);
 
-      expect(navigate).toHaveBeenCalledWith(['/affiliate-catalog/products', product.id]);
+      expect(navigate.calls.argsFor(0)[1]).toEqual(jasmine.objectContaining({
+        queryParams: {
+          affiliateProgramId: program.id,
+          category: 'Clothing',
+        },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      }));
+      expect(navigate.calls.argsFor(1)).toEqual([
+        ['/affiliate-catalog/products', product.id],
+        { queryParamsHandling: 'preserve' },
+      ]);
     });
   });
 });

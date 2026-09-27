@@ -1,0 +1,47 @@
+.outfit-card__publish {
+  display: grid;
+  gap: .55rem;
+  padding-top: .25rem;
+  border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.outfit-card__approve {
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  width: 100%;
+  border: 0;
+  border-radius: .6rem;
+  padding: .6rem 1rem;
+  font-weight: 750;
+  background: var(--bs-success, #198754);
+  color: #fff;
+}
+
+.outfit-card__approve:disabled {
+  opacity: .68;
+  cursor: default;
+}
+
+.outfit-card__published,
+.outfit-card__publish-error {
+  display: flex;
+  align-items: flex-start;
+  gap: .4rem;
+  padding: .65rem .75rem;
+  border-radius: .55rem;
+  font-size: .8rem;
+  overflow-wrap: anywhere;
+}
+
+.outfit-card__published {
+  color: var(--bs-success-text-emphasis, #0a3622);
+  background: var(--bs-success-bg-subtle, #d1e7dd);
+}
+
+.outfit-card__publish-error {
+  color: var(--bs-danger-text-emphasis, #842029);
+  background: var(--bs-danger-bg-subtle, #f8d7da);
+}

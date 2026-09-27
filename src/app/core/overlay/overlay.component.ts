@@ -20,9 +20,12 @@ export class OverlayComponent {
 
   isVisible = signal(false);
   position = signal({ top: 0, left: 0 });
+  zIndex = signal(1200);
+  backdropZIndex = signal(1199);
 
   @Output() closed = new EventEmitter<void>();
   private overlaySubscription: Subscription = new Subscription();
+  private readonly viewportMargin = 10;
 
   constructor(private overlayService: OverlayService) {}
 
@@ -58,11 +61,44 @@ export class OverlayComponent {
 
   openOverlay(position: { top: number; left: number }): void {
     this.position.set(position);
+    this.resolveLayer();
     this.isVisible.set(true);
 
     setTimeout(() => {
+      this.keepInsideHorizontalViewport();
       this.overlayContentRef?.nativeElement.classList.add('active');
     }, 10);
+  }
+
+  private resolveLayer(): void {
+    const modalZIndexes = Array.from(document.querySelectorAll('.modal.popup'))
+      .map(element => parseFloat(window.getComputedStyle(element).zIndex))
+      .filter(zIndex => Number.isFinite(zIndex));
+
+    const highestModalZIndex = modalZIndexes.length ? Math.max(...modalZIndexes) : 0;
+    const resolvedZIndex = highestModalZIndex > 0 ? highestModalZIndex + 100 : 1200;
+
+    this.zIndex.set(resolvedZIndex);
+    this.backdropZIndex.set(resolvedZIndex - 1);
+  }
+
+  private keepInsideHorizontalViewport(): void {
+    const overlayElement = this.overlayContentRef?.nativeElement as HTMLElement | undefined;
+    if (!overlayElement) {
+      return;
+    }
+
+    const overlayWidth = overlayElement.getBoundingClientRect().width;
+    const viewportLeft = window.scrollX;
+    const viewportRight = viewportLeft + window.innerWidth;
+    const currentPosition = this.position();
+    const minLeft = viewportLeft + this.viewportMargin;
+    const maxLeft = viewportRight - overlayWidth - this.viewportMargin;
+    const correctedLeft = Math.max(minLeft, Math.min(currentPosition.left, maxLeft));
+
+    if (correctedLeft !== currentPosition.left) {
+      this.position.set({ ...currentPosition, left: correctedLeft });
+    }
   }
 
   ngOnDestroy() {

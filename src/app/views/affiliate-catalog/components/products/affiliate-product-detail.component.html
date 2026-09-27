@@ -1,6 +1,6 @@
 <section class="affiliate-detail" aria-labelledby="affiliate-product-detail-title" [attr.aria-busy]="loading">
   <div class="affiliate-detail__toolbar">
-    <a class="btn btn-outline-secondary" routerLink="/affiliate-catalog/products">
+    <a class="btn btn-outline-secondary" routerLink="/affiliate-catalog/products" queryParamsHandling="preserve">
       <span class="mdi mdi-arrow-left" aria-hidden="true"></span>
       Torna ai prodotti
     </a>
@@ -24,7 +24,14 @@
     <div class="affiliate-detail__hero">
       <div>
         <div *ngIf="images.length; else noImage" class="affiliate-detail__gallery">
-          <img *ngFor="let image of images" [src]="image" [alt]="item.name" loading="lazy">
+          <button
+            *ngFor="let image of images"
+            type="button"
+            class="affiliate-product-image-preview__trigger"
+            (click)="openImagePreview(image)"
+            aria-label="Ingrandisci immagine prodotto">
+            <img [src]="image" [alt]="item.name" loading="lazy">
+          </button>
         </div>
         <ng-template #noImage>
           <div class="affiliate-detail__image-placeholder">
@@ -49,6 +56,52 @@
         <p class="affiliate-detail__description">{{ item.description || 'Nessuna descrizione disponibile.' }}</p>
       </div>
     </div>
+
+    <section class="affiliate-detail__card mb-3">
+      <div class="affiliate-detail__curation-header d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <h3 class="mb-1">Gestione ComeMiVesto</h3>
+          <p class="mb-0 text-muted">
+            Decidi se il prodotto può essere usato nell'app e associa la tassonomia ComeMiVesto.
+          </p>
+        </div>
+        <div class="affiliate-detail__curation-badges d-flex flex-wrap gap-2">
+          <span class="badge" [class.text-bg-success]="enabledForApp" [class.text-bg-secondary]="!enabledForApp">
+            {{ enabledForApp ? 'Attivo nell’app' : 'Disattivato nell’app' }}
+          </span>
+          <span class="badge" [class.text-bg-primary]="item.classificationLocked" [class.text-bg-light]="!item.classificationLocked">
+            {{ item.classificationLocked ? 'Classificazione manuale' : 'Classificazione feed' }}
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="curationError" class="alert alert-danger py-2" role="alert">
+        {{ curationError }}
+      </div>
+
+      <div class="form-check form-switch mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="enabledForApp"
+          [(ngModel)]="enabledForApp"
+          [disabled]="curationSaving">
+        <label class="form-check-label" for="enabledForApp">
+          Mostra questo prodotto in ComeMiVesto
+        </label>
+      </div>
+
+      <app-dynamic-form
+        *ngIf="curationData as formData"
+        [service]="curationFormId"
+        [editData]="formData"
+        [showBottomButtons]="true"
+        [showBottomButtonLeft]="false"
+        [inputBtnRightName]="'Salva gestione ComeMiVesto'"
+        [loading]="curationSaving"
+        (submitFormEvent)="handleCurationForm($event)">
+      </app-dynamic-form>
+    </section>
 
     <div class="affiliate-detail__grid">
       <section class="affiliate-detail__card">
@@ -97,4 +150,22 @@
       </section>
     </div>
   </ng-container>
+  <div
+    *ngIf="previewImage as image"
+    class="affiliate-product-image-preview"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Anteprima immagine prodotto"
+    (click)="closeImagePreview()">
+    <div class="affiliate-product-image-preview__content" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="affiliate-product-image-preview__close"
+        (click)="closeImagePreview()"
+        aria-label="Chiudi anteprima">
+        <span class="mdi mdi-close" aria-hidden="true"></span>
+      </button>
+      <img [src]="image" [alt]="product?.name || 'Immagine prodotto'">
+    </div>
+  </div>
 </section>

@@ -58,22 +58,6 @@ export interface Tag {
 }[]
 
 
-export interface wardrobesItem {
-  id: number;
-  userId: string;
-  name: string;
-  outfitCategory: string;
-  outfitSubCategory: string;
-  brend: string;
-  color:string;
-  link?: string;
-  images: string[];
-  ImageUrl?:string;
-  imageUrl?:string;
-  prezzo?:number;
-  gender?:any;
-}
-
 export interface FireBaseConditions {
   field: string;
   operator: string;
@@ -238,49 +222,6 @@ export class OutfitsService {
     }
   }
 
-  //Prodotti Creati e messi a disposizione nell'app
-
-  getProducts(): Observable<wardrobesItem[]>{
-    return this.firestore.collection('outfitsProducts').valueChanges().pipe(
-      map((Products: any[]) => {
-        return Products;
-      })
-    );
-  }
-
-  updateProductOutfit(nameDoc:any,data:any){
-    try {
-
-      this.firestore.collection('outfitsProducts').doc(nameDoc).update(data);
-
-      return true
-
-
-    } catch (error) {
-      console.log(error)
-      return false
-    }
-  }
-
-  async removeProductOutfit(id: any): Promise<boolean> {
-
-    let query = this.firestore.collection('outfitsProducts').doc(id).ref
-
-    // Applica questa condizione alla query
-
-
-
-    try {
-       // Elimina il doc che corrispondono al ID
-      await query.delete();
-
-      return true
-    } catch (error) {
-      console.error('Error deleting documents:', error);
-      return false
-    }
-  }
-
   /**Categorie Outfits**/
 
 
@@ -350,31 +291,6 @@ export class OutfitsService {
 
 
 
-  }
-
-  //Salvataggio in FireStone
-
-  async saveOutfitsProducts(nameDoc: string | undefined, data: any): Promise<boolean> {
-
-    try {
-      const Collection = await this.firestore.collection('outfitsProducts')
-      if (!nameDoc) {
-        Collection.add(data);
-
-        return true
-      } else {
-
-        Collection.doc(nameDoc).set(data);
-        return true
-      }
-
-    } catch (error) {
-
-
-
-
-      return false
-    }
   }
 
 

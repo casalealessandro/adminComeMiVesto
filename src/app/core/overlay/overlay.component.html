@@ -2,12 +2,14 @@
   *ngIf="isVisible() && showBgOverlay"
   [ngClass]="{'bg-overlay':showBgOverlay}"
   class="overlay-backdrop"
+  [style.z-index]="backdropZIndex()"
   (click)="$event.stopPropagation(); closeOverlay()">
 </div>
 <div
   #overlayContent
   *ngIf="isVisible()"
   class="overlay-content"
+  [style.z-index]="zIndex()"
   [ngStyle]="{ top: position().top + 'px', left: position().left + 'px' }"
 >
   <ng-container *ngTemplateOutlet="contentTemplate; context: templateContext"></ng-container>

@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { AnagraficaService } from '../../services/anagrafica.service';
 import { GridDataProvider, GridLoadRequest, GridPage } from './data-grid-provider';
 import { ProviderDataGridComponent } from './provider-data-grid.component';
+import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
 
 describe('ProviderDataGridComponent remote loading', () => {
   let component: ProviderDataGridComponent<any>;
@@ -482,6 +483,25 @@ describe('ProviderDataGridComponent remote loading', () => {
       { id: 2, name: 'Two' },
     ]);
     expect(component.isLoading).toBeFalse();
+  });
+
+  it('should forward the custom scrollbar output to the remote scroll handler', () => {
+    component.rowsData.set([{ id: 1, name: 'One' }]);
+    component.showNullData = false;
+    component.colsHeader = [{ dataField: 'name', type: 'campo', caption: 'Name', colWidth: 120 } as any];
+    const onScroll = spyOn(component, 'onScroll').and.resolveTo();
+
+    fixture.detectChanges();
+
+    const scrollbar = fixture.debugElement.query(
+      debugElement => debugElement.componentInstance instanceof CustomScrollbarComponent,
+    )?.componentInstance as CustomScrollbarComponent | undefined;
+    expect(scrollbar).toBeTruthy();
+
+    const event = new Event('scroll');
+    scrollbar!.scrolled.emit(event);
+
+    expect(onScroll).toHaveBeenCalledOnceWith(event);
   });
 
   it('should trigger loading only when scrolling near the bottom and moving forward', async () => {
