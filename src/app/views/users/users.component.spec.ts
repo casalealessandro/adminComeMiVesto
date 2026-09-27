@@ -1,32 +1,64 @@
+import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, Subject } from 'rxjs';
-import { UsersComponent, adminCreateUserErrorMessage, adminCreateUserSuccessMessage, buildAdminCreateUserRequest } from './users.component';
-import { UserService } from '../../services/user.service';
+
+import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { AuthService } from '../../services/auth.service';
 import { FormService } from '../../services/form.service';
+import { UserService } from '../../services/user.service';
+import { UsersGridProvider } from './users-grid.provider';
+import {
+  UsersComponent,
+  adminCreateUserErrorMessage,
+  adminCreateUserSuccessMessage,
+  buildAdminCreateUserRequest
+} from './users.component';
 
 describe('UsersComponent admin creation', () => {
   let component: UsersComponent;
   let fixture: ComponentFixture<UsersComponent>;
   let userService: jasmine.SpyObj<UserService>;
   const isAdmin = jasmine.createSpy().and.returnValue(true);
+  const gridProvider = {
+    load: jasmine.createSpy('load').and.resolveTo({
+      items: [],
+      hasMore: false,
+      totalCount: 0
+    })
+  };
 
   beforeEach(async () => {
     isAdmin.and.returnValue(true);
+    gridProvider.load.calls.reset();
     userService = jasmine.createSpyObj('UserService', ['getUsersPage', 'createAdminUser']);
     userService.getUsersPage.and.returnValue(of({ data: [], nextPageToken: null }));
+
     await TestBed.configureTestingModule({
       imports: [UsersComponent],
       providers: [
         { provide: UserService, useValue: userService },
+        { provide: UsersGridProvider, useValue: gridProvider },
         { provide: AuthService, useValue: { isAdmin, currentUser: () => null } },
         { provide: FormService, useValue: { getFormFields: () => of([]) } }
       ]
     }).compileComponents();
+
     fixture = TestBed.createComponent(UsersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
     userService.getUsersPage.calls.reset();
+  });
+
+  it('configures the users DataGrid on the provider-neutral remote path', () => {
+    const grid = fixture.debugElement.query(By.directive(DataGridComponent)).componentInstance as DataGridComponent;
+
+    expect(grid.remoteOperation).toBeTrue();
+    expect(grid.dataProvider).toBe(gridProvider);
+    expect(grid.showToolbarTop).toBeTrue();
+    expect(grid.showFilter).toBeTrue();
+    expect(grid.isSearchable).toBeTrue();
+    expect(gridProvider.load).toHaveBeenCalledWith({ pageSize: 20 });
   });
 
   it('shows the action to admins and opens the DynamicForm dialog', () => {
@@ -50,10 +82,27 @@ describe('UsersComponent admin creation', () => {
   });
 
   it('whitelists the payload and refreshes after successful creation', () => {
-    userService.createAdminUser.and.returnValue(of({ uid: '1', email: 'new@example.com', role: 'creator' as const, passwordSetupEmailSent: true }));
+    userService.createAdminUser.and.returnValue(of({
+      uid: '1',
+      email: 'new@example.com',
+      role: 'creator' as const,
+      passwordSetupEmailSent: true
+    }));
+
     component.createUserOpen = true;
-    component.handleCreateUserForm({ name: 'submitForm', formData: { email: ' new@example.com ', role: 'creator', admin: true, password: 'secret' } });
-    expect(userService.createAdminUser).toHaveBeenCalledWith({ email: 'new@example.com', role: 'creator', displayName: undefined, nome: undefined, cognome: undefined, gender: undefined });
+    component.handleCreateUserForm({
+      name: 'submitForm',
+      formData: { email: ' new@example.com ', role: 'creator', admin: true, password: 'secret' }
+    });
+
+    expect(userService.createAdminUser).toHaveBeenCalledWith({
+      email: 'new@example.com',
+      role: 'creator',
+      displayName: undefined,
+      nome: undefined,
+      cognome: undefined,
+      gender: undefined
+    });
     expect(userService.getUsersPage).toHaveBeenCalled();
     expect(component.createUserOpen).toBeFalse();
   });
@@ -62,8 +111,10 @@ describe('UsersComponent admin creation', () => {
     const pending = new Subject<any>();
     userService.createAdminUser.and.returnValue(pending);
     const event = { name: 'submitForm' as const, formData: { email: 'new@example.com', role: 'admin' } };
+
     component.handleCreateUserForm(event);
     component.handleCreateUserForm(event);
+
     expect(userService.createAdminUser).toHaveBeenCalledTimes(1);
     pending.error({ status: 500 });
     expect(component.createUserBusy).toBeFalse();
