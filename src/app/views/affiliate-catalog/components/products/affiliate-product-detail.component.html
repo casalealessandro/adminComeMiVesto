@@ -24,7 +24,14 @@
     <div class="affiliate-detail__hero">
       <div>
         <div *ngIf="images.length; else noImage" class="affiliate-detail__gallery">
-          <img *ngFor="let image of images" [src]="image" [alt]="item.name" loading="lazy">
+          <button
+            *ngFor="let image of images"
+            type="button"
+            class="affiliate-product-image-preview__trigger"
+            (click)="openImagePreview(image)"
+            aria-label="Ingrandisci immagine prodotto">
+            <img [src]="image" [alt]="item.name" loading="lazy">
+          </button>
         </div>
         <ng-template #noImage>
           <div class="affiliate-detail__image-placeholder">
@@ -143,4 +150,22 @@
       </section>
     </div>
   </ng-container>
+  <div
+    *ngIf="previewImage as image"
+    class="affiliate-product-image-preview"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Anteprima immagine prodotto"
+    (click)="closeImagePreview()">
+    <div class="affiliate-product-image-preview__content" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="affiliate-product-image-preview__close"
+        (click)="closeImagePreview()"
+        aria-label="Chiudi anteprima">
+        <span class="mdi mdi-close" aria-hidden="true"></span>
+      </button>
+      <img [src]="image" [alt]="product?.name || 'Immagine prodotto'">
+    </div>
+  </div>
 </section>
