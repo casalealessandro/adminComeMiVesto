@@ -363,14 +363,7 @@ export class FotoOutfitPage implements OnInit {
     return new Promise((resolve, reject) => {
       const popupSubscription = this.propertiesModal.outputComponent.subscribe(async respo => {
         if (respo.guid === guid) {
-
-          if (respo.name === 'functionalInputClick') {
-            this.openOutfitProducts()
-            console.log('functionalInputClick-->', respo);
-          }
-
-
-          if (respo.name === 'submitForm') {
+if (respo.name === 'submitForm') {
             const resolveC = respo.formData;
             this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
             popupSubscription.unsubscribe();
@@ -396,27 +389,6 @@ export class FotoOutfitPage implements OnInit {
   removeTag(tagId: any) {
     const newTags = this.tags().filter(tag => tag.id !== tagId);
     this.tags.set(newTags);
-  }
-
-  async openOutfitProducts() {
-
-    let guid = Math.random().toString().replace("0.", "");
-    this.propertiesModal.setNewPopUp(guid, 'OutfitProductsComponent', null, 1000, null, {}, true, true, "Prodotti Outfit", '', true)
-    ///let respo = await this.propertiesModal.getOutputComponent(guid)
-
-
-
-    const popupSubscription = this.propertiesModal.outputComponent.subscribe(async resulOutputComponent => {
-      if (resulOutputComponent.guid === guid) {
-
-
-        console.log(resulOutputComponent)
-
-        if (resulOutputComponent.name === 'stochiudendo') {
-          popupSubscription.unsubscribe();
-        }
-      }
-    });
   }
 
   /**utility**/
