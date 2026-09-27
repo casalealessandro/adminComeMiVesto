@@ -1,5 +1,5 @@
 import { DataGridUtils } from '../../core/data-grid/data-grid-utils';
-import { buildNotificationInput } from './forms/notification-form-host.component';
+import { buildNotificationInput, validNotificationScheduleTime } from './forms/notification-form-host.component';
 import { NotificationMessage, NotificationRecipient } from './models/notification.models';
 import {
   buildNotificationColumns,
@@ -15,6 +15,7 @@ describe('NotificationsComponent helpers', () => {
     body: 'Messaggio',
     type: 'DAILY',
     enabled: true,
+    scheduleTime: '08:30',
     createdAt: 1,
     updatedAt: 2,
   };
@@ -22,6 +23,7 @@ describe('NotificationsComponent helpers', () => {
   it('builds notification rows for the shared DataGrid', () => {
     const [row] = buildNotificationGridRows([notification]);
     expect(row.typeLabel).toBe('Giornaliera');
+    expect(row.scheduleTimeLabel).toBe('08:30');
     expect(row.enabledLabel).toBe('Sì');
     expect(row.deepLinkLabel).toBe('—');
   });
@@ -149,6 +151,7 @@ describe('NotificationsComponent helpers', () => {
       deepLink: ' comemivesto://outfit/1 ',
       type: 'MANUAL',
       enabled: false,
+      scheduleTime: '08:30',
     })).toEqual({
       title: 'Titolo',
       body: 'Messaggio',
@@ -156,5 +159,31 @@ describe('NotificationsComponent helpers', () => {
       type: 'MANUAL',
       enabled: false,
     });
+  });
+
+  it('keeps a valid schedule time only for DAILY notifications', () => {
+    expect(buildNotificationInput({
+      title: ' Buongiorno ',
+      body: ' Look del giorno ',
+      type: 'DAILY',
+      enabled: true,
+      scheduleTime: '08:30',
+    })).toEqual({
+      title: 'Buongiorno',
+      body: 'Look del giorno',
+      type: 'DAILY',
+      enabled: true,
+      scheduleTime: '08:30',
+    });
+
+    expect(validNotificationScheduleTime('08:30')).toBeTrue();
+    expect(validNotificationScheduleTime('23:59')).toBeTrue();
+    expect(validNotificationScheduleTime('24:00')).toBeFalse();
+    expect(validNotificationScheduleTime('8:30')).toBeFalse();
+  });
+
+  it('shows legacy DAILY notifications without a schedule as not planned', () => {
+    const [row] = buildNotificationGridRows([{ ...notification, scheduleTime: undefined }]);
+    expect(row.scheduleTimeLabel).toBe('Non pianificata');
   });
 });
