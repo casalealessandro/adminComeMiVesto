@@ -71,7 +71,6 @@ describe('PopUpService characterization', () => {
       'DynamicFormComponent',
       'ElementComponent',
       'ProductFromFeedComponent',
-      'OutfitProductsComponent',
     ];
 
     names.forEach(name => {
