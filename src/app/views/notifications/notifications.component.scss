@@ -163,8 +163,23 @@
 
 .notification-recipients {
   margin-top: 2rem;
+  margin-bottom: 2rem;
   padding-top: 1.5rem;
+  padding-bottom: 1.25rem;
   border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.notification-recipients__scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.65rem 0 0;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.8rem;
+}
+
+.notification-recipients__scroll-hint .mdi {
+  font-size: 1rem;
 }
 
 .notification-recipients__summary {

@@ -40,6 +40,7 @@ export interface NotificationGridRow extends NotificationMessage {
 }
 
 export interface NotificationRecipientGridRow extends NotificationRecipient {
+  userLabel: string;
   dailyEnabledLabel: string;
   platformsLabel: string;
   preferenceLabel: string;
@@ -101,7 +102,7 @@ export function buildNotificationGridRows(notifications: NotificationMessage[]):
 
 export function buildNotificationRecipientColumns(): Colonne[] {
   const columns: ColData[] = [
-    baseColumn('displayName', 'Utente', 190),
+    baseColumn('userLabel', 'Utente', 230),
     baseColumn('email', 'Email', 230),
     baseColumn('preferenceLabel', 'Preferenza push', 125),
     baseColumn('deviceLabel', 'Device attivo', 105),
@@ -119,6 +120,7 @@ export function buildNotificationRecipientRows(recipients: NotificationRecipient
     const hasActiveDevice = recipient.activeDeviceCount > 0;
     return {
       ...recipient,
+      userLabel: recipient.displayName || recipient.email || recipient.userId,
       displayName: recipient.displayName || '—',
       email: recipient.email || '—',
       preferenceLabel: !recipient.preferenceConfigured

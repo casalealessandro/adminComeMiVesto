@@ -159,12 +159,18 @@
         [isEditableNewRow]="false"
         [isEditableEditRow]="false"
         [isEditableDeleteRow]="false"
-        [showToolbarTop]="false"
+        [showToolbarTop]="true"
         [showToolbarBottom]="false"
-        [isSearchable]="false"
-        [tableHeight]="420">
+        [showFilter]="true"
+        [isSearchable]="true"
+        [tableHeight]="360">
       </app-data-grid>
     </div>
+
+    <p class="notification-recipients__scroll-hint notifications__desktop" *ngIf="!recipientsLoading && recipientGridRows.length">
+      <span class="mdi mdi-mouse-move-down" aria-hidden="true"></span>
+      Scorri nella tabella per vedere gli altri utenti.
+    </p>
 
     <div class="notifications__mobile" *ngIf="!recipientsLoading && recipientGridRows.length">
       <article class="recipient-card" *ngFor="let recipient of recipientGridRows">
