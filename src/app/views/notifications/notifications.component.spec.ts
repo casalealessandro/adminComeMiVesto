@@ -31,25 +31,44 @@ describe('NotificationsComponent helpers', () => {
     expect(actions).toEqual(['edit', 'toggle', 'send']);
   });
 
-  it('builds recipient status rows without exposing push tokens', () => {
-    const recipient: NotificationRecipient = {
-      userId: 'user-1',
-      email: 'user@example.com',
-      displayName: 'Mario',
-      enabled: true,
-      dailyEnabled: false,
-      preferenceConfigured: true,
-      activeDeviceCount: 2,
-      platforms: ['android', 'ios'],
-      lastSeenAt: 3,
-    };
+  it('separates push preference, active device and effective delivery state', () => {
+    const recipients: NotificationRecipient[] = [
+      {
+        userId: 'user-1',
+        email: 'user@example.com',
+        displayName: 'Mario',
+        enabled: true,
+        dailyEnabled: false,
+        preferenceConfigured: true,
+        activeDeviceCount: 2,
+        platforms: ['android', 'ios'],
+        lastSeenAt: 3,
+      },
+      {
+        userId: 'user-2',
+        email: 'default@example.com',
+        displayName: 'Default User',
+        enabled: true,
+        dailyEnabled: true,
+        preferenceConfigured: false,
+        activeDeviceCount: 0,
+        platforms: [],
+        lastSeenAt: 0,
+      },
+    ];
 
-    const [row] = buildNotificationRecipientRows([recipient]);
-    expect(row.enabledLabel).toBe('Attive');
-    expect(row.dailyEnabledLabel).toBe('No');
-    expect(row.platformsLabel).toBe('Android, iOS');
-    expect(row.preferenceLabel).toBe('Personalizzate');
-    expect((row as any).token).toBeUndefined();
+    const [registered, defaultUser] = buildNotificationRecipientRows(recipients);
+    expect(registered.preferenceLabel).toBe('Attive');
+    expect(registered.deviceLabel).toBe('Sì (2)');
+    expect(registered.deliveryLabel).toBe('Sì');
+    expect(registered.dailyEnabledLabel).toBe('No');
+    expect(registered.platformsLabel).toBe('Android, iOS');
+
+    expect(defaultUser.preferenceLabel).toBe('Default');
+    expect(defaultUser.deviceLabel).toBe('No');
+    expect(defaultUser.deliveryLabel).toBe('No');
+    expect(defaultUser.dailyEnabledLabel).toBe('Default');
+    expect((registered as any).token).toBeUndefined();
   });
 
   it('builds the backend input using the existing form semantics', () => {

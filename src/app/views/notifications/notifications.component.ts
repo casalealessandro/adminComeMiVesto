@@ -40,10 +40,11 @@ export interface NotificationGridRow extends NotificationMessage {
 }
 
 export interface NotificationRecipientGridRow extends NotificationRecipient {
-  enabledLabel: string;
   dailyEnabledLabel: string;
   platformsLabel: string;
   preferenceLabel: string;
+  deviceLabel: string;
+  deliveryLabel: string;
 }
 
 export function buildNotificationColumns(): Colonne[] {
@@ -102,11 +103,11 @@ export function buildNotificationRecipientColumns(): Colonne[] {
   const columns: ColData[] = [
     baseColumn('displayName', 'Utente', 190),
     baseColumn('email', 'Email', 230),
-    baseColumn('enabledLabel', 'Notifiche', 105),
+    baseColumn('preferenceLabel', 'Preferenza push', 125),
+    baseColumn('deviceLabel', 'Device attivo', 105),
+    baseColumn('deliveryLabel', 'Notificabile', 100),
     baseColumn('dailyEnabledLabel', 'Giornaliere', 105),
     baseColumn('platformsLabel', 'Piattaforme', 125),
-    baseColumn('activeDeviceCount', 'Device', 80),
-    baseColumn('preferenceLabel', 'Preferenze', 115),
     baseColumn('lastSeenAt', 'Ultimo device', 145, 'campoDateTime'),
   ];
 
@@ -114,15 +115,23 @@ export function buildNotificationRecipientColumns(): Colonne[] {
 }
 
 export function buildNotificationRecipientRows(recipients: NotificationRecipient[]): NotificationRecipientGridRow[] {
-  return recipients.map((recipient) => ({
-    ...recipient,
-    displayName: recipient.displayName || '—',
-    email: recipient.email || '—',
-    enabledLabel: recipient.enabled ? 'Attive' : 'Disattivate',
-    dailyEnabledLabel: recipient.dailyEnabled ? 'Sì' : 'No',
-    platformsLabel: recipient.platforms.map((platform) => platform === 'android' ? 'Android' : 'iOS').join(', ') || '—',
-    preferenceLabel: recipient.preferenceConfigured ? 'Personalizzate' : 'Default',
-  }));
+  return recipients.map((recipient) => {
+    const hasActiveDevice = recipient.activeDeviceCount > 0;
+    return {
+      ...recipient,
+      displayName: recipient.displayName || '—',
+      email: recipient.email || '—',
+      preferenceLabel: !recipient.preferenceConfigured
+        ? 'Default'
+        : recipient.enabled ? 'Attive' : 'Disattivate',
+      deviceLabel: hasActiveDevice ? `Sì (${recipient.activeDeviceCount})` : 'No',
+      deliveryLabel: recipient.enabled && hasActiveDevice ? 'Sì' : 'No',
+      dailyEnabledLabel: !recipient.preferenceConfigured
+        ? 'Default'
+        : recipient.dailyEnabled ? 'Sì' : 'No',
+      platformsLabel: recipient.platforms.map((platform) => platform === 'android' ? 'Android' : 'iOS').join(', ') || '—',
+    };
+  });
 }
 
 @Component({
@@ -153,12 +162,18 @@ export class NotificationsComponent implements OnInit {
   error = '';
   recipientError = '';
 
+  get configuredPreferenceCount(): number {
+    return this.recipients.filter((recipient) => recipient.preferenceConfigured).length;
+  }
+
   get enabledRecipientCount(): number {
-    return this.recipients.filter((recipient) => recipient.enabled).length;
+    return this.recipients.filter((recipient) => recipient.enabled && recipient.activeDeviceCount > 0).length;
   }
 
   get dailyRecipientCount(): number {
-    return this.recipients.filter((recipient) => recipient.enabled && recipient.dailyEnabled).length;
+    return this.recipients.filter(
+      (recipient) => recipient.enabled && recipient.dailyEnabled && recipient.activeDeviceCount > 0,
+    ).length;
   }
 
   ngOnInit(): void {
