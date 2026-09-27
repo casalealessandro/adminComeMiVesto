@@ -122,11 +122,12 @@
         <p class="notifications__eyebrow">Stato delivery</p>
         <h2 id="notification-recipients-title">Utenti notifiche</h2>
         <p>
-          Utenti con almeno un device FCM attivo. Lo stato mostra le preferenze applicative effettive usate dal backend prima dell'invio.
+          Tutti gli utenti dell'app con stato preferenze push e disponibilità reale di un device FCM attivo.
         </p>
       </div>
       <div class="notification-recipients__summary" aria-label="Riepilogo destinatari">
-        <span class="badge text-bg-primary">{{ recipients.length }} registrati</span>
+        <span class="badge text-bg-primary">{{ recipients.length }} utenti</span>
+        <span class="badge text-bg-secondary">{{ configuredPreferenceCount }} preferenze esplicite</span>
         <span class="badge text-bg-success">{{ enabledRecipientCount }} notificabili</span>
         <span class="badge text-bg-info">{{ dailyRecipientCount }} giornaliere</span>
       </div>
@@ -143,9 +144,9 @@
     </p>
 
     <div *ngIf="!recipientsLoading && !recipientError && !recipientGridRows.length" class="notifications__empty">
-      <span class="mdi mdi-cellphone-off" aria-hidden="true"></span>
-      <strong>Nessun destinatario push registrato</strong>
-      <span>Quando un utente autorizza le notifiche e registra un token FCM comparirà qui.</span>
+      <span class="mdi mdi-account-off-outline" aria-hidden="true"></span>
+      <strong>Nessun utente disponibile</strong>
+      <span>Non risultano account utente da mostrare nello stato notifiche.</span>
     </div>
 
     <div class="notifications__desktop" *ngIf="!recipientsLoading && recipientGridRows.length">
@@ -172,11 +173,21 @@
             <strong>{{ recipient.displayName }}</strong>
             <span>{{ recipient.email }}</span>
           </div>
-          <span class="badge" [class.text-bg-success]="recipient.enabled" [class.text-bg-secondary]="!recipient.enabled">
-            {{ recipient.enabledLabel }}
+          <span class="badge"
+            [class.text-bg-success]="recipient.deliveryLabel === 'Sì'"
+            [class.text-bg-secondary]="recipient.deliveryLabel !== 'Sì'">
+            {{ recipient.deliveryLabel === 'Sì' ? 'Notificabile' : 'Non notificabile' }}
           </span>
         </div>
         <dl>
+          <div>
+            <dt>Preferenza push</dt>
+            <dd>{{ recipient.preferenceLabel }}</dd>
+          </div>
+          <div>
+            <dt>Device attivo</dt>
+            <dd>{{ recipient.deviceLabel }}</dd>
+          </div>
           <div>
             <dt>Giornaliere</dt>
             <dd>{{ recipient.dailyEnabledLabel }}</dd>
@@ -186,16 +197,8 @@
             <dd>{{ recipient.platformsLabel }}</dd>
           </div>
           <div>
-            <dt>Device attivi</dt>
-            <dd>{{ recipient.activeDeviceCount }}</dd>
-          </div>
-          <div>
-            <dt>Preferenze</dt>
-            <dd>{{ recipient.preferenceLabel }}</dd>
-          </div>
-          <div>
             <dt>Ultimo device</dt>
-            <dd>{{ recipient.lastSeenAt | date:'short' }}</dd>
+            <dd>{{ recipient.lastSeenAt ? (recipient.lastSeenAt | date:'short') : '—' }}</dd>
           </div>
         </dl>
       </article>
