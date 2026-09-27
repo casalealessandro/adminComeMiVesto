@@ -5,11 +5,11 @@ import { AnagraficaWrapperComponent } from "../../layout/anagrafica-wrapper/anag
 import {  NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { PopUpService } from '../../services/popup.service';
+import { PopUpService } from '../../popup/popup.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { alert } from '../../widgets/ui-dialogs';
-import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
-import { normalizeDynamicFormFields } from '../../interface/dynamic-form-field';
+import { alert } from '../../dialogs/ui-dialogs';
+import { FORM_DEFINITION_REPOSITORY } from '../contracts/form-definition-repository';
+import { normalizeDynamicFormFields } from '../models/dynamic-form-field';
 import { Subscription } from 'rxjs';
 
 export function buildFormPayload(id: string, nameForm: string, json: any[]) {

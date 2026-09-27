@@ -3,8 +3,8 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from "../../layout/anagrafica-wrapper/anagrafica-wrapper.component";
 import { CommonModule } from '@angular/common';
-import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
-import { confirm } from '../../widgets/ui-dialogs';
+import { FORM_DEFINITION_REPOSITORY } from '../contracts/form-definition-repository';
+import { confirm } from '../../dialogs/ui-dialogs';
 
 export function formEditorRoute(form: { id: string }): [string, string] { return ['/form-builder', form.id]; }
 

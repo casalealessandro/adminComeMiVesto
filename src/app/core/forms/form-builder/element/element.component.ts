@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 
-import { confirm } from '../../../widgets/ui-dialogs';
-import { DataGridComponent } from '../../../components/data-grid/data-grid.component';
-import { CheckBoxOptions, DynamicFormField, FileBoxOptions, RadioOptions, SelectOptions } from '../../../interface/dynamic-form-field';
+import { confirm } from '../../../dialogs/ui-dialogs';
+import { DataGridComponent } from '../../../data-grid/data-grid.component';
+import { CheckBoxOptions, DynamicFormField, FileBoxOptions, RadioOptions, SelectOptions } from '../../models/dynamic-form-field';
 
 @Component({
   selector: 'app-element',
