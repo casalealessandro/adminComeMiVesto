@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
@@ -104,6 +104,7 @@ export class AffiliateProductDetailComponent implements OnInit {
   loading = false;
   error = '';
   images: string[] = [];
+  previewImage: string | null = null;
 
   enabledForApp = true;
   curationData: AffiliateProductCurationFormData | null = null;
@@ -161,6 +162,19 @@ export class AffiliateProductDetailComponent implements OnInit {
           this.error = affiliateProductDetailErrorMessage(error?.status);
         },
       });
+  }
+
+  openImagePreview(image: string): void {
+    this.previewImage = image;
+  }
+
+  closeImagePreview(): void {
+    this.previewImage = null;
+  }
+
+  @HostListener('document:keydown.escape')
+  handleEscape(): void {
+    this.closeImagePreview();
   }
 
   programName(): string {
