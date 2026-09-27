@@ -15,7 +15,6 @@ import {
   CatalogTaxonomyRepairResult,
 } from '../../models/affiliate-catalog-api.models';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
-import { OutfitsService } from '../../../../services/outfit.service';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 export const AFFILIATE_PRODUCTS_PAGE_SIZE = 50;
@@ -189,7 +188,6 @@ export function createAffiliateProductsProvider(
 })
 export class AffiliateProductsComponent implements OnInit, OnDestroy {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
-  private readonly outfitsService = inject(OutfitsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private dataGrid?: DataGridComponent<AffiliateProductGridRow>;
@@ -274,14 +272,14 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
     forkJoin({
       programs: this.affiliateCatalogService.getPrograms(),
-      categories: this.outfitsService.getOutFitCategories(),
+      audit: this.affiliateCatalogService.getCatalogAudit(),
     })
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: ({ programs, categories }) => {
+        next: ({ programs, audit }) => {
           this.programNames = new Map(programs.map((program) => [program.id, program.name]));
-          const categoryNames = categories.map((item) => item.categoryName).filter(Boolean);
-          this.columns = buildAffiliateProductColumns(programs, categoryNames);
+          const categories = audit.catalog.categories.map((item) => item.category).filter(Boolean);
+          this.columns = buildAffiliateProductColumns(programs, categories);
           this.dataProvider = createAffiliateProductsProvider(
             this.affiliateCatalogService,
             this.programNames,
