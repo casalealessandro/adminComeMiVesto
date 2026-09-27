@@ -1,5 +1,5 @@
 import { Component, HostListener, inject, OnInit } from '@angular/core';
-import { PopUpService } from '../../../services/popup.service';
+import { PopUpService } from '../../popup.service';
 import { CommonModule } from '@angular/common';
 import { NicaPopupContentComponent } from '../modal-popup-content/modal-popup-content.component';
 import { OverlayService } from '../../../overlay/overlay.service';

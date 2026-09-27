@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ComponentRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, Type, ViewChild, ViewContainerRef, inject } from '@angular/core';
-import { PopUpService } from '../../../services/popup.service';
-import { CaptionComponent } from '../../caption/caption.component';
+import { PopUpService } from '../../popup.service';
+import { CaptionComponent } from '../../../ui/caption/caption.component';
 import { CommonModule } from '@angular/common';
 
 export interface infoPopUp{

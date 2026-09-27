@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DynamicFormField, FileBoxOptions } from '../../../../interface/dynamic-form-field';
+import { DynamicFormField, FileBoxOptions } from '../../../models/dynamic-form-field';
 
 
 
