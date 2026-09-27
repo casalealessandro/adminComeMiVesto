@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { GridDataProvider, GridLoadRequest, GridPage } from '../../components/data-grid/data-grid-provider';
+import { GridDataProvider, GridLoadRequest, GridPage } from '../../core/data-grid/data-grid-provider';
 import { UserProfile } from '../../interface/app.interface';
 
 @Injectable({ providedIn: 'root' })

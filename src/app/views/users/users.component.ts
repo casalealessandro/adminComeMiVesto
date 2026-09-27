@@ -4,12 +4,13 @@ import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, of, switchMap } from 'rxjs';
 
-import { DataGridComponent } from '../../components/data-grid/data-grid.component';
-import { Colonne, UserProfile } from '../../interface/app.interface';
+import { DataGridComponent } from '../../core/data-grid/data-grid.component';
+import { Colonne } from '../../core/data-grid/models/data-grid.models';
+import { UserProfile } from '../../interface/app.interface';
 import { AuthService } from '../../services/auth.service';
 import { AdminCreateUserRequest, UserRole, UserService } from '../../services/user.service';
-import { alert, confirm } from '../../widgets/ui-dialogs';
-import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
+import { alert, confirm } from '../../core/dialogs/ui-dialogs';
+import { DynamicFormComponent } from '../../core/forms/dynamic-form/dynamic-form.component';
 import { UsersGridProvider } from './users-grid.provider';
 
 export interface DynamicFormSubmitEvent {

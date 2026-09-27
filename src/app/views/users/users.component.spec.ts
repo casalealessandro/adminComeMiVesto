@@ -2,7 +2,7 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, Subject } from 'rxjs';
 
-import { DataGridComponent } from '../../components/data-grid/data-grid.component';
+import { DataGridComponent } from '../../core/data-grid/data-grid.component';
 import { AuthService } from '../../services/auth.service';
 import { FormService } from '../../services/form.service';
 import { UserService } from '../../services/user.service';
