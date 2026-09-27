@@ -5,8 +5,8 @@ import { finalize } from 'rxjs';
 import { FORM_DEFINITION_REPOSITORY } from '../../../core/forms/contracts/form-definition-repository';
 import { DynamicFormComponent } from '../../../core/forms/dynamic-form/dynamic-form.component';
 import { NotificationInput, NotificationMessage, NotificationType } from '../models/notification.models';
+import { FormService } from '../../../services/form.service';
 import { NotificationService } from '../services/notification.service';
-import { NOTIFICATION_FORM, NotificationFormDefinitionRepository } from './notification-form-definition.repository';
 
 export type NotificationFormMode = 'create' | 'edit';
 
@@ -25,16 +25,24 @@ export interface NotificationFormResult {
   notification?: NotificationMessage;
 }
 
+export const NOTIFICATION_FORM = 'notification-form';
+
 const normalizedString = (value: unknown): string => String(value ?? '').trim();
+
+export const validNotificationScheduleTime = (value: unknown): value is string =>
+  typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value.trim());
 
 export function buildNotificationInput(formData: Record<string, unknown>): NotificationInput {
   const deepLink = normalizedString(formData['deepLink']);
+  const type = formData['type'] as NotificationType;
+  const scheduleTime = normalizedString(formData['scheduleTime']);
   return {
     title: normalizedString(formData['title']),
     body: normalizedString(formData['body']),
     ...(deepLink ? { deepLink } : {}),
-    type: formData['type'] as NotificationType,
+    type,
     enabled: formData['enabled'] === true,
+    ...(type === 'DAILY' && scheduleTime ? { scheduleTime } : {}),
   };
 }
 
@@ -53,7 +61,7 @@ export function notificationErrorMessage(status: number): string {
   providers: [
     {
       provide: FORM_DEFINITION_REPOSITORY,
-      useClass: NotificationFormDefinitionRepository,
+      useExisting: FormService,
     },
   ],
   templateUrl: './notification-form-host.component.html',
@@ -82,6 +90,11 @@ export class NotificationFormHostComponent {
     if (event.name !== 'submitForm' || this.saving) return;
 
     const input = buildNotificationInput(event.formData);
+    if (input.type === 'DAILY' && !validNotificationScheduleTime(input.scheduleTime)) {
+      this.error = 'Indica un orario valido per la notifica giornaliera.';
+      return;
+    }
+
     if (this.itemData.mode === 'edit') {
       this.updateNotification(input);
       return;
