@@ -2,13 +2,14 @@ import { Component, ElementRef, EventEmitter, Input, Output, ViewChildren, Query
 
 
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ColData, Colonne, detailOptions, ToolbarButton } from '../../interface/app.interface';
+import { ColData, Colonne, detailOptions } from './models/data-grid.models';
+import { ToolbarButton } from '../ui/caption/toolbar-button';
 import { CommonModule } from '@angular/common';
-import { alert, confirm } from '../../widgets/ui-dialogs';
+import { alert, confirm } from '../dialogs/ui-dialogs';
 import { AnagraficaService } from '../../services/anagrafica.service';
 import { TdItemComponent } from './td-item/td-item.component';
-import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
-import { OverlayService } from '../../services/overlay.service';
+import { CustomScrollbarComponent } from '../ui/custom-scrollbar/custom-scrollbar.component';
+import { OverlayService } from '../overlay/overlay.service';
 import {
   buildGridCreateEvent,
   buildGridDeleteEvent,

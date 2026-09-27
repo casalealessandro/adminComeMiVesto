@@ -12,19 +12,13 @@ const allowedLegacyEscapes = new Map([
   [
     'src/app/core/data-grid/data-grid.component.ts',
     new Set([
-      '../../interface/app.interface',
-      '../../widgets/ui-dialogs',
       '../../services/anagrafica.service',
-      '../../services/overlay.service',
     ]),
   ],
   [
     'src/app/core/data-grid/td-item/td-item.component.ts',
     new Set([
-      '../../../interface/app.interface',
-      '../../../widgets/ui-dialogs',
       '../../../services/anagrafica.service',
-      '../../../services/overlay.service',
     ]),
   ],
 ]);

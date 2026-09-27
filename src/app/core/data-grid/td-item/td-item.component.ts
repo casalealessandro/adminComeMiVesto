@@ -3,10 +3,10 @@ import { CommonModule, getLocaleNumberFormat, registerLocaleData } from '@angula
 import { formatCurrency, formatDate, formatNumber, formatPercent, } from '@angular/common';
 import localeFit from '@angular/common/locales/it'
 import { AnagraficaService } from '../../../services/anagrafica.service';
-import { alert, showPopover } from '../../../widgets/ui-dialogs';
-import { OverlayComponent } from '../../overlay-component/overlay.component';
-import { OverlayService } from '../../../services/overlay.service';
-import { button } from '../../../interface/app.interface';
+import { alert, showPopover } from '../../dialogs/ui-dialogs';
+import { OverlayComponent } from '../../overlay/overlay.component';
+import { OverlayService } from '../../overlay/overlay.service';
+import { button } from '../models/data-grid.models';
 import {
   GridLookupCellConfig,
   GridLookupCellOptions,
