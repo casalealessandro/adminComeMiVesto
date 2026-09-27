@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChildren, QueryList, ViewChild, HostListener, inject, signal, input, effect, NgZone, OnDestroy } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChildren, QueryList, ViewChild, HostListener, inject, signal, input, effect, untracked, NgZone, OnDestroy } from '@angular/core';
 
 
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -258,8 +258,11 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
   ) {
     effect(() => {
-      if (this.dataSource()?.length > 0) {
-        this.renderGrid();
+      const source = this.dataSource();
+      if (source?.length > 0) {
+        untracked(() => {
+          void this.renderGrid();
+        });
       }
     }, { allowSignalWrites: true });
     //this.refresh = this.refresh.bind(this);
