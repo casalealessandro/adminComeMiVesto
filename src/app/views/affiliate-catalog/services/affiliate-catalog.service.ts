@@ -162,6 +162,12 @@ export class AffiliateCatalogService {
     );
   }
 
+  getProductCategories(): Observable<string[]> {
+    return this.http
+      .get<AffiliateApiResponse<string[]>>(`${this.baseUrl}/product-categories`)
+      .pipe(map((response) => response.data));
+  }
+
   getProduct(id: string): Observable<CatalogProduct> {
     return this.http
       .get<AffiliateApiResponse<CatalogProduct>>(`${this.baseUrl}/products/${id}`)

@@ -155,34 +155,11 @@ describe('Affiliate products', () => {
       service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', [
         'getProducts',
         'getPrograms',
-        'getCatalogAudit',
+        'getProductCategories',
         'repairProductTaxonomies',
       ]);
       service.getPrograms.and.returnValue(of([program]));
-      service.getCatalogAudit.and.returnValue(of({
-        generatedAt: 1,
-        catalog: {
-          summary: { total: 1, active: 1, inactive: 0, withoutCategory: 0 },
-          dataQuality: {
-            withImages: 1,
-            withoutImages: 0,
-            withGenderTargets: 1,
-            withoutGenderTargets: 0,
-            withNormalizedColor: 1,
-            withoutNormalizedColor: 0,
-          },
-          categories: [{
-            category: 'Clothing',
-            totalProducts: 1,
-            activeProducts: 1,
-            withImages: 1,
-            withGender: 1,
-            withColor: 1,
-            subcategories: [],
-          }],
-        },
-        comeMiVestoCategories: [],
-      }));
+      service.getProductCategories.and.returnValue(of(['Clothing']));
       service.getProducts.and.returnValue(of({
         data: [product],
         pagination: { nextCursor: null, hasMore: false },
@@ -206,7 +183,7 @@ describe('Affiliate products', () => {
       component.refresh();
 
       expect(service.getPrograms).toHaveBeenCalledTimes(1);
-      expect(service.getCatalogAudit).toHaveBeenCalledTimes(1);
+      expect(service.getProductCategories).toHaveBeenCalledTimes(1);
       expect(service.getProducts).not.toHaveBeenCalled();
       expect(component.dataProvider).toBeDefined();
       expect(component.columns[0].data.find((column) => column.dataField === 'category')?.lista?.options)

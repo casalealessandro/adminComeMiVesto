@@ -272,13 +272,12 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
     forkJoin({
       programs: this.affiliateCatalogService.getPrograms(),
-      audit: this.affiliateCatalogService.getCatalogAudit(),
+      categories: this.affiliateCatalogService.getProductCategories(),
     })
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: ({ programs, audit }) => {
+        next: ({ programs, categories }) => {
           this.programNames = new Map(programs.map((program) => [program.id, program.name]));
-          const categories = audit.catalog.categories.map((item) => item.category).filter(Boolean);
           this.columns = buildAffiliateProductColumns(programs, categories);
           this.dataProvider = createAffiliateProductsProvider(
             this.affiliateCatalogService,
