@@ -8,6 +8,7 @@ export interface NotificationMessage {
   deepLink?: string;
   type: NotificationType;
   enabled: boolean;
+  scheduleTime?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -18,6 +19,7 @@ export interface NotificationInput {
   deepLink?: string;
   type: NotificationType;
   enabled: boolean;
+  scheduleTime?: string;
 }
 
 export interface NotificationRecipient {

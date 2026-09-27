@@ -35,6 +35,7 @@ const baseColumn = (
 
 export interface NotificationGridRow extends NotificationMessage {
   typeLabel: string;
+  scheduleTimeLabel: string;
   enabledLabel: string;
   deepLinkLabel: string;
 }
@@ -53,6 +54,7 @@ export function buildNotificationColumns(): Colonne[] {
     baseColumn('title', 'Titolo', 220),
     baseColumn('body', 'Messaggio', 320),
     baseColumn('typeLabel', 'Tipo', 105),
+    baseColumn('scheduleTimeLabel', 'Orario', 95),
     baseColumn('enabledLabel', 'Abilitata', 90),
     baseColumn('deepLinkLabel', 'Deep link', 220),
     baseColumn('updatedAt', 'Aggiornata', 140, 'campoDateTime'),
@@ -95,6 +97,9 @@ export function buildNotificationGridRows(notifications: NotificationMessage[]):
   return notifications.map((notification) => ({
     ...notification,
     typeLabel: notification.type === 'DAILY' ? 'Giornaliera' : 'Manuale',
+    scheduleTimeLabel: notification.type === 'DAILY'
+      ? notification.scheduleTime || 'Non pianificata'
+      : '—',
     enabledLabel: notification.enabled ? 'Sì' : 'No',
     deepLinkLabel: notification.deepLink || '—',
   }));
@@ -239,6 +244,7 @@ export class NotificationsComponent implements OnInit {
           notification.body,
           notification.deepLink || '',
           notification.type,
+          notification.scheduleTime || '',
         ].some((value) => value.toLowerCase().includes(term)));
 
     this.gridRows = buildNotificationGridRows(this.filteredNotifications);
@@ -271,6 +277,9 @@ export class NotificationsComponent implements OnInit {
       ...(notification.deepLink ? { deepLink: notification.deepLink } : {}),
       type: notification.type,
       enabled: !notification.enabled,
+      ...(notification.type === 'DAILY' && notification.scheduleTime
+        ? { scheduleTime: notification.scheduleTime }
+        : {}),
     };
 
     this.notificationService
