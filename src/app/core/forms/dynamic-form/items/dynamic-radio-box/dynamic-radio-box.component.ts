@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, EventEmitter, inject, Input, input, Output } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DynamicFormField, RadioOptions } from '../../../../interface/dynamic-form-field';
-import { FORM_OPTIONS_PROVIDER } from '../../../../services/form-options-provider';
+import { DynamicFormField, RadioOptions } from '../../../models/dynamic-form-field';
+import { FORM_OPTIONS_PROVIDER } from '../../../contracts/form-options-provider';
 
 @Component({
   selector: 'app-dynamic-radio-box',

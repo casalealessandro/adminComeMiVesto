@@ -1,8 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, input, effect, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { DynamicFormField } from '../../../../interface/dynamic-form-field';
+import { DynamicFormField } from '../../../models/dynamic-form-field';
 import { CommonModule } from '@angular/common';
-import { FORM_OPTIONS_PROVIDER } from '../../../../services/form-options-provider';
+import { FORM_OPTIONS_PROVIDER } from '../../../contracts/form-options-provider';
 
 
 

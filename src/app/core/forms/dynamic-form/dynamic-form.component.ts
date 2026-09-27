@@ -2,14 +2,14 @@ import { Component, EventEmitter, inject, Input, Output, signal, SimpleChanges }
 
 
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DynamicFormField } from '../../interface/dynamic-form-field';
-import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
-import { alert } from '../../widgets/ui-dialogs';
+import { DynamicFormField } from '../models/dynamic-form-field';
+import { FORM_DEFINITION_REPOSITORY } from '../contracts/form-definition-repository';
+import { alert } from '../../dialogs/ui-dialogs';
 import { CommonModule } from '@angular/common';
 import { DynamicSelectBoxComponent } from './items/dynamic-select-box/dynamic-select-box.component';
 import { DynamicFileBoxComponent } from './items/dynamic-file-box/dynamic-file-box.component';
 import { DynamicRadioBoxComponent } from './items/dynamic-radio-box/dynamic-radio-box.component';
-import { CustomScrollbarComponent } from "../custom-scrollbar/custom-scrollbar.component";
+import { CustomScrollbarComponent } from "../../ui/custom-scrollbar/custom-scrollbar.component";
 
 @Component({
   selector: 'app-dynamic-form',
