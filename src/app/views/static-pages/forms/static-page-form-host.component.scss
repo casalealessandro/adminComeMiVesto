@@ -1,0 +1,24 @@
+.static-page-form {
+  min-width: 0;
+}
+
+.static-page-form__content {
+  min-height: 20rem;
+  resize: vertical;
+}
+
+.static-page-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (max-width: 575.98px) {
+  .static-page-form__actions {
+    flex-direction: column-reverse;
+  }
+
+  .static-page-form__actions .btn {
+    min-height: 44px;
+  }
+}
