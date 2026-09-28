@@ -69,7 +69,7 @@
         <h2>{{ page.title }}</h2>
         <span>{{ page.slug }}</span>
       </div>
-      <p>Aggiornata: {{ page.updatedAt | date:'short' }}</p>
+      <p>Versione: {{ page.version }}.0 · Aggiornata: {{ page.updatedAt | date:'short' }}</p>
       <div class="static-page-card__actions">
         <button type="button" class="btn btn-outline-primary" (click)="openEdit(page)">
           <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
