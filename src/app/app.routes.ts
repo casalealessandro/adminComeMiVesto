@@ -12,6 +12,7 @@ import { ColorsComponent } from './views/colors/colors.component';
 import { StylesComponent } from './views/styles/styles.component';
 import { ReportsComponent } from './views/reports/reports.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
+import { StaticPagesComponent } from './views/static-pages/static-pages.component';
 import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
 import { AffiliateCatalogAuditComponent } from './views/affiliate-catalog/components/audit/affiliate-catalog-audit.component';
 import { AffiliateProgramsComponent } from './views/affiliate-catalog/components/programs/affiliate-programs.component';
@@ -34,6 +35,7 @@ export const routes:Routes = [
     { path: 'styles', component: StylesComponent, canActivate:[authGuard]},
     { path: 'reports', component: ReportsComponent, canActivate:[authGuard]},
     { path: 'notifications', component: NotificationsComponent, canActivate:[authGuard]},
+    { path: 'static-pages', component: StaticPagesComponent, canActivate:[authGuard]},
     {
       path: 'affiliate-catalog',
       component: AffiliateCatalogComponent,
