@@ -33,6 +33,7 @@ export function buildStaticPageColumns(): Colonne[] {
   const columns: ColData[] = [
     baseColumn('title', 'Titolo', 260),
     baseColumn('slug', 'Slug', 190),
+    baseColumn('version', 'Versione', 100),
     baseColumn('updatedAt', 'Aggiornata', 160, 'campoDateTime'),
     {
       ...baseColumn('', 'Modifica', 72, 'campoButton'),
