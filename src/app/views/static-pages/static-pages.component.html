@@ -1,52 +1,40 @@
-<section class="static-pages" aria-labelledby="static-pages-title" [attr.aria-busy]="loading">
-  <header class="static-pages__header">
-    <div>
-      <p class="static-pages__eyebrow">Contenuti</p>
-      <h1 id="static-pages-title">Pagine statiche</h1>
-      <p class="static-pages__description">
-        Gestisci i contenuti statici utilizzati dall'app ComeMiVesto, come Privacy Policy e Termini e Condizioni.
-      </p>
-    </div>
-    <div class="static-pages__actions">
-      <button type="button" class="btn btn-outline-secondary" [disabled]="loading" (click)="refresh()">
-        <span class="mdi mdi-refresh" aria-hidden="true"></span>
-        Aggiorna
-      </button>
-      <button type="button" class="btn btn-primary" (click)="openCreate()">
-        <span class="mdi mdi-plus" aria-hidden="true"></span>
-        Nuova pagina
-      </button>
-    </div>
-  </header>
-
-  <div *ngIf="error" class="alert alert-danger static-pages__error" role="alert">
+<app-anagrafica-wrapper
+  [caption]="'Pagine statiche'"
+  [subTitle]="subtitle"
+  [addButtonShow]="true"
+  [showSpinner]="loading"
+  (emittEventButton)="eventToolbarStaticPages($event)">
+  <div *ngIf="error" class="alert alert-danger error" role="alert">
     <span>{{ error }}</span>
     <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
   </div>
 
-  <label class="static-pages__search">
-    <span>Cerca</span>
-    <input
-      type="search"
-      class="form-control"
-      [(ngModel)]="search"
-      (ngModelChange)="applySearch()"
-      placeholder="Titolo o slug">
-  </label>
+  <form class="filters" (ngSubmit)="applySearch()">
+    <label class="search">
+      Cerca
+      <input
+        type="search"
+        name="search"
+        class="form-control"
+        [(ngModel)]="search"
+        (ngModelChange)="applySearch()"
+        placeholder="Titolo o slug">
+    </label>
+    <div class="filter-actions">
+      <button type="button" class="btn btn-outline-secondary" [disabled]="loading" (click)="refresh()">
+        <span class="mdi mdi-refresh" aria-hidden="true"></span>
+        Aggiorna
+      </button>
+    </div>
+  </form>
 
-  <p *ngIf="loading" class="static-pages__loading" aria-live="polite">
-    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-    Caricamento pagine…
+  <p *ngIf="!loading && !error && !filteredPages.length" class="empty">
+    Nessuna pagina trovata. {{ search ? 'Modifica i criteri di ricerca.' : 'Crea la prima pagina statica.' }}
   </p>
 
-  <div *ngIf="!loading && !error && !filteredPages.length" class="static-pages__empty">
-    <span class="mdi mdi-file-document-outline" aria-hidden="true"></span>
-    <strong>Nessuna pagina trovata</strong>
-    <span>{{ search ? 'Modifica i criteri di ricerca.' : 'Crea la prima pagina statica.' }}</span>
-  </div>
-
-  <div class="static-pages__desktop" *ngIf="!loading && filteredPages.length">
+  <div class="desktop-grid">
     <app-data-grid
+      *ngIf="!loading && filteredPages.length"
       [idTable]="'static-pages-grid'"
       [colonne]="columns"
       [dataSource]="filteredPages"
@@ -63,14 +51,14 @@
     </app-data-grid>
   </div>
 
-  <div class="static-pages__mobile" *ngIf="!loading && filteredPages.length">
+  <div class="mobile-cards">
     <article class="static-page-card" *ngFor="let page of filteredPages">
       <div>
         <h2>{{ page.title }}</h2>
         <span>{{ page.slug }}</span>
       </div>
       <p>Versione: {{ page.version }}.0 · Aggiornata: {{ page.updatedAt | date:'short' }}</p>
-      <div class="static-page-card__actions">
+      <div class="actions">
         <button type="button" class="btn btn-outline-primary" (click)="openEdit(page)">
           <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
           Modifica
@@ -82,4 +70,4 @@
       </div>
     </article>
   </div>
-</section>
+</app-anagrafica-wrapper>
