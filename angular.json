@@ -31,7 +31,8 @@
             ],
             "styles": [
               "node_modules/@mdi/font/css/materialdesignicons.min.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/quill/dist/quill.snow.css"
             ],
             "scripts": []
           },
@@ -95,7 +96,8 @@
             ],
             "styles": [
               "node_modules/@mdi/font/css/materialdesignicons.min.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/quill/dist/quill.snow.css"
             ],
             "scripts": []
           }
