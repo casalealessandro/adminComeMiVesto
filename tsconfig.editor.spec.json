@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "outDir": "./out-tsc/editor-spec", "types": ["jasmine", "@angular/localize"] },
+  "include": [
+    "src/app/core/forms/dynamic-form/items/dynamic-editor/**/*.spec.ts",
+    "src/app/components/dynamic-form/dynamic-form.component.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

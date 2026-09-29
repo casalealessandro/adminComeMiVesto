@@ -75,6 +75,9 @@
             <app-dynamic-file-box *ngIf="field.type === 'fileBox'" [config]="field" [value]="formValues[field.name]"
               [formGroup]="form" (valueChange)="onValueChange(field.name, $event)">
             </app-dynamic-file-box>
+            <app-dynamic-editor *ngIf="field.type === 'editor'" [config]="field" [value]="formValues[field.name]"
+              [formGroup]="form" (valueChange)="onValueChange(field.name, $event)">
+            </app-dynamic-editor>
 
 
           </div>

@@ -110,7 +110,7 @@ describe('DynamicFormComponent characterization', () => {
       radioOptions: { displayExp: 'value', valueExp: 'id', options: [], remote: false, parent: 'choice' } },
       { name: 'choice', type: 'radio', typeInput: 'radio', label: 'Choice', radioOptions: { displayExp: 'value', valueExp: 'id', options: [], remote: false, parent: null } }];
     component.editData = {}; component.initializeForm(); component.onValueChangeSelectBox('choice', { selectedValue: 'A' });
-    expect(component.form.get('choice')?.value).toBe('A'); expect(component.parentValues().choice).toBe('A');
+    expect(component.form.get('choice')?.value).toBe('A'); expect(component.parentValues()['choice']).toBe('A');
   });
 
   it('keeps formValues synchronized when Angular already updated the control', () => {
@@ -118,9 +118,9 @@ describe('DynamicFormComponent characterization', () => {
       selectOptions: { displayExp: 'value', valueExp: 'id', options: [], multiple: false, remote: false, parent: null } }];
     component.editData = { choice: 'old' }; component.initializeForm();
     component.form.get('choice')?.setValue('new'); component.onValueChange('choice', 'new');
-    expect(component.formValues.choice).toBe('new');
+    expect(component.formValues['choice']).toBe('new');
     component.onValueChange('choice', null);
-    expect(component.form.get('choice')?.value).toBeNull(); expect(component.formValues.choice).toBeNull();
+    expect(component.form.get('choice')?.value).toBeNull(); expect(component.formValues['choice']).toBeNull();
   });
 
   it('renders the native dynamic radio component for radio metadata', () => {
@@ -128,6 +128,37 @@ describe('DynamicFormComponent characterization', () => {
       radioOptions: { displayExp: 'value', valueExp: 'id', options: [{ id: 'A', value: 'Alpha' }], remote: false, parent: null } }];
     component.editData = {}; component.initializeForm(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-dynamic-radio-box')).not.toBeNull();
+  });
+
+  it('creates an editor control with validation and restores its HTML edit value', () => {
+    component.fields = [{ name: 'content', type: 'editor', typeInput: 'text', label: 'Content', required: true, minLength: 5, maxLength: 20 }];
+    component.editData = { content: '<p>Edit</p>' };
+    component.initializeForm();
+    expect(component.form.get('content')?.value).toBe('<p>Edit</p>');
+    component.form.get('content')?.setValue('');
+    expect(component.form.get('content')?.hasError('required')).toBeTrue();
+    component.form.get('content')?.setValue('1234');
+    expect(component.form.get('content')?.hasError('minlength')).toBeTrue();
+    component.form.get('content')?.setValue('123456789012345678901');
+    expect(component.form.get('content')?.hasError('maxlength')).toBeTrue();
+  });
+
+  it('submits the HTML produced by an editor through the normal form contract', () => {
+    component.fields = [{ name: 'content', type: 'editor', typeInput: 'text', label: 'Content', required: true }];
+    component.editData = {};
+    component.initializeForm();
+    fixture.detectChanges();
+    const editor = fixture.nativeElement.querySelector('.ql-editor') as HTMLElement;
+    editor.innerHTML = '<h1>Title</h1><p>Body</p>';
+    editor.dispatchEvent(new Event('input'));
+    expect(component.form.get('content')?.value).toBe('<h1>Title</h1><p>Body</p>');
+    const emit = spyOn(component.submitFormEvent, 'emit');
+    component.submitForm();
+    expect(emit).toHaveBeenCalledWith(jasmine.objectContaining({
+      name: 'submitForm',
+      formData: { content: '<h1>Title</h1><p>Body</p>' },
+      form: component.form
+    }));
   });
 
   it('keeps the form content inside the shared scroll primitive with the historical height contract', () => {

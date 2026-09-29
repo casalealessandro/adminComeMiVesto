@@ -1,0 +1,20 @@
+:host {
+  display: block;
+}
+
+.dynamic-editor {
+  background: var(--cmv-color-surface, #fff);
+  color: var(--cmv-color-text, #212529);
+}
+
+:host ::ng-deep .ql-editor {
+  min-height: var(--editor-min-height);
+}
+
+:host ::ng-deep .ql-undo::after {
+  content: '↶';
+}
+
+:host ::ng-deep .ql-redo::after {
+  content: '↷';
+}
