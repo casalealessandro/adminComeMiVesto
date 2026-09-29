@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, inject, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { FORM_DEFINITION_REPOSITORY } from '../../../core/forms/contracts/form-definition-repository';
+import { DynamicFormComponent } from '../../../core/forms/dynamic-form/dynamic-form.component';
+import { FormService } from '../../../services/form.service';
 import { StaticPage, StaticPageInput } from '../models/static-page.models';
 import { StaticPageService } from '../services/static-page.service';
 
@@ -18,6 +20,23 @@ export interface StaticPageFormResult {
   page?: StaticPage;
 }
 
+export interface StaticPageFormEvent {
+  name: 'submitForm' | 'cancelForm';
+  formData: Record<string, unknown>;
+}
+
+export const STATIC_PAGE_FORM = 'staticPageForm';
+
+const normalizedString = (value: unknown): string => String(value ?? '').trim();
+
+export function buildStaticPageInput(formData: Record<string, unknown>): StaticPageInput {
+  return {
+    slug: normalizedString(formData['slug']),
+    title: normalizedString(formData['title']),
+    content: normalizedString(formData['content']),
+  };
+}
+
 export function staticPageErrorMessage(status: number): string {
   if (status === 400) return 'Controlla i dati inseriti nella pagina.';
   if (status === 401 || status === 403) return 'Non sei autorizzato a modificare le pagine statiche.';
@@ -30,7 +49,13 @@ export function staticPageErrorMessage(status: number): string {
 @Component({
   selector: 'app-static-page-form-host',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, DynamicFormComponent],
+  providers: [
+    {
+      provide: FORM_DEFINITION_REPOSITORY,
+      useExisting: FormService,
+    },
+  ],
   templateUrl: './static-page-form-host.component.html',
   styleUrl: './static-page-form-host.component.scss',
 })
@@ -40,39 +65,24 @@ export class StaticPageFormHostComponent {
   itemData: StaticPageFormContext = { mode: 'create' };
   @Output() result = new EventEmitter<StaticPageFormResult>();
 
-  slug = '';
-  title = '';
-  content = '';
   saving = false;
   error = '';
-  private initializedForId = '';
+  readonly formId = STATIC_PAGE_FORM;
 
-  get isEdit(): boolean {
-    return this.itemData.mode === 'edit';
-  }
-
-  ngDoCheck(): void {
+  get editData(): Pick<StaticPage, 'slug' | 'title' | 'content'> | undefined {
     const page = this.itemData.page;
-    const key = this.isEdit ? page?.id || '' : 'create';
-    if (!key || key === this.initializedForId) return;
-    this.initializedForId = key;
-    this.slug = page?.slug || '';
-    this.title = page?.title || '';
-    this.content = page?.content || '';
+    if (this.itemData.mode !== 'edit' || !page) return undefined;
+    return { slug: page.slug, title: page.title, content: page.content };
   }
 
-  cancel(): void {
-    if (!this.saving) this.result.emit({ name: 'cancelled' });
-  }
+  handleForm(event: StaticPageFormEvent): void {
+    if (event.name === 'cancelForm') {
+      if (!this.saving) this.result.emit({ name: 'cancelled' });
+      return;
+    }
+    if (event.name !== 'submitForm' || this.saving) return;
 
-  save(): void {
-    if (this.saving) return;
-
-    const input: StaticPageInput = {
-      slug: this.slug.trim(),
-      title: this.title.trim(),
-      content: this.content.trim(),
-    };
+    const input = buildStaticPageInput(event.formData);
 
     if (!input.slug || !input.title || !input.content) {
       this.error = 'Slug, titolo e contenuto sono obbligatori.';
@@ -81,7 +91,7 @@ export class StaticPageFormHostComponent {
 
     this.saving = true;
     this.error = '';
-    const request = this.isEdit && this.itemData.page?.id
+    const request = this.itemData.mode === 'edit' && this.itemData.page?.id
       ? this.staticPageService.updatePage(this.itemData.page.id, input)
       : this.staticPageService.createPage(input);
 
