@@ -1,48 +1,13 @@
 <section class="static-page-form" aria-live="polite">
   <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
 
-  <form (ngSubmit)="save()">
-    <div class="mb-3">
-      <label for="static-page-slug" class="form-label">Slug</label>
-      <input
-        id="static-page-slug"
-        name="slug"
-        type="text"
-        class="form-control"
-        [(ngModel)]="slug"
-        placeholder="privacy"
-        required>
-      <div class="form-text">Identificativo usato dall'app, ad esempio privacy o terms.</div>
-    </div>
-
-    <div class="mb-3">
-      <label for="static-page-title" class="form-label">Titolo</label>
-      <input
-        id="static-page-title"
-        name="title"
-        type="text"
-        class="form-control"
-        [(ngModel)]="title"
-        required>
-    </div>
-
-    <div class="mb-3">
-      <label for="static-page-content" class="form-label">Contenuto</label>
-      <textarea
-        id="static-page-content"
-        name="content"
-        class="form-control static-page-form__content"
-        [(ngModel)]="content"
-        rows="16"
-        required></textarea>
-    </div>
-
-    <div class="static-page-form__actions">
-      <button type="button" class="btn btn-outline-secondary" [disabled]="saving" (click)="cancel()">Annulla</button>
-      <button type="submit" class="btn btn-primary" [disabled]="saving">
-        <span *ngIf="saving" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        {{ saving ? 'Salvataggio…' : 'Salva' }}
-      </button>
-    </div>
-  </form>
+  <app-dynamic-form
+    [service]="formId"
+    [editData]="editData"
+    [showBottomButtons]="true"
+    [inputBtnLeftName]="'Annulla'"
+    [inputBtnRightName]="'Salva'"
+    [loading]="saving"
+    (submitFormEvent)="handleForm($event)">
+  </app-dynamic-form>
 </section>
