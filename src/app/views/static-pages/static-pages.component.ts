@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { DataGridComponent } from '../../core/data-grid/data-grid.component';
+import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { ColData, Colonne } from '../../core/data-grid/models/data-grid.models';
 import { alert, confirm } from '../../core/dialogs/ui-dialogs';
 import { PopUpService } from '../../core/popup/popup.service';
+import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import {
   StaticPageFormContext,
   StaticPageFormResult,
@@ -63,7 +64,7 @@ export function buildStaticPageColumns(): Colonne[] {
 @Component({
   selector: 'app-static-pages',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent],
+  imports: [CommonModule, FormsModule, DataGridComponent, AnagraficaWrapperComponent],
   templateUrl: './static-pages.component.html',
   styleUrl: './static-pages.component.scss',
 })
@@ -78,6 +79,7 @@ export class StaticPagesComponent implements OnInit {
   loading = false;
   deletingId = '';
   error = '';
+  readonly subtitle = `Gestisci i contenuti statici utilizzati dall'app ComeMiVesto, come Privacy Policy e Termini e Condizioni.`;
 
   ngOnInit(): void {
     this.refresh();
@@ -114,6 +116,11 @@ export class StaticPagesComponent implements OnInit {
 
   openCreate(): void {
     this.openForm({ mode: 'create' });
+  }
+
+  eventToolbarStaticPages(event: { name?: string; id?: string }): void {
+    const name = event?.name || event?.id;
+    if (name === 'addButton') this.openCreate();
   }
 
   openEdit(page: StaticPage): void {
