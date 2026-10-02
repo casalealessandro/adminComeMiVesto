@@ -19,6 +19,7 @@ export class DynamicEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   @Input() disabled = false;
   @Output() valueChange = new EventEmitter<string>();
   @ViewChild('editorHost', { static: true }) editorHost!: ElementRef<HTMLElement>;
+  @ViewChild('editorToolbar', { static: true }) editorToolbar!: ElementRef<HTMLElement>;
 
   editorOptions: EditorOptions = {};
   private editor?: Quill;
@@ -41,14 +42,7 @@ export class DynamicEditorComponent implements OnInit, AfterViewInit, OnDestroy 
       formats: ['header', 'bold', 'italic', 'underline', 'list', 'link', 'blockquote'],
       modules: {
         toolbar: {
-          container: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'blockquote'],
-            ['undo', 'redo'],
-            ['html']
-          ],
+          container: this.editorToolbar.nativeElement,
           handlers: {
             undo: () => this.editor?.history.undo(),
             redo: () => this.editor?.history.redo(),
