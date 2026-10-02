@@ -22,7 +22,7 @@ export interface DynamicFormField {
 
 export interface EditorOptions {
   placeholder?: string;
-  theme?: 'snow' | 'bubble';
+  theme?: 'snow';
   minHeight?: number;
 }
 

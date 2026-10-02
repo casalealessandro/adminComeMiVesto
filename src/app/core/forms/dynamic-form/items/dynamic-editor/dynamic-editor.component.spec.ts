@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import Quill from 'quill';
 import { DynamicEditorComponent } from './dynamic-editor.component';
 
 describe('DynamicEditorComponent', () => {
@@ -26,16 +27,32 @@ describe('DynamicEditorComponent', () => {
 
   it('propagates editor HTML through valueChange', () => {
     const emit = spyOn(component.valueChange, 'emit');
-    const editor = fixture.nativeElement.querySelector('.ql-editor') as HTMLElement;
-    editor.innerHTML = '<h2>Heading</h2><p><strong>Body</strong></p>';
-    editor.dispatchEvent(new Event('input'));
-    expect(emit).toHaveBeenCalledWith('<h2>Heading</h2><p><strong>Body</strong></p>');
+    const editor = (component as any).editor as Quill;
+    editor.clipboard.dangerouslyPasteHTML('<h2>Heading</h2><p><strong>Body</strong></p>', 'user');
+    expect(emit).toHaveBeenCalledWith(editor.root.innerHTML);
     expect(control.dirty).toBeTrue();
     expect(control.touched).toBeTrue();
   });
 
-  it('loads a new edit value received by the existing control', () => {
-    control.setValue('<blockquote>Updated</blockquote>');
+  it('loads patch and reset values without treating them as user changes', () => {
+    const emit = spyOn(component.valueChange, 'emit');
+
+    control.patchValue('<blockquote>Updated</blockquote>');
     expect(fixture.nativeElement.querySelector('.ql-editor').innerHTML).toBe('<blockquote>Updated</blockquote>');
+    expect(control.pristine).toBeTrue();
+    expect(control.untouched).toBeTrue();
+    expect(emit).not.toHaveBeenCalled();
+
+    control.reset();
+    expect(control.value).toBeNull();
+    expect(fixture.nativeElement.querySelector('.ql-editor').innerHTML).toBe('<p><br></p>');
+    expect(control.pristine).toBeTrue();
+    expect(control.untouched).toBeTrue();
+    expect(emit).not.toHaveBeenCalled();
+  });
+
+  it('initializes editor options before the view check', () => {
+    expect(component.editorOptions).toEqual({ placeholder: 'Write content', minHeight: 300 });
+    expect(() => fixture.detectChanges()).not.toThrow();
   });
 });

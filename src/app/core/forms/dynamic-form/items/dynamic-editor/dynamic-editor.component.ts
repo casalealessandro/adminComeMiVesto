@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import Quill from 'quill';
 import { Subscription } from 'rxjs';
@@ -12,7 +12,7 @@ import { DynamicFormField, EditorOptions } from '../../../../interface/dynamic-f
   templateUrl: './dynamic-editor.component.html',
   styleUrls: ['./dynamic-editor.component.scss']
 })
-export class DynamicEditorComponent implements AfterViewInit, OnDestroy {
+export class DynamicEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() config!: DynamicFormField;
   @Input() formGroup!: FormGroup;
   @Input() value: string | null | undefined;
@@ -25,8 +25,11 @@ export class DynamicEditorComponent implements AfterViewInit, OnDestroy {
   private formControl?: FormControl;
   private subscriptions = new Subscription();
 
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
     this.editorOptions = this.config.editorOptions || {};
+  }
+
+  ngAfterViewInit(): void {
     this.formControl = this.formGroup.get(this.config.name) as FormControl;
     this.editor = new Quill(this.editorHost.nativeElement, {
       theme: this.editorOptions.theme || 'snow',
@@ -51,7 +54,8 @@ export class DynamicEditorComponent implements AfterViewInit, OnDestroy {
 
     this.setEditorValue(this.formControl?.value ?? this.value ?? '');
     this.updateDisabledState();
-    this.editor.on('text-change', () => {
+    this.editor.on('text-change', (_delta, _oldDelta, source) => {
+      if (source !== 'user') return;
       const html = this.editorHtml();
       this.formControl?.markAsDirty();
       this.formControl?.markAsTouched();
@@ -59,7 +63,7 @@ export class DynamicEditorComponent implements AfterViewInit, OnDestroy {
     });
     if (this.formControl) {
       this.subscriptions.add(this.formControl.valueChanges.subscribe(value => {
-        if (String(value ?? '') !== this.editorHtml()) this.setEditorValue(value ?? '');
+        if (!this.editorValueMatches(value)) this.setEditorValue(value);
       }));
       this.subscriptions.add(this.formControl.statusChanges.subscribe(() => this.updateDisabledState()));
     }
@@ -74,8 +78,12 @@ export class DynamicEditorComponent implements AfterViewInit, OnDestroy {
     return html === '<p><br></p>' ? '' : html;
   }
 
-  private setEditorValue(value: string): void {
-    this.editor?.clipboard.dangerouslyPasteHTML(String(value));
+  private editorValueMatches(value: unknown): boolean {
+    return (value == null ? '' : String(value)) === this.editorHtml();
+  }
+
+  private setEditorValue(value: unknown): void {
+    this.editor?.clipboard.dangerouslyPasteHTML(value == null ? '' : String(value), 'api');
   }
 
   private updateDisabledState(): void {
