@@ -38,6 +38,8 @@ export interface AffiliateFeed {
   readMode: AffiliateFeedReadMode;
   locale: string;
   market: string;
+  /** Optional Tradedoubler URL parameters appended before the token query. */
+  urlParams?: string;
   /** Optional only for compatibility with API responses/documents created before feed rules. */
   rules?: string;
   /** Optional only for compatibility with API responses/documents created before feed rules. */
