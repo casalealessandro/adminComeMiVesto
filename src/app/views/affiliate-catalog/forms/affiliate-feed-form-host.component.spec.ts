@@ -16,6 +16,7 @@ describe('Affiliate feed form mapping', () => {
     readMode: 'PAGINATED',
     locale: ' it-IT ',
     market: ' it ',
+    urlParams: ' sourceproducturl=true ',
     rules: ' {"version":1} ',
     rulesMapper: ' {"version":1} ',
   };
@@ -30,6 +31,7 @@ describe('Affiliate feed form mapping', () => {
       readMode: 'PAGINATED',
       locale: 'it-IT',
       market: 'IT',
+      urlParams: 'sourceproducturl=true',
       rules: '{"version":1}',
       rulesMapper: '{"version":1}',
     });
@@ -47,6 +49,7 @@ describe('Affiliate feed form mapping', () => {
     expect(update['adapterType']).toBe('TRADEDOUBLER');
     expect(update['locale']).toBe('it-IT');
     expect(update['market']).toBe('IT');
+    expect(update['urlParams']).toBe('sourceproducturl=true');
     expect(update['rules']).toBe('{"version":1}');
     expect(update['rulesMapper']).toBe('{"version":1}');
   });
