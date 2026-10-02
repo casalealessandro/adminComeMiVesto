@@ -18,7 +18,16 @@ describe('Affiliate feeds grid configuration', () => {
       .filter((column) => column.type === 'campoButton')
       .map((column) => column.button?.name);
 
-    expect(actions).toEqual(['sync', 'mapping', 'edit']);
+    expect(actions).toEqual(['sync', 'mapping', 'deactivate-products', 'edit']);
+  });
+
+  it('exposes an explicit non-destructive feed product deactivation action', () => {
+    const columns = buildAffiliateFeedColumns(true)[0].data;
+    const action = columns
+      .filter((column) => column.type === 'campoButton')
+      .find((column) => column.button?.name === 'deactivate-products');
+
+    expect(action?.button?.hint).toContain('Disattiva prodotti');
   });
 
   it('does not expose a delete action', () => {
