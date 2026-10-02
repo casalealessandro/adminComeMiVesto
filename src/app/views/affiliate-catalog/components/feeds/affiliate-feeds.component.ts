@@ -16,6 +16,7 @@ import {
   AffiliateProgram,
   AffiliateSyncRun,
 } from '../../models/affiliate-catalog.models';
+import { AffiliateFeedDeactivationReport } from '../../models/affiliate-catalog-api.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 const baseColumn = (
@@ -104,6 +105,16 @@ export function buildAffiliateFeedColumns(canManage: boolean): Colonne[] {
         },
       },
       {
+        ...baseColumn('', 'Disattiva', 82, 'campoButton'),
+        button: {
+          text: '',
+          name: 'deactivate-products',
+          event: 'deactivate-products',
+          icon: 'mdi mdi-package-variant-remove',
+          hint: 'Disattiva prodotti del feed',
+        },
+      },
+      {
         ...baseColumn('', 'Modifica', 72, 'campoButton'),
         button: {
           text: '',
@@ -141,7 +152,9 @@ export class AffiliateFeedsComponent implements OnInit {
   error = '';
   syncError = '';
   syncNotice: AffiliateFeedSyncNotice | null = null;
+  deactivationNotice: { feedName: string; report: AffiliateFeedDeactivationReport } | null = null;
   readonly syncingFeedIds = new Set<string>();
+  readonly deactivatingFeedIds = new Set<string>();
 
   private programsById = new Map<string, AffiliateProgram>();
 
@@ -208,6 +221,10 @@ export class AffiliateFeedsComponent implements OnInit {
     return this.syncingFeedIds.has(feedId);
   }
 
+  isDeactivating(feedId: string): boolean {
+    return this.deactivatingFeedIds.has(feedId);
+  }
+
   openCreate(): void {
     if (!this.auth.isAdmin()) return;
     if (!this.programs.length) {
@@ -237,7 +254,7 @@ export class AffiliateFeedsComponent implements OnInit {
   }
 
   requestSync(feed: AffiliateFeed): void {
-    if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id)) return;
+    if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id) || this.isDeactivating(feed.id)) return;
 
     const eligibilityError = affiliateFeedSyncEligibility(
       feed,
@@ -267,7 +284,82 @@ export class AffiliateFeedsComponent implements OnInit {
       this.openMapping(event.rowData);
       return;
     }
+    if (event.name === 'deactivate-products') {
+      this.requestDeactivateProducts(event.rowData);
+      return;
+    }
     if (event.name === 'edit') this.openEdit(event.rowData);
+  }
+
+  requestDeactivateProducts(feed: AffiliateFeed): void {
+    if (!this.auth.isAdmin() || !feed?.id || this.isDeactivating(feed.id) || this.isSyncing(feed.id)) return;
+
+    confirm(
+      'Prima verrà eseguita una verifica senza modifiche. Vuoi analizzare prodotti, offerte e outfit collegati a questo feed?',
+      'Verifica disattivazione feed',
+      (confirmed) => {
+        if (confirmed) this.runDeactivationDryRun(feed);
+      },
+    );
+  }
+
+  private runDeactivationDryRun(feed: AffiliateFeed): void {
+    this.deactivationNotice = null;
+    this.syncError = '';
+    this.deactivatingFeedIds.add(feed.id);
+
+    this.affiliateCatalogService
+      .deactivateFeedProducts(feed.id, true)
+      .pipe(finalize(() => this.deactivatingFeedIds.delete(feed.id)))
+      .subscribe({
+        next: (report) => {
+          const outfitPreview = report.outfits
+            .slice(0, 10)
+            .map((outfit) => `• ${outfit.title || 'Outfit senza titolo'} (${outfit.outfitId})`)
+            .join('\n');
+          const details = [
+            `Offerte trovate: ${report.offersFound}`,
+            `Offerte attive da disattivare: ${report.activeOffersFound}`,
+            `Prodotti coinvolti: ${report.productsAffected}`,
+            `Prodotti che resteranno attivi tramite altre offerte: ${report.productsRemainingActive}`,
+            `Outfit coinvolti: ${report.outfitsAffected}`,
+            outfitPreview ? `\nOutfit rilevati:\n${outfitPreview}` : '',
+            report.outfitsAffected > 10 || report.outfitsTruncated
+              ? '\nElenco parziale: il report completo resta disponibile nella risposta API.'
+              : '',
+          ].filter(Boolean).join('\n');
+
+          confirm(
+            `${details}\n\nConfermi la disattivazione? Gli outfit NON verranno modificati.`,
+            'Conferma disattivazione prodotti',
+            (confirmed) => {
+              if (confirmed) this.applyFeedDeactivation(feed);
+            },
+          );
+        },
+        error: () => {
+          this.syncError = 'Impossibile verificare l’impatto della disattivazione del feed.';
+        },
+      });
+  }
+
+  private applyFeedDeactivation(feed: AffiliateFeed): void {
+    this.deactivationNotice = null;
+    this.syncError = '';
+    this.deactivatingFeedIds.add(feed.id);
+
+    this.affiliateCatalogService
+      .deactivateFeedProducts(feed.id, false)
+      .pipe(finalize(() => this.deactivatingFeedIds.delete(feed.id)))
+      .subscribe({
+        next: (report) => {
+          this.deactivationNotice = { feedName: feed.name, report };
+          this.refresh();
+        },
+        error: () => {
+          this.syncError = 'Disattivazione dei prodotti del feed non riuscita.';
+        },
+      });
   }
 
   private startSync(feed: AffiliateFeed): void {
