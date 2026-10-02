@@ -51,6 +51,26 @@ describe('DynamicEditorComponent', () => {
     expect(emit).not.toHaveBeenCalled();
   });
 
+  it('toggles HTML source without marking an unchanged control dirty', () => {
+    component.toggleSourceMode();
+    expect(component.sourceMode).toBeTrue();
+    component.toggleSourceMode();
+    expect(control.pristine).toBeTrue();
+    expect(control.untouched).toBeTrue();
+  });
+
+  it('emits edited HTML from source mode and respects reset', () => {
+    const emit = spyOn(component.valueChange, 'emit');
+    component.toggleSourceMode();
+    component.onSourceInput('<p>New text</p>');
+    expect(emit).toHaveBeenCalledWith('<p>New text</p>');
+    control.patchValue('<p>New text</p>');
+    control.reset();
+    expect(component.sourceHtml).toBe('');
+    component.toggleSourceMode();
+    expect(control.value).toBeNull();
+  });
+
   it('initializes editor options before the view check', () => {
     expect(component.editorOptions).toEqual({ placeholder: 'Write content', minHeight: 300 });
     expect(() => fixture.detectChanges()).not.toThrow();

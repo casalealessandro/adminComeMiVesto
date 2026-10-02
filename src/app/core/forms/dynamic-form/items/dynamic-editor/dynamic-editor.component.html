@@ -1,3 +1,14 @@
 <div class="dynamic-editor" [style.--editor-min-height.px]="editorOptions.minHeight || 220">
-  <div #editorHost></div>
+  <div #editorToolbar class="editor-toolbar">
+    <span class="ql-formats"><select class="ql-header" aria-label="Intestazione"><option value="1">Titolo 1</option><option value="2">Titolo 2</option><option value="3">Titolo 3</option><option selected>Normal</option></select></span>
+    <span class="ql-formats"><button type="button" class="ql-bold" aria-label="Grassetto"></button><button type="button" class="ql-italic" aria-label="Corsivo"></button><button type="button" class="ql-underline" aria-label="Sottolineato"></button></span>
+    <span class="ql-formats"><button type="button" class="ql-list" value="ordered" aria-label="Elenco numerato"></button><button type="button" class="ql-list" value="bullet" aria-label="Elenco puntato"></button></span>
+    <span class="ql-formats"><button type="button" class="ql-link" aria-label="Link"></button><button type="button" class="ql-blockquote" aria-label="Citazione"></button></span>
+    <span class="ql-formats"><button type="button" class="ql-undo" aria-label="Annulla"></button><button type="button" class="ql-redo" aria-label="Ripristina"></button></span>
+    <span class="ql-formats"><button type="button" class="ql-html" aria-label="Modifica codice HTML" title="Modifica codice HTML" [class.ql-active]="sourceMode">&lt;/&gt;</button></span>
+  </div>
+  <div #editorHost [hidden]="sourceMode"></div>
+  <textarea *ngIf="sourceMode" class="html-source" aria-label="Codice HTML" [style.min-height.px]="editorOptions.minHeight || 220"
+    [value]="sourceHtml" [disabled]="disabled || formControlDisabled"
+    (input)="onSourceInput($any($event.target).value)"></textarea>
 </div>
