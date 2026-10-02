@@ -61,6 +61,7 @@ export function buildAffiliateFeedCreateInput(formData: Record<string, unknown>)
     readMode: formData['readMode'] as AffiliateFeedReadMode,
     locale: normalizedString(formData['locale']),
     market: normalizedString(formData['market']).toUpperCase(),
+    urlParams: normalizedString(formData['urlParams']),
     rules: normalizedString(formData['rules']),
     rulesMapper: normalizedString(formData['rulesMapper']),
   };
@@ -75,6 +76,7 @@ export function buildAffiliateFeedUpdateInput(formData: Record<string, unknown>)
     readMode: formData['readMode'] as AffiliateFeedReadMode,
     locale: normalizedString(formData['locale']),
     market: normalizedString(formData['market']).toUpperCase(),
+    urlParams: normalizedString(formData['urlParams']),
     rules: normalizedString(formData['rules']),
     rulesMapper: normalizedString(formData['rulesMapper']),
   };
@@ -88,6 +90,7 @@ function buildAffiliateFeedUpdateInputFromFeed(feed: AffiliateFeed): AffiliateFe
     readMode: feed.readMode,
     locale: feed.locale,
     market: feed.market,
+    urlParams: feed.urlParams ?? '',
     rules: feed.rules ?? '',
     rulesMapper: feed.rulesMapper ?? '',
   };
@@ -179,6 +182,7 @@ export class AffiliateFeedFormHostComponent implements OnInit {
     enabled: true,
     readMode: 'WHOLE_FEED',
     market: 'IT',
+    urlParams: '',
     rules: '',
     rulesMapper: '',
   };
