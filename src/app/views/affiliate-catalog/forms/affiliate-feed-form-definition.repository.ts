@@ -98,6 +98,15 @@ const editableFields: DynamicFormField[] = [
     placeholder: 'IT',
   },
   {
+    name: 'urlParams',
+    type: 'textBox',
+    typeInput: 'text',
+    label: 'Parametri URL feed',
+    required: false,
+    maxLength: 500,
+    placeholder: 'es. sourceproducturl=true',
+  },
+  {
     name: 'rules',
     type: 'textArea',
     typeInput: 'text',
