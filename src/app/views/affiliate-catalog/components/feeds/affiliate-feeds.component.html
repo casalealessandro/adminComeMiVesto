@@ -37,6 +37,18 @@
     </div>
   </div>
 
+  <div *ngIf="deactivationNotice as notice" class="alert alert-warning affiliate-feeds__sync-state" role="status">
+    <span class="mdi mdi-package-variant-remove" aria-hidden="true"></span>
+    <div>
+      <strong>Prodotti feed disattivati</strong>
+      <span>
+        {{ notice.feedName }} · Offerte disattivate {{ notice.report.offersDeactivated }}
+        · Prodotti disattivati {{ notice.report.productsDeactivated }}
+        · Outfit coinvolti {{ notice.report.outfitsAffected }}
+      </span>
+    </div>
+  </div>
+
   <label *ngIf="feeds.length" class="affiliate-feeds__search">
     <span>Cerca feed</span>
     <input
@@ -120,6 +132,16 @@
           [disabled]="isSyncing(feed.id)">
           <span class="mdi mdi-tune-variant" aria-hidden="true"></span>
           Mapping
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-danger"
+          (click)="requestDeactivateProducts(feed)"
+          [disabled]="isSyncing(feed.id) || isDeactivating(feed.id)">
+          <span *ngIf="isDeactivating(feed.id)" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          <span *ngIf="!isDeactivating(feed.id)" class="mdi mdi-package-variant-remove" aria-hidden="true"></span>
+          {{ isDeactivating(feed.id) ? 'Verifica…' : 'Disattiva prodotti' }}
         </button>
 
         <button
