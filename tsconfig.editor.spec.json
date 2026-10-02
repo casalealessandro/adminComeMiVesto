@@ -4,6 +4,7 @@
   "include": [
     "src/app/core/forms/dynamic-form/items/dynamic-editor/**/*.spec.ts",
     "src/app/components/dynamic-form/dynamic-form.component.spec.ts",
+    "src/app/core/forms/form-builder/**/*.spec.ts",
     "src/**/*.d.ts"
   ]
 }

@@ -134,6 +134,24 @@
 
 
         </div>
+
+        <div *ngIf="showEditorOption && formField.editorOptions" class="row mt-3 mb-3">
+            <div class="properties-section-title">Configurazione Rich Text Editor</div>
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium" for="editorPlaceholder">Placeholder editor</label>
+                <div class="col-sm-9">
+                    <input id="editorPlaceholder" name="editorPlaceholder" type="text" class="form-control"
+                        [(ngModel)]="formField.editorOptions.placeholder">
+                </div>
+            </div>
+            <div class="row mt-3 mb-3">
+                <label class="col-sm-3 col-form-label font-medium" for="editorMinHeight">Altezza minima (px)</label>
+                <div class="col-sm-9">
+                    <input id="editorMinHeight" name="editorMinHeight" type="number" min="1" class="form-control"
+                        [(ngModel)]="formField.editorOptions.minHeight">
+                </div>
+            </div>
+        </div>
         <!--CheckBox-->
         <div *ngIf="showCheckBoxOption && formField.checkBoxOptions" class="row mt-3 mb-3 ">
             <div class="properties-section-title">Configurazione CheckBox</div>

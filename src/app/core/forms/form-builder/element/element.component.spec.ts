@@ -25,6 +25,25 @@ describe('ElementComponent characterization', () => {
   it('configures hiddenBox state and hidden input type', () => {
     const component = create('hiddenBox'); expect(component.showHiddenBox).toBeTrue(); expect(component.formField.typeInput).toBe('hidden');
   });
+  it('applies editor defaults and preserves saved editor metadata', () => {
+    const created = create('editor');
+    expect(created.showEditorOption).toBeTrue();
+    expect(created.formField.typeInput).toBe('text');
+    expect(created.formField.editorOptions).toEqual({ theme: 'snow', minHeight: 220 });
+
+    const editorOptions = { theme: 'snow' as const, placeholder: 'Scrivi il contenuto', minHeight: 360 };
+    const loaded = create('editor', { editorOptions });
+    expect(loaded.editorOptions).toEqual(editorOptions);
+    expect(loaded.formField.editorOptions).toEqual(editorOptions);
+  });
+  it('renders the supported editor property controls', () => {
+    const fixture = TestBed.createComponent(ElementComponent);
+    fixture.componentInstance.formField = { name: 'content', type: 'editor', typeInput: 'text', label: 'Contenuto' };
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[name="editorPlaceholder"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[name="editorMinHeight"]')).not.toBeNull();
+  });
   it('applies checkbox defaults', () => {
     const component = create('checkBox'); expect(component.showCheckBoxOption).toBeTrue(); expect(component.formField.typeInput).toBe('boolean');
     expect(component.formField.checkBoxOptions).toEqual({ haveLink: false, hrefLink: '', hrefText: '' });
