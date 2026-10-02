@@ -4,6 +4,7 @@ import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { FORM_DEFINITION_REPOSITORY } from '../../../core/forms/contracts/form-definition-repository';
+import { FormService } from '../../../services/form.service';
 import { DynamicFormComponent } from '../../../core/forms/dynamic-form/dynamic-form.component';
 import { ComeMiVestoAuditCategory } from '../models/affiliate-catalog-audit.models';
 import {
@@ -15,11 +16,7 @@ import {
 } from '../models/affiliate-catalog-api.models';
 import { AffiliateFeed, AffiliateFeedReadMode } from '../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../services/affiliate-catalog.service';
-import {
-  AFFILIATE_FEED_CREATE_FORM,
-  AFFILIATE_FEED_EDIT_FORM,
-  AffiliateFeedFormDefinitionRepository,
-} from './affiliate-feed-form-definition.repository';
+export const AFFILIATE_FEED_FORM = 'affiliateFeed';
 
 export type AffiliateFeedFormMode = 'create' | 'edit';
 
@@ -152,7 +149,7 @@ export function affiliateFeedErrorMessage(status: number): string {
   providers: [
     {
       provide: FORM_DEFINITION_REPOSITORY,
-      useClass: AffiliateFeedFormDefinitionRepository,
+      useExisting: FormService,
     },
   ],
   templateUrl: './affiliate-feed-form-host.component.html',
@@ -192,11 +189,7 @@ export class AffiliateFeedFormHostComponent implements OnInit {
     }
   }
 
-  get formId(): string {
-    return this.itemData.mode === 'edit'
-      ? AFFILIATE_FEED_EDIT_FORM
-      : AFFILIATE_FEED_CREATE_FORM;
-  }
+  readonly formId = AFFILIATE_FEED_FORM;
 
   handleForm(event: AffiliateFeedFormEvent): void {
     if (event.name === 'cancelForm') {
