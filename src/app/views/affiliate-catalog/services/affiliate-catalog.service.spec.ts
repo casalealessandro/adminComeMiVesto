@@ -296,6 +296,59 @@ describe('AffiliateCatalogService release contract', () => {
     expect(response).toEqual(syncRun);
   });
 
+  it('runs a conservative feed deactivation dry-run and unwraps the impact report', () => {
+    const report = {
+      feedId: feed.id,
+      dryRun: true,
+      offersFound: 12,
+      activeOffersFound: 10,
+      offersDeactivated: 0,
+      productsAffected: 8,
+      productsDeactivated: 0,
+      productsRemainingActive: 2,
+      outfitsAffected: 3,
+      outfitsTruncated: false,
+      outfits: [{
+        outfitId: 'outfit-1',
+        title: 'Outfit 1',
+        affectedCatalogProductIds: ['product-1'],
+      }],
+    };
+    let response: unknown;
+
+    service.deactivateFeedProducts('feed/1', true).subscribe((value) => response = value);
+
+    const request = http.expectOne(`${baseUrl}/feeds/feed%2F1/deactivate-products`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ dryRun: true });
+    request.flush({ data: report });
+
+    expect(response).toEqual(report);
+  });
+
+  it('applies feed product deactivation only when explicitly requested', () => {
+    service.deactivateFeedProducts(feed.id, false).subscribe();
+
+    const request = http.expectOne(`${baseUrl}/feeds/${feed.id}/deactivate-products`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ dryRun: false });
+    request.flush({
+      data: {
+        feedId: feed.id,
+        dryRun: false,
+        offersFound: 1,
+        activeOffersFound: 1,
+        offersDeactivated: 1,
+        productsAffected: 1,
+        productsDeactivated: 1,
+        productsRemainingActive: 0,
+        outfitsAffected: 0,
+        outfitsTruncated: false,
+        outfits: [],
+      },
+    });
+  });
+
   it('loads a cursor-based product page using only limit and cursor', () => {
     let response: unknown;
     service.getProducts({ limit: 25, cursor: 'next-product' }).subscribe((value) => response = value);
