@@ -8,6 +8,7 @@ import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repos
 import { FORM_OPTIONS_PROVIDER } from '../../services/form-options-provider';
 import { DynamicFormField } from '../../interface/dynamic-form-field';
 import { CustomScrollbarComponent } from '../custom-scrollbar/custom-scrollbar.component';
+import { DynamicEditorComponent } from '../../core/forms/dynamic-form/items/dynamic-editor/dynamic-editor.component';
 
 describe('DynamicFormComponent characterization', () => {
   let component: DynamicFormComponent;
@@ -148,15 +149,16 @@ describe('DynamicFormComponent characterization', () => {
     component.editData = {};
     component.initializeForm();
     fixture.detectChanges();
-    const editor = fixture.nativeElement.querySelector('.ql-editor') as HTMLElement;
-    editor.innerHTML = '<h1>Title</h1><p>Body</p>';
-    editor.dispatchEvent(new Event('input'));
-    expect(component.form.get('content')?.value).toBe('<h1>Title</h1><p>Body</p>');
+    const editorComponent = fixture.debugElement.query(By.directive(DynamicEditorComponent))
+      .componentInstance as DynamicEditorComponent;
+    const editor = (editorComponent as any).editor;
+    editor.clipboard.dangerouslyPasteHTML('<h1>Title</h1><p>Body</p>', 'user');
+    expect(component.form.get('content')?.value).toBe(editor.root.innerHTML);
     const emit = spyOn(component.submitFormEvent, 'emit');
     component.submitForm();
     expect(emit).toHaveBeenCalledWith(jasmine.objectContaining({
       name: 'submitForm',
-      formData: { content: '<h1>Title</h1><p>Body</p>' },
+      formData: { content: editor.root.innerHTML },
       form: component.form
     }));
   });
