@@ -57,6 +57,26 @@ export interface CatalogTaxonomyRepairResult {
   previewTruncated: boolean;
 }
 
+export interface AffiliateFeedDeactivationOutfit {
+  outfitId: string;
+  title: string;
+  affectedCatalogProductIds: string[];
+}
+
+export interface AffiliateFeedDeactivationReport {
+  feedId: string;
+  dryRun: boolean;
+  offersFound: number;
+  activeOffersFound: number;
+  offersDeactivated: number;
+  productsAffected: number;
+  productsDeactivated: number;
+  productsRemainingActive: number;
+  outfitsAffected: number;
+  outfitsTruncated: boolean;
+  outfits: AffiliateFeedDeactivationOutfit[];
+}
+
 export interface AffiliateFeedSourceValues {
   recordsRead: number;
   recordsNormalized: number;
