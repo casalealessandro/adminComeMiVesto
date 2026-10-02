@@ -4,6 +4,7 @@ import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { finalize } from 'rxjs';
 import { DynamicFormComponent } from '../../../core/forms/dynamic-form/dynamic-form.component';
 import { FORM_DEFINITION_REPOSITORY } from '../../../core/forms/contracts/form-definition-repository';
+import { FormService } from '../../../services/form.service';
 import {
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
@@ -15,11 +16,7 @@ import {
   PriceSegment,
 } from '../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../services/affiliate-catalog.service';
-import {
-  AFFILIATE_PROGRAM_CREATE_FORM,
-  AFFILIATE_PROGRAM_EDIT_FORM,
-  AffiliateProgramFormDefinitionRepository,
-} from './affiliate-program-form-definition.repository';
+export const AFFILIATE_PROGRAM_FORM = 'affiliateProgram';
 
 export type AffiliateProgramFormMode = 'create' | 'edit';
 
@@ -82,7 +79,7 @@ export function affiliateProgramErrorMessage(status: number): string {
   providers: [
     {
       provide: FORM_DEFINITION_REPOSITORY,
-      useClass: AffiliateProgramFormDefinitionRepository,
+      useExisting: FormService,
     },
   ],
   templateUrl: './affiliate-program-form-host.component.html',
@@ -101,17 +98,13 @@ export class AffiliateProgramFormHostComponent {
     network: 'TRADEDOUBLER',
     networkStatus: 'ACTIVE',
     enabled: true,
-    defaultAdapterType: 'TRADEDOUBLER',
+    defaultAdapterType: 'GENERIC',
     market: 'IT',
     currency: 'EUR',
     priceSegment: 'MID_RANGE',
   };
 
-  get formId(): string {
-    return this.itemData.mode === 'edit'
-      ? AFFILIATE_PROGRAM_EDIT_FORM
-      : AFFILIATE_PROGRAM_CREATE_FORM;
-  }
+  readonly formId = AFFILIATE_PROGRAM_FORM;
 
   handleForm(event: AffiliateProgramFormEvent): void {
     if (event.name === 'cancelForm') {
