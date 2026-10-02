@@ -243,6 +243,7 @@ export type AffiliateFeedCreateInput = Pick<
   | 'enabled'
   | 'locale'
   | 'market'
+  | 'urlParams'
   | 'rules'
   | 'rulesMapper'
 > & Partial<Pick<
@@ -259,6 +260,7 @@ export type AffiliateFeedUpdateInput = Partial<Pick<
   | 'readMode'
   | 'locale'
   | 'market'
+  | 'urlParams'
   | 'rules'
   | 'rulesMapper'
 >>;
