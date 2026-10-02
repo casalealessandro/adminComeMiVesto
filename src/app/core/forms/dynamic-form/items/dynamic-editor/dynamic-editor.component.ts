@@ -22,8 +22,12 @@ export class DynamicEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
   editorOptions: EditorOptions = {};
   private editor?: Quill;
+  get formControlDisabled(): boolean { return !!this.formControl?.disabled; }
   private formControl?: FormControl;
   private subscriptions = new Subscription();
+  sourceMode = false;
+  sourceHtml = '';
+  private sourceOriginal = '';
 
   ngOnInit(): void {
     this.editorOptions = this.config.editorOptions || {};
@@ -42,11 +46,13 @@ export class DynamicEditorComponent implements OnInit, AfterViewInit, OnDestroy 
             ['bold', 'italic', 'underline'],
             [{ list: 'ordered' }, { list: 'bullet' }],
             ['link', 'blockquote'],
-            ['undo', 'redo']
+            ['undo', 'redo'],
+            ['html']
           ],
           handlers: {
             undo: () => this.editor?.history.undo(),
-            redo: () => this.editor?.history.redo()
+            redo: () => this.editor?.history.redo(),
+            html: () => this.toggleSourceMode()
           }
         }
       }
@@ -55,7 +61,7 @@ export class DynamicEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     this.setEditorValue(this.formControl?.value ?? this.value ?? '');
     this.updateDisabledState();
     this.editor.on('text-change', (_delta, _oldDelta, source) => {
-      if (source !== 'user') return;
+      if (source !== 'user' || this.sourceMode) return;
       const html = this.editorHtml();
       this.formControl?.markAsDirty();
       this.formControl?.markAsTouched();
@@ -63,9 +69,42 @@ export class DynamicEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     });
     if (this.formControl) {
       this.subscriptions.add(this.formControl.valueChanges.subscribe(value => {
+        if (this.sourceMode) {
+          this.sourceHtml = value == null ? '' : String(value);
+          this.sourceOriginal = this.sourceHtml;
+        }
         if (!this.editorValueMatches(value)) this.setEditorValue(value);
       }));
       this.subscriptions.add(this.formControl.statusChanges.subscribe(() => this.updateDisabledState()));
+    }
+  }
+
+  toggleSourceMode(): void {
+    if (!this.sourceMode) {
+      this.sourceOriginal = this.formControl?.value == null ? this.editorHtml() : String(this.formControl.value);
+      this.sourceHtml = this.sourceOriginal;
+      this.sourceMode = true;
+      return;
+    }
+    this.sourceMode = false;
+    if (!this.disabled && !this.formControl?.disabled) {
+      this.setEditorValue(this.sourceHtml);
+      const html = this.editorHtml();
+      if (html !== this.sourceHtml) {
+        this.formControl?.markAsDirty();
+        this.formControl?.markAsTouched();
+        this.valueChange.emit(html);
+      }
+    }
+  }
+
+  onSourceInput(value: string): void {
+    if (this.disabled || this.formControl?.disabled) return;
+    this.sourceHtml = value;
+    if (value !== this.sourceOriginal) {
+      this.formControl?.markAsDirty();
+      this.formControl?.markAsTouched();
+      this.valueChange.emit(value);
     }
   }
 
