@@ -3,6 +3,7 @@ import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AffiliateFeed, AffiliateProgram, AffiliateSyncRun } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+import { AuthService } from '../../../../services/auth.service';
 import {
   AFFILIATE_SYNC_RUNS_PAGE_SIZE,
   AffiliateSyncRunsComponent,
@@ -20,7 +21,7 @@ describe('Affiliate sync runs', () => {
     name: 'Program 1',
     networkStatus: 'ACTIVE',
     enabled: true,
-    defaultAdapterType: 'TRADEDOUBLER',
+    defaultAdapterType: 'GENERIC',
     market: 'IT',
     currency: 'EUR',
     priceSegment: 'MID_RANGE',
@@ -65,12 +66,15 @@ describe('Affiliate sync runs', () => {
     errors: ['sample'],
   };
 
-  it('keeps the sync runs grid read-only with detail as the only action', () => {
-    const columns = buildAffiliateSyncRunColumns()[0].data;
-    const actions = columns.filter((column) => column.type === 'campoButton');
+  it('keeps the sync runs grid read-only and exposes abort only to managers', () => {
+    const readonlyColumns = buildAffiliateSyncRunColumns(false)[0].data;
+    const readonlyActions = readonlyColumns.filter((column) => column.type === 'campoButton');
+    expect(readonlyActions.map((column) => column.button?.name)).toEqual(['detail']);
 
-    expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
-    expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
+    const adminColumns = buildAffiliateSyncRunColumns(true)[0].data;
+    const adminActions = adminColumns.filter((column) => column.type === 'campoButton');
+    expect(adminActions.map((column) => column.button?.name)).toEqual(['abort', 'detail']);
+    expect(adminColumns.every((column) => column.allowEditing === false)).toBeTrue();
   });
 
   it('maps backend statuses to readable labels and badges', () => {
@@ -109,6 +113,7 @@ describe('Affiliate sync runs', () => {
     let fixture: ComponentFixture<AffiliateSyncRunsComponent>;
     let component: AffiliateSyncRunsComponent;
     let service: jasmine.SpyObj<AffiliateCatalogService>;
+    let auth: jasmine.SpyObj<AuthService>;
     let router: Router;
 
     beforeEach(async () => {
@@ -116,7 +121,10 @@ describe('Affiliate sync runs', () => {
         'getSyncRuns',
         'getPrograms',
         'getFeeds',
+        'abortSyncRun',
       ]);
+      auth = jasmine.createSpyObj<AuthService>('AuthService', ['isAdmin']);
+      auth.isAdmin.and.returnValue(true);
       service.getPrograms.and.returnValue(of([program]));
       service.getFeeds.and.returnValue(of([feed]));
       service.getSyncRuns.and.returnValues(
@@ -135,6 +143,7 @@ describe('Affiliate sync runs', () => {
         providers: [
           provideRouter([]),
           { provide: AffiliateCatalogService, useValue: service },
+          { provide: AuthService, useValue: auth },
         ],
       }).compileComponents();
 

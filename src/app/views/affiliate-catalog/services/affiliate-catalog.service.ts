@@ -212,6 +212,15 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
+  abortSyncRun(id: string): Observable<AffiliateSyncRun> {
+    return this.http
+      .post<AffiliateApiResponse<AffiliateSyncRun>>(
+        `${this.baseUrl}/sync-runs/${encodeURIComponent(id)}/abort`,
+        {},
+      )
+      .pipe(map((response) => response.data));
+  }
+
   private buildProductParams(request?: AffiliateProductCursorRequest): HttpParams {
     let params = this.buildCursorParams(request);
     if (request?.q) {
