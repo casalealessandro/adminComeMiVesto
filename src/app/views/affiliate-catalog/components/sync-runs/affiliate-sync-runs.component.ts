@@ -3,6 +3,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { ColData, Colonne, DataGridComponent } from '../../../../core/public-api';
+import { confirm } from '../../../../core/dialogs/ui-dialogs';
+import { AuthService } from '../../../../services/auth.service';
 import {
   AffiliateFeed,
   AffiliateProgram,
@@ -62,7 +64,14 @@ export function affiliateSyncStatusBadgeClass(status: AffiliateSyncRunStatus): s
   }
 }
 
-export function buildAffiliateSyncRunColumns(): Colonne[] {
+export function affiliateSyncAbortErrorMessage(status?: number): string {
+  if (status === 401 || status === 403) return 'Non sei autorizzato a interrompere la sincronizzazione.';
+  if (status === 404) return 'La sincronizzazione non è più disponibile.';
+  if (status === 0) return 'Backend non raggiungibile. Riprova quando la connessione è disponibile.';
+  return 'Interruzione della sincronizzazione non riuscita.';
+}
+
+export function buildAffiliateSyncRunColumns(canManage = false): Colonne[] {
   const columns: ColData[] = [
     baseColumn('statusLabel', 'Stato', 120),
     baseColumn('feedName', 'Feed', 190),
@@ -75,17 +84,31 @@ export function buildAffiliateSyncRunColumns(): Colonne[] {
     baseColumn('offersUpdated', 'Offerte', 90, 'campoNumber'),
     baseColumn('productsMissing', 'Mancanti', 95, 'campoNumber'),
     baseColumn('errorsCount', 'Errori', 80, 'campoNumber'),
-    {
-      ...baseColumn('', 'Dettaglio', 76, 'campoButton'),
+  ];
+
+  if (canManage) {
+    columns.push({
+      ...baseColumn('', 'Interrompi', 84, 'campoButton'),
       button: {
         text: '',
-        name: 'detail',
-        event: 'detail',
-        icon: 'mdi mdi-eye-outline',
-        hint: 'Apri dettaglio sincronizzazione',
+        name: 'abort',
+        event: 'abort',
+        icon: 'mdi mdi-stop-circle-outline',
+        hint: 'Interrompi sincronizzazione',
       },
+    });
+  }
+
+  columns.push({
+    ...baseColumn('', 'Dettaglio', 76, 'campoButton'),
+    button: {
+      text: '',
+      name: 'detail',
+      event: 'detail',
+      icon: 'mdi mdi-eye-outline',
+      hint: 'Apri dettaglio sincronizzazione',
     },
-  ];
+  });
 
   return [{ itemType: 'group', groupDataField: '', data: columns }];
 }
@@ -116,14 +139,17 @@ export function buildAffiliateSyncRunGridRows(
 export class AffiliateSyncRunsComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
   private readonly router = inject(Router);
+  readonly auth = inject(AuthService);
 
   runs: AffiliateSyncRun[] = [];
   gridRows: AffiliateSyncRunGridRow[] = [];
-  readonly columns = buildAffiliateSyncRunColumns();
+  readonly columns = buildAffiliateSyncRunColumns(this.auth.isAdmin());
   loading = false;
   loadingMore = false;
   error = '';
   loadMoreError = '';
+  abortError = '';
+  readonly abortingRunIds = new Set<string>();
   hasMore = false;
   nextCursor: string | null = null;
 
@@ -214,8 +240,49 @@ export class AffiliateSyncRunsComponent implements OnInit {
     void this.router.navigate(['/affiliate-catalog/sync-runs', run.id]);
   }
 
+  canAbort(run: AffiliateSyncRun): boolean {
+    return this.auth.isAdmin()
+      && (run.status === 'QUEUED' || run.status === 'RUNNING')
+      && !this.abortingRunIds.has(run.id);
+  }
+
+  requestAbort(run: AffiliateSyncRun): void {
+    if (!this.canAbort(run)) return;
+
+    confirm(
+      'Interrompere questa sincronizzazione? Il worker si fermerà al prossimo checkpoint sicuro.',
+      'Interrompi sincronizzazione',
+      (confirmed) => {
+        if (confirmed) this.abortSync(run);
+      },
+    );
+  }
+
   gridAction(event: { name?: string; rowData?: AffiliateSyncRunGridRow }): void {
-    if (event?.name === 'detail' && event.rowData) this.openDetail(event.rowData);
+    if (!event?.rowData) return;
+    if (event.name === 'abort') {
+      this.requestAbort(event.rowData);
+      return;
+    }
+    if (event.name === 'detail') this.openDetail(event.rowData);
+  }
+
+  private abortSync(run: AffiliateSyncRun): void {
+    this.abortError = '';
+    this.abortingRunIds.add(run.id);
+
+    this.affiliateCatalogService
+      .abortSyncRun(run.id)
+      .pipe(finalize(() => this.abortingRunIds.delete(run.id)))
+      .subscribe({
+        next: (updated) => {
+          this.runs = this.runs.map((item) => item.id === updated.id ? updated : item);
+          this.gridRows = buildAffiliateSyncRunGridRows(this.runs, this.programNames, this.feedNames);
+        },
+        error: (error: { status?: number }) => {
+          this.abortError = affiliateSyncAbortErrorMessage(error?.status);
+        },
+      });
   }
 
   private applyPage(
