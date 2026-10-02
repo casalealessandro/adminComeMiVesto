@@ -19,5 +19,5 @@
   content: '↷';
 }
 
-:host ::ng-deep .ql-html::after { content: '</>'; font-size: 12px; font-weight: bold; }
+:host ::ng-deep .ql-toolbar button.ql-html { width: 42px; font: 700 12px/24px monospace; }
 .html-source { display: block; box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #ccc; background: var(--cmv-color-surface, #fff); color: var(--cmv-color-text, #212529); font: 13px/1.5 monospace; resize: vertical; }
