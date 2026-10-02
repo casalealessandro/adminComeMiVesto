@@ -4,7 +4,7 @@ import { FormsModule, NgForm, ReactiveFormsModule } from '@angular/forms';
 
 import { confirm } from '../../../widgets/ui-dialogs';
 import { DataGridComponent } from '../../../components/data-grid/data-grid.component';
-import { CheckBoxOptions, DynamicFormField, FileBoxOptions, RadioOptions, SelectOptions } from '../../../interface/dynamic-form-field';
+import { CheckBoxOptions, DynamicFormField, EditorOptions, FileBoxOptions, RadioOptions, SelectOptions } from '../../../interface/dynamic-form-field';
 
 @Component({
   selector: 'app-element',
@@ -25,10 +25,12 @@ export class ElementComponent {
   showCheckBoxOption: boolean = false
   showFileBoxOption: boolean = false
   showHiddenBox: boolean = false
+  showEditorOption: boolean = false
   selectOptions!: SelectOptions;
   radioOptions!: RadioOptions;
   checkBoxOptions!: CheckBoxOptions;
   fileBoxOptions!: FileBoxOptions;
+  editorOptions!: EditorOptions;
   newOption: any = {}
   newRadioOption: any = {}
   optionSelIndex: number = -1;
@@ -49,6 +51,16 @@ export class ElementComponent {
     const type = this.formField.type
 
     switch (type) {
+      case 'editor':
+        this.showEditorOption = true;
+        this.formField.typeInput = 'text';
+        this.editorOptions = {
+          theme: 'snow',
+          minHeight: 220,
+          ...this.formField.editorOptions
+        };
+        this.formField.editorOptions = this.editorOptions;
+        break;
       case 'hiddenBox':
         this.showHiddenBox = true;
         this.formField.typeInput = 'hidden';

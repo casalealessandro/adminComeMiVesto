@@ -31,6 +31,7 @@ export class FormBuilderComponent {
     { type: 'radio', label: 'Radio Button' },
     { type: 'checkBox', label: 'Checkbox' },
     { type: 'textArea', label: 'Textarea' },
+    { type: 'editor', label: 'Rich Text Editor' },
     { type: 'fileBox', label: 'FileBox' },
     { type: 'hiddenBox', label: 'Hidden box' }
   ];
@@ -41,6 +42,7 @@ export class FormBuilderComponent {
     radio:"mdi mdi-radiobox-marked",
     checkBox:"mdi mdi-checkbox-marked-outline",
     textArea:"mdi mdi-form-textarea",
+    editor:"mdi mdi-format-text",
     fileBox:"mdi mdi-file-document-outline",
     hiddenBox:"mdi mdi-file-hidden",
   }
