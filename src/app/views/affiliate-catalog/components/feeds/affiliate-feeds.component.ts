@@ -254,7 +254,7 @@ export class AffiliateFeedsComponent implements OnInit {
   }
 
   requestSync(feed: AffiliateFeed): void {
-    if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id)) return;
+    if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id) || this.isDeactivating(feed.id)) return;
 
     const eligibilityError = affiliateFeedSyncEligibility(
       feed,
@@ -292,7 +292,7 @@ export class AffiliateFeedsComponent implements OnInit {
   }
 
   requestDeactivateProducts(feed: AffiliateFeed): void {
-    if (!this.auth.isAdmin() || !feed?.id || this.isDeactivating(feed.id)) return;
+    if (!this.auth.isAdmin() || !feed?.id || this.isDeactivating(feed.id) || this.isSyncing(feed.id)) return;
 
     confirm(
       'Prima verrà eseguita una verifica senza modifiche. Vuoi analizzare prodotti, offerte e outfit collegati a questo feed?',
@@ -313,16 +313,24 @@ export class AffiliateFeedsComponent implements OnInit {
       .pipe(finalize(() => this.deactivatingFeedIds.delete(feed.id)))
       .subscribe({
         next: (report) => {
+          const outfitPreview = report.outfits
+            .slice(0, 10)
+            .map((outfit) => `• ${outfit.title || 'Outfit senza titolo'} (${outfit.outfitId})`)
+            .join('\n');
           const details = [
             `Offerte trovate: ${report.offersFound}`,
-            `Offerte attive: ${report.activeOffersFound}`,
+            `Offerte attive da disattivare: ${report.activeOffersFound}`,
             `Prodotti coinvolti: ${report.productsAffected}`,
-            `Prodotti che resterebbero attivi: ${report.productsRemainingActive}`,
+            `Prodotti che resteranno attivi tramite altre offerte: ${report.productsRemainingActive}`,
             `Outfit coinvolti: ${report.outfitsAffected}`,
-          ].join('\n');
+            outfitPreview ? `\nOutfit rilevati:\n${outfitPreview}` : '',
+            report.outfitsAffected > 10 || report.outfitsTruncated
+              ? '\nElenco parziale: il report completo resta disponibile nella risposta API.'
+              : '',
+          ].filter(Boolean).join('\n');
 
           confirm(
-            `${details}\n\nConfermi la disattivazione? Gli outfit non verranno modificati.`,
+            `${details}\n\nConfermi la disattivazione? Gli outfit NON verranno modificati.`,
             'Conferma disattivazione prodotti',
             (confirmed) => {
               if (confirmed) this.applyFeedDeactivation(feed);
