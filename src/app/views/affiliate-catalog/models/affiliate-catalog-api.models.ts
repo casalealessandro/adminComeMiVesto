@@ -21,6 +21,7 @@ export interface AffiliateProductCursorRequest extends AffiliateCursorRequest {
   q?: string;
   category?: string;
   affiliateProgramId?: string;
+  visibleInApp?: boolean;
 }
 
 export type AffiliateProductUpdateInput = Partial<Pick<
