@@ -15,6 +15,7 @@ import {
   AffiliateCursorRequest,
   AffiliateFeedCreateInput,
   AffiliateFeedCreateResponse,
+  AffiliateFeedDeactivationQueued,
   AffiliateFeedDeactivationReport,
   AffiliateFeedMappingResponse,
   AffiliateFeedUpdateInput,
@@ -156,11 +157,20 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
-  deactivateFeedProducts(id: string, dryRun = true): Observable<AffiliateFeedDeactivationReport> {
+  deactivateFeedProductsDryRun(id: string): Observable<AffiliateFeedDeactivationReport> {
     return this.http
       .post<AffiliateApiResponse<AffiliateFeedDeactivationReport>>(
         `${this.baseUrl}/feeds/${encodeURIComponent(id)}/deactivate-products`,
-        { dryRun },
+        { dryRun: true },
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  queueFeedProductDeactivation(id: string): Observable<AffiliateFeedDeactivationQueued> {
+    return this.http
+      .post<AffiliateApiResponse<AffiliateFeedDeactivationQueued>>(
+        `${this.baseUrl}/feeds/${encodeURIComponent(id)}/deactivate-products`,
+        { dryRun: false },
       )
       .pipe(map((response) => response.data));
   }
