@@ -68,16 +68,20 @@ describe('Affiliate products', () => {
     previewTruncated: false,
   };
 
-  it('keeps the products grid read-only and exposes only Programma and Categoria as filters', () => {
+  it('keeps the products grid read-only and exposes Programma, Categoria and Visibile app as filters', () => {
     const columns = buildAffiliateProductColumns([program], ['Clothing', 'Shoes'])[0].data;
     const actions = columns.filter((column) => column.type === 'campoButton');
     const filterable = columns.filter((column) => column.allowFiltering === true);
 
     expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
-    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category']);
+    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'visibleInAppFilter']);
     expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
+    expect(filterable[2].lista?.options).toEqual([
+      { value: 'true', label: 'Sì' },
+      { value: 'false', label: 'No' },
+    ]);
   });
 
   it('maps program labels and display-only product summaries without changing canonical data', () => {
@@ -89,6 +93,7 @@ describe('Affiliate products', () => {
     expect(rows[0].affiliateProgramId).toBe(program.id);
     expect(rows[0].programName).toBe(program.name);
     expect(rows[0].activeLabel).toBe('Sì');
+    expect(rows[0].visibleInAppFilter).toBe('true');
     expect(rows[0].categoryLabel).toBe('Clothing / Shirts');
     expect(rows[0].genderLabel).toBe('U, D');
     expect(rows[0].sourceFeedCount).toBe(2);
@@ -106,6 +111,7 @@ describe('Affiliate products', () => {
       filters: [
         { field: 'affiliateProgramId', operator: 'eq', value: program.id },
         { field: 'category', operator: 'eq', value: 'Clothing' },
+        { field: 'visibleInAppFilter', operator: 'eq', value: 'false' },
       ],
     };
 
@@ -114,6 +120,7 @@ describe('Affiliate products', () => {
       cursor: 'cursor-2',
       affiliateProgramId: program.id,
       category: 'Clothing',
+      visibleInApp: false,
     });
   });
 
@@ -224,7 +231,12 @@ describe('Affiliate products', () => {
     it('preserves active filters when navigating to the product detail', async () => {
       const navigate = spyOn(router, 'navigate').and.resolveTo(true);
       (component as any).dataGrid = {
-        providerFilterValue: (field: string) => field === 'affiliateProgramId' ? program.id : 'Clothing',
+        providerFilterValue: (field: string) => {
+          if (field === 'affiliateProgramId') return program.id;
+          if (field === 'category') return 'Clothing';
+          if (field === 'visibleInAppFilter') return 'false';
+          return undefined;
+        },
       };
 
       await component.openDetail(product);
@@ -233,6 +245,7 @@ describe('Affiliate products', () => {
         queryParams: {
           affiliateProgramId: program.id,
           category: 'Clothing',
+          visibleInApp: 'false',
         },
         queryParamsHandling: 'merge',
         replaceUrl: true,
