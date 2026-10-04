@@ -210,9 +210,12 @@
                               [attr.data-grid-filter-field]="colHeader.dataField"
                               [attr.data-grid-filter-type]="colHeader.type"
                               (change)="searchData($event)">
-                              <option value="">Tutti</option>
-                              <option value="true">Sì</option>
-                              <option value="false">No</option>
+                              <option value=""
+                                 [selected]="providerFilterOptionSelected(colHeader.dataField, '')">Tutti</option>
+                              <option value="true"
+                                 [selected]="providerFilterOptionSelected(colHeader.dataField, true)">Sì</option>
+                              <option value="false"
+                                 [selected]="providerFilterOptionSelected(colHeader.dataField, false)">No</option>
                            </select>
                         </div>
                      </div>
@@ -224,9 +227,11 @@
                               [attr.data-grid-filter-field]="colHeader.dataField"
                               [attr.data-grid-filter-type]="colHeader.type"
                               (change)="searchData($event)">
-                              <option value="">Tutti</option>
+                              <option value=""
+                                 [selected]="providerFilterOptionSelected(colHeader.dataField, '')">Tutti</option>
                               <option *ngFor="let option of colHeader.customizedOptions?.options"
-                                 [value]="option[colHeader.customizedOptions.valueExp]">
+                                 [value]="option[colHeader.customizedOptions.valueExp]"
+                                 [selected]="providerFilterOptionSelected(colHeader.dataField, option[colHeader.customizedOptions.valueExp])">
                                  {{ option[colHeader.customizedOptions.displayExp] }}
                               </option>
                            </select>
