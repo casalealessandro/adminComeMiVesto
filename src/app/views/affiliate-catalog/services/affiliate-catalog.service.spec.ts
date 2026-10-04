@@ -363,6 +363,16 @@ describe('AffiliateCatalogService release contract', () => {
     expect(response).toEqual(page);
   });
 
+  it('sends the app visibility product filter when provided', () => {
+    service.getProducts({ limit: 25, visibleInApp: false }).subscribe();
+
+    const request = http.expectOne((candidate) => candidate.url === `${baseUrl}/products`);
+    expect(request.request.method).toBe('GET');
+    expect(request.request.params.get('limit')).toBe('25');
+    expect(request.request.params.get('visibleInApp')).toBe('false');
+    request.flush({ data: [], pagination: { nextCursor: null, hasMore: false } });
+  });
+
   it('loads one product by id and unwraps data', () => {
     let response: CatalogProduct | undefined;
     service.getProduct(product.id).subscribe((value) => response = value);
