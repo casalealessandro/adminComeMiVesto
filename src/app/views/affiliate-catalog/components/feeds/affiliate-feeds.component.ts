@@ -152,7 +152,7 @@ export class AffiliateFeedsComponent implements OnInit {
   error = '';
   syncError = '';
   syncNotice: AffiliateFeedSyncNotice | null = null;
-  deactivationNotice: { feedName: string; report: AffiliateFeedDeactivationReport } | null = null;
+  deactivationNotice: { feedName: string } | null = null;
   readonly syncingFeedIds = new Set<string>();
   readonly deactivatingFeedIds = new Set<string>();
 
@@ -309,7 +309,7 @@ export class AffiliateFeedsComponent implements OnInit {
     this.deactivatingFeedIds.add(feed.id);
 
     this.affiliateCatalogService
-      .deactivateFeedProducts(feed.id, true)
+      .deactivateFeedProductsDryRun(feed.id)
       .pipe(finalize(() => this.deactivatingFeedIds.delete(feed.id)))
       .subscribe({
         next: (report) => {
@@ -321,6 +321,7 @@ export class AffiliateFeedsComponent implements OnInit {
             `Offerte trovate: ${report.offersFound}`,
             `Offerte attive da disattivare: ${report.activeOffersFound}`,
             `Prodotti coinvolti: ${report.productsAffected}`,
+            `Prodotti che verranno disattivati: ${report.productsToDeactivate}`,
             `Prodotti che resteranno attivi tramite altre offerte: ${report.productsRemainingActive}`,
             `Outfit coinvolti: ${report.outfitsAffected}`,
             outfitPreview ? `\nOutfit rilevati:\n${outfitPreview}` : '',
@@ -349,15 +350,18 @@ export class AffiliateFeedsComponent implements OnInit {
     this.deactivatingFeedIds.add(feed.id);
 
     this.affiliateCatalogService
-      .deactivateFeedProducts(feed.id, false)
+      .queueFeedProductDeactivation(feed.id)
       .pipe(finalize(() => this.deactivatingFeedIds.delete(feed.id)))
       .subscribe({
-        next: (report) => {
-          this.deactivationNotice = { feedName: feed.name, report };
-          this.refresh();
+        next: () => {
+          this.deactivationNotice = { feedName: feed.name };
+          alert(
+            'Disattivazione avviata in background. Puoi continuare a lavorare: il processo proseguirà lato backend.',
+            'Disattivazione avviata',
+          );
         },
         error: () => {
-          this.syncError = 'Disattivazione dei prodotti del feed non riuscita.';
+          this.syncError = 'Impossibile accodare la disattivazione dei prodotti del feed.';
         },
       });
   }
