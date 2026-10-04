@@ -140,9 +140,16 @@
       <div class="affiliate-product-card__body">
         <div class="affiliate-product-card__topline">
           <span class="affiliate-product-card__brand">{{ product.brand || 'Brand non disponibile' }}</span>
-          <span class="badge" [class.text-bg-success]="product.active" [class.text-bg-secondary]="!product.active">
-            {{ product.active ? 'Attivo' : 'Inattivo' }}
-          </span>
+          <div>
+            <span class="badge" [class.text-bg-success]="product.active" [class.text-bg-secondary]="!product.active">
+              {{ product.active ? 'Catalogo attivo' : 'Catalogo inattivo' }}
+            </span>
+            <span class="badge ms-1"
+              [class.text-bg-primary]="product.enabledForApp !== false"
+              [class.text-bg-secondary]="product.enabledForApp === false">
+              {{ product.enabledForApp !== false ? 'Visibile app' : 'Nascosto app' }}
+            </span>
+          </div>
         </div>
 
         <h3>{{ product.name }}</h3>
