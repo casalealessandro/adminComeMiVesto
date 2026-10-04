@@ -16,7 +16,6 @@ import {
   AffiliateProgram,
   AffiliateSyncRun,
 } from '../../models/affiliate-catalog.models';
-import { AffiliateFeedDeactivationReport } from '../../models/affiliate-catalog-api.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 const baseColumn = (
