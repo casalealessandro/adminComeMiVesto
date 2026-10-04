@@ -2600,8 +2600,10 @@ export class DataGridComponent<T = any> implements OnDestroy {
       this.currentPage = 0;
     }
 
-    this.colsHeader = [];
-    this.rowsData.update(res => res = [])
+    if (!this.dataProvider || !this.remoteOperation) {
+      this.colsHeader = [];
+      this.rowsData.update(res => res = [])
+    }
 
     this.rowSelected = [false]
     this.rowSelectedDetail = [false];
@@ -2681,6 +2683,10 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
   public providerFilterValue(field: string): unknown {
     return this.gridEngine.providerFilters.find(filter => filter.field === field)?.value ?? '';
+  }
+
+  public providerFilterOptionSelected(field: string, value: unknown): boolean {
+    return String(this.providerFilterValue(field)) === String(value ?? '');
   }
 
   async applyProviderSearch(value: string): Promise<boolean> {

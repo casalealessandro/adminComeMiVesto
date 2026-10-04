@@ -6,6 +6,7 @@ import { DataGridComponent } from '../../components/data-grid/data-grid.componen
 import { AuthService } from '../../services/auth.service';
 import { FormService } from '../../services/form.service';
 import { UserService } from '../../services/user.service';
+import { GridLoadRequest } from '../../components/data-grid/data-grid-provider';
 import { UsersGridProvider } from './users-grid.provider';
 import {
   UsersComponent,
@@ -59,6 +60,33 @@ describe('UsersComponent admin creation', () => {
     expect(grid.showFilter).toBeTrue();
     expect(grid.isSearchable).toBeTrue();
     expect(gridProvider.load).toHaveBeenCalledWith({ pageSize: 20 });
+  });
+
+  it('keeps the role filter in the request and filter row when the users grid refreshes', async () => {
+    const grid = fixture.debugElement.query(By.directive(DataGridComponent)).componentInstance as DataGridComponent;
+    const requests: GridLoadRequest[] = [];
+    gridProvider.load.and.callFake(async request => {
+      requests.push(request);
+      return { items: [], hasMore: false, totalCount: 0 };
+    });
+
+    await grid.applyProviderColumnFilter('role', 'admin');
+    fixture.detectChanges();
+    component.refresh();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const roleFilter = [{ field: 'role', operator: 'eq' as const, value: 'admin' }];
+    const roleSelect = fixture.nativeElement.querySelector(
+      '.desktop-grid select[data-grid-filter-field="role"]'
+    ) as HTMLSelectElement;
+
+    expect(requests).toEqual([
+      { pageSize: 20, filters: roleFilter },
+      { pageSize: 20, filters: roleFilter },
+    ]);
+    expect(grid.providerFilterValue('role')).toBe('admin');
+    expect(roleSelect.value).toBe('admin');
   });
 
   it('shows the action to admins and opens the DynamicForm dialog', () => {

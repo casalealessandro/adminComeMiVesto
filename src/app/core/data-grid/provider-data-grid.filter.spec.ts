@@ -309,6 +309,40 @@ describe('ProviderDataGridComponent column filters', () => {
     expect(component.providerFilterValue('categoryId')).toBe(20);
   });
 
+  it('should restore list and boolean selections when the filter row is rebuilt', async () => {
+    const requests: GridLoadRequest[] = [];
+    component.showFilter = true;
+    component.dataProvider = {
+      load: async request => {
+        requests.push(request);
+        return { items: [], hasMore: false };
+      },
+    };
+
+    await component.applyProviderColumnFilter('categoryId', '20');
+    await component.applyProviderColumnFilter('active', 'false');
+    await component.renderGrid();
+    fixture.detectChanges();
+
+    const category = fixture.nativeElement.querySelector(
+      'select[data-grid-filter-field="categoryId"]'
+    ) as HTMLSelectElement;
+    const active = fixture.nativeElement.querySelector(
+      'select[data-grid-filter-field="active"]'
+    ) as HTMLSelectElement;
+
+    expect(requests[2].filters).toEqual([
+      { field: 'categoryId', operator: 'eq', value: 20 },
+      { field: 'active', operator: 'eq', value: false },
+    ]);
+    expect(component.providerFilterValue('categoryId')).toBe(20);
+    expect(component.providerFilterValue('active')).toBeFalse();
+    expect(category.value).toBe('20');
+    expect(category.selectedOptions[0].textContent?.trim()).toBe('Uomo');
+    expect(active.value).toBe('false');
+    expect(active.selectedOptions[0].textContent?.trim()).toBe('No');
+  });
+
   it('should keep global search independent from showFilter', async () => {
     component.showFilter = false;
     const requests: GridLoadRequest[] = [];
