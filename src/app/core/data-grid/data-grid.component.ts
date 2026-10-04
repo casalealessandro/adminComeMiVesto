@@ -2685,6 +2685,10 @@ export class DataGridComponent<T = any> implements OnDestroy {
     return this.gridEngine.providerFilters.find(filter => filter.field === field)?.value ?? '';
   }
 
+  public providerFilterOptionSelected(field: string, value: unknown): boolean {
+    return String(this.providerFilterValue(field)) === String(value ?? '');
+  }
+
   async applyProviderSearch(value: string): Promise<boolean> {
     if (!this.dataProvider || !this.remoteOperation) return false;
 
