@@ -52,6 +52,7 @@ const listOptions = (
 export interface AffiliateProductGridRow extends CatalogProduct {
   programName: string;
   activeLabel: string;
+  visibleInAppFilter: 'true' | 'false';
   categoryLabel: string;
   genderLabel: string;
   sourceFeedCount: number;
@@ -74,6 +75,10 @@ export function buildAffiliateProductColumns(
   const categoryOptions = [...new Set(categories.filter(Boolean))]
     .sort((a, b) => a.localeCompare(b))
     .map((category) => ({ value: category, label: category }));
+  const visibilityOptions = [
+    { value: 'true', label: 'Sì' },
+    { value: 'false', label: 'No' },
+  ];
 
   const columns: ColData[] = [
     baseColumn('brand', 'Brand', 130),
@@ -92,7 +97,12 @@ export function buildAffiliateProductColumns(
     baseColumn('normalizedColor', 'Colore', 110),
     baseColumn('genderLabel', 'Target', 150),
     baseColumn('sourceFeedCount', 'Feed', 70, 'campoNumber'),
-    baseColumn('activeLabel', 'Attivo', 80),
+    baseColumn('activeLabel', 'Attivo catalogo', 110),
+    {
+      ...baseColumn('visibleInAppFilter', 'Visibile app', 105, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(visibilityOptions, 'value', 'label'),
+    },
     baseColumn('lastSeenAt', 'Ultima rilevazione', 145, 'campoDateTime'),
     {
       ...baseColumn('', 'Dettaglio', 76, 'campoButton'),
@@ -117,6 +127,7 @@ export function buildAffiliateProductGridRows(
     ...product,
     programName: programNames.get(product.affiliateProgramId) || product.affiliateProgramId,
     activeLabel: product.active ? 'Sì' : 'No',
+    visibleInAppFilter: product.enabledForApp !== false ? 'true' : 'false',
     categoryLabel: [product.category, product.subcategory].filter(Boolean).join(' / ') || '—',
     genderLabel: product.genderTargets?.filter(Boolean).join(', ') || '—',
     sourceFeedCount: product.sourceFeedIds?.length ?? 0,
@@ -137,6 +148,12 @@ export function buildAffiliateProductRemoteRequest(request: GridLoadRequest): Af
   const q = request.search?.value?.trim() || undefined;
   const category = exactFilter('category');
   const affiliateProgramId = exactFilter('affiliateProgramId');
+  const visibleInAppFilter = exactFilter('visibleInAppFilter');
+  const visibleInApp = visibleInAppFilter === 'true'
+    ? true
+    : visibleInAppFilter === 'false'
+      ? false
+      : undefined;
 
   return {
     limit: request.pageSize,
@@ -144,6 +161,7 @@ export function buildAffiliateProductRemoteRequest(request: GridLoadRequest): Af
     ...(q ? { q } : {}),
     ...(category ? { category } : {}),
     ...(affiliateProgramId ? { affiliateProgramId } : {}),
+    ...(visibleInApp !== undefined ? { visibleInApp } : {}),
   };
 }
 
@@ -244,10 +262,14 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const affiliateProgramId = this.route.snapshot.queryParamMap.get('affiliateProgramId')?.trim();
     const category = this.route.snapshot.queryParamMap.get('category')?.trim();
+    const visibleInApp = this.route.snapshot.queryParamMap.get('visibleInApp')?.trim();
 
     this.restoredFilters = {
       ...(affiliateProgramId ? { affiliateProgramId } : {}),
       ...(category ? { category } : {}),
+      ...(visibleInApp === 'true' || visibleInApp === 'false'
+        ? { visibleInAppFilter: visibleInApp }
+        : {}),
     };
 
     this.refresh();
@@ -367,6 +389,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     const queryParams = {
       affiliateProgramId: this.dataGrid?.providerFilterValue('affiliateProgramId') || null,
       category: this.dataGrid?.providerFilterValue('category') || null,
+      visibleInApp: this.dataGrid?.providerFilterValue('visibleInAppFilter') || null,
     };
 
     await this.router.navigate([], {
