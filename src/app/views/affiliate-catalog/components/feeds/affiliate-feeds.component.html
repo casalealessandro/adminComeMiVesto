@@ -38,14 +38,10 @@
   </div>
 
   <div *ngIf="deactivationNotice as notice" class="alert alert-warning affiliate-feeds__sync-state" role="status">
-    <span class="mdi mdi-package-variant-remove" aria-hidden="true"></span>
+    <span class="mdi mdi-progress-clock" aria-hidden="true"></span>
     <div>
-      <strong>Prodotti feed disattivati</strong>
-      <span>
-        {{ notice.feedName }} · Offerte disattivate {{ notice.report.offersDeactivated }}
-        · Prodotti disattivati {{ notice.report.productsDeactivated }}
-        · Outfit coinvolti {{ notice.report.outfitsAffected }}
-      </span>
+      <strong>Disattivazione avviata</strong>
+      <span>{{ notice.feedName }} · Operazione in background. Puoi continuare a lavorare.</span>
     </div>
   </div>
 
