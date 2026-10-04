@@ -242,6 +242,9 @@ export class AffiliateCatalogService {
     if (request?.affiliateProgramId) {
       params = params.set('affiliateProgramId', request.affiliateProgramId);
     }
+    if (request?.visibleInApp !== undefined) {
+      params = params.set('visibleInApp', String(request.visibleInApp));
+    }
     return params;
   }
 
