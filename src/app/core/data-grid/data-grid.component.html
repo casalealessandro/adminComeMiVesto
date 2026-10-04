@@ -285,6 +285,7 @@
             -->
                <tr #riga (dblclick)="dblRowClick($event,rowIndex,colRow)" (click)="selectRow($event,rowIndex,colRow)"
                   [attr.aria-busy]="busyRows.has(rowIndex)"
+                  [class.-data-grid-provider-appended-row]="dataProvider && remoteOperation && latestSkipLoaded > 0 && rowIndex >= latestSkipLoaded"
                   (mouseenter)="setStateHover(rowIndex)" (mouseleave)="leaveStateHover($event,riga,rowIndex)"
                   [ngClass]="updateRowClasses(rowIndex)">
 
