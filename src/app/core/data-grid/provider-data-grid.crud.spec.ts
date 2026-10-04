@@ -92,6 +92,62 @@ describe('ProviderDataGridComponent CRUD', () => {
     expect(component.rowsData()).toEqual([]);
   });
 
+  it('should bulk delete selected rows once, reload once and clear selection after success', async () => {
+    const rows = [{ code: 'A' }, { code: 'B' }];
+    const deleteMany = jasmine.createSpy('deleteMany').and.resolveTo();
+    const load = jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false });
+    component.rowsData.set(rows);
+    component.rowSelected = [true, true];
+    component.rowSelectedAll = true;
+    component.selectionRowMode = 'multiple';
+    component.dataProvider = { load, deleteMany };
+
+    const deleted = await component.deleteProviderRows(component.getSelectedRows());
+
+    expect(deleted).toBeTrue();
+    expect(deleteMany).toHaveBeenCalledOnceWith(rows);
+    expect(load).toHaveBeenCalledOnceWith({ pageSize: 20 });
+    expect(component.rowSelected).toEqual([false]);
+    expect(component.rowSelectedAll).toBeFalse();
+  });
+
+  it('should expose the bulk action in the existing top toolbar', () => {
+    component.showToolbarTop = true;
+    component.selectionRowMode = 'multiple';
+    component.rowsData.set([{ code: 'A' }, { code: 'B' }]);
+    component.rowSelected = [true, true];
+    component.dataProvider = {
+      load: jasmine.createSpy('load'),
+      deleteMany: jasmine.createSpy('deleteMany'),
+    };
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.-data-grid-toolbar').length).toBe(1);
+    expect(fixture.nativeElement.querySelector('.-data-grid-toolbar-actions').textContent)
+      .toContain('Elimina selezionati (2)');
+  });
+
+  it('should preserve rows and selection and skip reload when bulk delete fails', async () => {
+    const rows = [{ code: 'A' }, { code: 'B' }];
+    const load = jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false });
+    component.rowsData.set(rows);
+    component.rowSelected = [true, true];
+    component.dataProvider = {
+      load,
+      deleteMany: jasmine.createSpy('deleteMany').and.rejectWith(new Error('denied')),
+    };
+
+    const deleted = await component.deleteProviderRows(rows);
+
+    expect(deleted).toBeFalse();
+    expect(load).not.toHaveBeenCalled();
+    expect(component.rowsData()).toEqual(rows);
+    expect(component.getSelectedRows()).toEqual(rows);
+    expect(component.isLoading).toBeFalse();
+    document.querySelector('.core-dialog-layer')?.remove();
+  });
+
   it('should preserve a text filter in provider state, delete reload request and rendered input', async () => {
     const row = { code: 'ROW-TO-DELETE', name: 'Alessandro' };
     const requests: GridLoadRequest[] = [];

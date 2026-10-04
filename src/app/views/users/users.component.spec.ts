@@ -25,12 +25,14 @@ describe('UsersComponent admin creation', () => {
       items: [],
       hasMore: false,
       totalCount: 0
-    })
+    }),
+    deleteMany: jasmine.createSpy('deleteMany').and.resolveTo()
   };
 
   beforeEach(async () => {
     isAdmin.and.returnValue(true);
     gridProvider.load.calls.reset();
+    gridProvider.deleteMany.calls.reset();
     userService = jasmine.createSpyObj('UserService', ['getUsersPage', 'createAdminUser']);
     userService.getUsersPage.and.returnValue(of({ data: [], nextPageToken: null }));
 
@@ -55,7 +57,9 @@ describe('UsersComponent admin creation', () => {
     const grid = fixture.debugElement.query(By.directive(DataGridComponent)).componentInstance as DataGridComponent;
 
     expect(grid.remoteOperation).toBeTrue();
+    expect(grid.selectionRowMode).toBe('multiple');
     expect(grid.dataProvider).toBe(gridProvider);
+    expect(typeof grid.dataProvider?.deleteMany).toBe('function');
     expect(grid.showToolbarTop).toBeTrue();
     expect(grid.showFilter).toBeTrue();
     expect(grid.isSearchable).toBeTrue();

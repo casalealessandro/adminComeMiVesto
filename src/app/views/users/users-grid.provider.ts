@@ -16,4 +16,12 @@ export class UsersGridProvider implements GridDataProvider<UserProfile> {
       this.http.post<GridPage<UserProfile>>(`${this.base}/admin/users/grid`, request)
     );
   }
+  deleteMany(users: UserProfile[]): Promise<void> {
+    return firstValueFrom(
+      this.http.post<void>(`${this.base}/admin/users/bulk-delete`, {
+        uids: users.map(user => user.uid)
+      })
+    );
+  }
+
 }

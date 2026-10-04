@@ -179,6 +179,37 @@ describe('DataGridEngine query state', () => {
     expect(sequence).toEqual(['delete', 'reload']);
   });
 
+  it('should bulk delete through one provider mutation and reload once', async () => {
+    const engine = new DataGridEngine<{ id: number }>();
+    const rows = [{ id: 1 }, { id: 2 }];
+    const sequence: string[] = [];
+    const deleteMany = jasmine.createSpy('deleteMany').and.callFake(async () => {
+      sequence.push('deleteMany');
+    });
+    const reload = jasmine.createSpy('reload').and.callFake(async () => {
+      sequence.push('reload');
+    });
+
+    await engine.deleteProviderRows({ load: jasmine.createSpy('load'), deleteMany }, rows, reload);
+
+    expect(deleteMany).toHaveBeenCalledOnceWith(rows);
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(sequence).toEqual(['deleteMany', 'reload']);
+  });
+
+  it('should not reload when a bulk delete rejects', async () => {
+    const engine = new DataGridEngine<{ id: number }>();
+    const failure = new Error('bulk delete failed');
+    const reload = jasmine.createSpy('reload');
+    const provider = {
+      load: jasmine.createSpy('load'),
+      deleteMany: jasmine.createSpy('deleteMany').and.rejectWith(failure),
+    };
+
+    await expectAsync(engine.deleteProviderRows(provider, [{ id: 1 }], reload)).toBeRejectedWith(failure);
+    expect(reload).not.toHaveBeenCalled();
+  });
+
   it('should not reload when a provider mutation rejects', async () => {
     const engine = new DataGridEngine<{ id: number }>();
     const reload = jasmine.createSpy('reload');

@@ -141,6 +141,19 @@ export class DataGridEngine<T = any> {
   }
 
   /**
+   * Deletes complete rows through one provider mutation and then performs the
+   * caller-owned authoritative reload. No key-field convention is assumed.
+   */
+  async deleteProviderRows(
+    provider: GridDataProvider<T>,
+    data: T[],
+    reload: () => Promise<void>,
+  ): Promise<void> {
+    await provider.deleteMany!(data);
+    await reload();
+  }
+
+  /**
    * Loads provider-managed detail rows for the exact parent row supplied by
    * the component. Visual expansion state remains component-owned.
    */
