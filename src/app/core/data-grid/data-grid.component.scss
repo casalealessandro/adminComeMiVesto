@@ -26,9 +26,29 @@
     to { transform: translateX(233%); }
 }
 
+.-data-grid-provider-appended-row {
+    animation: data-grid-provider-row-enter .16s ease-out;
+}
+
+@keyframes data-grid-provider-row-enter {
+    from {
+        opacity: .72;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .-data-grid-wrapper-loading::after {
         width: 100%;
+        animation: none;
+    }
+
+    .-data-grid-provider-appended-row {
         animation: none;
     }
 }
