@@ -55,6 +55,7 @@ describe('UsersComponent admin creation', () => {
     const grid = fixture.debugElement.query(By.directive(DataGridComponent)).componentInstance as DataGridComponent;
 
     expect(grid.remoteOperation).toBeTrue();
+    expect(grid.selectionRowMode).toBe('multiple');
     expect(grid.dataProvider).toBe(gridProvider);
     expect(grid.showToolbarTop).toBeTrue();
     expect(grid.showFilter).toBeTrue();

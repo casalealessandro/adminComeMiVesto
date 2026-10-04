@@ -121,4 +121,7 @@ export interface GridDataProvider<T> {
    * @param data Complete row whose identity is interpreted by the provider.
    */
   delete?(data: T): Promise<void>;
+
+  /** Deletes multiple complete rows in one provider-owned mutation. */
+  deleteMany?(data: T[]): Promise<void>;
 }

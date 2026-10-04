@@ -55,6 +55,29 @@ describe('DataGridComponent multiple selection actions', () => {
     expect(emitted[0].component).toBe(component);
   });
 
+  it('should derive selected rows from the historical index-based state', () => {
+    const first = { id: 1, name: 'Uno' };
+    const second = { id: 2, name: 'Due' };
+    component.rowsData.set([first, second]);
+
+    component.selectRowMultiple(null, 0, first);
+    component.selectRowMultiple(null, 1, second);
+    expect(component.getSelectedRows()).toEqual([first, second]);
+
+    component.selectRowMultiple(null, 0, first);
+    expect(component.getSelectedRows()).toEqual([second]);
+  });
+
+  it('should select exactly all loaded rows despite the historical sentinel', () => {
+    const rows = [{ id: 1 }, { id: 2 }, { id: 3 }];
+    component.rowsData.set(rows);
+
+    component.clickToSelectAllRows();
+
+    expect(component.getSelectedRows()).toEqual(rows);
+    expect(component.rowSelected.length).toBe(rows.length + 1);
+  });
+
   it('should keep saveAndExit as a compatibility alias', () => {
     spyOn(component, 'confirmSelectedRows');
 

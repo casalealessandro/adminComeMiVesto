@@ -16,6 +16,14 @@
          </div>
 
          <div class="-data-grid-toolbar-actions">
+            <button
+               *ngIf="canDeleteSelectedRows()"
+               type="button"
+               class="btn btn-outline-danger"
+               [disabled]="isLoading"
+               (click)="buttonEmitted('deleteSelectedRows')">
+               Elimina selezionati ({{ getSelectedRows().length }})
+            </button>
             <!-- <app-toolbar 
                [background]="'#fff'"
                [textColor]="'#303e67'" 

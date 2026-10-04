@@ -1619,6 +1619,30 @@ export class DataGridComponent<T = any> implements OnDestroy {
     }
   }
 
+  async deleteProviderRows(data: T[]): Promise<boolean> {
+    if (!this.dataProvider?.deleteMany || !this.remoteOperation || this.isLoading || data.length === 0) {
+      return false;
+    }
+
+    this.isLoading = true;
+    this.setProgressCursor(true);
+
+    try {
+      await this.gridEngine.deleteProviderRows(this.dataProvider, data, async () => {
+        this.isLoading = false;
+        await this.loadRemoteRecords();
+      });
+      this.clearSelectedRows();
+      return true;
+    } catch {
+      alert('Non è stato possibile eliminare gli elementi selezionati.', 'Errore!');
+      return false;
+    } finally {
+      this.isLoading = false;
+      this.setProgressCursor(false);
+    }
+  }
+
 
 
 
@@ -1681,6 +1705,34 @@ export class DataGridComponent<T = any> implements OnDestroy {
     }
   
     this.emittendSelectionRow.emit(eventSelectRow); */
+  }
+
+  /** Returns selected loaded rows using the historical index-based state. */
+  getSelectedRows(): T[] {
+    return this.rowsData().filter((_row, index) => this.rowSelected[index] === true);
+  }
+
+  canDeleteSelectedRows(): boolean {
+    return this.selectionRowMode === 'multiple'
+      && typeof this.dataProvider?.deleteMany === 'function'
+      && this.getSelectedRows().length > 0;
+  }
+
+  confirmDeleteSelectedRows(): void {
+    const selectedRows = this.getSelectedRows();
+    if (selectedRows.length === 0 || !this.dataProvider?.deleteMany || this.isLoading) {
+      return;
+    }
+
+    confirm(
+      `Eliminare definitivamente ${selectedRows.length} elementi selezionati?<br><br>L'operazione non è reversibile.`,
+      'Attenzione!',
+      response => {
+        if (response) {
+          void this.deleteProviderRows(selectedRows);
+        }
+      },
+    );
   }
 
   saveAndExit() {
@@ -2355,6 +2407,11 @@ export class DataGridComponent<T = any> implements OnDestroy {
   }
 
   buttonEmitted(event: any) {
+    if (event === 'deleteSelectedRows') {
+      this.confirmDeleteSelectedRows();
+      return;
+    }
+
     if (this.dataProvider && event == 'addRow') {
       console.log('buttonEmitted-->', event)
 
