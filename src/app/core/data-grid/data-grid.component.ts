@@ -2600,8 +2600,10 @@ export class DataGridComponent<T = any> implements OnDestroy {
       this.currentPage = 0;
     }
 
-    this.colsHeader = [];
-    this.rowsData.update(res => res = [])
+    if (!this.dataProvider || !this.remoteOperation) {
+      this.colsHeader = [];
+      this.rowsData.update(res => res = [])
+    }
 
     this.rowSelected = [false]
     this.rowSelectedDetail = [false];
