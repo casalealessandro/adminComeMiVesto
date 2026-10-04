@@ -1,10 +1,36 @@
 .-data-grid-wrapper {
+    position: relative;
     width: 100%;
     overflow: auto;
     background: var(--bianco, #fff);
     border: 1px solid var(--border_color, #e2e8f0);
     border-radius: .75rem;
     box-shadow: 0 1px 2px rgb(15 23 42 / .04);
+}
+
+.-data-grid-wrapper-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 30%;
+    height: 2px;
+    background: var(--primary, #0f172a);
+    animation: data-grid-loading 1s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes data-grid-loading {
+    from { transform: translateX(0); }
+    to { transform: translateX(233%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .-data-grid-wrapper-loading::after {
+        width: 100%;
+        animation: none;
+    }
 }
 
 .-data-grid {

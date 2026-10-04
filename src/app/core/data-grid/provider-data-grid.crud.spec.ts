@@ -92,6 +92,57 @@ describe('ProviderDataGridComponent CRUD', () => {
     expect(component.rowsData()).toEqual([]);
   });
 
+  it('should preserve a text filter in provider state, delete reload request and rendered input', async () => {
+    const row = { code: 'ROW-TO-DELETE', name: 'Alessandro' };
+    const requests: GridLoadRequest[] = [];
+    const deleteRow = jasmine.createSpy('delete').and.resolveTo();
+
+    component.showFilter = true;
+    component.colonne = [{
+      itemType: 'group',
+      caption: '',
+      colSpan: 1,
+      groupDataField: '',
+      data: [{
+        dataField: 'name',
+        type: 'campo',
+        caption: 'Nome',
+        colWidth: 180,
+        allowFiltering: true,
+        validation: [],
+      }],
+    }] as any;
+    component.colsHeader = [{
+      dataField: 'name',
+      type: 'campo',
+      search: true,
+      colWidth: 180,
+    }] as any;
+    component.dataProvider = {
+      load: async request => {
+        requests.push(request);
+        return { items: requests.length === 1 ? [row] : [], hasMore: false };
+      },
+      delete: deleteRow,
+    };
+
+    await component.applyProviderColumnFilter('name', 'Alessandro');
+    fixture.detectChanges();
+    await component.deleteProviderRow(row);
+    fixture.detectChanges();
+
+    const expectedFilter = [{ field: 'name', operator: 'contains' as const, value: 'Alessandro' }];
+    const input = fixture.nativeElement.querySelector('input[data-grid-filter-field="name"]') as HTMLInputElement;
+
+    expect(requests).toEqual([
+      { pageSize: 20, filters: expectedFilter },
+      { pageSize: 20, filters: expectedFilter },
+    ]);
+    expect(deleteRow).toHaveBeenCalledOnceWith(row);
+    expect(component.providerFilterValue('name')).toBe('Alessandro');
+    expect(input.value).toBe('Alessandro');
+  });
+
   it('should preserve active search filters and sort when a mutation refreshes the grid', async () => {
     const requests: GridLoadRequest[] = [];
     const update = jasmine.createSpy('update').and.callFake(async row => row);
