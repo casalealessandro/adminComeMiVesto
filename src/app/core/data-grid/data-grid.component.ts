@@ -1163,7 +1163,6 @@ export class DataGridComponent<T = any> implements OnDestroy {
     this.providerScrollElement = element;
 
     if (this.isLoading) {
-      this.keepScrollPositionWhileLoading(element);
       return;
     }
 
@@ -2949,18 +2948,10 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
     if (nearBottom) {
       this.latestScrollTopPosition = element.scrollTop;
-      element.scrollTop = Math.max(0, element.scrollTop - 10);
       return true;
     }
 
     return false;
-  }
-
-  private keepScrollPositionWhileLoading(element: HTMLElement): void {
-    const isAtBottom = element.scrollHeight - element.clientHeight <= Math.floor(element.scrollTop) + 1;
-    if (isAtBottom) {
-      element.scrollTop = Math.max(0, element.scrollTop - 10);
-    }
   }
 
   protected setProgressCursor(loading: boolean): void {

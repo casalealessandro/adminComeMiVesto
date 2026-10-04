@@ -504,7 +504,7 @@ describe('ProviderDataGridComponent remote loading', () => {
     expect(onScroll).toHaveBeenCalledOnceWith(event);
   });
 
-  it('should trigger loading only when scrolling near the bottom and moving forward', async () => {
+  it('should trigger loading near the bottom without changing the native scroll position', async () => {
     component.pageSize = 2;
     component.remoteOperation = true;
     component.remoteHasMore = true;
@@ -527,10 +527,10 @@ describe('ProviderDataGridComponent remote loading', () => {
 
     expect(component.loadNextRemotePage).toHaveBeenCalledTimes(1);
     expect(component.latestScrollTopPosition).toBe(80);
-    expect(scrollTarget.scrollTop).toBe(70);
+    expect(scrollTarget.scrollTop).toBe(80);
   });
 
-  it('should keep the scrollbar slightly above the bottom while a page is loading', async () => {
+  it('should keep the native scrollbar position unchanged while a page is loading', async () => {
     component.dataProvider = {
       load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
     };
@@ -544,7 +544,30 @@ describe('ProviderDataGridComponent remote loading', () => {
 
     await component.onScroll({ target: scrollTarget } as unknown as Event);
 
-    expect(scrollTarget.scrollTop).toBe(70);
+    expect(scrollTarget.scrollTop).toBe(80);
+  });
+
+  it('should mark only the latest appended provider rows for the entry animation', () => {
+    component.dataProvider = {
+      load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
+    };
+    component.remoteOperation = true;
+    component.latestSkipLoaded = 2;
+    component.showNullData = false;
+    component.colsHeader = [
+      { dataField: 'name', type: 'campo', caption: 'Name', colWidth: 120 } as any,
+    ];
+    component.rowsData.set([
+      { id: 1, name: 'One' },
+      { id: 2, name: 'Two' },
+      { id: 3, name: 'Three' },
+      { id: 4, name: 'Four' },
+    ]);
+
+    fixture.detectChanges();
+
+    const appendedRows = fixture.nativeElement.querySelectorAll('.-data-grid-provider-appended-row');
+    expect(appendedRows.length).toBe(2);
   });
 
   it('should not request another page after the provider reports the end', async () => {
