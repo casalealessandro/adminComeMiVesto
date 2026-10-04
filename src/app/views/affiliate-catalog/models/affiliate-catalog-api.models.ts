@@ -70,11 +70,17 @@ export interface AffiliateFeedDeactivationReport {
   activeOffersFound: number;
   offersDeactivated: number;
   productsAffected: number;
+  productsToDeactivate: number;
   productsDeactivated: number;
   productsRemainingActive: number;
   outfitsAffected: number;
   outfitsTruncated: boolean;
   outfits: AffiliateFeedDeactivationOutfit[];
+}
+
+export interface AffiliateFeedDeactivationQueued {
+  feedId: string;
+  queued: true;
 }
 
 export interface AffiliateFeedSourceValues {
