@@ -18,6 +18,7 @@
       [colonne]="columns"
       [idTable]="'users-grid'"
       [dataProvider]="usersGridProvider"
+      [initialRemoteSort]="{ field: 'createdAt', direction: 'desc' }"
       [remoteOperation]="true"
       [isEditable]="true"
       [isEditableNewRow]="false"
