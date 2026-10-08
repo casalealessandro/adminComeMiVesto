@@ -66,8 +66,8 @@
           </p>
         </div>
         <div class="affiliate-detail__curation-badges d-flex flex-wrap gap-2">
-          <span class="badge" [class.text-bg-success]="enabledForApp" [class.text-bg-secondary]="!enabledForApp">
-            {{ enabledForApp ? 'Attivo nell’app' : 'Disattivato nell’app' }}
+          <span class="badge" [class.text-bg-success]="product.active && enabledForApp" [class.text-bg-secondary]="!product.active || !enabledForApp">
+            {{ product.active && enabledForApp ? 'Attivo nell’app' : 'Disattivato nell’app' }}
           </span>
           <span class="badge" [class.text-bg-primary]="item.classificationLocked" [class.text-bg-light]="!item.classificationLocked">
             {{ item.classificationLocked ? 'Classificazione manuale' : 'Classificazione feed' }}
@@ -85,6 +85,7 @@
           type="checkbox"
           id="enabledForApp"
           [(ngModel)]="enabledForApp"
+          [disabled]="!product.active"
           [disabled]="curationSaving">
         <label class="form-check-label" for="enabledForApp">
           Mostra questo prodotto in ComeMiVesto

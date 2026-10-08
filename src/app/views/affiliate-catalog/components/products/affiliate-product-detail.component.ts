@@ -72,7 +72,7 @@ export function buildAffiliateProductCurationUpdate(
 
   const input: AffiliateProductUpdateInput = {};
 
-  if (enabledForApp !== (product.enabledForApp !== false)) input.enabledForApp = enabledForApp;
+  if (product.active && enabledForApp !== (product.enabledForApp !== false)) input.enabledForApp = enabledForApp;
   if (category !== (product.category ?? '')) input.category = category;
   if (subcategory !== (product.subcategory ?? '')) input.subcategory = subcategory;
   if (normalizedColor !== (product.normalizedColor ?? '')) input.normalizedColor = normalizedColor;
@@ -150,7 +150,7 @@ export class AffiliateProductDetailComponent implements OnInit {
           this.program = program;
           this.images = (product.images ?? []).filter((image) => typeof image === 'string' && image.trim().length > 0);
           this.feedNames = new Map(feeds.map((feed) => [feed.id, feed.name]));
-          this.enabledForApp = product.enabledForApp !== false;
+          this.enabledForApp = product.active && product.enabledForApp !== false;
           this.curationData = buildAffiliateProductCurationFormData(product);
         },
         error: (error: { status?: number }) => {
@@ -204,7 +204,7 @@ export class AffiliateProductDetailComponent implements OnInit {
 
     const category = String(event.formData['category'] ?? '').trim();
     const subcategory = String(event.formData['subcategory'] ?? '').trim();
-    if (this.enabledForApp && (!category || !subcategory)) {
+    if (this.product.active && this.enabledForApp && (!category || !subcategory)) {
       this.curationError = 'Per abilitare il prodotto nell’app devi associare categoria e sottocategoria ComeMiVesto.';
       return;
     }
@@ -222,7 +222,7 @@ export class AffiliateProductDetailComponent implements OnInit {
       .subscribe({
         next: (product) => {
           this.product = product;
-          this.enabledForApp = product.enabledForApp !== false;
+          this.enabledForApp = product.active && product.enabledForApp !== false;
           this.curationData = buildAffiliateProductCurationFormData(product);
           alert('Prodotto aggiornato per ComeMiVesto.', 'Operazione completata');
         },

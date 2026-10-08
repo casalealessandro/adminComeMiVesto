@@ -127,7 +127,7 @@ export function buildAffiliateProductGridRows(
     ...product,
     programName: programNames.get(product.affiliateProgramId) || product.affiliateProgramId,
     activeLabel: product.active ? 'Sì' : 'No',
-    visibleInAppFilter: product.enabledForApp !== false ? 'true' : 'false',
+    visibleInAppFilter: product.active && product.enabledForApp !== false ? 'true' : 'false',
     categoryLabel: [product.category, product.subcategory].filter(Boolean).join(' / ') || '—',
     genderLabel: product.genderTargets?.filter(Boolean).join(', ') || '—',
     sourceFeedCount: product.sourceFeedIds?.length ?? 0,
