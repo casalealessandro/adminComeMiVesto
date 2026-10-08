@@ -12,12 +12,12 @@
 
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div class="desktop-grid" *ngIf="!isMobile">
+  <div class="desktop-grid">
     <app-data-grid
       #usersGrid
       [colonne]="columns"
       [idTable]="'users-grid'"
-      [dataProvider]="usersGridProvider"
+      [dataProvider]="dataProvider"
       [initialRemoteSort]="{ field: 'createdAt', direction: 'desc' }"
       [remoteOperation]="true"
       [isEditable]="true"
@@ -45,7 +45,7 @@
   <div *ngIf="!loading && !users.length" class="empty mobile-only">Nessun utente trovato.</div>
 
   <div class="user-grid mobile-cards">
-    <article class="user-card" *ngFor="let user of users">
+    <article class="user-card" *ngFor="let user of users; trackBy: trackByUserUid">
       <div class="identity">
         <img [src]="user.photoURL || 'https://ionicframework.com/docs/img/demos/avatar.svg'" [alt]="user.displayName || user.email">
         <div>
@@ -77,8 +77,8 @@
     </article>
   </div>
 
-  <button *ngIf="mobileHasMore && !loading" class="btn btn-outline-primary more mobile-only" (click)="loadPage()" [disabled]="loading">Carica altri</button>
-  <p *ngIf="loading" class="mobile-only" aria-live="polite">Caricamento…</p>
+  <button *ngIf="hasMore" class="btn btn-outline-primary more mobile-only" (click)="loadMore()" [disabled]="loading || loadingMore">Carica altri</button>
+  <p *ngIf="loading || loadingMore" class="mobile-only" aria-live="polite">Caricamento…</p>
 </main>
 
 <div *ngIf="createUserOpen" class="edit-backdrop">
