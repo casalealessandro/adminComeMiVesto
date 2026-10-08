@@ -64,7 +64,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'getPrograms', 'getAiCreators'],
+      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -80,6 +80,8 @@ describe('AffiliateOutfitPreviewComponent', () => {
       createdAt: 1,
       updatedAt: 1,
     }]));
+    service.getFeeds.and.returnValue(of([]));
+    service.discardOutfitDraft.and.returnValue(of(void 0));
     service.getAiCreators.and.returnValue(of([{
       uid: 'creator-d',
       email: 'creator@example.com',
@@ -221,6 +223,23 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(component.publishedId(outfit)).toBe('outfit-1');
     expect(outfit.previewImageUrl).toBe('https://storage.test/outfits/ai/outfit-1.png');
     expect(fixture.nativeElement.textContent).toContain('Salvato in outfits');
+  });
+
+  it('passes selected source feeds only when present', () => {
+    component.selectedFeedIds = ['feed-1', 'feed-2'];
+    component.generate();
+    expect(service.generateOutfitPreview).toHaveBeenCalledWith(jasmine.objectContaining({
+      sourceFeedIds: ['feed-1', 'feed-2'],
+    }));
+  });
+
+  it('discards a pending outfit and removes it from the current preview', () => {
+    component.generate();
+    spyOn(window, 'confirm').and.returnValue(true);
+    const outfit = component.result!.outfits[0];
+    component.discard(outfit);
+    expect(service.discardOutfitDraft).toHaveBeenCalledWith('draft-1');
+    expect(component.result!.outfits.length).toBe(2);
   });
 
   it('filters active creators by requested gender and clears incompatible selection', () => {
