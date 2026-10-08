@@ -76,6 +76,7 @@ describe('Affiliate products', () => {
     expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
     expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category']);
+    expect(columns.map((column) => column.colCaption)).toContain('Visibile app');
     expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
   });
@@ -89,6 +90,8 @@ describe('Affiliate products', () => {
     expect(rows[0].affiliateProgramId).toBe(program.id);
     expect(rows[0].programName).toBe(program.name);
     expect(rows[0].activeLabel).toBe('Sì');
+    expect(rows[0].visibleInAppLabel).toBe('Sì');
+    expect(buildAffiliateProductGridRows([{ ...product, active: false, enabledForApp: true }], new Map())[0].visibleInAppLabel).toBe('No');
     expect(rows[0].categoryLabel).toBe('Clothing / Shirts');
     expect(rows[0].genderLabel).toBe('U, D');
     expect(rows[0].sourceFeedCount).toBe(2);
