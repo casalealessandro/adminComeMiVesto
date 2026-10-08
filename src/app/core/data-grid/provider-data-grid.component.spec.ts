@@ -567,4 +567,49 @@ describe('ProviderDataGridComponent remote loading', () => {
 
     expect(component.loadNextRemotePage).not.toHaveBeenCalled();
   });
+  it('should ignore an obsolete remote search response when a newer request completes first', async () => {
+    const pending: Array<(page: GridPage<any>) => void> = [];
+    component.dataProvider = {
+      load: () => new Promise<GridPage<any>>(resolve => pending.push(resolve)),
+    };
+    component.remoteOperation = true;
+    component.colsHeader = [{ dataField: 'name', type: 'campo' } as any];
+
+    const first = component.applyProviderSearch('old');
+    const second = component.applyProviderSearch('new');
+
+    pending[1]({ items: [{ id: 'new', name: 'New' }], hasMore: false, totalCount: 1 });
+    expect(await second).toBeTrue();
+
+    pending[0]({ items: [{ id: 'old', name: 'Old' }], hasMore: false, totalCount: 1 });
+    expect(await first).toBeFalse();
+
+    expect(component.rowsData()).toEqual([{ id: 'new', name: 'New' }]);
+    expect(component.isLoading).toBeFalse();
+    expect(component.totalRecords).toBe(1);
+  });
+
+  it('should keep the latest remote response when an earlier request fails', async () => {
+    let rejectFirst!: (reason: Error) => void;
+    let resolveSecond!: (page: GridPage<any>) => void;
+    let calls = 0;
+    component.dataProvider = {
+      load: () => ++calls === 1
+        ? new Promise<GridPage<any>>((_, reject) => rejectFirst = reject)
+        : new Promise<GridPage<any>>(resolve => resolveSecond = resolve),
+    };
+    component.remoteOperation = true;
+    component.colsHeader = [{ dataField: 'name', type: 'campo' } as any];
+
+    const first = component.applyProviderSearch('old');
+    const second = component.applyProviderSearch('new');
+    resolveSecond({ items: [{ id: 'new' }], hasMore: false });
+    expect(await second).toBeTrue();
+
+    rejectFirst(new Error('old request failed'));
+    expect(await first).toBeFalse();
+    expect(component.rowsData()).toEqual([{ id: 'new' }]);
+    expect(component.isLoading).toBeFalse();
+  });
+
 });
