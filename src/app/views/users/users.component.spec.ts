@@ -31,6 +31,7 @@ describe('UsersComponent admin creation', () => {
   beforeEach(async () => {
     isAdmin.and.returnValue(true);
     gridProvider.load.calls.reset();
+    gridProvider.load.and.resolveTo({ items: [], hasMore: false, totalCount: 0 });
     userService = jasmine.createSpyObj('UserService', ['createAdminUser']);
 
     await TestBed.configureTestingModule({
