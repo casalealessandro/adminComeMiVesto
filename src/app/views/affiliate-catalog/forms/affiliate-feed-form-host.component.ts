@@ -73,6 +73,7 @@ export function buildAffiliateFeedCreateInput(formData: Record<string, unknown>)
 export function buildAffiliateFeedUpdateInput(formData: Record<string, unknown>): AffiliateFeedUpdateInput {
   const adapterType = normalizedString(formData['adapterType']);
   return {
+    networkFeedId: normalizedString(formData['networkFeedId']),
     name: normalizedString(formData['name']),
     enabled: formData['enabled'] === true,
     adapterType: adapterType || null,
