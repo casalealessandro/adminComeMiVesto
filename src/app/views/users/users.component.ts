@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, of, switchMap } from 'rxjs';
 
@@ -11,6 +11,7 @@ import { AdminCreateUserRequest, UserRole, UserService } from '../../services/us
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
 import { UsersGridProvider } from './users-grid.provider';
+import { GridLoadRequest } from '../../components/data-grid/data-grid-provider';
 
 export interface DynamicFormSubmitEvent {
   name: 'submitForm' | 'cancelForm';
@@ -54,19 +55,30 @@ export function adminCreateUserSuccessMessage(passwordSetupEmailSent: boolean): 
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })
-export class UsersComponent implements AfterViewInit {
+export class UsersComponent implements OnDestroy {
   private usersService = inject(UserService);
   readonly auth = inject(AuthService);
   readonly usersGridProvider = inject(UsersGridProvider);
 
-  @ViewChild('usersGrid') private usersGrid?: DataGridComponent<UserProfile>;
+  private usersGrid?: DataGridComponent<UserProfile>;
 
-  users: UserGridRow[] = [];
-  filteredUsers: UserGridRow[] = [];
+  // The desktop grid is instantiated only for desktop. Its ViewChild setter
+  // initializes the grid once whenever its responsive view is created.
+  @ViewChild('usersGrid')
+  set usersGridView(grid: DataGridComponent<UserProfile> | undefined) {
+    this.usersGrid = grid;
+    if (grid) void grid.renderGrid();
+  }
+
+  isMobile = false;
+  users: UserProfile[] = [];
   search = '';
   loading = false;
   error = '';
-  nextPageToken: string | null = null;
+  mobileHasMore = false;
+  private mobileContinuation?: unknown;
+  private mobileRequestVersion = 0;
+  private mobileSearchTimer?: ReturnType<typeof setTimeout>;
   selected?: UserProfile;
   selectedOriginalRole?: UserRole;
   busyUid: string | null = null;
@@ -230,11 +242,26 @@ export class UsersComponent implements AfterViewInit {
   }];
 
   ngOnInit(): void {
-    this.refreshMobileCards();
+    this.onViewportChange();
   }
 
-  ngAfterViewInit(): void {
-    void this.usersGrid?.renderGrid();
+  @HostListener('window:resize')
+  onViewportChange(): void {
+    const mobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 700px)').matches;
+    if (this.isMobile === mobile) return;
+
+    this.isMobile = mobile;
+    if (mobile) {
+      this.refreshMobileCards();
+    } else {
+      this.mobileRequestVersion++;
+      this.loading = false;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.mobileRequestVersion++;
+    if (this.mobileSearchTimer !== undefined) clearTimeout(this.mobileSearchTimer);
   }
 
   openCreateUser(): void {
@@ -272,46 +299,73 @@ export class UsersComponent implements AfterViewInit {
   }
 
   refresh(): void {
-    this.refreshMobileCards();
-    this.refreshRemoteGrid();
+    if (this.isMobile) {
+      this.refreshMobileCards();
+    } else {
+      this.refreshRemoteGrid();
+    }
   }
 
   private refreshMobileCards(): void {
+    this.mobileRequestVersion++;
     this.users = [];
-    this.nextPageToken = null;
-    this.loadPage();
+    this.mobileContinuation = undefined;
+    this.mobileHasMore = false;
+    this.loading = false;
+    void this.loadPage();
   }
 
   private refreshRemoteGrid(): void {
     this.usersGrid?.refresh();
   }
 
-  loadPage(): void {
-    if (this.loading) return;
+  onMobileSearchChange(): void {
+    if (!this.isMobile) return;
+    if (this.mobileSearchTimer !== undefined) clearTimeout(this.mobileSearchTimer);
+    // Invalidate any response for the previous query immediately.
+    this.mobileRequestVersion++;
+    this.loading = false;
+    this.mobileSearchTimer = setTimeout(() => {
+      this.mobileSearchTimer = undefined;
+      if (this.isMobile) this.refreshMobileCards();
+    }, 300);
+  }
 
+  async loadPage(): Promise<void> {
+    if (!this.isMobile || this.loading || (this.users.length > 0 && !this.mobileHasMore)) return;
+
+    const version = this.mobileRequestVersion;
     this.loading = true;
     this.error = '';
 
-    this.usersService.getUsersPage(50, this.nextPageToken || undefined)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe({
-        next: page => {
-          this.users.push(...page.data.map(user => this.toGridRow(user)));
-          this.nextPageToken = page.nextPageToken;
-          this.applySearch();
+    const term = this.search.trim();
+    const request: GridLoadRequest = {
+      pageSize: 50,
+      sort: [{ field: 'createdAt', direction: 'desc' }],
+      ...(this.mobileContinuation !== undefined ? { continuation: this.mobileContinuation } : {}),
+      ...(term ? {
+        search: {
+          value: term,
+          conditions: ['email', 'displayName', 'nome', 'cognome'].map(field => ({
+            field, operator: 'contains' as const, value: term,
+          })),
         },
-        error: () => this.error = 'Impossibile caricare gli utenti.'
-      });
-  }
+      } : {}),
+    };
 
-  applySearch(): void {
-    const term = this.search.trim().toLowerCase();
-    this.users.forEach(user => this.updateGridLabels(user));
-    this.filteredUsers = !term
-      ? [...this.users]
-      : this.users.filter(user =>
-        [user.email, user.displayName, user.nome, user.cognome]
-          .some(value => (value || '').toLowerCase().includes(term)));
+    try {
+      const page = await this.usersGridProvider.load(request);
+      if (version !== this.mobileRequestVersion || !this.isMobile) return;
+      this.users = [...this.users, ...page.items];
+      this.mobileContinuation = page.continuation;
+      this.mobileHasMore = page.hasMore;
+    } catch {
+      if (version === this.mobileRequestVersion && this.isMobile) {
+        this.error = 'Impossibile caricare gli utenti.';
+      }
+    } finally {
+      if (version === this.mobileRequestVersion) this.loading = false;
+    }
   }
 
   openEdit(user: UserProfile): void {
@@ -347,11 +401,8 @@ export class UsersComponent implements AfterViewInit {
       )
       .subscribe({
         next: () => {
-          const user = this.users.find(item => item.uid === pending.uid);
-          if (user) Object.assign(user, pending, { role: roleChanged ? requestedRole : originalRole });
           this.closeEdit();
-          this.applySearch();
-          this.refreshRemoteGrid();
+          this.refresh();
           alert('Profilo aggiornato.', 'Operazione completata');
         },
         error: () => {
@@ -394,9 +445,7 @@ export class UsersComponent implements AfterViewInit {
 
       call.pipe(finalize(() => this.busyUid = null)).subscribe({
         next: () => {
-          user.disabled = !user.disabled;
-          this.applySearch();
-          this.refreshRemoteGrid();
+          this.refresh();
           alert('Stato utente aggiornato.', 'Operazione completata');
         },
         error: () => this.error = 'Operazione non autorizzata o non disponibile.'
@@ -422,9 +471,7 @@ export class UsersComponent implements AfterViewInit {
 
       this.usersService.deleteUser(user.uid).subscribe({
         next: () => {
-          this.users = this.users.filter(item => item.uid !== user.uid);
-          this.applySearch();
-          this.refreshRemoteGrid();
+          this.refresh();
           alert('Utente eliminato.', 'Operazione completata');
         },
         error: () => this.error = 'Eliminazione non consentita o non riuscita.'
@@ -437,9 +484,7 @@ export class UsersComponent implements AfterViewInit {
 
     this.usersService.updateRole(user.uid, role).subscribe({
       next: () => {
-        user.role = role;
-        this.applySearch();
-        this.refreshRemoteGrid();
+        this.refresh();
       },
       error: () => this.error = 'Modifica ruolo non consentita.'
     });
@@ -457,24 +502,4 @@ export class UsersComponent implements AfterViewInit {
     if (event?.name === 'delete' && this.canManage(event.rowData)) this.deleteUser(event.rowData);
   }
 
-  private toGridRow(user: UserProfile): UserGridRow {
-    return this.updateGridLabels(user as UserGridRow);
-  }
-
-  private updateGridLabels(user: UserGridRow): UserGridRow {
-    user.displayLabel = user.displayName || `${user.nome || ''} ${user.cognome || ''}`.trim() || 'Utente';
-    user.roleLabel = user.role || 'creator';
-    user.statusLabel = user.disabled ? 'DISABILITATO' : 'ATTIVO';
-    user.verifiedLabel = user.emailVerified ? 'Sì' : 'No';
-    user.createdLabel = user.createdAt || user.createAt;
-    return user;
-  }
 }
-
-type UserGridRow = UserProfile & {
-  displayLabel: string;
-  roleLabel: UserRole;
-  statusLabel: string;
-  verifiedLabel: string;
-  createdLabel: UserProfile['createdAt'] | UserProfile['createAt'];
-};
