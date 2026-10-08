@@ -66,6 +66,18 @@
       <small id="outfit-budget-help" class="ai-preview__count-help">Totale massimo dei capi del singolo look</small>
     </label>
 
+    <fieldset class="ai-preview__feed-filter" [disabled]="loading || feedsLoading">
+      <legend>Feed sorgenti (opzionale)</legend>
+      <div class="ai-preview__feed-options" *ngIf="feeds.length; else noFeeds">
+        <label *ngFor="let feed of feeds" class="ai-preview__feed-option">
+          <input type="checkbox" [checked]="selectedFeedIds.includes(feed.id)" (change)="toggleFeed(feed.id, $any($event.target).checked)">
+          <span>{{ feed.name }}</span>
+        </label>
+      </div>
+      <ng-template #noFeeds><small>{{ feedsLoading ? 'Caricamento feed…' : 'Nessun feed attivo disponibile' }}</small></ng-template>
+      <small class="ai-preview__control-help">Nessuna selezione: usa tutti i feed eleggibili.</small>
+    </fieldset>
+
     <label>
       <span>Numero outfit</span>
       <input
@@ -140,10 +152,14 @@
             <span *ngIf="draft.creatorSnapshot?.visualIdentityApplied">Identità visiva applicata</span>
             <span *ngIf="draftCreator(draft) as creator">{{ creator.displayName }}</span>
           </div>
-          <button type="button" class="btn btn-primary draft-card__open" (click)="resumeDraft(draft)">
+          <div class="ai-preview__draft-actions">
+          <button type="button" class="btn btn-primary draft-card__open" (click)="resumeDraft(draft)" [disabled]="discarding.has(draft.id)">
             <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
             Apri e approva
           </button>
+          <button type="button" class="btn btn-outline-danger" (click)="discardDraft(draft)" [disabled]="discarding.has(draft.id) || publishing.has(draft.id)">Scarta</button>
+          </div>
+          <small role="alert" class="text-danger" *ngIf="discardErrors.get(draft.id) as message">{{ message }}</small>
         </div>
       </article>
     </div>
@@ -296,10 +312,12 @@
               type="button"
               class="outfit-card__approve"
               (click)="publish(outfit)"
-              [disabled]="isPublishing(outfit) || !!publishedId(outfit)">
+              [disabled]="isPublishing(outfit) || isDiscarding(outfit) || !!publishedId(outfit)">
               <span class="mdi" [class.mdi-loading]="isPublishing(outfit)" [class.mdi-spin]="isPublishing(outfit)" [class.mdi-check-circle-outline]="!isPublishing(outfit)" aria-hidden="true"></span>
               {{ publishedId(outfit) ? 'Outfit salvato' : (isPublishing(outfit) ? 'Salvataggio…' : 'Approva e salva') }}
             </button>
+            <button type="button" class="btn btn-outline-danger" *ngIf="!publishedId(outfit) && outfit.draftId" (click)="discard(outfit)" [disabled]="isPublishing(outfit) || isDiscarding(outfit)">Scarta outfit</button>
+            <div class="outfit-card__publish-error" *ngIf="discardError(outfit) as message" role="alert">{{ message }}</div>
             <div class="outfit-card__published" *ngIf="publishedId(outfit) as outfitId" role="status">
               <span class="mdi mdi-check-circle" aria-hidden="true"></span>
               Salvato in outfits · {{ outfitId }}
