@@ -52,6 +52,7 @@ const listOptions = (
 export interface AffiliateProductGridRow extends CatalogProduct {
   programName: string;
   activeLabel: string;
+  visibleInAppLabel: string;
   categoryLabel: string;
   genderLabel: string;
   sourceFeedCount: number;
@@ -92,7 +93,8 @@ export function buildAffiliateProductColumns(
     baseColumn('normalizedColor', 'Colore', 110),
     baseColumn('genderLabel', 'Target', 150),
     baseColumn('sourceFeedCount', 'Feed', 70, 'campoNumber'),
-    baseColumn('activeLabel', 'Attivo', 80),
+    baseColumn('activeLabel', 'Attivo catalogo', 110),
+    baseColumn('visibleInAppLabel', 'Visibile app', 100),
     baseColumn('lastSeenAt', 'Ultima rilevazione', 145, 'campoDateTime'),
     {
       ...baseColumn('', 'Dettaglio', 76, 'campoButton'),
@@ -117,6 +119,7 @@ export function buildAffiliateProductGridRows(
     ...product,
     programName: programNames.get(product.affiliateProgramId) || product.affiliateProgramId,
     activeLabel: product.active ? 'Sì' : 'No',
+    visibleInAppLabel: product.active && product.enabledForApp !== false ? 'Sì' : 'No',
     categoryLabel: [product.category, product.subcategory].filter(Boolean).join(' / ') || '—',
     genderLabel: product.genderTargets?.filter(Boolean).join(', ') || '—',
     sourceFeedCount: product.sourceFeedIds?.length ?? 0,
