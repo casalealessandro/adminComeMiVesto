@@ -24,13 +24,14 @@ describe('Affiliate feed persisted form runtime identities', () => {
     ]);
   });
 
-  it('keeps persisted fields on edit but strips immutable identities', () => {
+  it('allows networkFeedId corrections while keeping program identity immutable', () => {
     const withIdentity = [...fields, {
       name: 'affiliateProgramId', type: 'textBox', typeInput: 'text',
       label: 'Programma erroneamente configurato',
     } as DynamicFormField];
     const result = affiliateFeedRuntimeFields(withIdentity, programs, false);
-    expect(result.map(field => field.name)).toEqual(['name', 'urlParams']);
+    expect(result.map(field => field.name)).toEqual(['networkFeedId', 'name', 'urlParams']);
+    expect(result[0].required).toBeTrue();
   });
 
   it('does not change source Firestore fields or optional URL parameters', () => {
