@@ -63,7 +63,9 @@ describe('UsersComponent admin creation', () => {
     expect(grid.showToolbarTop).toBeTrue();
     expect(grid.showFilter).toBeTrue();
     expect(grid.isSearchable).toBeTrue();
-    expect(gridProvider.load).toHaveBeenCalledWith({ pageSize: 20 });
+    expect(gridProvider.load).toHaveBeenCalledWith({ pageSize: 20, sort: [{ field: 'createdAt', direction: 'desc' }] });
+    expect(grid.sortedColumn).toBe('createdAt');
+    expect(grid.sortDirection).toBe('desc');
   });
 
   it('keeps the role filter in the request and filter row when the users grid refreshes', async () => {

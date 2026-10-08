@@ -590,4 +590,42 @@ describe('ProviderDataGridComponent remote loading', () => {
 
     expect(component.loadNextRemotePage).not.toHaveBeenCalled();
   });
+  it('ignores an obsolete remote search result when the later result arrives first', async () => {
+    const pending: Array<(page: any) => void> = [];
+    component.dataProvider = { load: () => new Promise<any>(resolve => pending.push(resolve)) };
+    component.remoteOperation = true;
+    component.colsHeader = [{ dataField: 'name', type: 'campo' } as any];
+
+    const previous = component.applyProviderSearch('old');
+    const latest = component.applyProviderSearch('new');
+    pending[1]({ items: [{ id: 'new', name: 'New' }], hasMore: false, totalCount: 1 });
+    expect(await latest).toBeTrue();
+    pending[0]({ items: [{ id: 'old', name: 'Old' }], hasMore: false, totalCount: 1 });
+    expect(await previous).toBeFalse();
+    expect(component.rowsData()).toEqual([{ id: 'new', name: 'New' }]);
+    expect(component.isLoading).toBeFalse();
+  });
+
+  it('does not roll back the latest search when an older request fails', async () => {
+    let rejectOld!: (reason: Error) => void;
+    let resolveNew!: (page: any) => void;
+    let count = 0;
+    component.dataProvider = {
+      load: () => ++count === 1
+        ? new Promise<any>((_, reject) => rejectOld = reject)
+        : new Promise<any>(resolve => resolveNew = resolve),
+    };
+    component.remoteOperation = true;
+    component.colsHeader = [{ dataField: 'name', type: 'campo' } as any];
+
+    const previous = component.applyProviderSearch('old');
+    const latest = component.applyProviderSearch('new');
+    resolveNew({ items: [{ id: 'new' }], hasMore: false });
+    expect(await latest).toBeTrue();
+    rejectOld(new Error('stale failure'));
+    expect(await previous).toBeFalse();
+    expect(component.rowsData()).toEqual([{ id: 'new' }]);
+    expect(component.isLoading).toBeFalse();
+  });
+
 });

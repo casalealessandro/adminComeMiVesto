@@ -79,6 +79,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
   @Input() remoteOperation: boolean = false;
   @Input() dataProvider?: GridDataProvider<T>;
+  @Input() initialRemoteSort?: GridSort;
   @Input() detailDataProvider?: GridDetailDataProvider<T, any>;
   private registeredLookupProviders: GridLookupProviderMap = {};
 
@@ -236,6 +237,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
   private observedWidth = 0;
   private hasExplicitTableWidth = false;
   private readonly zone = inject(NgZone);
+  private remoteLoadVersion = 0;
 
   get remoteContinuation(): unknown {
     return this.gridEngine.remoteContinuation;
@@ -422,6 +424,11 @@ export class DataGridComponent<T = any> implements OnDestroy {
     this.renderToolBarGrid(this.showToolbarTop, this.showToolbarBottom);
 
     if (this.remoteOperation) {
+      if (this.dataProvider && this.initialRemoteSort && this.gridEngine.providerSort.length === 0) {
+        this.gridEngine.setProviderSort(this.initialRemoteSort.field, this.initialRemoteSort.direction);
+        this.sortedColumn = this.initialRemoteSort.field;
+        this.sortDirection = this.initialRemoteSort.direction;
+      }
 
       const check = await this.buildAndTestQueryString()
       if (check) {
@@ -1308,18 +1315,24 @@ export class DataGridComponent<T = any> implements OnDestroy {
       return false;
     }
 
+    const loadVersion = ++this.remoteLoadVersion;
     this.isLoading = true;
 
     try {
       const page = await this.gridEngine.loadInitialPage(this.dataProvider, this.pageSize);
+      if (loadVersion !== this.remoteLoadVersion) return false;
 
-      this.applyInitialProviderPage(page);
+      this.zone.run(() => this.applyInitialProviderPage(page));
       return true;
     } catch {
       return false;
     } finally {
-      this.isLoading = false;
-      this.setProgressCursor(false);
+      if (loadVersion === this.remoteLoadVersion) {
+        this.zone.run(() => {
+          this.isLoading = false;
+          this.setProgressCursor(false);
+        });
+      }
     }
   }
 
@@ -2755,7 +2768,9 @@ export class DataGridComponent<T = any> implements OnDestroy {
       DataGridUtils.getProviderSearchColumns(this.colsHeader, this.colonne),
     ));
 
+    const previousVersion = this.remoteLoadVersion;
     const loaded = await this.loadRemoteRecords();
+    if (this.remoteLoadVersion !== previousVersion + 1) return false;
     if (!loaded) {
       this.gridEngine.restoreProviderSearch(previousSearch);
       return false;
@@ -2782,7 +2797,9 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
     this.gridEngine.setProviderColumnFilter(field, filter);
 
+    const previousVersion = this.remoteLoadVersion;
     const loaded = await this.loadRemoteRecords();
+    if (this.remoteLoadVersion !== previousVersion + 1) return false;
     if (!loaded) {
       this.gridEngine.restoreProviderFilters(previousFilters);
       return false;
@@ -2800,6 +2817,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
       return false;
     }
 
+    const loadVersion = this.remoteLoadVersion;
     this.isLoading = true;
     this.setProgressCursor(true);
 
@@ -2811,25 +2829,34 @@ export class DataGridComponent<T = any> implements OnDestroy {
         await new Promise(resolve => setTimeout(resolve, this.providerScrollLoadDelay));
       }
 
+      if (loadVersion !== this.remoteLoadVersion) return false;
       const page = await this.gridEngine.loadContinuationPage(this.dataProvider, this.pageSize);
+      if (loadVersion !== this.remoteLoadVersion) return false;
 
-      this.replaceProviderPlaceholders(insertionIndex, placeholderCount, page.items);
-      this.currentPage++;
-      this.latestSkipLoaded = this.currentPage * this.pageSize;
-      this.totalRecords = this.gridEngine.applyContinuationPageState(
-        page,
-        this.totalRecords,
-        this.rowsData().length,
-      );
-
-      this.showNullData = false;
+      this.zone.run(() => {
+        this.replaceProviderPlaceholders(insertionIndex, placeholderCount, page.items);
+        this.currentPage++;
+        this.latestSkipLoaded = this.currentPage * this.pageSize;
+        this.totalRecords = this.gridEngine.applyContinuationPageState(
+          page,
+          this.totalRecords,
+          this.rowsData().length,
+        );
+        this.showNullData = false;
+      });
       return true;
     } catch {
-      this.removeProviderPlaceholders(insertionIndex, placeholderCount);
+      if (loadVersion === this.remoteLoadVersion) {
+        this.zone.run(() => this.removeProviderPlaceholders(insertionIndex, placeholderCount));
+      }
       return false;
     } finally {
-      this.isLoading = false;
-      this.setProgressCursor(false);
+      if (loadVersion === this.remoteLoadVersion) {
+        this.zone.run(() => {
+          this.isLoading = false;
+          this.setProgressCursor(false);
+        });
+      }
     }
   }
 
@@ -2858,8 +2885,9 @@ export class DataGridComponent<T = any> implements OnDestroy {
     previousDirection: 'asc' | 'desc',
     previousSort: GridSort[],
   ): Promise<void> {
+    const previousVersion = this.remoteLoadVersion;
     const loaded = await this.loadRemoteRecords();
-
+    if (this.remoteLoadVersion !== previousVersion + 1) return;
     if (!loaded) {
       this.sortedColumn = previousColumn;
       this.sortDirection = previousDirection;
