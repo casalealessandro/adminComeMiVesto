@@ -62,6 +62,7 @@ export class UsersComponent implements OnDestroy {
 
   private usersGrid?: DataGridComponent<UserProfile>;
   private mobileSearchTimer?: ReturnType<typeof setTimeout>;
+  private providerRequestVersion = 0;
 
   users: UserProfile[] = [];
   search = '';
@@ -73,6 +74,7 @@ export class UsersComponent implements OnDestroy {
   readonly dataProvider: GridDataProvider<UserProfile> = {
     load: async (request: GridLoadRequest): Promise<GridPage<UserProfile>> => {
       const append = request.continuation !== undefined;
+      const version = append ? this.providerRequestVersion : ++this.providerRequestVersion;
       if (append) {
         this.loadingMore = true;
       } else {
@@ -82,16 +84,22 @@ export class UsersComponent implements OnDestroy {
 
       try {
         const page = await this.usersGridProvider.load(request);
-        const combined = append ? [...this.users, ...page.items] : [...page.items];
-        this.users = Array.from(new Map(combined.map(user => [user.uid, user])).values());
-        this.hasMore = page.hasMore;
+        if (version === this.providerRequestVersion) {
+          const combined = append ? [...this.users, ...page.items] : [...page.items];
+          this.users = Array.from(new Map(combined.map(user => [user.uid, user])).values());
+          this.hasMore = page.hasMore;
+        }
         return page;
       } catch (error) {
-        this.error = 'Impossibile caricare gli utenti.';
+        if (version === this.providerRequestVersion) {
+          this.error = 'Impossibile caricare gli utenti.';
+        }
         throw error;
       } finally {
-        if (append) this.loadingMore = false;
-        else this.loading = false;
+        if (version === this.providerRequestVersion) {
+          if (append) this.loadingMore = false;
+          else this.loading = false;
+        }
       }
     },
   };
@@ -267,6 +275,7 @@ export class UsersComponent implements OnDestroy {
   }];
 
   ngOnDestroy(): void {
+    this.providerRequestVersion++;
     if (this.mobileSearchTimer !== undefined) clearTimeout(this.mobileSearchTimer);
   }
 
