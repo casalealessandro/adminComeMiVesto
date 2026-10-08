@@ -9,7 +9,7 @@ import { FormService } from '../../../services/form.service';
 import { AffiliateCatalogService } from '../services/affiliate-catalog.service';
 import { AffiliateProgram } from '../models/affiliate-catalog.models';
 
-// Runtime identities are create-only. The remaining fields remain editable in Firestore/Form Builder.
+// The external network feed ID can be corrected; the program association remains create-only.
 export const AFFILIATE_FEED_CREATE_RUNTIME_FORM = 'affiliateFeed:create';
 export const AFFILIATE_FEED_EDIT_RUNTIME_FORM = 'affiliateFeed:edit';
 const STORED_FORM_ID = 'affiliateFeed';
@@ -21,12 +21,12 @@ export function affiliateFeedRuntimeFields(
   create: boolean,
 ): DynamicFormField[] {
   const editable = fields.filter(field => !IDENTITY_NAMES.has(field.name));
-  if (!create) return editable;
-
   const networkFeedId: DynamicFormField = {
     name: 'networkFeedId', type: 'textBox', typeInput: 'text',
     label: 'Network Feed ID', required: true, placeholder: 'ID feed sul network',
   };
+  if (!create) return [networkFeedId, ...editable];
+
   const affiliateProgramId: DynamicFormField = {
     name: 'affiliateProgramId', type: 'selectBox', typeInput: 'text',
     label: 'Programma affiliato', required: true,
