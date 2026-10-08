@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, ViewChild, inject } from '@angular/core';
+import { Component, OnDestroy, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, of, switchMap } from 'rxjs';
 
@@ -11,6 +11,7 @@ import { AdminCreateUserRequest, UserRole, UserService } from '../../services/us
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
 import { UsersGridProvider } from './users-grid.provider';
+import { GridDataProvider, GridLoadRequest, GridPage } from '../../components/data-grid/data-grid-provider';
 
 export interface DynamicFormSubmitEvent {
   name: 'submitForm' | 'cancelForm';
@@ -54,19 +55,64 @@ export function adminCreateUserSuccessMessage(passwordSetupEmailSent: boolean): 
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })
-export class UsersComponent implements AfterViewInit {
+export class UsersComponent implements OnDestroy {
   private usersService = inject(UserService);
   readonly auth = inject(AuthService);
   readonly usersGridProvider = inject(UsersGridProvider);
 
-  @ViewChild('usersGrid') private usersGrid?: DataGridComponent<UserProfile>;
+  private usersGrid?: DataGridComponent<UserProfile>;
+  private mobileSearchTimer?: ReturnType<typeof setTimeout>;
+  private providerRequestVersion = 0;
 
-  users: UserGridRow[] = [];
-  filteredUsers: UserGridRow[] = [];
+  users: UserProfile[] = [];
   search = '';
   loading = false;
+  loadingMore = false;
   error = '';
-  nextPageToken: string | null = null;
+  hasMore = false;
+
+  readonly dataProvider: GridDataProvider<UserProfile> = {
+    load: async (request: GridLoadRequest): Promise<GridPage<UserProfile>> => {
+      const append = request.continuation !== undefined;
+      const version = append ? this.providerRequestVersion : ++this.providerRequestVersion;
+      if (append) {
+        this.loadingMore = true;
+      } else {
+        this.loading = true;
+        this.error = '';
+      }
+
+      try {
+        const page = await this.usersGridProvider.load(request);
+        if (version === this.providerRequestVersion) {
+          const combined = append ? [...this.users, ...page.items] : [...page.items];
+          this.users = Array.from(new Map(combined.map(user => [user.uid, user])).values());
+          this.hasMore = page.hasMore;
+        }
+        return page;
+      } catch (error) {
+        if (version === this.providerRequestVersion) {
+          this.error = 'Impossibile caricare gli utenti.';
+        }
+        throw error;
+      } finally {
+        if (version === this.providerRequestVersion) {
+          if (append) this.loadingMore = false;
+          else this.loading = false;
+        }
+      }
+    },
+    deleteMany: (users: UserProfile[]): Promise<void> => this.usersGridProvider.deleteMany(users),
+  };
+
+  @ViewChild('usersGrid')
+  set usersGridView(grid: DataGridComponent<UserProfile> | undefined) {
+    this.usersGrid = grid;
+    if (!grid) return;
+    grid.pageSize = 50;
+    queueMicrotask(() => void grid.renderGrid());
+  }
+
   selected?: UserProfile;
   selectedOriginalRole?: UserRole;
   busyUid: string | null = null;
@@ -229,12 +275,9 @@ export class UsersComponent implements AfterViewInit {
     ]
   }];
 
-  ngOnInit(): void {
-    this.refreshMobileCards();
-  }
-
-  ngAfterViewInit(): void {
-    void this.usersGrid?.renderGrid();
+  ngOnDestroy(): void {
+    this.providerRequestVersion++;
+    if (this.mobileSearchTimer !== undefined) clearTimeout(this.mobileSearchTimer);
   }
 
   openCreateUser(): void {
@@ -272,46 +315,30 @@ export class UsersComponent implements AfterViewInit {
   }
 
   refresh(): void {
-    this.refreshMobileCards();
-    this.refreshRemoteGrid();
-  }
-
-  private refreshMobileCards(): void {
-    this.users = [];
-    this.nextPageToken = null;
-    this.loadPage();
+    if (!this.usersGrid || this.loading || this.loadingMore) return;
+    this.error = '';
+    this.usersGrid.refresh();
   }
 
   private refreshRemoteGrid(): void {
-    this.usersGrid?.refresh();
+    this.refresh();
   }
 
-  loadPage(): void {
-    if (this.loading) return;
-
-    this.loading = true;
-    this.error = '';
-
-    this.usersService.getUsersPage(50, this.nextPageToken || undefined)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe({
-        next: page => {
-          this.users.push(...page.data.map(user => this.toGridRow(user)));
-          this.nextPageToken = page.nextPageToken;
-          this.applySearch();
-        },
-        error: () => this.error = 'Impossibile caricare gli utenti.'
-      });
+  onMobileSearchChange(): void {
+    if (this.mobileSearchTimer !== undefined) clearTimeout(this.mobileSearchTimer);
+    this.mobileSearchTimer = setTimeout(() => {
+      this.mobileSearchTimer = undefined;
+      void this.usersGrid?.applyProviderSearch(this.search);
+    }, 300);
   }
 
-  applySearch(): void {
-    const term = this.search.trim().toLowerCase();
-    this.users.forEach(user => this.updateGridLabels(user));
-    this.filteredUsers = !term
-      ? [...this.users]
-      : this.users.filter(user =>
-        [user.email, user.displayName, user.nome, user.cognome]
-          .some(value => (value || '').toLowerCase().includes(term)));
+  async loadMore(): Promise<void> {
+    if (!this.usersGrid || this.loading || this.loadingMore || !this.hasMore) return;
+    await this.usersGrid.loadNextRemotePage();
+  }
+
+  trackByUserUid(_index: number, user: UserProfile): string {
+    return user.uid;
   }
 
   openEdit(user: UserProfile): void {
@@ -347,10 +374,7 @@ export class UsersComponent implements AfterViewInit {
       )
       .subscribe({
         next: () => {
-          const user = this.users.find(item => item.uid === pending.uid);
-          if (user) Object.assign(user, pending, { role: roleChanged ? requestedRole : originalRole });
           this.closeEdit();
-          this.applySearch();
           this.refreshRemoteGrid();
           alert('Profilo aggiornato.', 'Operazione completata');
         },
@@ -394,8 +418,6 @@ export class UsersComponent implements AfterViewInit {
 
       call.pipe(finalize(() => this.busyUid = null)).subscribe({
         next: () => {
-          user.disabled = !user.disabled;
-          this.applySearch();
           this.refreshRemoteGrid();
           alert('Stato utente aggiornato.', 'Operazione completata');
         },
@@ -422,8 +444,6 @@ export class UsersComponent implements AfterViewInit {
 
       this.usersService.deleteUser(user.uid).subscribe({
         next: () => {
-          this.users = this.users.filter(item => item.uid !== user.uid);
-          this.applySearch();
           this.refreshRemoteGrid();
           alert('Utente eliminato.', 'Operazione completata');
         },
@@ -437,8 +457,6 @@ export class UsersComponent implements AfterViewInit {
 
     this.usersService.updateRole(user.uid, role).subscribe({
       next: () => {
-        user.role = role;
-        this.applySearch();
         this.refreshRemoteGrid();
       },
       error: () => this.error = 'Modifica ruolo non consentita.'
@@ -457,24 +475,4 @@ export class UsersComponent implements AfterViewInit {
     if (event?.name === 'delete' && this.canManage(event.rowData)) this.deleteUser(event.rowData);
   }
 
-  private toGridRow(user: UserProfile): UserGridRow {
-    return this.updateGridLabels(user as UserGridRow);
-  }
-
-  private updateGridLabels(user: UserGridRow): UserGridRow {
-    user.displayLabel = user.displayName || `${user.nome || ''} ${user.cognome || ''}`.trim() || 'Utente';
-    user.roleLabel = user.role || 'creator';
-    user.statusLabel = user.disabled ? 'DISABILITATO' : 'ATTIVO';
-    user.verifiedLabel = user.emailVerified ? 'Sì' : 'No';
-    user.createdLabel = user.createdAt || user.createAt;
-    return user;
-  }
 }
-
-type UserGridRow = UserProfile & {
-  displayLabel: string;
-  roleLabel: UserRole;
-  statusLabel: string;
-  verifiedLabel: string;
-  createdLabel: UserProfile['createdAt'] | UserProfile['createAt'];
-};
