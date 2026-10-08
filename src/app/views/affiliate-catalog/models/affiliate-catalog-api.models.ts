@@ -122,6 +122,8 @@ export interface AiOutfitPreviewRequest {
   creatorUid?: string;
   /** Optional maximum total price in EUR for each generated outfit. */
   maxTotalPrice?: number;
+  /** Empty or omitted means all eligible feeds. */
+  sourceFeedIds?: string[];
 }
 
 export interface AiOutfitTokenUsage {
@@ -200,7 +202,7 @@ export interface AiOutfitDraft {
   id: string;
   batchId: string;
   batchIndex: number;
-  status: 'PENDING' | 'APPROVED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   generatedAt: number;
   createdAt: number;
   updatedAt: number;

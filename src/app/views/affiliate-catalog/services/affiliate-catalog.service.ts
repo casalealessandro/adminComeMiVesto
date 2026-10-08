@@ -61,6 +61,10 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
+  discardOutfitDraft(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/outfit-generator/drafts/${encodeURIComponent(id)}`);
+  }
+
   publishOutfitPreview(input: AiOutfitPublishRequest): Observable<AiOutfitPublishedResult> {
     return this.http
       .post<AffiliateApiResponse<AiOutfitPublishedResult>>(`${this.baseUrl}/outfit-generator/publish`, input)
