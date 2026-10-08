@@ -592,7 +592,7 @@ describe('ProviderDataGridComponent remote loading', () => {
   });
   it('ignores an obsolete remote search result when the later result arrives first', async () => {
     const pending: Array<(page: any) => void> = [];
-    component.dataProvider = { load: () => new Promise(resolve => pending.push(resolve)) };
+    component.dataProvider = { load: () => new Promise<any>(resolve => pending.push(resolve)) };
     component.remoteOperation = true;
     component.colsHeader = [{ dataField: 'name', type: 'campo' } as any];
 
@@ -612,8 +612,8 @@ describe('ProviderDataGridComponent remote loading', () => {
     let count = 0;
     component.dataProvider = {
       load: () => ++count === 1
-        ? new Promise((_, reject) => rejectOld = reject)
-        : new Promise(resolve => resolveNew = resolve),
+        ? new Promise<any>((_, reject) => rejectOld = reject)
+        : new Promise<any>(resolve => resolveNew = resolve),
     };
     component.remoteOperation = true;
     component.colsHeader = [{ dataField: 'name', type: 'campo' } as any];
