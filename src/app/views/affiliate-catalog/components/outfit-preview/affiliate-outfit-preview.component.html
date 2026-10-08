@@ -68,12 +68,15 @@
 
     <fieldset class="ai-preview__feed-filter" [disabled]="loading || feedsLoading">
       <legend>Feed sorgenti (opzionale)</legend>
-      <div class="ai-preview__feed-options" *ngIf="feeds.length; else noFeeds">
+      <details class="ai-preview__feed-dropdown" *ngIf="feeds.length; else noFeeds">
+        <summary>{{ selectedFeedIds.length ? selectedFeedIds.length + " feed selezionati" : "Tutti i feed eleggibili" }}</summary>
+        <div class="ai-preview__feed-options">
         <label *ngFor="let feed of feeds" class="ai-preview__feed-option">
           <input type="checkbox" [checked]="selectedFeedIds.includes(feed.id)" (change)="toggleFeed(feed.id, $any($event.target).checked)">
           <span>{{ feed.name }}</span>
         </label>
-      </div>
+        </div>
+      </details>
       <ng-template #noFeeds><small>{{ feedsLoading ? 'Caricamento feed…' : 'Nessun feed attivo disponibile' }}</small></ng-template>
       <small class="ai-preview__control-help">Nessuna selezione: usa tutti i feed eleggibili.</small>
     </fieldset>
