@@ -186,4 +186,14 @@ describe('Affiliate product detail', () => {
       genderTargets: product.genderTargets,
     })).toEqual({ enabledForApp: false });
   });
+  it('keeps inactive catalog products disabled in the app', () => {
+    const inactive = { ...product, active: false, enabledForApp: true };
+    expect(buildAffiliateProductCurationUpdate(inactive, true, {
+      category: inactive.category,
+      subcategory: inactive.subcategory,
+      normalizedColor: inactive.normalizedColor,
+      genderTargets: inactive.genderTargets,
+    })).toEqual({});
+  });
+
 });
