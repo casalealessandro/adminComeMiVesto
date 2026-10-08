@@ -14,6 +14,7 @@ import {
   AiOutfitPreviewGender,
 } from '../../models/affiliate-catalog-api.models';
 import { AiOutfitPublishRequest } from '../../models/ai-outfit-publish.models';
+import { AffiliateFeed } from '../../models/affiliate-catalog.models';
 import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
@@ -82,17 +83,29 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   loading = false;
   error = '';
   programNames = new Map<string, string>();
+  feeds: AffiliateFeed[] = [];
+  selectedFeedIds: string[] = [];
+  feedsLoading = false;
   creators: AiCreator[] = [];
   creatorsLoading = false;
   pendingDrafts: AiOutfitDraft[] = [];
   draftsLoading = false;
   resumedDraftId: string | null = null;
   readonly publishing = new Set<string>();
+  readonly discarding = new Set<string>();
+  readonly discardErrors = new Map<string, string>();
   readonly published = new Map<string, string>();
   readonly publishErrors = new Map<string, string>();
   readonly selectedProductByOutfit = new Map<string, string>();
 
   ngOnInit(): void {
+    this.feedsLoading = true;
+    this.affiliateCatalogService.getFeeds()
+      .pipe(finalize(() => this.feedsLoading = false))
+      .subscribe({
+        next: (feeds) => this.feeds = feeds.filter((feed) => feed.enabled),
+        error: () => this.error = 'Impossibile caricare i feed disponibili.',
+      });
     this.affiliateCatalogService.getPrograms().subscribe({
       next: (programs) => {
         this.programNames = new Map(programs.map((program) => [program.id, program.name]));
@@ -120,6 +133,32 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       });
   }
 
+  toggleFeed(feedId: string, checked: boolean): void {
+    this.selectedFeedIds = checked
+      ? [...this.selectedFeedIds.filter((id) => id !== feedId), feedId]
+      : this.selectedFeedIds.filter((id) => id !== feedId);
+  }
+
+  discard(outfit: AiOutfitPreviewOutfit): void {
+    const id = outfit.draftId;
+    if (!id || this.discarding.has(id) || this.publishing.has(id) || this.published.has(id)) return;
+    if (typeof window !== 'undefined' && !window.confirm('Scartare definitivamente questo outfit AI?')) return;
+    this.discarding.add(id);
+    this.discardErrors.delete(id);
+    this.affiliateCatalogService.discardOutfitDraft(id)
+      .pipe(finalize(() => this.discarding.delete(id)))
+      .subscribe({
+        next: () => {
+          this.pendingDrafts = this.pendingDrafts.filter((draft) => draft.id !== id);
+          if (this.result) this.result = { ...this.result, outfits: this.result.outfits.filter((item) => item.draftId !== id) };
+          if (this.resumedDraftId === id) { this.result = null; this.resumedDraftId = null; }
+        },
+        error: (error) => this.discardErrors.set(id, error?.error?.message || 'Impossibile scartare la bozza.'),
+      });
+  }
+
+  discardDraft(draft: AiOutfitDraft): void { this.discard(draft.outfit.draftId ? draft.outfit : { ...draft.outfit, draftId: draft.id }); }
+
   resumeDraft(draft: AiOutfitDraft): void {
     const result: AiOutfitPreviewResult = {
       generatedAt: draft.generatedAt,
@@ -138,6 +177,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     this.request = { ...draft.request };
     this.outfitCount = draft.request.count ?? 1;
     this.maxTotalPrice = draft.request.maxTotalPrice ?? null;
+    this.selectedFeedIds = [...(draft.request.sourceFeedIds ?? [])];
     this.error = '';
     this.publishing.clear();
     this.published.clear();
@@ -185,10 +225,12 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     this.publishErrors.clear();
     const request: AiOutfitPreviewRequest = {
       ...this.request,
+      ...(this.selectedFeedIds.length ? { sourceFeedIds: [...this.selectedFeedIds] } : {}),
       count,
       ...(maxTotalPrice !== undefined ? { maxTotalPrice: Math.round(maxTotalPrice * 100) / 100 } : {}),
     };
     if (maxTotalPrice === undefined) delete request.maxTotalPrice;
+    if (!this.selectedFeedIds.length) delete request.sourceFeedIds;
     // Keep the normalized request available to the UI/tests and aligned with the backend response.
     this.request = request;
 
@@ -336,6 +378,14 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     if (normalized === 'DRESS' || /(DRESS|ABITO|VESTITO)/.test(normalized)) return { x, y: 0.48 };
     if (normalized === 'OUTERWEAR' || /(OUTER|JACKET|BLAZER|COAT|TRENCH|GIACC|CAPPOTT)/.test(normalized)) return { x, y: 0.36 };
     return { x, y: 0.34 };
+  }
+
+  isDiscarding(outfit: AiOutfitPreviewOutfit): boolean {
+    return Boolean(outfit.draftId && this.discarding.has(outfit.draftId));
+  }
+
+  discardError(outfit: AiOutfitPreviewOutfit): string {
+    return outfit.draftId ? this.discardErrors.get(outfit.draftId) || '' : '';
   }
 
   isPublishing(outfit: AiOutfitPreviewOutfit): boolean {
