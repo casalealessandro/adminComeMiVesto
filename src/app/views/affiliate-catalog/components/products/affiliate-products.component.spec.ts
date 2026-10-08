@@ -94,6 +94,7 @@ describe('Affiliate products', () => {
     expect(rows[0].programName).toBe(program.name);
     expect(rows[0].activeLabel).toBe('Sì');
     expect(rows[0].visibleInAppFilter).toBe('true');
+    expect(buildAffiliateProductGridRows([{ ...product, active: false, enabledForApp: true }], new Map())[0].visibleInAppFilter).toBe('false');
     expect(rows[0].categoryLabel).toBe('Clothing / Shirts');
     expect(rows[0].genderLabel).toBe('U, D');
     expect(rows[0].sourceFeedCount).toBe(2);
