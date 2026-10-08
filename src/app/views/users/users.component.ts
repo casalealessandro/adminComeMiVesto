@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, HostListener, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Component, OnDestroy, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, of, switchMap } from 'rxjs';
 
@@ -11,7 +11,7 @@ import { AdminCreateUserRequest, UserRole, UserService } from '../../services/us
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { DynamicFormComponent } from '../../components/dynamic-form/dynamic-form.component';
 import { UsersGridProvider } from './users-grid.provider';
-import { GridLoadRequest } from '../../components/data-grid/data-grid-provider';
+import { GridDataProvider, GridLoadRequest, GridPage } from '../../components/data-grid/data-grid-provider';
 
 export interface DynamicFormSubmitEvent {
   name: 'submitForm' | 'cancelForm';
@@ -61,24 +61,49 @@ export class UsersComponent implements OnDestroy {
   readonly usersGridProvider = inject(UsersGridProvider);
 
   private usersGrid?: DataGridComponent<UserProfile>;
+  private mobileSearchTimer?: ReturnType<typeof setTimeout>;
 
-  // The desktop grid is instantiated only for desktop. Its ViewChild setter
-  // initializes the grid once whenever its responsive view is created.
-  @ViewChild('usersGrid')
-  set usersGridView(grid: DataGridComponent<UserProfile> | undefined) {
-    this.usersGrid = grid;
-    if (grid) void grid.renderGrid();
-  }
-
-  isMobile = false;
   users: UserProfile[] = [];
   search = '';
   loading = false;
+  loadingMore = false;
   error = '';
-  mobileHasMore = false;
-  private mobileContinuation?: unknown;
-  private mobileRequestVersion = 0;
-  private mobileSearchTimer?: ReturnType<typeof setTimeout>;
+  hasMore = false;
+
+  readonly dataProvider: GridDataProvider<UserProfile> = {
+    load: async (request: GridLoadRequest): Promise<GridPage<UserProfile>> => {
+      const append = request.continuation !== undefined;
+      if (append) {
+        this.loadingMore = true;
+      } else {
+        this.loading = true;
+        this.error = '';
+      }
+
+      try {
+        const page = await this.usersGridProvider.load(request);
+        const combined = append ? [...this.users, ...page.items] : [...page.items];
+        this.users = Array.from(new Map(combined.map(user => [user.uid, user])).values());
+        this.hasMore = page.hasMore;
+        return page;
+      } catch (error) {
+        this.error = 'Impossibile caricare gli utenti.';
+        throw error;
+      } finally {
+        if (append) this.loadingMore = false;
+        else this.loading = false;
+      }
+    },
+  };
+
+  @ViewChild('usersGrid')
+  set usersGridView(grid: DataGridComponent<UserProfile> | undefined) {
+    this.usersGrid = grid;
+    if (!grid) return;
+    grid.pageSize = 50;
+    queueMicrotask(() => void grid.renderGrid());
+  }
+
   selected?: UserProfile;
   selectedOriginalRole?: UserRole;
   busyUid: string | null = null;
@@ -241,26 +266,7 @@ export class UsersComponent implements OnDestroy {
     ]
   }];
 
-  ngOnInit(): void {
-    this.onViewportChange();
-  }
-
-  @HostListener('window:resize')
-  onViewportChange(): void {
-    const mobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 700px)').matches;
-    if (this.isMobile === mobile) return;
-
-    this.isMobile = mobile;
-    if (mobile) {
-      this.refreshMobileCards();
-    } else {
-      this.mobileRequestVersion++;
-      this.loading = false;
-    }
-  }
-
   ngOnDestroy(): void {
-    this.mobileRequestVersion++;
     if (this.mobileSearchTimer !== undefined) clearTimeout(this.mobileSearchTimer);
   }
 
@@ -299,73 +305,30 @@ export class UsersComponent implements OnDestroy {
   }
 
   refresh(): void {
-    if (this.isMobile) {
-      this.refreshMobileCards();
-    } else {
-      this.refreshRemoteGrid();
-    }
-  }
-
-  private refreshMobileCards(): void {
-    this.mobileRequestVersion++;
-    this.users = [];
-    this.mobileContinuation = undefined;
-    this.mobileHasMore = false;
-    this.loading = false;
-    void this.loadPage();
+    if (!this.usersGrid || this.loading || this.loadingMore) return;
+    this.error = '';
+    this.usersGrid.refresh();
   }
 
   private refreshRemoteGrid(): void {
-    this.usersGrid?.refresh();
+    this.refresh();
   }
 
   onMobileSearchChange(): void {
-    if (!this.isMobile) return;
     if (this.mobileSearchTimer !== undefined) clearTimeout(this.mobileSearchTimer);
-    // Invalidate any response for the previous query immediately.
-    this.mobileRequestVersion++;
-    this.loading = false;
     this.mobileSearchTimer = setTimeout(() => {
       this.mobileSearchTimer = undefined;
-      if (this.isMobile) this.refreshMobileCards();
+      void this.usersGrid?.applyProviderSearch(this.search);
     }, 300);
   }
 
-  async loadPage(): Promise<void> {
-    if (!this.isMobile || this.loading || (this.users.length > 0 && !this.mobileHasMore)) return;
+  async loadMore(): Promise<void> {
+    if (!this.usersGrid || this.loading || this.loadingMore || !this.hasMore) return;
+    await this.usersGrid.loadNextRemotePage();
+  }
 
-    const version = this.mobileRequestVersion;
-    this.loading = true;
-    this.error = '';
-
-    const term = this.search.trim();
-    const request: GridLoadRequest = {
-      pageSize: 50,
-      sort: [{ field: 'createdAt', direction: 'desc' }],
-      ...(this.mobileContinuation !== undefined ? { continuation: this.mobileContinuation } : {}),
-      ...(term ? {
-        search: {
-          value: term,
-          conditions: ['email', 'displayName', 'nome', 'cognome'].map(field => ({
-            field, operator: 'contains' as const, value: term,
-          })),
-        },
-      } : {}),
-    };
-
-    try {
-      const page = await this.usersGridProvider.load(request);
-      if (version !== this.mobileRequestVersion || !this.isMobile) return;
-      this.users = [...this.users, ...page.items];
-      this.mobileContinuation = page.continuation;
-      this.mobileHasMore = page.hasMore;
-    } catch {
-      if (version === this.mobileRequestVersion && this.isMobile) {
-        this.error = 'Impossibile caricare gli utenti.';
-      }
-    } finally {
-      if (version === this.mobileRequestVersion) this.loading = false;
-    }
+  trackByUserUid(_index: number, user: UserProfile): string {
+    return user.uid;
   }
 
   openEdit(user: UserProfile): void {
@@ -402,7 +365,7 @@ export class UsersComponent implements OnDestroy {
       .subscribe({
         next: () => {
           this.closeEdit();
-          this.refresh();
+          this.refreshRemoteGrid();
           alert('Profilo aggiornato.', 'Operazione completata');
         },
         error: () => {
@@ -445,7 +408,7 @@ export class UsersComponent implements OnDestroy {
 
       call.pipe(finalize(() => this.busyUid = null)).subscribe({
         next: () => {
-          this.refresh();
+          this.refreshRemoteGrid();
           alert('Stato utente aggiornato.', 'Operazione completata');
         },
         error: () => this.error = 'Operazione non autorizzata o non disponibile.'
@@ -471,7 +434,7 @@ export class UsersComponent implements OnDestroy {
 
       this.usersService.deleteUser(user.uid).subscribe({
         next: () => {
-          this.refresh();
+          this.refreshRemoteGrid();
           alert('Utente eliminato.', 'Operazione completata');
         },
         error: () => this.error = 'Eliminazione non consentita o non riuscita.'
@@ -484,7 +447,7 @@ export class UsersComponent implements OnDestroy {
 
     this.usersService.updateRole(user.uid, role).subscribe({
       next: () => {
-        this.refresh();
+        this.refreshRemoteGrid();
       },
       error: () => this.error = 'Modifica ruolo non consentita.'
     });
