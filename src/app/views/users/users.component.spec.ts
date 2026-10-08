@@ -1,6 +1,7 @@
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, Subject } from 'rxjs';
+import { GridLoadRequest } from '../../components/data-grid/data-grid-provider';
 
 import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { AuthService } from '../../services/auth.service';
@@ -30,8 +31,8 @@ describe('UsersComponent admin creation', () => {
   beforeEach(async () => {
     isAdmin.and.returnValue(true);
     gridProvider.load.calls.reset();
-    userService = jasmine.createSpyObj('UserService', ['getUsersPage', 'createAdminUser']);
-    userService.getUsersPage.and.returnValue(of({ data: [], nextPageToken: null }));
+    gridProvider.load.and.resolveTo({ items: [], hasMore: false, totalCount: 0 });
+    userService = jasmine.createSpyObj('UserService', ['createAdminUser']);
 
     await TestBed.configureTestingModule({
       imports: [UsersComponent],
@@ -47,20 +48,63 @@ describe('UsersComponent admin creation', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     await fixture.whenStable();
-    userService.getUsersPage.calls.reset();
   });
 
   it('configures the users DataGrid on the provider-neutral remote path', () => {
     const grid = fixture.debugElement.query(By.directive(DataGridComponent)).componentInstance as DataGridComponent;
 
     expect(grid.remoteOperation).toBeTrue();
-    expect(grid.dataProvider).toBe(gridProvider);
+    expect(grid.dataProvider).toBe(component.dataProvider);
+    expect(grid.pageSize).toBe(50);
     expect(grid.showToolbarTop).toBeTrue();
     expect(grid.showFilter).toBeTrue();
     expect(grid.isSearchable).toBeTrue();
-    expect(gridProvider.load).toHaveBeenCalledWith({ pageSize: 20, sort: [{ field: 'createdAt', direction: 'desc' }] });
+    expect(gridProvider.load).toHaveBeenCalledWith({ pageSize: 50, sort: [{ field: 'createdAt', direction: 'desc' }] });
+    expect(gridProvider.load).toHaveBeenCalledTimes(1);
     expect(grid.sortedColumn).toBe('createdAt');
     expect(grid.sortDirection).toBe('desc');
+  });
+
+  it('loads users only through the shared remote provider, without the legacy page endpoint', () => {
+    expect(gridProvider.load).toHaveBeenCalledTimes(1);
+    expect(component.users).toEqual([]);
+  });
+
+  it('shares remote data with mobile cards and preserves continuation', async () => {
+    gridProvider.load.and.resolveTo({
+      items: [{ uid: 'user-1', email: 'user@example.com' }],
+      hasMore: true,
+      continuation: 'next',
+      totalCount: 2,
+    });
+    const page = await component.dataProvider.load({
+      pageSize: 50,
+      sort: [{ field: 'createdAt', direction: 'desc' }],
+    });
+    expect(page.hasMore).toBeTrue();
+    expect(component.users.map(user => user.uid)).toEqual(['user-1']);
+    expect(component.hasMore).toBeTrue();
+
+    gridProvider.load.and.resolveTo({
+      items: [{ uid: 'user-2', email: 'another@example.com' }],
+      hasMore: false,
+      totalCount: 2,
+    });
+    await component.dataProvider.load({ pageSize: 50, continuation: 'next' });
+    expect(component.users.map(user => user.uid)).toEqual(['user-1', 'user-2']);
+    expect(component.hasMore).toBeFalse();
+  });
+
+  it('ignores old results in the mobile cards when a newer remote query finishes first', async () => {
+    const pending: Array<(page: any) => void> = [];
+    gridProvider.load.and.callFake((_request: GridLoadRequest) => new Promise(resolve => pending.push(resolve)));
+    const oldRequest = component.dataProvider.load({ pageSize: 50 });
+    const newRequest = component.dataProvider.load({ pageSize: 50 });
+    pending[1]({ items: [{ uid: 'new' }], hasMore: false });
+    await newRequest;
+    pending[0]({ items: [{ uid: 'old' }], hasMore: false });
+    await oldRequest;
+    expect(component.users.map(user => user.uid)).toEqual(['new']);
   });
 
   it('shows the action to admins and opens the DynamicForm dialog', () => {
@@ -105,7 +149,7 @@ describe('UsersComponent admin creation', () => {
       cognome: undefined,
       gender: undefined
     });
-    expect(userService.getUsersPage).toHaveBeenCalled();
+    expect(gridProvider.load).toHaveBeenCalled();
     expect(component.createUserOpen).toBeFalse();
   });
 
