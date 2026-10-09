@@ -197,7 +197,7 @@ describe('AffiliateCatalogService release contract', () => {
 
   it('reads the cached fashion overview without scanning products or calling AI', () => {
     const status = { job: null, snapshot: null };
-    let result: typeof status | undefined;
+    let result: unknown;
     service.getFashionOverview().subscribe((data) => result = data);
     const request = http.expectOne(`${baseUrl}/fashion-overview`);
     expect(request.request.method).toBe('GET');
