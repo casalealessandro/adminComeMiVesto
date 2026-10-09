@@ -1,0 +1,52 @@
+<section class="container-fluid py-3" aria-labelledby="fashion-title">
+  <header class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+      <h2 id="fashion-title" class="h4 mb-1">Informazioni fashion dei prodotti</h2>
+      <p class="text-muted mb-0">Stagioni, stile e vestibilità estratti dai feed. Nessun costo AI.</p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading || processing">
+      <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna dati
+    </button>
+  </header>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+  <div *ngIf="status as current" class="row g-2 mb-3">
+    <div class="col-6 col-md-4"><div class="border rounded p-3 h-100"><div class="text-muted small">Prodotti totali</div><strong class="h4">{{ current.total | number }}</strong></div></div>
+    <div class="col-6 col-md-4"><div class="border rounded p-3 h-100"><div class="text-muted small">Profili elaborati</div><strong class="h4">{{ current.enriched | number }}</strong></div></div>
+    <div class="col-12 col-md-4"><div class="border rounded p-3 h-100"><div class="text-muted small">Copertura</div><strong class="h4">{{ (current.total ? (100 * current.enriched / current.total) : 0) | number:'1.0-1' }}%</strong></div></div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h3 class="h5">Elaborazione catalogo esistente</h3>
+      <p class="small text-muted">Avvia un blocco di massimo 100 prodotti per volta. I profili invariati vengono saltati; il pulsante continua dal blocco precedente finché tieni aperta questa pagina. Puoi ripartire dall'inizio senza duplicare i dati.</p>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <button type="button" class="btn btn-primary" (click)="enrichNextBatch()" [disabled]="processing || finished">
+          <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          {{ processing ? 'Elaborazione…' : (scannedTotal ? 'Elabora i prossimi 100' : 'Elabora i primi 100') }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary" (click)="restart()" [disabled]="processing">Ricomincia dall'inizio</button>
+      </div>
+      <p class="small mt-2 mb-0" *ngIf="scannedTotal">Esaminati in questa sessione: <strong>{{ scannedTotal }}</strong> · Profili aggiornati: <strong>{{ updatedTotal }}</strong></p>
+      <p class="text-success small mt-2 mb-0" *ngIf="finished">Scansione completa per questa sessione.</p>
+      <p class="small mt-2 mb-0" *ngIf="batch">Ultimo blocco: {{ batch.scanned }} letti, {{ batch.updated }} aggiornati, {{ batch.unchanged }} invariati; con stagione {{ batch.withSeasons }}, con stile {{ batch.withStyles }}, con vestibilità {{ batch.withFit }}, senza evidenze {{ batch.unknown }}.</p>
+    </div>
+  </div>
+
+  <h3 class="h5">Esempi di prodotti arricchiti</h3>
+  <p class="text-muted small">Una selezione di massimo 12 prodotti, non l'intero catalogo. Una stagione vuota significa che il feed non offre evidenze sufficienti; non viene inventata.</p>
+  <div class="row g-2" *ngIf="status as current">
+    <div class="col-12 col-md-6 col-xl-4" *ngFor="let p of current.examples">
+      <article class="border rounded p-3 h-100">
+        <a [routerLink]="['/affiliate-catalog/products', p.id]" class="fw-semibold">{{ p.name }}</a>
+        <div class="text-muted small">{{ p.brand }}</div>
+        <div class="mt-2 small"><strong>Stagioni:</strong> {{ p.fashionProfile?.seasons?.length ? (p.fashionProfile?.seasons?.join(', ')) : 'Non determinate' }}</div>
+        <div class="small"><strong>Stili:</strong> {{ p.fashionProfile?.styleAffinities?.length ? p.fashionProfile?.styleAffinities?.join(', ') : 'Non determinati' }}</div>
+        <div class="small"><strong>Vestibilità:</strong> {{ p.fashionProfile?.fit || 'UNKNOWN' }}</div>
+        <div class="small"><strong>Evidenze:</strong> {{ p.fashionProfile?.evidence?.length || 0 }}</div>
+        <div class="small text-muted" *ngFor="let e of p.fashionProfile?.evidence">{{ e.field }}: {{ e.matched }} ({{ e.source }})</div>
+      </article>
+    </div>
+    <p *ngIf="!current.examples.length" class="text-muted">Non risultano ancora prodotti arricchiti.</p>
+  </div>
+</section>
