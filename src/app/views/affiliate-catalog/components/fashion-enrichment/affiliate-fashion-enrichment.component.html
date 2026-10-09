@@ -1,64 +1,172 @@
-<section class="container-fluid py-3" aria-labelledby="fashion-title">
-  <header class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+<section class="fashion-overview container-fluid py-3" aria-labelledby="fashion-overview-title">
+  <header class="fashion-overview__header">
     <div>
-      <h2 id="fashion-title" class="h4 mb-1">Informazioni fashion dei prodotti</h2>
-      <p class="text-muted mb-0">Stagioni, stile e vestibilità estratti dai feed. Nessun costo AI.</p>
+      <h2 id="fashion-overview-title" class="h4 mb-1">Intelligenza Fashion</h2>
+      <p class="text-muted mb-1">Qualità delle informazioni che aiutano ComeMiVesto a scegliere e abbinare i capi.</p>
+      <p class="text-muted small mb-0">La sincronizzazione dei feed resta nella <a routerLink="/affiliate-catalog/feeds">sezione Feed</a>.</p>
     </div>
-    <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading || processing">
-      <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna dati
-    </button>
+    <div class="fashion-overview__actions">
+      <button class="btn btn-outline-secondary" type="button" (click)="refresh()" [disabled]="loading || processing">
+        <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna visualizzazione
+      </button>
+      <button class="btn btn-primary" type="button" (click)="requestOverview()" [disabled]="loading || processing || jobRunning">
+        <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        {{ processing ? 'Avvio…' : 'Ricalcola panoramica' }}
+      </button>
+    </div>
   </header>
 
   <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
-  <div *ngIf="status as current" class="row g-2 mb-3">
-    <div class="col-6 col-md-4"><div class="border rounded p-3 h-100"><div class="text-muted small">Prodotti totali</div><strong class="h4">{{ current.total | number }}</strong></div></div>
-    <div class="col-6 col-md-4"><div class="border rounded p-3 h-100"><div class="text-muted small">Profili elaborati</div><strong class="h4">{{ current.enriched | number }}</strong></div></div>
-    <div class="col-12 col-md-4"><div class="border rounded p-3 h-100"><div class="text-muted small">Copertura</div><strong class="h4">{{ (current.total ? (100 * current.enriched / current.total) : 0) | number:'1.0-1' }}%</strong></div></div>
+  <div *ngIf="notice" class="alert alert-info" role="status">{{ notice }}</div>
+
+  <div *ngIf="loading && !overview" class="py-4 text-muted" role="status">
+    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> Lettura panoramica…
   </div>
 
-  <div class="card mb-3">
-    <div class="card-body">
-      <h3 class="h5">Arricchimento completo del catalogo</h3>
-      <p class="small text-muted">Un solo avvio elabora in background tutti i prodotti a blocchi sicuri da 100. Puoi chiudere la pagina, il lavoro continua su Firebase. Non utilizza servizi AI.</p>
-      <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-        <button type="button" class="btn btn-primary" (click)="startAll()" [disabled]="processing || jobRunning">
-          <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-          {{ processing ? 'Avvio…' : 'Elabora tutto il catalogo' }}
-        </button>
-        <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading || processing">
-          <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna avanzamento
-        </button>
-      </div>
-      <div *ngIf="job as current">
-        <p class="mb-2"><strong>Stato:</strong> {{ current.status === 'SUCCESS' ? 'Completato' : current.status === 'FAILED' ? 'Errore' : current.status === 'QUEUED' ? 'In coda' : 'In elaborazione' }}</p>
-        <div class="progress mb-2" *ngIf="status?.total">
-          <div class="progress-bar" role="progressbar"
-            [style.width.%]="100 * current.scanned / (status?.total || 1)"
-            [attr.aria-valuenow]="current.scanned" aria-valuemin="0"
-            [attr.aria-valuemax]="status?.total"> {{ (100 * current.scanned / (status?.total || 1)) | number:'1.0-0' }}% </div>
-        </div>
-        <p class="small mb-1">Esaminati: <strong>{{ current.scanned | number }}</strong> · Aggiornati: <strong>{{ current.updated | number }}</strong> · Invariati: {{ current.unchanged | number }}</p>
-        <p class="small mb-1">Stagioni riconosciute: {{ current.withSeasons }} · Stili: {{ current.withStyles }} · Vestibilità: {{ current.withFit }} · Senza evidenze: {{ current.unknown }}</p>
-        <p class="text-danger small" *ngIf="current.lastError">{{ current.lastError }}</p>
-        <p class="text-muted small mb-0" *ngIf="jobRunning">Aggiorna la pagina per vedere i progressi. Il lavoro prosegue anche se chiudi il browser.</p>
-      </div>
+  <section *ngIf="job as currentJob" class="fashion-overview__job" aria-live="polite">
+    <div>
+      <strong>Ultima elaborazione: {{ jobStatus(currentJob.status) }}</strong>
+      <p class="small text-muted mb-0">
+        Prodotti esaminati: {{ currentJob.scanned | number }}
+        <span *ngIf="currentJob.completedAt"> · Terminata il {{ currentJob.completedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </p>
+      <p *ngIf="jobRunning" class="small text-muted mb-0">
+        L’elaborazione continua in background. Puoi chiudere questa pagina e tornare più tardi.
+      </p>
+      <p *ngIf="currentJob.lastError" class="text-danger small mb-0">{{ currentJob.lastError }}</p>
     </div>
-  </div>
+  </section>
 
-  <h3 class="h5">Esempi di prodotti arricchiti</h3>
-  <p class="text-muted small">Una selezione di massimo 12 prodotti, non l'intero catalogo. Una stagione vuota significa che il feed non offre evidenze sufficienti; non viene inventata.</p>
-  <div class="row g-2" *ngIf="status as current">
-    <div class="col-12 col-md-6 col-xl-4" *ngFor="let p of current.examples">
-      <article class="border rounded p-3 h-100">
-        <a [routerLink]="['/affiliate-catalog/products', p.id]" class="fw-semibold">{{ p.name }}</a>
-        <div class="text-muted small">{{ p.brand }}</div>
-        <div class="mt-2 small"><strong>Stagioni:</strong> {{ p.fashionProfile?.seasons?.length ? (p.fashionProfile?.seasons?.join(', ')) : 'Non determinate' }}</div>
-        <div class="small"><strong>Stili:</strong> {{ p.fashionProfile?.styleAffinities?.length ? p.fashionProfile?.styleAffinities?.join(', ') : 'Non determinati' }}</div>
-        <div class="small"><strong>Vestibilità:</strong> {{ p.fashionProfile?.fit || 'UNKNOWN' }}</div>
-        <div class="small"><strong>Evidenze:</strong> {{ p.fashionProfile?.evidence?.length || 0 }}</div>
-        <div class="small text-muted" *ngFor="let e of p.fashionProfile?.evidence">{{ e.field }}: {{ e.matched }} ({{ e.source }})</div>
+  <ng-container *ngIf="overview as data; else noSnapshot">
+    <p class="fashion-overview__generated small text-muted">
+      Report del {{ data.generatedAt | date:'dd/MM/yyyy HH:mm' }}
+      · {{ data.scannedProducts | number }} documenti letti
+      · Fotografia salvata, non conteggi in tempo reale
+    </p>
+    <p class="alert alert-info small" *ngIf="jobRunning">
+      È in corso un nuovo calcolo. I numeri qui sotto sono quelli dell'ultimo report completato.
+    </p>
+
+    <div class="fashion-overview__kpis">
+      <article class="fashion-overview__kpi">
+        <span>Prodotti analizzati</span>
+        <strong>{{ data.summary.total | number }}</strong>
+        <small>{{ data.summary.active | number }} attivi</small>
+      </article>
+      <article class="fashion-overview__kpi">
+        <span>Stagione riconosciuta</span>
+        <strong>{{ data.summary.withSeasons | number }}</strong>
+        <small>{{ percentage(data.summary.withSeasons, data.summary.total) }}% del catalogo</small>
+      </article>
+      <article class="fashion-overview__kpi">
+        <span>Stile riconosciuto</span>
+        <strong>{{ data.summary.withStyles | number }}</strong>
+        <small>{{ percentage(data.summary.withStyles, data.summary.total) }}% del catalogo</small>
+      </article>
+      <article class="fashion-overview__kpi">
+        <span>Vestibilità riconosciuta</span>
+        <strong>{{ data.summary.withFit | number }}</strong>
+        <small>{{ percentage(data.summary.withFit, data.summary.total) }}% del catalogo</small>
       </article>
     </div>
-    <p *ngIf="!current.examples.length" class="text-muted">Non risultano ancora prodotti arricchiti.</p>
-  </div>
+
+    <section class="fashion-overview__section" aria-labelledby="fashion-source-title">
+      <h3 class="h5 mb-2" id="fashion-source-title">Qualità delle informazioni</h3>
+      <p class="text-muted small">Un profilo salvato non significa che stagione o stile siano stati riconosciuti. I campi mancanti restano sconosciuti.</p>
+      <div class="fashion-overview__facts">
+        <p><strong>{{ data.summary.withProfile | number }}</strong> con profilo salvato</p>
+        <p><strong>{{ data.summary.withFeedAttributes | number }}</strong> con attributi fashion originali del feed</p>
+        <p><strong>{{ data.summary.withVisualWeight | number }}</strong> con indicazioni di peso visivo</p>
+        <p><strong>{{ data.summary.withoutEvidence | number }}</strong> senza evidenze fashion</p>
+      </div>
+      <p class="small text-muted mb-0">Questi contatori descrivono la disponibilità dei dati, non la correttezza stilistica degli outfit.</p>
+    </section>
+
+    <section class="fashion-overview__section" aria-labelledby="fashion-merchants-title">
+      <div class="fashion-overview__section-heading">
+        <div>
+          <h3 id="fashion-merchants-title" class="h5 mb-1">Copertura per merchant</h3>
+          <p class="small text-muted mb-0">Confronta la qualità dei feed e consulta esempi di prodotti.</p>
+        </div>
+        <div>
+          <label class="form-label small mb-1" for="fashion-merchant-select">Merchant</label>
+          <select class="form-select" id="fashion-merchant-select" [value]="selectedProgramId"
+            (change)="selectedProgramId = $any($event.target).value">
+            <option value="">Tutti i merchant</option>
+            <option *ngFor="let merchant of data.merchants" [value]="merchant.programId">
+              {{ merchant.programName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fashion-overview__merchants">
+        <article class="fashion-overview__merchant" *ngFor="let merchant of merchants">
+          <div class="fashion-overview__merchant-title">
+            <div>
+              <h4 class="h6 mb-1">{{ merchant.programName }}</h4>
+              <p class="small text-muted mb-0">{{ merchant.total | number }} prodotti · {{ merchant.active | number }} attivi</p>
+            </div>
+            <small *ngIf="merchant.lastSuccessfulSyncAt" class="text-muted">
+              Sync: {{ merchant.lastSuccessfulSyncAt | date:'dd/MM/yyyy HH:mm' }}
+            </small>
+          </div>
+          <p *ngIf="isOutdated(merchant)" class="small text-warning-emphasis mt-2 mb-1">
+            Questo feed è stato sincronizzato dopo il report: ricalcola la panoramica.
+          </p>
+
+          <div class="fashion-overview__merchant-stats">
+            <div class="fashion-overview__metric">
+              <div><span>Stagione</span><strong>{{ merchant.withSeasons | number }} ({{ percentage(merchant.withSeasons, merchant.total) }}%)</strong></div>
+              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(merchant.withSeasons, merchant.total)"></div></div>
+            </div>
+            <div class="fashion-overview__metric">
+              <div><span>Stile</span><strong>{{ merchant.withStyles | number }} ({{ percentage(merchant.withStyles, merchant.total) }}%)</strong></div>
+              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(merchant.withStyles, merchant.total)"></div></div>
+            </div>
+            <div class="fashion-overview__metric">
+              <div><span>Vestibilità</span><strong>{{ merchant.withFit | number }} ({{ percentage(merchant.withFit, merchant.total) }}%)</strong></div>
+              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(merchant.withFit, merchant.total)"></div></div>
+            </div>
+          </div>
+          <div class="fashion-overview__merchant-foot small">
+            <span>Attributi originali: <strong>{{ merchant.withFeedAttributes | number }}</strong></span>
+            <span>Senza evidenze: <strong>{{ merchant.withoutEvidence | number }}</strong></span>
+            <span>Potenziali candidati AI: <strong>{{ merchant.potentialAiCandidates | number }}</strong></span>
+          </div>
+          <details *ngIf="merchant.examples.length" class="fashion-overview__examples">
+            <summary>Mostra esempi di prodotti ({{ merchant.examples.length }})</summary>
+            <div class="fashion-overview__example" *ngFor="let example of merchant.examples">
+              <a [routerLink]="['/affiliate-catalog/products', example.id]">{{ example.name || example.id }}</a>
+              <div class="small text-muted">{{ example.brand }}</div>
+              <div class="small">Stagioni: {{ example.seasons.length ? example.seasons.join(', ') : 'Non determinate' }}</div>
+              <div class="small">Stili: {{ example.styles.length ? example.styles.join(', ') : 'Non determinati' }}</div>
+              <div class="small">Vestibilità: {{ example.fit === 'UNKNOWN' ? 'Non determinata' : example.fit }}</div>
+              <div class="small" *ngIf="example.missing.length">Mancano: {{ example.missing.join(', ') }}</div>
+              <div class="small text-muted" *ngFor="let detail of example.evidence">{{ detail }}</div>
+              <div class="small text-muted" *ngFor="let detail of example.feedAttributes">{{ detail }}</div>
+            </div>
+          </details>
+        </article>
+        <p *ngIf="!merchants.length" class="text-muted">Nessun merchant da visualizzare.</p>
+      </div>
+    </section>
+
+    <section class="fashion-overview__section" aria-labelledby="fashion-ai-title">
+      <h3 id="fashion-ai-title" class="h5">Arricchimento con AI — PR2</h3>
+      <p class="mb-2">Potenziali prodotti da approfondire: <strong>{{ data.summary.potentialAiCandidates | number }}</strong>.</p>
+      <p class="text-muted small mb-0">È una stima preliminare: prodotti attivi, visibili nell'app, con immagine e stagione oppure stile non determinati. Non è una coda AI.
+        La PR2 aggiungerà selezione, preventivo e conferma esplicita del budget prima di ogni analisi. <strong>Non è stata avviata alcuna chiamata AI.</strong>
+      </p>
+    </section>
+  </ng-container>
+
+  <ng-template #noSnapshot>
+    <section *ngIf="!loading" class="fashion-overview__section text-muted">
+      <h3 class="h5">Nessuna panoramica disponibile</h3>
+      <p class="mb-0">Dopo aver completato le sincronizzazioni dei feed, premi «Ricalcola panoramica» per creare il primo report. L'operazione legge Firestore in background, senza OpenAI.</p>
+    </section>
+  </ng-template>
+
+  <p class="small text-muted mt-3">Ricalcolare il report comporta letture e una piccola elaborazione su Firebase. Non modifica i prodotti e non risincronizza i feed.</p>
 </section>
