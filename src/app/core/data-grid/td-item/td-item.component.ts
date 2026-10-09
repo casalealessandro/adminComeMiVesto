@@ -91,7 +91,6 @@ export class TdItemComponent {
 
     switch (this.colType) {
       case 'editorButtons':
-        console.log(this.colProperty)
         this.editorButtons= this.colProperty.editorbuttons
         break;
       case 'removeButtons':
@@ -280,7 +279,6 @@ export class TdItemComponent {
         break;
       case 'campoButton':
         const buttonInfo = this.colProperty['button'];
-        console.log('buttonInfo', buttonInfo);
 
         result = `<button class="btn "><span class="${buttonInfo.icon}"></span></button>`;
 
@@ -483,19 +481,20 @@ export class TdItemComponent {
   }
 
   listaRender(text: any): any {
-    let ressss = text
+    const customizedOptions = this.colProperty?.customizedOptions;
+    const options = customizedOptions?.options;
 
-    const customizedOptions = this.colProperty.customizedOptions
-
-    if (customizedOptions.options && customizedOptions.options.length > 0) {
-      let valueExp = customizedOptions.valueExp;
-      let displayExp = customizedOptions.displayExp;
-
-      let filter = customizedOptions.options.filter((res: any) => res[valueExp] == text)
-
-      ressss = filter[0][displayExp]
+    if (!Array.isArray(options) || options.length === 0) {
+      return text ?? '';
     }
-    return ressss
+
+    // Keep the historical loose comparison (e.g. string ids vs numeric values),
+    // but do not assume that every remote value exists in the configured list.
+    const selectedOption = options.find((option: any) =>
+      option?.[customizedOptions.valueExp] == text
+    );
+
+    return selectedOption?.[customizedOptions.displayExp] ?? (text ?? '');
   }
 
   clickTd(event: any) {
