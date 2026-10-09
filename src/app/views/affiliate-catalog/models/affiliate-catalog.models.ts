@@ -62,6 +62,22 @@ export interface FashionProductProfile {
   evidence: { field: string; source: string; matched: string }[];
 }
 
+export interface FashionEnrichmentJob {
+  runId: string;
+  status: 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED';
+  scanned: number;
+  updated: number;
+  unchanged: number;
+  withSeasons: number;
+  withStyles: number;
+  withFit: number;
+  unknown: number;
+  startedAt: number;
+  updatedAt: number;
+  completedAt: number | null;
+  lastError: string | null;
+}
+
 export interface FashionEnrichmentBatch {
   scanned: number;
   updated: number;
