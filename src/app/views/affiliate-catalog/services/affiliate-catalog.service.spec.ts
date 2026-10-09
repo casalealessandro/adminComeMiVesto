@@ -195,6 +195,27 @@ describe('AffiliateCatalogService release contract', () => {
     photoRequest.flush({ data: { ...creator, photoURL: 'https://storage.test/profile.jpg' } });
   });
 
+  it('reads the cached fashion overview without scanning products or calling AI', () => {
+    const status = { job: null, snapshot: null };
+    let result: unknown;
+    service.getFashionOverview().subscribe((data) => result = data);
+    const request = http.expectOne(`${baseUrl}/fashion-overview`);
+    expect(request.request.method).toBe('GET');
+    expect(request.request.body).toBeNull();
+    request.flush({ data: status });
+    expect(result).toEqual(status);
+  });
+
+  it('requests an explicit fashion overview refresh, not a product sync or AI generation', () => {
+    let started: unknown;
+    service.refreshFashionOverview().subscribe((data) => started = data);
+    const request = http.expectOne(`${baseUrl}/fashion-overview`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush({ data: { runId: 'run-1', status: 'QUEUED', scanned: 0 } });
+    expect(started).toEqual({ runId: 'run-1', status: 'QUEUED', scanned: 0 });
+  });
+
   it('loads programs from the configured API base and unwraps data without adding auth headers', () => {
     let response: AffiliateProgram[] | undefined;
     service.getPrograms().subscribe((value) => response = value);
