@@ -52,6 +52,63 @@ export interface AffiliateFeed {
   updatedAt: number;
 }
 
+export interface FashionCoverage {
+  total: number;
+  active: number;
+  withProfile: number;
+  withSeasons: number;
+  withStyles: number;
+  withFit: number;
+  withVisualWeight: number;
+  withFeedAttributes: number;
+  withImages: number;
+  withoutEvidence: number;
+  potentialAiCandidates: number;
+}
+
+export interface FashionCatalogExample {
+  id: string;
+  name: string;
+  brand: string;
+  seasons: string[];
+  styles: string[];
+  fit: string;
+  evidence: string[];
+  feedAttributes: string[];
+  missing: string[];
+  potentialAiCandidate: boolean;
+}
+
+export interface FashionMerchantOverview extends FashionCoverage {
+  programId: string;
+  programName: string;
+  lastSuccessfulSyncAt: number | null;
+  examples: FashionCatalogExample[];
+}
+
+export interface FashionCatalogOverview {
+  version: number;
+  generatedAt: number;
+  scannedProducts: number;
+  summary: FashionCoverage;
+  merchants: FashionMerchantOverview[];
+}
+
+export interface FashionOverviewJob {
+  runId: string;
+  status: 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED';
+  scanned: number;
+  startedAt: number;
+  updatedAt: number;
+  completedAt: number | null;
+  lastError: string | null;
+}
+
+export interface FashionOverviewResponse {
+  job: FashionOverviewJob | null;
+  snapshot: FashionCatalogOverview | null;
+}
+
 export interface FashionProductProfile {
   version: number;
   fingerprint: string;
