@@ -21,6 +21,7 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class OutfitFormComponent {
   outfitData = signal<outfit>({} as outfit);
+  formReady = signal(false);
   private activateRoute = inject(ActivatedRoute);
   private router = inject(Router);
   private outFitService = inject(OutfitsService);
@@ -45,13 +46,18 @@ export class OutfitFormComponent {
   fetchDataOutfit() {
     this.activateRoute.paramMap.subscribe(async params => {
       this.outfitId = params.get('id');
+      this.formReady.set(false);
       if (this.outfitId) {
-        // Usare il segnale per ottenere il valore quando cambia
+        // La form viene creata solo quando i dati di modifica sono disponibili.
         let resO = await this.outFitService.getAdminOutfitById(this.outfitId)
         this.outfitData.set(resO[0])
         this.imageUrl.set(resO[0].imageUrl);
         this.tags.set(this.outfitData().tags)
+      } else {
+        // In creazione non è necessario attendere una richiesta API.
+        this.outfitData.set({} as outfit);
       }
+      this.formReady.set(true);
     });
 
   }
