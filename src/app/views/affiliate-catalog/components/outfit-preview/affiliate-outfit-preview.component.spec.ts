@@ -64,7 +64,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators'],
+      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators', 'getOutfitStyles'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -81,6 +81,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
       updatedAt: 1,
     }]));
     service.getFeeds.and.returnValue(of([]));
+    service.getOutfitStyles.and.returnValue(of([{ id: 'C', value: 'Casual', order: 10 }, { id: 'BOHO', value: 'Boho', order: 20 }]));
     service.discardOutfitDraft.and.returnValue(of(void 0));
     service.getAiCreators.and.returnValue(of([{
       uid: 'creator-d',
@@ -120,8 +121,9 @@ describe('AffiliateOutfitPreviewComponent', () => {
 
   it('starts from the real baseline request and resolves program labels', () => {
     expect(component.request).toEqual({
-      gender: 'MAN', season: 'SPRING', occasion: 'EVERYDAY', style: 'CASUAL',
+      gender: 'MAN', season: 'SPRING', occasion: 'EVERYDAY', style: 'C',
     });
+    expect(component.styleOptions).toContain(jasmine.objectContaining({value: 'BOHO', label: 'Boho'}));
     expect(component.programLabel('program-a')).toBe('Merchant A');
     expect(component.programLabel('program-b')).toBe('program-b');
   });

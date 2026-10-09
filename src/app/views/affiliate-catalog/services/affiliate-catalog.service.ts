@@ -28,6 +28,7 @@ import {
   AiOutfitPreviewResult,
   CatalogTaxonomyRepairResult,
   OutfitColorOption,
+  OutfitStyleOption,
 } from '../models/affiliate-catalog-api.models';
 import { AiOutfitPublishRequest, AiOutfitPublishedResult } from '../models/ai-outfit-publish.models';
 import { AiCreator, AiCreatorCreateInput, AiCreatorUpdateInput } from '../models/ai-creator.models';
@@ -42,6 +43,10 @@ export class AffiliateCatalogService {
     return this.http
       .get<AffiliateApiResponse<AffiliateCatalogAudit>>(`${this.baseUrl}/catalog-audit`)
       .pipe(map((response) => response.data));
+  }
+
+  getOutfitStyles(): Observable<OutfitStyleOption[]> {
+    return this.http.get<OutfitStyleOption[]>(`${this.apiUrl}/gen/outfitStyles?compact=true`);
   }
 
   getOutfitColors(): Observable<OutfitColorOption[]> {

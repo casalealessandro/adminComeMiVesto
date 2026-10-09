@@ -45,7 +45,7 @@
 
     <label>
       <span>Stile</span>
-      <select name="style" [(ngModel)]="request.style" [disabled]="loading">
+      <select name="style" [(ngModel)]="request.style" [disabled]="loading || stylesLoading || !styleOptions.length">
         <option *ngFor="let option of styleOptions" [ngValue]="option.value">{{ option.label }}</option>
       </select>
     </label>

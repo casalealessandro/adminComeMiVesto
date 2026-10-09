@@ -109,7 +109,10 @@ export interface OutfitColorOption {
 export type AiOutfitPreviewGender = 'MAN' | 'WOMAN';
 export type AiOutfitPreviewSeason = 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
 export type AiOutfitPreviewOccasion = 'EVERYDAY' | 'OFFICE' | 'APERITIVO' | 'CEREMONY' | 'EVENING' | 'SPORT' | 'TRAVEL';
-export type AiOutfitPreviewStyle = 'CASUAL' | 'BUSINESS' | 'SPORTY' | 'SMART_CASUAL' | 'ELEGANT' | 'ALTERNATIVE' | 'FESTIVAL' | 'CLASSIC' | 'TRENDY' | 'STREETWEAR';
+/** API preview style accepts a legacy keyword or the canonical Firestore outfitStyles document ID. */
+export type AiOutfitPreviewStyle = string;
+
+export interface OutfitStyleOption { id: string; value: string; order?: number; gender?: string[]; }
 
 export interface AiOutfitPreviewRequest {
   gender: AiOutfitPreviewGender;
@@ -173,7 +176,7 @@ export interface AiOutfitPreviewOutfit {
   description: string;
   gender: 'U' | 'D';
   season: 'E' | 'P' | 'A' | 'I';
-  style: 'C' | 'B' | 'SP' | 'SC' | 'E' | 'AT' | 'FES' | 'CL' | 'TR' | 'SE';
+  style: string;
   products: AiOutfitPreviewProduct[];
   previewImageUrl: string;
   creatorUid?: string;
