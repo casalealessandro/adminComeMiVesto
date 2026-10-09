@@ -67,7 +67,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     { value: 'FESTIVAL', label: 'Festival' },
     { value: 'CLASSIC', label: 'Classico' },
     { value: 'TRENDY', label: 'Trendy' },
-    { value: 'EVENING', label: 'Serata' },
+    { value: 'STREETWEAR', label: 'Streetwear' },
   ];
 
   request: AiOutfitPreviewRequest = {
