@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { finalize } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { FashionEnrichmentBatch, FashionEnrichmentStatus } from '../../models/affiliate-catalog.models';
+import { FashionEnrichmentJob, FashionEnrichmentStatus } from '../../models/affiliate-catalog.models';
 
 @Component({
   selector: 'app-affiliate-fashion-enrichment',
@@ -14,14 +14,10 @@ import { FashionEnrichmentBatch, FashionEnrichmentStatus } from '../../models/af
 export class AffiliateFashionEnrichmentComponent implements OnInit {
   private readonly service = inject(AffiliateCatalogService);
   status: FashionEnrichmentStatus | null = null;
-  batch: FashionEnrichmentBatch | null = null;
+  job: FashionEnrichmentJob | null = null;
   loading = false;
   processing = false;
   error = '';
-  cursor: string | null = null;
-  scannedTotal = 0;
-  updatedTotal = 0;
-  finished = false;
 
   ngOnInit(): void { this.refresh(); }
 
@@ -29,38 +25,27 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.service.getFashionEnrichmentStatus().pipe(finalize(() => this.loading = false)).subscribe({
-      next: (value) => { this.status = value; },
+      next: (value) => { this.status = value; this.refreshJob(); },
       error: () => { this.error = 'Impossibile leggere le informazioni fashion del catalogo.'; },
     });
   }
 
-  enrichNextBatch(): void {
+  refreshJob(): void {
+    this.service.getFashionEnrichmentJob().subscribe({
+      next: (job) => { this.job = job; },
+      error: () => { this.error = 'Impossibile leggere lo stato dell’elaborazione.'; },
+    });
+  }
+
+  startAll(): void {
     if (this.processing) return;
     this.processing = true;
     this.error = '';
-    this.service.enrichFashionProducts(100, this.cursor).pipe(finalize(() => this.processing = false)).subscribe({
-      next: (value) => {
-        this.batch = value;
-        this.scannedTotal += value.scanned;
-        this.updatedTotal += value.updated;
-        this.cursor = value.nextCursor;
-        this.finished = !value.nextCursor;
-        this.refresh();
-      },
+    this.service.startFashionEnrichmentJob().pipe(finalize(() => this.processing = false)).subscribe({
+      next: (value) => { this.job = value; this.refresh(); },
       error: () => { this.error = 'Elaborazione non riuscita. Puoi riprovare senza duplicare gli aggiornamenti.'; },
     });
   }
 
-  restart(): void {
-    if (this.processing) return;
-    this.cursor = null;
-    this.finished = false;
-    this.scannedTotal = 0;
-    this.updatedTotal = 0;
-    this.batch = null;
-  }
-
-  seasonLabel(season: string): string {
-    return ({ SPRING: 'Primavera', SUMMER: 'Estate', AUTUMN: 'Autunno', WINTER: 'Inverno' } as Record<string, string>)[season] ?? season;
-  }
+  get jobRunning(): boolean { return this.job?.status === 'RUNNING' || this.job?.status === 'QUEUED'; }
 }
