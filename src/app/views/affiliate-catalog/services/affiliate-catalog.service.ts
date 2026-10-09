@@ -11,6 +11,8 @@ import {
   FashionEnrichmentBatch,
   FashionEnrichmentJob,
   FashionEnrichmentStatus,
+  FashionOverviewResponse,
+  FashionOverviewJob,
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
@@ -41,6 +43,16 @@ export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiBaseUrl;
   private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
+
+  getFashionOverview(): Observable<FashionOverviewResponse> {
+    return this.http.get<AffiliateApiResponse<FashionOverviewResponse>>(`${this.baseUrl}/fashion-overview`)
+      .pipe(map((response) => response.data));
+  }
+
+  refreshFashionOverview(): Observable<FashionOverviewJob> {
+    return this.http.post<AffiliateApiResponse<FashionOverviewJob>>(`${this.baseUrl}/fashion-overview`, {})
+      .pipe(map((response) => response.data));
+  }
 
   getFashionEnrichmentJob(): Observable<FashionEnrichmentJob | null> {
     return this.http.get<AffiliateApiResponse<FashionEnrichmentJob | null>>(`${this.baseUrl}/products/fashion-enrichment/job`)
