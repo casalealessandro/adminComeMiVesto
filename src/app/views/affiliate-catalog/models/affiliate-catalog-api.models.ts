@@ -109,7 +109,7 @@ export interface OutfitColorOption {
 export type AiOutfitPreviewGender = 'MAN' | 'WOMAN';
 export type AiOutfitPreviewSeason = 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
 export type AiOutfitPreviewOccasion = 'EVERYDAY' | 'OFFICE' | 'APERITIVO' | 'CEREMONY' | 'EVENING' | 'SPORT' | 'TRAVEL';
-export type AiOutfitPreviewStyle = 'CASUAL' | 'BUSINESS' | 'SPORTY' | 'SMART_CASUAL' | 'ELEGANT' | 'ALTERNATIVE' | 'FESTIVAL' | 'CLASSIC' | 'TRENDY' | 'EVENING';
+export type AiOutfitPreviewStyle = 'CASUAL' | 'BUSINESS' | 'SPORTY' | 'SMART_CASUAL' | 'ELEGANT' | 'ALTERNATIVE' | 'FESTIVAL' | 'CLASSIC' | 'TRENDY' | 'STREETWEAR';
 
 export interface AiOutfitPreviewRequest {
   gender: AiOutfitPreviewGender;
