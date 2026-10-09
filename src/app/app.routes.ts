@@ -14,6 +14,7 @@ import { ReportsComponent } from './views/reports/reports.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { StaticPagesComponent } from './views/static-pages/static-pages.component';
 import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
+import { AffiliateFashionEnrichmentComponent } from './views/affiliate-catalog/components/fashion-enrichment/affiliate-fashion-enrichment.component';
 import { AffiliateCatalogAuditComponent } from './views/affiliate-catalog/components/audit/affiliate-catalog-audit.component';
 import { AffiliateProgramsComponent } from './views/affiliate-catalog/components/programs/affiliate-programs.component';
 import { AffiliateFeedsComponent } from './views/affiliate-catalog/components/feeds/affiliate-feeds.component';
@@ -45,6 +46,7 @@ export const routes:Routes = [
         { path: 'programs', component: AffiliateProgramsComponent },
         { path: 'feeds', component: AffiliateFeedsComponent },
         { path: 'audit', component: AffiliateCatalogAuditComponent },
+        { path: 'fashion-enrichment', component: AffiliateFashionEnrichmentComponent },
         { path: 'outfit-preview', component: AffiliateOutfitPreviewComponent },
         { path: 'ai-creators', component: AffiliateAiCreatorsComponent },
         { path: 'products/:id', component: AffiliateProductDetailComponent },
