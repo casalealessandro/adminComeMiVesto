@@ -18,18 +18,30 @@
 
   <div class="card mb-3">
     <div class="card-body">
-      <h3 class="h5">Elaborazione catalogo esistente</h3>
-      <p class="small text-muted">Avvia un blocco di massimo 100 prodotti per volta. I profili invariati vengono saltati; il pulsante continua dal blocco precedente finché tieni aperta questa pagina. Puoi ripartire dall'inizio senza duplicare i dati.</p>
-      <div class="d-flex flex-wrap gap-2 align-items-center">
-        <button type="button" class="btn btn-primary" (click)="enrichNextBatch()" [disabled]="processing || finished">
+      <h3 class="h5">Arricchimento completo del catalogo</h3>
+      <p class="small text-muted">Un solo avvio elabora in background tutti i prodotti a blocchi sicuri da 100. Puoi chiudere la pagina, il lavoro continua su Firebase. Non utilizza servizi AI.</p>
+      <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+        <button type="button" class="btn btn-primary" (click)="startAll()" [disabled]="processing || jobRunning">
           <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-          {{ processing ? 'Elaborazione…' : (scannedTotal ? 'Elabora i prossimi 100' : 'Elabora i primi 100') }}
+          {{ processing ? 'Avvio…' : 'Elabora tutto il catalogo' }}
         </button>
-        <button type="button" class="btn btn-outline-secondary" (click)="restart()" [disabled]="processing">Ricomincia dall'inizio</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading || processing">
+          <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna avanzamento
+        </button>
       </div>
-      <p class="small mt-2 mb-0" *ngIf="scannedTotal">Esaminati in questa sessione: <strong>{{ scannedTotal }}</strong> · Profili aggiornati: <strong>{{ updatedTotal }}</strong></p>
-      <p class="text-success small mt-2 mb-0" *ngIf="finished">Scansione completa per questa sessione.</p>
-      <p class="small mt-2 mb-0" *ngIf="batch">Ultimo blocco: {{ batch.scanned }} letti, {{ batch.updated }} aggiornati, {{ batch.unchanged }} invariati; con stagione {{ batch.withSeasons }}, con stile {{ batch.withStyles }}, con vestibilità {{ batch.withFit }}, senza evidenze {{ batch.unknown }}.</p>
+      <div *ngIf="job as current">
+        <p class="mb-2"><strong>Stato:</strong> {{ current.status === 'SUCCESS' ? 'Completato' : current.status === 'FAILED' ? 'Errore' : current.status === 'QUEUED' ? 'In coda' : 'In elaborazione' }}</p>
+        <div class="progress mb-2" *ngIf="status?.total">
+          <div class="progress-bar" role="progressbar"
+            [style.width.%]="100 * current.scanned / (status?.total || 1)"
+            [attr.aria-valuenow]="current.scanned" aria-valuemin="0"
+            [attr.aria-valuemax]="status?.total"> {{ (100 * current.scanned / (status?.total || 1)) | number:'1.0-0' }}% </div>
+        </div>
+        <p class="small mb-1">Esaminati: <strong>{{ current.scanned | number }}</strong> · Aggiornati: <strong>{{ current.updated | number }}</strong> · Invariati: {{ current.unchanged | number }}</p>
+        <p class="small mb-1">Stagioni riconosciute: {{ current.withSeasons }} · Stili: {{ current.withStyles }} · Vestibilità: {{ current.withFit }} · Senza evidenze: {{ current.unknown }}</p>
+        <p class="text-danger small" *ngIf="current.lastError">{{ current.lastError }}</p>
+        <p class="text-muted small mb-0" *ngIf="jobRunning">Aggiorna la pagina per vedere i progressi. Il lavoro prosegue anche se chiudi il browser.</p>
+      </div>
     </div>
   </div>
 
