@@ -8,6 +8,8 @@ import {
   AffiliateProgram,
   AffiliateSyncRun,
   CatalogProduct,
+  FashionEnrichmentBatch,
+  FashionEnrichmentStatus,
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
@@ -38,6 +40,18 @@ export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiBaseUrl;
   private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
+
+  getFashionEnrichmentStatus(): Observable<FashionEnrichmentStatus> {
+    return this.http.get<AffiliateApiResponse<FashionEnrichmentStatus>>(`${this.baseUrl}/products/fashion-enrichment`)
+      .pipe(map((response) => response.data));
+  }
+
+  enrichFashionProducts(limit = 100, cursor?: string | null): Observable<FashionEnrichmentBatch> {
+    return this.http.post<AffiliateApiResponse<FashionEnrichmentBatch>>(
+      `${this.baseUrl}/products/fashion-enrichment`,
+      { limit, ...(cursor ? { cursor } : {}) },
+    ).pipe(map((response) => response.data));
+  }
 
   getCatalogAudit(): Observable<AffiliateCatalogAudit> {
     return this.http
