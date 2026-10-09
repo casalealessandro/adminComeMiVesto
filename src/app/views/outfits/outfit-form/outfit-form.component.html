@@ -24,6 +24,7 @@
 </app-foto-outfit>
 
 <app-dynamic-form
+*ngIf="formReady()"
 [editData]="outfitData()"
 [service]="'outfitForm'"
 (submitFormEvent)="submitFormOutfit($event)"
