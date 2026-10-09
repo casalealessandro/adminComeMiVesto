@@ -52,6 +52,33 @@ export interface AffiliateFeed {
   updatedAt: number;
 }
 
+export interface FashionProductProfile {
+  version: number;
+  fingerprint: string;
+  seasons: string[];
+  styleAffinities: string[];
+  fit: string;
+  visualWeight: string;
+  evidence: { field: string; source: string; matched: string }[];
+}
+
+export interface FashionEnrichmentBatch {
+  scanned: number;
+  updated: number;
+  unchanged: number;
+  withSeasons: number;
+  withStyles: number;
+  withFit: number;
+  unknown: number;
+  nextCursor: string | null;
+}
+
+export interface FashionEnrichmentStatus {
+  total: number;
+  enriched: number;
+  examples: Array<{ id: string; name: string; brand: string; fashionProfile?: FashionProductProfile }>;
+}
+
 export interface CatalogProduct {
   id: string;
   affiliateProgramId: string;
@@ -69,6 +96,8 @@ export interface CatalogProduct {
   active: boolean;
   enabledForApp?: boolean;
   classificationLocked?: boolean;
+  fashionProfile?: FashionProductProfile;
+  fashionProfileLocked?: boolean;
   createdAt: number;
   updatedAt: number;
   lastSeenAt: number;
