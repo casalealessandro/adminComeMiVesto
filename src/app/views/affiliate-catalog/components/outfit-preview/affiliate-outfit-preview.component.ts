@@ -57,18 +57,8 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     { value: 'SPORT', label: 'Sport' },
     { value: 'TRAVEL', label: 'Viaggio' },
   ];
-  readonly styleOptions: SelectOption<AiOutfitPreviewStyle>[] = [
-    { value: 'CASUAL', label: 'Casual' },
-    { value: 'BUSINESS', label: 'Business' },
-    { value: 'SPORTY', label: 'Sportivo' },
-    { value: 'SMART_CASUAL', label: 'Smart casual' },
-    { value: 'ELEGANT', label: 'Elegante' },
-    { value: 'ALTERNATIVE', label: 'Alternativo' },
-    { value: 'FESTIVAL', label: 'Festival' },
-    { value: 'CLASSIC', label: 'Classico' },
-    { value: 'TRENDY', label: 'Trendy' },
-    { value: 'STREETWEAR', label: 'Streetwear' },
-  ];
+  styleOptions: SelectOption<AiOutfitPreviewStyle>[] = [];
+  stylesLoading = false;
 
   request: AiOutfitPreviewRequest = {
     gender: 'MAN',
@@ -99,6 +89,20 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   readonly selectedProductByOutfit = new Map<string, string>();
 
   ngOnInit(): void {
+    this.stylesLoading = true;
+    this.affiliateCatalogService.getOutfitStyles()
+      .pipe(finalize(() => this.stylesLoading = false))
+      .subscribe({
+        next: (styles) => {
+          this.styleOptions = styles
+            .filter((style) => /^[A-Za-z0-9_-]{1,64}$/.test(style.id) && !!style.value?.trim())
+            .map((style) => ({ value: style.id, label: style.value.trim() }));
+          if (this.styleOptions.length && !this.styleOptions.some((style) => style.value === this.request.style)) {
+            this.request.style = this.styleOptions[0].value;
+          }
+        },
+        error: () => this.error = 'Impossibile caricare gli stili ComeMiVesto.',
+      });
     this.feedsLoading = true;
     this.affiliateCatalogService.getFeeds()
       .pipe(finalize(() => this.feedsLoading = false))
@@ -202,6 +206,10 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   generate(): void {
     if (this.loading) return;
+    if (this.stylesLoading || !this.styleOptions.some((style) => style.value === this.request.style)) {
+      this.error = 'Seleziona uno stile disponibile dalla tassonomia ComeMiVesto.';
+      return;
+    }
     const count = Number(this.outfitCount);
     if (!Number.isInteger(count) || count < this.minOutfitCount || count > this.maxOutfitCount) {
       this.error = `Il numero di outfit deve essere un intero tra ${this.minOutfitCount} e ${this.maxOutfitCount}.`;
