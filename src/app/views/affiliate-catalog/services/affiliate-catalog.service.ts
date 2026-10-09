@@ -46,7 +46,7 @@ export class AffiliateCatalogService {
   }
 
   getOutfitStyles(): Observable<OutfitStyleOption[]> {
-    return this.http.get<OutfitStyleOption[]>(`${this.apiUrl}/gen/outfitStyles`);
+    return this.http.get<OutfitStyleOption[]>(`${this.apiUrl}/gen/outfitStyles?compact=true`);
   }
 
   getOutfitColors(): Observable<OutfitColorOption[]> {
