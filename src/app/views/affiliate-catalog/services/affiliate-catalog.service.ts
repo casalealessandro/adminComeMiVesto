@@ -9,6 +9,7 @@ import {
   AffiliateSyncRun,
   CatalogProduct,
   FashionEnrichmentBatch,
+  FashionEnrichmentJob,
   FashionEnrichmentStatus,
 } from '../models/affiliate-catalog.models';
 import {
@@ -40,6 +41,16 @@ export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiBaseUrl;
   private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
+
+  getFashionEnrichmentJob(): Observable<FashionEnrichmentJob | null> {
+    return this.http.get<AffiliateApiResponse<FashionEnrichmentJob | null>>(`${this.baseUrl}/products/fashion-enrichment/job`)
+      .pipe(map((response) => response.data));
+  }
+
+  startFashionEnrichmentJob(): Observable<FashionEnrichmentJob> {
+    return this.http.post<AffiliateApiResponse<FashionEnrichmentJob>>(`${this.baseUrl}/products/fashion-enrichment/job`, {})
+      .pipe(map((response) => response.data));
+  }
 
   getFashionEnrichmentStatus(): Observable<FashionEnrichmentStatus> {
     return this.http.get<AffiliateApiResponse<FashionEnrichmentStatus>>(`${this.baseUrl}/products/fashion-enrichment`)
