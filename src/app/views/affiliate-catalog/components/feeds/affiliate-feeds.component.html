@@ -45,6 +45,29 @@
     </div>
   </div>
 
+  <div *ngIf="cleanupNotice as notice" class="alert alert-info affiliate-feeds__sync-state" role="status">
+    <span class="mdi mdi-shield-check-outline" aria-hidden="true"></span>
+    <div>
+      <strong>{{ cleanupModeLabel(notice.job.mode) }} · {{ cleanupStatusLabel(notice.job.status) }}</strong>
+      <span>{{ notice.feed.name }}</span>
+      <span *ngIf="notice.job.status === 'PREVIEW_READY'">
+        Anteprima completata, nessun dato eliminato. Controlla l'impatto e conferma entro 15 minuti.
+      </span>
+      <span *ngIf="notice.job.status === 'RUNNING'">
+        Eliminati {{ notice.job.progress.productsDeleted }} prodotti,
+        conservati {{ notice.job.progress.productsPreservedForOutfits }} perché usati negli outfit approvati,
+        offerte eliminate {{ notice.job.progress.offersDeleted }}.
+      </span>
+      <span *ngIf="notice.job.status === 'FAILED'">{{ notice.job.lastError }}</span>
+      <button
+        type="button" class="btn btn-sm btn-outline-primary mt-1"
+        [disabled]="isCleaning(notice.feed.id)"
+        (click)="checkCleanupNotice()">
+        {{ notice.job.status === 'PREVIEW_READY' ? 'Controlla verifica e conferma' : 'Aggiorna stato' }}
+      </button>
+    </div>
+  </div>
+
   <label *ngIf="feeds.length" class="affiliate-feeds__search">
     <span>Cerca feed</span>
     <input
@@ -138,6 +161,24 @@
           <span *ngIf="isDeactivating(feed.id)" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
           <span *ngIf="!isDeactivating(feed.id)" class="mdi mdi-package-variant-remove" aria-hidden="true"></span>
           {{ isDeactivating(feed.id) ? 'Verifica…' : 'Disattiva prodotti' }}
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-danger"
+          (click)="requestCleanup(feed, 'PRODUCTS_ONLY')"
+          [disabled]="isSyncing(feed.id) || isDeactivating(feed.id) || isCleaning(feed.id)">
+          <span class="mdi mdi-delete-sweep-outline" aria-hidden="true"></span>
+          Elimina prodotti
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-danger"
+          (click)="requestCleanup(feed, 'FEED_AND_PRODUCTS')"
+          [disabled]="isSyncing(feed.id) || isDeactivating(feed.id) || isCleaning(feed.id)">
+          <span class="mdi mdi-delete-forever-outline" aria-hidden="true"></span>
+          Elimina feed
         </button>
 
         <button
