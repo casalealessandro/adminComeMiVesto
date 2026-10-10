@@ -183,6 +183,19 @@
       </div>
     </section>
 
+  </ng-container>
+
+  <ng-template #noSnapshot>
+    <p class="alert alert-warning small" *ngIf="overview && overview.version !== 2">
+      Il report precedente non distingue correttamente i prodotti utilizzabili. Premi
+      «Ricalcola panoramica» per ottenere i nuovi conteggi: non vengono effettuate analisi AI.
+    </p>
+    <section *ngIf="!loading" class="fashion-overview__section text-muted">
+      <h3 class="h5">Nessuna panoramica disponibile</h3>
+      <p class="mb-0">Dopo aver completato le sincronizzazioni dei feed, premi «Ricalcola panoramica» per creare il primo report. L'operazione legge Firestore in background, senza OpenAI.</p>
+    </section>
+  </ng-template>
+
     <section class="fashion-overview__section" aria-labelledby="fashion-ai-title">
       <div class="fashion-overview__section-heading">
         <div>
@@ -195,10 +208,14 @@
         <span class="badge bg-secondary align-self-start">Test limitato</span>
       </div>
 
-      <p class="small mb-3">
+      <p class="small mb-3" *ngIf="effectiveOverview as data">
         La panoramica stima <strong>{{ data.usable.potentialAiCandidates | number }}</strong>
         possibili candidati in tutto il catalogo. Il test sceglie solo un piccolo campione
         del feed selezionato e ne ricontrolla la disponibilità prima della chiamata AI.
+      </p>
+      <p class="small text-muted mb-3" *ngIf="!effectiveOverview">
+        Puoi preparare il test per un singolo feed anche senza una panoramica generale.
+        Il backend verifica autonomamente i prodotti idonei e le offerte attive.
       </p>
 
       <div class="alert alert-danger small" *ngIf="aiError" role="alert">{{ aiError }}</div>
@@ -335,18 +352,6 @@
         </ng-container>
       </article>
     </section>
-  </ng-container>
-
-  <ng-template #noSnapshot>
-    <p class="alert alert-warning small" *ngIf="overview && overview.version !== 2">
-      Il report precedente non distingue correttamente i prodotti utilizzabili. Premi
-      «Ricalcola panoramica» per ottenere i nuovi conteggi: non vengono effettuate analisi AI.
-    </p>
-    <section *ngIf="!loading" class="fashion-overview__section text-muted">
-      <h3 class="h5">Nessuna panoramica disponibile</h3>
-      <p class="mb-0">Dopo aver completato le sincronizzazioni dei feed, premi «Ricalcola panoramica» per creare il primo report. L'operazione legge Firestore in background, senza OpenAI.</p>
-    </section>
-  </ng-template>
 
   <p class="small text-muted mt-3">Ricalcolare il report comporta letture e una piccola elaborazione su Firebase. Non modifica i prodotti e non risincronizza i feed.</p>
 </section>
