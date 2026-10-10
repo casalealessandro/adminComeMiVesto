@@ -78,10 +78,15 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     if (!this.selectedAiFeedId || this.aiBusy) return;
     this.aiBusy = true;
     this.aiError = '';
-    this.service.getFashionAiFeedPilot(this.selectedAiFeedId)
+    const expectedFeedId = this.selectedAiFeedId;
+    this.service.getFashionAiFeedPilot(expectedFeedId)
       .pipe(finalize(() => this.aiBusy = false))
       .subscribe({
-        next: (job) => { this.aiJob = job; this.aiAccepted = false; },
+        next: (job) => {
+          if (this.selectedAiFeedId !== expectedFeedId) return;
+          this.aiJob = job;
+          this.aiAccepted = false;
+        },
         error: () => { this.aiError = 'Impossibile leggere lo stato del test AI.'; },
       });
   }
@@ -92,10 +97,12 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.aiBusy = true;
     this.aiError = '';
     this.aiNotice = '';
-    this.service.previewFashionAiFeedPilot(this.selectedAiFeedId, Number(this.aiMaxProducts), Number(this.aiMaxBudgetUsd))
+    const expectedFeedId = this.selectedAiFeedId;
+    this.service.previewFashionAiFeedPilot(expectedFeedId, Number(this.aiMaxProducts), Number(this.aiMaxBudgetUsd))
       .pipe(finalize(() => this.aiBusy = false))
       .subscribe({
         next: (job) => {
+          if (this.selectedAiFeedId !== expectedFeedId) return;
           this.aiJob = job;
           this.aiNotice = job.selectedIds.length
             ? 'Anteprima pronta: nessun token AI è stato ancora consumato. Controlla prodotti e preventivo.'
@@ -112,7 +119,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   confirmAiFeed(): void {
     const job = this.aiJob;
     if (!this.canManageAi || !job || !this.aiPreviewReady || !this.aiAccepted ||
-      !job.selectedIds.length || this.aiBusy || !this.selectedAiFeedId) return;
+      !job.selectedIds.length || this.aiBusy || job.feedId !== this.selectedAiFeedId) return;
     const message = [
       'Autorizzi il test OpenAI sul feed «' + job.feedName + '»?',
       'Prodotti: ' + job.selectedIds.length,
