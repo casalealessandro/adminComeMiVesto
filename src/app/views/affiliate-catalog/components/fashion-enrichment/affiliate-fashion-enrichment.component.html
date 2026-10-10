@@ -37,7 +37,7 @@
     </div>
   </section>
 
-  <ng-container *ngIf="overview as data; else noSnapshot">
+  <ng-container *ngIf="effectiveOverview as data; else noSnapshot">
     <p class="fashion-overview__generated small text-muted">
       Report del {{ data.generatedAt | date:'dd/MM/yyyy HH:mm' }}
       · {{ data.scannedProducts | number }} documenti letti
@@ -47,26 +47,53 @@
       È in corso un nuovo calcolo. I numeri qui sotto sono quelli dell'ultimo report completato.
     </p>
 
+    <div class="fashion-overview__section" aria-label="Ambito della panoramica">
+      <div class="btn-group w-100" role="group" aria-label="Filtro disponibilità prodotti">
+        <button type="button" class="btn"
+          [class.btn-primary]="scope === 'usable'" [class.btn-outline-primary]="scope !== 'usable'"
+          [attr.aria-pressed]="scope === 'usable'"
+          (click)="setScope('usable')">Utilizzabili per outfit</button>
+        <button type="button" class="btn"
+          [class.btn-primary]="scope === 'all'" [class.btn-outline-primary]="scope !== 'all'"
+          [attr.aria-pressed]="scope === 'all'"
+          (click)="setScope('all')">Catalogo completo</button>
+      </div>
+      <p class="small text-muted mt-2 mb-0" *ngIf="scope === 'usable'">
+        Prodotti con programma e feed abilitati, prodotto attivo e visibile, immagine valida,
+        categoria e destinatari riconosciuti e almeno un'offerta utilizzabile.
+        Non vengono conteggiati i prodotti disattivati di Julian Fashion.
+      </p>
+      <p class="small text-muted mt-2 mb-0" *ngIf="scope === 'all'">
+        Include anche prodotti disattivati, esclusi dall'app e provenienti da programmi sospesi.
+        Questa vista è disponibile per verifiche storiche, non per decidere il budget AI.
+      </p>
+      <p class="small mb-0 mt-2" *ngIf="scope === 'usable'">
+        Esclusi dall'analisi outfit: <strong>{{ (data.summary.total - data.usable.total) | number }}</strong>
+        su {{ data.summary.total | number }} prodotti del catalogo.
+      </p>
+    </div>
+
+    <ng-container *ngIf="visibleCoverage as counts">
     <div class="fashion-overview__kpis">
       <article class="fashion-overview__kpi">
-        <span>Prodotti analizzati</span>
-        <strong>{{ data.summary.total | number }}</strong>
-        <small>{{ data.summary.active | number }} attivi</small>
+        <span>{{ scope === 'usable' ? 'Prodotti utilizzabili' : 'Prodotti nel catalogo' }}</span>
+        <strong>{{ counts.total | number }}</strong>
+        <small>{{ scope === 'usable' ? 'Idonei al catalogo outfit' : ((counts.active | number) + ' attivi') }}</small>
       </article>
       <article class="fashion-overview__kpi">
         <span>Stagione riconosciuta</span>
-        <strong>{{ data.summary.withSeasons | number }}</strong>
-        <small>{{ percentage(data.summary.withSeasons, data.summary.total) }}% del catalogo</small>
+        <strong>{{ counts.withSeasons | number }}</strong>
+        <small>{{ percentage(counts.withSeasons, counts.total) }}% dei prodotti selezionati</small>
       </article>
       <article class="fashion-overview__kpi">
         <span>Stile riconosciuto</span>
-        <strong>{{ data.summary.withStyles | number }}</strong>
-        <small>{{ percentage(data.summary.withStyles, data.summary.total) }}% del catalogo</small>
+        <strong>{{ counts.withStyles | number }}</strong>
+        <small>{{ percentage(counts.withStyles, counts.total) }}% dei prodotti selezionati</small>
       </article>
       <article class="fashion-overview__kpi">
         <span>Vestibilità riconosciuta</span>
-        <strong>{{ data.summary.withFit | number }}</strong>
-        <small>{{ percentage(data.summary.withFit, data.summary.total) }}% del catalogo</small>
+        <strong>{{ counts.withFit | number }}</strong>
+        <small>{{ percentage(counts.withFit, counts.total) }}% dei prodotti selezionati</small>
       </article>
     </div>
 
@@ -74,13 +101,15 @@
       <h3 class="h5 mb-2" id="fashion-source-title">Qualità delle informazioni</h3>
       <p class="text-muted small">Un profilo salvato non significa che stagione o stile siano stati riconosciuti. I campi mancanti restano sconosciuti.</p>
       <div class="fashion-overview__facts">
-        <p><strong>{{ data.summary.withProfile | number }}</strong> con profilo salvato</p>
-        <p><strong>{{ data.summary.withFeedAttributes | number }}</strong> con attributi fashion originali del feed</p>
-        <p><strong>{{ data.summary.withVisualWeight | number }}</strong> con indicazioni di peso visivo</p>
-        <p><strong>{{ data.summary.withoutEvidence | number }}</strong> senza evidenze fashion</p>
+        <p><strong>{{ counts.withProfile | number }}</strong> con profilo salvato</p>
+        <p><strong>{{ counts.withFeedAttributes | number }}</strong> con attributi fashion originali del feed</p>
+        <p><strong>{{ counts.withVisualWeight | number }}</strong> con indicazioni di peso visivo</p>
+        <p><strong>{{ counts.withoutEvidence | number }}</strong> senza evidenze fashion</p>
       </div>
       <p class="small text-muted mb-0">Questi contatori descrivono la disponibilità dei dati, non la correttezza stilistica degli outfit.</p>
     </section>
+
+    </ng-container>
 
     <section class="fashion-overview__section" aria-labelledby="fashion-merchants-title">
       <div class="fashion-overview__section-heading">
@@ -93,7 +122,7 @@
           <select class="form-select" id="fashion-merchant-select" [value]="selectedProgramId"
             (change)="selectedProgramId = $any($event.target).value">
             <option value="">Tutti i merchant</option>
-            <option *ngFor="let merchant of data.merchants" [value]="merchant.programId">
+            <option *ngFor="let merchant of merchantOptions" [value]="merchant.programId">
               {{ merchant.programName }}
             </option>
           </select>
@@ -101,11 +130,12 @@
       </div>
 
       <div class="fashion-overview__merchants">
-        <article class="fashion-overview__merchant" *ngFor="let merchant of merchants">
+        <ng-container *ngFor="let merchant of merchants">
+        <article class="fashion-overview__merchant" *ngIf="coverageForMerchant(merchant) as metrics">
           <div class="fashion-overview__merchant-title">
             <div>
               <h4 class="h6 mb-1">{{ merchant.programName }}</h4>
-              <p class="small text-muted mb-0">{{ merchant.total | number }} prodotti · {{ merchant.active | number }} attivi</p>
+              <p class="small text-muted mb-0">{{ metrics.total | number }} prodotti {{ scope === 'usable' ? 'utilizzabili' : 'totali' }} · {{ metrics.active | number }} attivi</p>
             </div>
             <small *ngIf="merchant.lastSuccessfulSyncAt" class="text-muted">
               Sync: {{ merchant.lastSuccessfulSyncAt | date:'dd/MM/yyyy HH:mm' }}
@@ -117,26 +147,26 @@
 
           <div class="fashion-overview__merchant-stats">
             <div class="fashion-overview__metric">
-              <div><span>Stagione</span><strong>{{ merchant.withSeasons | number }} ({{ percentage(merchant.withSeasons, merchant.total) }}%)</strong></div>
-              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(merchant.withSeasons, merchant.total)"></div></div>
+              <div><span>Stagione</span><strong>{{ metrics.withSeasons | number }} ({{ percentage(metrics.withSeasons, metrics.total) }}%)</strong></div>
+              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(metrics.withSeasons, metrics.total)"></div></div>
             </div>
             <div class="fashion-overview__metric">
-              <div><span>Stile</span><strong>{{ merchant.withStyles | number }} ({{ percentage(merchant.withStyles, merchant.total) }}%)</strong></div>
-              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(merchant.withStyles, merchant.total)"></div></div>
+              <div><span>Stile</span><strong>{{ metrics.withStyles | number }} ({{ percentage(metrics.withStyles, metrics.total) }}%)</strong></div>
+              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(metrics.withStyles, metrics.total)"></div></div>
             </div>
             <div class="fashion-overview__metric">
-              <div><span>Vestibilità</span><strong>{{ merchant.withFit | number }} ({{ percentage(merchant.withFit, merchant.total) }}%)</strong></div>
-              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(merchant.withFit, merchant.total)"></div></div>
+              <div><span>Vestibilità</span><strong>{{ metrics.withFit | number }} ({{ percentage(metrics.withFit, metrics.total) }}%)</strong></div>
+              <div class="progress"><div class="progress-bar" [style.width.%]="percentage(metrics.withFit, metrics.total)"></div></div>
             </div>
           </div>
           <div class="fashion-overview__merchant-foot small">
-            <span>Attributi originali: <strong>{{ merchant.withFeedAttributes | number }}</strong></span>
-            <span>Senza evidenze: <strong>{{ merchant.withoutEvidence | number }}</strong></span>
-            <span>Potenziali candidati AI: <strong>{{ merchant.potentialAiCandidates | number }}</strong></span>
+            <span>Attributi originali: <strong>{{ metrics.withFeedAttributes | number }}</strong></span>
+            <span>Senza evidenze: <strong>{{ metrics.withoutEvidence | number }}</strong></span>
+            <span>Potenziali candidati AI: <strong>{{ metrics.potentialAiCandidates | number }}</strong></span>
           </div>
-          <details *ngIf="merchant.examples.length" class="fashion-overview__examples">
-            <summary>Mostra esempi di prodotti ({{ merchant.examples.length }})</summary>
-            <div class="fashion-overview__example" *ngFor="let example of merchant.examples">
+          <details *ngIf="examplesForMerchant(merchant).length" class="fashion-overview__examples">
+            <summary>Mostra esempi di prodotti ({{ examplesForMerchant(merchant).length }})</summary>
+            <div class="fashion-overview__example" *ngFor="let example of examplesForMerchant(merchant)">
               <a [routerLink]="['/affiliate-catalog/products', example.id]">{{ example.name || example.id }}</a>
               <div class="small text-muted">{{ example.brand }}</div>
               <div class="small">Stagioni: {{ example.seasons.length ? example.seasons.join(', ') : 'Non determinate' }}</div>
@@ -148,20 +178,25 @@
             </div>
           </details>
         </article>
+        </ng-container>
         <p *ngIf="!merchants.length" class="text-muted">Nessun merchant da visualizzare.</p>
       </div>
     </section>
 
     <section class="fashion-overview__section" aria-labelledby="fashion-ai-title">
       <h3 id="fashion-ai-title" class="h5">Arricchimento con AI — PR2</h3>
-      <p class="mb-2">Potenziali prodotti da approfondire: <strong>{{ data.summary.potentialAiCandidates | number }}</strong>.</p>
-      <p class="text-muted small mb-0">È una stima preliminare: prodotti attivi, visibili nell'app, con immagine e stagione oppure stile non determinati. Non è una coda AI.
+      <p class="mb-2">Potenziali prodotti da approfondire: <strong>{{ data.usable.potentialAiCandidates | number }}</strong>.</p>
+      <p class="text-muted small mb-0">È una stima preliminare sul catalogo realmente utilizzabile per gli outfit (con feed, merchant e offerta idonei), con stagione oppure stile non determinati. Non è una coda AI.
         La PR2 aggiungerà selezione, preventivo e conferma esplicita del budget prima di ogni analisi. <strong>Non è stata avviata alcuna chiamata AI.</strong>
       </p>
     </section>
   </ng-container>
 
   <ng-template #noSnapshot>
+    <p class="alert alert-warning small" *ngIf="overview && overview.version !== 2">
+      Il report precedente non distingue correttamente i prodotti utilizzabili. Premi
+      «Ricalcola panoramica» per ottenere i nuovi conteggi: non vengono effettuate analisi AI.
+    </p>
     <section *ngIf="!loading" class="fashion-overview__section text-muted">
       <h3 class="h5">Nessuna panoramica disponibile</h3>
       <p class="mb-0">Dopo aver completato le sincronizzazioni dei feed, premi «Ricalcola panoramica» per creare il primo report. L'operazione legge Firestore in background, senza OpenAI.</p>

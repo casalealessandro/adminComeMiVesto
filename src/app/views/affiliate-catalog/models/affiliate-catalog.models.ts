@@ -84,6 +84,8 @@ export interface FashionMerchantOverview extends FashionCoverage {
   programName: string;
   lastSuccessfulSyncAt: number | null;
   examples: FashionCatalogExample[];
+  usable: FashionCoverage;
+  usableExamples: FashionCatalogExample[];
 }
 
 export interface FashionCatalogOverview {
@@ -91,6 +93,7 @@ export interface FashionCatalogOverview {
   generatedAt: number;
   scannedProducts: number;
   summary: FashionCoverage;
+  usable: FashionCoverage;
   merchants: FashionMerchantOverview[];
 }
 

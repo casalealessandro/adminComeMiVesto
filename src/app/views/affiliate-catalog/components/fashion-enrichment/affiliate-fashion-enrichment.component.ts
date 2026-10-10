@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
-  FashionCatalogOverview, FashionMerchantOverview, FashionOverviewJob,
+  FashionCatalogOverview, FashionCoverage, FashionCatalogExample, FashionMerchantOverview, FashionOverviewJob,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -20,6 +20,8 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   overview: FashionCatalogOverview | null = null;
   job: FashionOverviewJob | null = null;
   selectedProgramId = '';
+  /** The usable-outfit catalogue is the default for all editorial/AI planning. */
+  scope: 'usable' | 'all' = 'usable';
   loading = false;
   processing = false;
   error = '';
@@ -62,10 +64,40 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     return this.job?.status === 'QUEUED' || this.job?.status === 'RUNNING';
   }
 
+  /** Old version-1 snapshots cannot be shown as usable: ask for a new report. */
+  get effectiveOverview(): FashionCatalogOverview | null {
+    return this.overview?.version === 2 ? this.overview : null;
+  }
+
+  get visibleCoverage(): FashionCoverage | null {
+    const overview = this.effectiveOverview;
+    return overview ? (this.scope === 'usable' ? overview.usable : overview.summary) : null;
+  }
+
   get merchants(): FashionMerchantOverview[] {
-    const merchants = this.overview?.merchants ?? [];
-    return this.selectedProgramId
-      ? merchants.filter((m) => m.programId === this.selectedProgramId) : merchants;
+    const merchants = this.effectiveOverview?.merchants ?? [];
+    return merchants.filter((merchant) =>
+      (this.scope === 'all' || merchant.usable.total > 0)
+      && (!this.selectedProgramId || merchant.programId === this.selectedProgramId));
+  }
+
+  get merchantOptions(): FashionMerchantOverview[] {
+    return (this.effectiveOverview?.merchants ?? [])
+      .filter((merchant) => this.scope === 'all' || merchant.usable.total > 0);
+  }
+
+  setScope(scope: 'usable' | 'all'): void {
+    if (this.scope === scope) return;
+    this.scope = scope;
+    this.selectedProgramId = '';
+  }
+
+  coverageForMerchant(merchant: FashionMerchantOverview): FashionCoverage {
+    return this.scope === 'usable' ? merchant.usable : merchant;
+  }
+
+  examplesForMerchant(merchant: FashionMerchantOverview): FashionCatalogExample[] {
+    return this.scope === 'usable' ? merchant.usableExamples : merchant.examples;
   }
 
   percentage(value: number, total: number): number {
