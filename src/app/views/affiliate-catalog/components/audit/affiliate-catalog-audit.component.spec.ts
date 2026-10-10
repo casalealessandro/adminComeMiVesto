@@ -1,88 +1,99 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { AffiliateCatalogAudit } from '../../models/affiliate-catalog-audit.models';
+import { CatalogAnalytics, CatalogAnalyticsCounts } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AffiliateCatalogAuditComponent, auditPercentage } from './affiliate-catalog-audit.component';
 
-describe('AffiliateCatalogAuditComponent', () => {
-  const audit: AffiliateCatalogAudit = {
-    generatedAt: 1000,
-    catalog: {
-      summary: { total: 10, active: 8, inactive: 2, withoutCategory: 1 },
-      dataQuality: {
-        withImages: 9,
-        withoutImages: 1,
-        withGenderTargets: 7,
-        withoutGenderTargets: 3,
-        withNormalizedColor: 6,
-        withoutNormalizedColor: 4,
-      },
-      categories: [{
-        category: 'Clothing',
-        totalProducts: 8,
-        activeProducts: 7,
-        withImages: 8,
-        withGender: 6,
-        withColor: 5,
-        subcategories: [{
-          subcategory: 'Shirts',
-          totalProducts: 4,
-          activeProducts: 4,
-          withImages: 4,
-          withGender: 3,
-          withColor: 2,
-        }],
-      }],
-    },
-    comeMiVestoCategories: [
-      { id: 'clothing', categoryName: 'Abbigliamento', parentCategory: null, parentCategoryName: null, gender: ['M', 'D'], status: true, order: 1 },
-      { id: 'shirts', categoryName: 'Camicie', parentCategory: 'clothing', parentCategoryName: 'Abbigliamento', gender: ['M'], status: true, order: 2 },
-      { id: 'orphan', categoryName: 'Orfana', parentCategory: 'missing', parentCategoryName: null, gender: null, status: false, order: 3 },
-    ],
-  };
+const counts = (total: number): CatalogAnalyticsCounts => ({
+  total, active: total, taxonomyComplete: total, missingCategory: 0,
+  missingSubcategory: 0, invalidCategory: 0, invalidSubcategory: 0,
+  withImages: total, withGender: total, withColor: total,
+  fashionV2: total, fashionLegacy: 0, fashionMissing: 0, fashionLocked: 0,
+  withSeasons: total, withStyles: total, withFit: total, withVisualWeight: total,
+});
+const scope = (all: number, usable: number) => ({ all: counts(all), usable: counts(usable) });
+const analytics: CatalogAnalytics = {
+  version: 1, total: scope(5, 3),
+  programs: [{ programId: 'a', programName: 'Merchant A', ...scope(4, 3) }],
+  feeds: [
+    { feedId: 'f1', feedName: 'Feed A', programId: 'a', programName: 'Merchant A',
+      enabled: true, networkActive: true, lastSuccessfulSyncAt: 900, lastError: null, ...scope(3, 2) },
+    { feedId: 'f2', feedName: 'Feed B', programId: 'a', programName: 'Merchant A',
+      enabled: false, networkActive: true, lastSuccessfulSyncAt: 800, lastError: null, ...scope(2, 0) },
+  ],
+  categories: [
+    { categoryId: 'trousers', subcategoryId: null, categoryName: 'Pantaloni',
+      subcategoryName: null, parentCategoryId: null, status: true, ...scope(4, 3) },
+    { categoryId: 'trousers', subcategoryId: 'palazzo', categoryName: 'Pantaloni',
+      subcategoryName: 'Palazzo', parentCategoryId: 'trousers', status: true, ...scope(2, 1) },
+  ],
+  categorySegments: [
+    { sourceType: 'program', sourceId: 'a', taxonomyId: 'trousers', ...scope(3, 2) },
+    { sourceType: 'feed', sourceId: 'f1', taxonomyId: 'trousers', ...scope(2, 1) },
+    { sourceType: 'feed', sourceId: 'f1', taxonomyId: 'palazzo', ...scope(1, 1) },
+  ],
+};
 
+describe('AffiliateCatalogAuditComponent', () => {
   it('calculates bounded percentages safely', () => {
     expect(auditPercentage(8, 10)).toBe(80);
     expect(auditPercentage(1, 0)).toBe(0);
     expect(auditPercentage(20, 10)).toBe(100);
   });
 
-  describe('data loading', () => {
-    let fixture: ComponentFixture<AffiliateCatalogAuditComponent>;
-    let component: AffiliateCatalogAuditComponent;
-    let service: jasmine.SpyObj<AffiliateCatalogService>;
+  let fixture: ComponentFixture<AffiliateCatalogAuditComponent>;
+  let component: AffiliateCatalogAuditComponent;
+  let service: jasmine.SpyObj<AffiliateCatalogService>;
 
-    beforeEach(async () => {
-      service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', ['getCatalogAudit']);
-      service.getCatalogAudit.and.returnValue(of(audit));
+  beforeEach(async () => {
+    service = jasmine.createSpyObj<AffiliateCatalogService>('AffiliateCatalogService', ['getFashionOverview', 'refreshFashionOverview']);
+    service.getFashionOverview.and.returnValue(of({ job: null,
+      snapshot: { version: 2, generatedAt: 1000, analytics } as any }));
 
-      await TestBed.configureTestingModule({
-        imports: [AffiliateCatalogAuditComponent],
-        providers: [{ provide: AffiliateCatalogService, useValue: service }],
-      }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [AffiliateCatalogAuditComponent],
+      providers: [{ provide: AffiliateCatalogService, useValue: service }],
+    }).compileComponents();
+    fixture = TestBed.createComponent(AffiliateCatalogAuditComponent);
+    component = fixture.componentInstance;
+  });
 
-      fixture = TestBed.createComponent(AffiliateCatalogAuditComponent);
-      component = fixture.componentInstance;
-    });
+  it('loads a cached snapshot without calling the expensive catalog audit scan', () => {
+    fixture.detectChanges();
+    expect(service.getFashionOverview).toHaveBeenCalledTimes(1);
+    expect(component.counts.total).toBe(3);
+    expect(component.categoryCounts(component.categories[0]).total).toBe(3);
+  });
 
-    it('loads the backend audit and exposes the taxonomy hierarchy', () => {
-      fixture.detectChanges();
+  it('filters counts and category intersections by feed and program', () => {
+    component.refresh();
+    component.setProgram('a');
+    expect(component.counts.total).toBe(3);
+    expect(component.categoryCounts(component.categories[0]).total).toBe(2);
+    component.setFeed('f1');
+    expect(component.counts.total).toBe(2);
+    expect(component.categoryCounts(component.categories[0]).total).toBe(1);
+    expect(component.categoryCounts(component.childrenFor('trousers')[0]).total).toBe(1);
+    component.setScope('all');
+    expect(component.counts.total).toBe(3);
+    expect(component.categoryCounts(component.categories[0]).total).toBe(2);
+    component.setProgram('');
+    expect(component.selectedFeedId).toBe('');
+    expect(component.counts.total).toBe(5);
+  });
 
-      expect(service.getCatalogAudit).toHaveBeenCalledTimes(1);
-      expect(component.audit).toEqual(audit);
-      expect(component.rootCategories.map((category) => category.id)).toEqual(['clothing']);
-      expect(component.childrenFor('clothing').map((category) => category.id)).toEqual(['shirts']);
-      expect(component.orphanCategories.map((category) => category.id)).toEqual(['orphan']);
-    });
+  it('starts an explicitly requested background refresh without OpenAI', () => {
+    service.refreshFashionOverview.and.returnValue(of({ runId: 'r1', status: 'QUEUED',
+      scanned: 0, startedAt: 1, updatedAt: 1, completedAt: null, lastError: null }));
+    component.recalculate();
+    expect(service.refreshFashionOverview).toHaveBeenCalledTimes(1);
+    expect(component.jobRunning).toBeTrue();
+  });
 
-    it('shows a recoverable error when the audit endpoint fails', () => {
-      service.getCatalogAudit.and.returnValue(throwError(() => new Error('failed')));
-
-      component.refresh();
-
-      expect(component.audit).toBeNull();
-      expect(component.error).toContain('Impossibile caricare');
-      expect(component.loading).toBeFalse();
-    });
+  it('shows error without inventing data on API failure', () => {
+    service.getFashionOverview.and.returnValue(throwError(() => new Error('failed')));
+    component.refresh();
+    expect(component.report).toBeNull();
+    expect(component.error).toContain('Impossibile');
   });
 });
