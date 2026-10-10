@@ -15,6 +15,7 @@ import {
   FashionEnrichmentStatus,
   FashionOverviewResponse,
   FashionOverviewJob,
+  FashionAiPilotJob,
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
@@ -45,6 +46,30 @@ export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiBaseUrl;
   private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
+
+  getFashionAiFeedPilot(feedId: string): Observable<FashionAiPilotJob | null> {
+    return this.http.get<AffiliateApiResponse<FashionAiPilotJob | null>>(
+      `${this.baseUrl}/fashion-ai/feeds/${encodeURIComponent(feedId)}`,
+    ).pipe(map((response) => response.data));
+  }
+
+  previewFashionAiFeedPilot(
+    feedId: string, maxProducts: number, maxBudgetUsd: number,
+  ): Observable<FashionAiPilotJob> {
+    return this.http.post<AffiliateApiResponse<FashionAiPilotJob>>(
+      `${this.baseUrl}/fashion-ai/feeds/${encodeURIComponent(feedId)}/preview`,
+      { maxProducts, maxBudgetUsd },
+    ).pipe(map((response) => response.data));
+  }
+
+  confirmFashionAiFeedPilot(
+    feedId: string, runId: string, acknowledgedBudgetUsd: number,
+  ): Observable<FashionAiPilotJob> {
+    return this.http.post<AffiliateApiResponse<FashionAiPilotJob>>(
+      `${this.baseUrl}/fashion-ai/feeds/${encodeURIComponent(feedId)}/confirm`,
+      { runId, acknowledgedBudgetUsd },
+    ).pipe(map((response) => response.data));
+  }
 
   getFashionOverview(): Observable<FashionOverviewResponse> {
     return this.http.get<AffiliateApiResponse<FashionOverviewResponse>>(`${this.baseUrl}/fashion-overview`)
