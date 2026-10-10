@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { CatalogAnalytics, CatalogAnalyticsCounts } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
@@ -52,7 +53,7 @@ describe('AffiliateCatalogAuditComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AffiliateCatalogAuditComponent],
-      providers: [{ provide: AffiliateCatalogService, useValue: service }],
+      providers: [provideRouter([]), { provide: AffiliateCatalogService, useValue: service }],
     }).compileComponents();
     fixture = TestBed.createComponent(AffiliateCatalogAuditComponent);
     component = fixture.componentInstance;
