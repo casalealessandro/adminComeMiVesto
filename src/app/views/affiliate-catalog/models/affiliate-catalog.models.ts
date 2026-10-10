@@ -86,6 +86,55 @@ export interface AffiliateFeedCleanupJob {
   lastError: string | null;
 }
 
+export interface FashionAiPilotProductResult {
+  productId: string;
+  name: string;
+  seasons: string[];
+  styles: string[];
+  fit: string;
+  visualWeight: string;
+  confidence: string;
+  explanation: string;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  saved: boolean;
+}
+
+export interface FashionAiPilotJob {
+  feedId: string;
+  feedName: string;
+  runId: string;
+  status: 'PREVIEW_READY' | 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'STOPPED_BUDGET';
+  createdAt: number;
+  updatedAt: number;
+  previewAt: number;
+  lastSyncAt: number | null;
+  completedAt: number | null;
+  maxProducts: number;
+  maxBudgetUsd: number;
+  model: string;
+  priceCheckedAt: string;
+  priceInputPerMillionUsd: number;
+  priceOutputPerMillionUsd: number;
+  estimatedCostUsd: number;
+  estimatedGuardUsd: number;
+  scanned: number;
+  selectedIds: string[];
+  previewProducts: { id: string; name: string; category: string; missing: string[] }[];
+  nextIndex: number;
+  pendingNext: boolean;
+  completed: number;
+  skipped: number;
+  failed: number;
+  uncertainCalls: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  results: FashionAiPilotProductResult[];
+  lastError: string | null;
+}
+
 export interface FashionCoverage {
   total: number;
   active: number;

@@ -1,21 +1,26 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
+import { confirm } from '../../../../core/dialogs/ui-dialogs';
+import { AuthService } from '../../../../services/auth.service';
 import {
   FashionCatalogOverview, FashionCoverage, FashionCatalogExample, FashionMerchantOverview, FashionOverviewJob,
+  FashionAiPilotJob, AffiliateFeed, AffiliateProgram,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 @Component({
   selector: 'app-affiliate-fashion-enrichment',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './affiliate-fashion-enrichment.component.html',
   styleUrl: './affiliate-fashion-enrichment.component.scss',
 })
 export class AffiliateFashionEnrichmentComponent implements OnInit {
   private readonly service = inject(AffiliateCatalogService);
+  private readonly auth = inject(AuthService);
 
   overview: FashionCatalogOverview | null = null;
   job: FashionOverviewJob | null = null;
@@ -27,7 +32,135 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   error = '';
   notice = '';
 
-  ngOnInit(): void { this.refresh(); }
+  eligibleFeeds: AffiliateFeed[] = [];
+  selectedAiFeedId = '';
+  aiMaxProducts = 10;
+  aiMaxBudgetUsd = 0.10;
+  aiJob: FashionAiPilotJob | null = null;
+  aiAccepted = false;
+  aiBusy = false;
+  aiError = '';
+  aiNotice = '';
+  readonly aiSizes = [5, 10, 20, 50];
+  readonly aiBudgets = [0.10, 0.25, 0.50, 1, 2];
+
+  get canManageAi(): boolean { return this.auth.isAdmin(); }
+  get aiRunning(): boolean {
+    return this.aiJob?.status === 'QUEUED' || this.aiJob?.status === 'RUNNING';
+  }
+  get aiPreviewReady(): boolean {
+    return this.aiJob?.status === 'PREVIEW_READY'
+      && Date.now() - this.aiJob.previewAt <= 15 * 60 * 1000;
+  }
+
+  ngOnInit(): void {
+    this.refresh();
+    forkJoin({ feeds: this.service.getFeeds(), programs: this.service.getPrograms() }).subscribe({
+      next: ({ feeds, programs }) => {
+        const activePrograms = new Set(programs.filter((p: AffiliateProgram) =>
+          p.enabled === true && p.networkStatus === 'ACTIVE').map((p: AffiliateProgram) => p.id));
+        this.eligibleFeeds = feeds.filter((feed: AffiliateFeed) =>
+          feed.enabled === true && activePrograms.has(feed.affiliateProgramId));
+      },
+      error: () => { this.aiError = 'Impossibile leggere i feed abilitati per il test AI.'; },
+    });
+  }
+
+  onAiFeedChanged(): void {
+    this.aiJob = null;
+    this.aiAccepted = false;
+    this.aiError = '';
+    this.aiNotice = '';
+    this.refreshAiStatus();
+  }
+
+  refreshAiStatus(): void {
+    if (!this.selectedAiFeedId || this.aiBusy) return;
+    this.aiBusy = true;
+    this.aiError = '';
+    const expectedFeedId = this.selectedAiFeedId;
+    this.service.getFashionAiFeedPilot(expectedFeedId)
+      .pipe(finalize(() => this.aiBusy = false))
+      .subscribe({
+        next: (job) => {
+          if (this.selectedAiFeedId !== expectedFeedId) return;
+          this.aiJob = job;
+          this.aiAccepted = false;
+        },
+        error: () => { this.aiError = 'Impossibile leggere lo stato del test AI.'; },
+      });
+  }
+
+  previewAiFeed(): void {
+    if (!this.canManageAi || !this.selectedAiFeedId || this.aiBusy || this.aiRunning) return;
+    this.aiAccepted = false;
+    this.aiBusy = true;
+    this.aiError = '';
+    this.aiNotice = '';
+    const expectedFeedId = this.selectedAiFeedId;
+    this.service.previewFashionAiFeedPilot(expectedFeedId, Number(this.aiMaxProducts), Number(this.aiMaxBudgetUsd))
+      .pipe(finalize(() => this.aiBusy = false))
+      .subscribe({
+        next: (job) => {
+          if (this.selectedAiFeedId !== expectedFeedId) return;
+          this.aiJob = job;
+          this.aiNotice = job.selectedIds.length
+            ? 'Anteprima pronta: nessun token AI è stato ancora consumato. Controlla prodotti e preventivo.'
+            : 'Nessun prodotto idoneo trovato nel campione del feed. Nessun costo OpenAI.';
+        },
+        error: (err: { status?: number; error?: { message?: string } }) => {
+          this.aiError = err.status === 409
+            ? (err.error?.message || 'Feed non idoneo, sincronizzazione in corso o test già attivo.')
+            : 'Impossibile creare l’anteprima. Nessuna chiamata AI avviata.';
+        },
+      });
+  }
+
+  confirmAiFeed(): void {
+    const job = this.aiJob;
+    if (!this.canManageAi || !job || !this.aiPreviewReady || !this.aiAccepted ||
+      !job.selectedIds.length || this.aiBusy || job.feedId !== this.selectedAiFeedId) return;
+    const message = [
+      'Autorizzi il test OpenAI sul feed «' + job.feedName + '»?',
+      'Prodotti: ' + job.selectedIds.length,
+      'Soglia preventiva: USD ' + job.maxBudgetUsd.toFixed(2),
+      'La fatturazione effettiva può differire dalla stima e una richiesta fallita può comportare addebiti non misurabili.',
+      'I risultati sono solo per revisione: non vengono pubblicati negli outfit.',
+    ].join('\n');
+    confirm(message, 'Conferma spesa AI', (approved: boolean) => {
+      if (approved) this.launchConfirmedAi(job);
+    });
+  }
+
+  private launchConfirmedAi(job: FashionAiPilotJob): void {
+    if (this.aiBusy || !this.canManageAi) return;
+    this.aiBusy = true;
+    this.aiError = '';
+    this.service.confirmFashionAiFeedPilot(job.feedId, job.runId, job.maxBudgetUsd)
+      .pipe(finalize(() => this.aiBusy = false))
+      .subscribe({
+        next: (started) => {
+          this.aiJob = started;
+          this.aiAccepted = false;
+          this.aiNotice = 'Test AI avviato in background. Aggiorna lo stato per vedere i consumi.';
+        },
+        error: (err: { status?: number }) => {
+          this.aiError = err.status === 409
+            ? 'Anteprima scaduta, feed cambiato o test già in corso: ripeti la verifica.'
+            : 'Non è stato possibile avviare il test AI. Controlla lo stato prima di riprovare.';
+        },
+      });
+  }
+
+  aiStatusLabel(status: FashionAiPilotJob['status']): string {
+    return {
+      PREVIEW_READY: 'Anteprima senza costi', QUEUED: 'In coda',
+      RUNNING: 'In elaborazione', SUCCESS: 'Completato',
+      FAILED: 'Interrotto per errore', STOPPED_BUDGET: 'Sospeso per budget',
+    }[status];
+  }
+
+
 
   refresh(): void {
     if (this.loading) return;

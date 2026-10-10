@@ -183,13 +183,6 @@
       </div>
     </section>
 
-    <section class="fashion-overview__section" aria-labelledby="fashion-ai-title">
-      <h3 id="fashion-ai-title" class="h5">Arricchimento con AI — PR2</h3>
-      <p class="mb-2">Potenziali prodotti da approfondire: <strong>{{ data.usable.potentialAiCandidates | number }}</strong>.</p>
-      <p class="text-muted small mb-0">È una stima preliminare sul catalogo realmente utilizzabile per gli outfit (con feed, merchant e offerta idonei), con stagione oppure stile non determinati. Non è una coda AI.
-        La PR2 aggiungerà selezione, preventivo e conferma esplicita del budget prima di ogni analisi. <strong>Non è stata avviata alcuna chiamata AI.</strong>
-      </p>
-    </section>
   </ng-container>
 
   <ng-template #noSnapshot>
@@ -202,6 +195,163 @@
       <p class="mb-0">Dopo aver completato le sincronizzazioni dei feed, premi «Ricalcola panoramica» per creare il primo report. L'operazione legge Firestore in background, senza OpenAI.</p>
     </section>
   </ng-template>
+
+    <section class="fashion-overview__section" aria-labelledby="fashion-ai-title">
+      <div class="fashion-overview__section-heading">
+        <div>
+          <h3 id="fashion-ai-title" class="h5 mb-1">PR2 · Arricchimento AI per feed</h3>
+          <p class="text-muted small mb-0">
+            Esperimento controllato, su un feed abilitato alla volta. Per ora solo analisi testuale:
+            i risultati vengono salvati separatamente e non modificano automaticamente gli outfit.
+          </p>
+        </div>
+        <span class="badge bg-secondary align-self-start">Test limitato</span>
+      </div>
+
+      <p class="small mb-3" *ngIf="effectiveOverview as data">
+        La panoramica stima <strong>{{ data.usable.potentialAiCandidates | number }}</strong>
+        possibili candidati in tutto il catalogo. Il test sceglie solo un piccolo campione
+        del feed selezionato e ne ricontrolla la disponibilità prima della chiamata AI.
+      </p>
+      <p class="small text-muted mb-3" *ngIf="!effectiveOverview">
+        Puoi preparare il test per un singolo feed anche senza una panoramica generale.
+        Il backend verifica autonomamente i prodotti idonei e le offerte attive.
+      </p>
+
+      <div class="alert alert-danger small" *ngIf="aiError" role="alert">{{ aiError }}</div>
+      <div class="alert alert-info small" *ngIf="aiNotice" role="status">{{ aiNotice }}</div>
+
+      <div class="fashion-overview__ai-controls">
+        <div>
+          <label class="form-label small" for="fashion-ai-feed">Feed da analizzare</label>
+          <select class="form-select" id="fashion-ai-feed"
+            [(ngModel)]="selectedAiFeedId" (ngModelChange)="onAiFeedChanged()"
+            [disabled]="aiBusy">
+            <option value="">Seleziona un feed attivo</option>
+            <option *ngFor="let feed of eligibleFeeds" [value]="feed.id">{{ feed.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label small" for="fashion-ai-count">Prodotti del test</label>
+          <select class="form-select" id="fashion-ai-count" [(ngModel)]="aiMaxProducts"
+            [disabled]="aiBusy || aiRunning">
+            <option *ngFor="let size of aiSizes" [ngValue]="size">{{ size }} prodotti al massimo</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label small" for="fashion-ai-budget">Soglia di arresto preventiva</label>
+          <select class="form-select" id="fashion-ai-budget" [(ngModel)]="aiMaxBudgetUsd"
+            [disabled]="aiBusy || aiRunning">
+            <option *ngFor="let budget of aiBudgets" [ngValue]="budget">
+              {{ budget | currency:'USD':'symbol':'1.2-2' }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fashion-overview__actions mt-3">
+        <button type="button" class="btn btn-outline-primary"
+          (click)="previewAiFeed()" [disabled]="!canManageAi || !selectedAiFeedId || aiBusy || aiRunning">
+          <span class="mdi mdi-magnify" aria-hidden="true"></span>
+          {{ aiBusy ? 'Attendi…' : 'Calcola anteprima e costo (senza AI)' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary"
+          (click)="refreshAiStatus()" [disabled]="!selectedAiFeedId || aiBusy">
+          <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna stato AI
+        </button>
+      </div>
+
+      <p class="small text-muted mt-2 mb-0">
+        Modello text-only: gpt-5.4-nano. Tariffa di riferimento: 0,20 USD/1M token input
+        e 1,25 USD/1M token output (verificata il 10/10/2026).
+        La stima non è una garanzia di fatturazione; le letture Firebase sono un costo separato.
+      </p>
+
+      <article class="fashion-overview__ai-job mt-3" *ngIf="aiJob as pilot" aria-live="polite">
+        <div class="fashion-overview__merchant-title">
+          <div>
+            <strong>{{ pilot.feedName }} · {{ aiStatusLabel(pilot.status) }}</strong>
+            <div class="text-muted small">Creato il {{ pilot.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          <span class="badge bg-secondary">{{ pilot.model }}</span>
+        </div>
+
+        <div class="fashion-overview__ai-stats">
+          <div><span>Prodotti selezionati</span><strong>{{ pilot.selectedIds.length }}</strong></div>
+          <div><span>Stima API OpenAI</span><strong>{{ pilot.estimatedCostUsd | currency:'USD':'symbol':'1.4-6' }}</strong></div>
+          <div><span>Soglia autorizzabile</span><strong>{{ pilot.maxBudgetUsd | currency:'USD':'symbol':'1.2-2' }}</strong></div>
+          <div><span>Spesa calcolata dai token</span><strong>{{ pilot.costUsd | currency:'USD':'symbol':'1.4-6' }}</strong></div>
+        </div>
+
+        <ng-container *ngIf="pilot.status === 'PREVIEW_READY'">
+          <p class="small text-muted mt-3">
+            Sono stati consultati {{ pilot.scanned | number }} prodotti al massimo nei primi record del feed.
+            Il campione non rappresenta necessariamente l'intero catalogo. Nessun token OpenAI consumato.
+          </p>
+          <details *ngIf="pilot.previewProducts.length">
+            <summary>Controlla il campione selezionato ({{ pilot.previewProducts.length }} esempi)</summary>
+            <ul class="small mb-2 mt-2">
+              <li *ngFor="let product of pilot.previewProducts">
+                {{ product.name }} · {{ product.category }} · Mancano: {{ product.missing.join(', ') }}
+              </li>
+            </ul>
+          </details>
+          <div *ngIf="pilot.selectedIds.length && aiPreviewReady && canManageAi" class="mt-3">
+            <label class="form-check">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="aiAccepted"/>
+              <span class="form-check-label small">
+                Autorizzo unicamente questo test sul feed selezionato con soglia preventiva di
+                {{ pilot.maxBudgetUsd | currency:'USD':'symbol':'1.2-2' }}.
+                Comprendo che il costo fatturato potrebbe differire dal preventivo e che eventuali
+                richieste fallite potrebbero essere addebitate senza metriche disponibili.
+              </span>
+            </label>
+            <button class="btn btn-danger mt-2" type="button" (click)="confirmAiFeed()"
+              [disabled]="!aiAccepted || aiBusy">
+              <span class="mdi mdi-robot-outline" aria-hidden="true"></span>
+              Conferma e avvia {{ pilot.selectedIds.length }} analisi AI
+            </button>
+          </div>
+          <p *ngIf="!aiPreviewReady" class="small text-warning mt-2">
+            Questa anteprima è scaduta. Genera una nuova anteprima per poter autorizzare il test.
+          </p>
+        </ng-container>
+
+        <ng-container *ngIf="pilot.status !== 'PREVIEW_READY'">
+          <p class="small text-muted mt-3 mb-1">
+            Elaborati {{ pilot.completed }} · Saltati {{ pilot.skipped }} ·
+            Errori o costo non misurabile {{ pilot.uncertainCalls }} ·
+            Token input {{ pilot.inputTokens | number }} · Token output {{ pilot.outputTokens | number }}.
+          </p>
+          <div class="progress" *ngIf="pilot.selectedIds.length">
+            <div class="progress-bar" role="progressbar"
+              [style.width.%]="percentage(pilot.nextIndex, pilot.selectedIds.length)"
+              [attr.aria-valuenow]="pilot.nextIndex"
+              [attr.aria-valuemin]="0"
+              [attr.aria-valuemax]="pilot.selectedIds.length"></div>
+          </div>
+          <p class="small text-muted mt-2" *ngIf="aiRunning">
+            Il lavoro prosegue in background. Puoi chiudere la pagina e aggiornare lo stato più tardi.
+          </p>
+          <p class="text-danger small" *ngIf="pilot.lastError">{{ pilot.lastError }}</p>
+
+          <details *ngIf="pilot.results.length" class="mt-3" open>
+            <summary>Risultati del campione ({{ pilot.results.length }})</summary>
+            <div class="fashion-overview__ai-result" *ngFor="let result of pilot.results">
+              <div class="d-flex justify-content-between gap-2 flex-wrap">
+                <strong>{{ result.name }}</strong>
+                <small>{{ result.costUsd | currency:'USD':'symbol':'1.4-6' }}</small>
+              </div>
+              <div class="small">Stagione: {{ result.seasons.length ? result.seasons.join(', ') : 'Non determinata' }}</div>
+              <div class="small">Stile: {{ result.styles.length ? result.styles.join(', ') : 'Non determinato' }}</div>
+              <div class="small">Vestibilità: {{ result.fit }} · Peso visivo: {{ result.visualWeight }}</div>
+              <div class="small">Affidabilità dichiarata: {{ result.confidence }} · {{ result.explanation }}</div>
+              <div class="small text-muted">{{ result.saved ? 'Salvato per revisione' : 'Non salvato: prodotto modificato durante il test' }}</div>
+            </div>
+          </details>
+        </ng-container>
+      </article>
+    </section>
 
   <p class="small text-muted mt-3">Ricalcolare il report comporta letture e una piccola elaborazione su Firebase. Non modifica i prodotti e non risincronizza i feed.</p>
 </section>
