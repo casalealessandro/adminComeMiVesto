@@ -356,13 +356,19 @@ export class AffiliateFeedsComponent implements OnInit {
             );
             return;
           }
-          if (job?.status === 'PREVIEW_READY' && job.mode === mode) {
+          if (job?.status === 'PREVIEW_READY' && job.mode === mode &&
+              job.previewAt !== null && Date.now() - job.previewAt <= 15 * 60 * 1000) {
             this.confirmCleanupImpact(feed, job);
             return;
           }
-          if (job?.status === 'SUCCESS' && job.mode === 'FEED_AND_PRODUCTS') {
+          if (job?.status === 'SUCCESS' && job.mode === mode) {
             this.refresh();
-            alert('Feed già eliminato. La lista verrà aggiornata.', 'Cancellazione completata');
+            alert(
+              mode === 'PRODUCTS_ONLY'
+                ? 'Prodotti del feed eliminati. Il feed è conservato e disabilitato.'
+                : 'Feed e prodotti non protetti eliminati. La lista verrà aggiornata.',
+              'Cancellazione completata',
+            );
             return;
           }
           confirm(
