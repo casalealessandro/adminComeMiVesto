@@ -171,6 +171,68 @@ export interface FashionMerchantOverview extends FashionCoverage {
   usableExamples: FashionCatalogExample[];
 }
 
+
+/** Read-only additive analytics calculated by the existing asynchronous fashion snapshot job. */
+export interface CatalogAnalyticsCounts {
+  total: number;
+  active: number;
+  taxonomyComplete: number;
+  missingCategory: number;
+  missingSubcategory: number;
+  invalidCategory: number;
+  invalidSubcategory: number;
+  withImages: number;
+  withGender: number;
+  withColor: number;
+  fashionV2: number;
+  fashionLegacy: number;
+  fashionMissing: number;
+  fashionLocked: number;
+  withSeasons: number;
+  withStyles: number;
+  withFit: number;
+  withVisualWeight: number;
+}
+export interface CatalogAnalyticsScope {
+  all: CatalogAnalyticsCounts;
+  usable: CatalogAnalyticsCounts;
+}
+export interface CatalogAnalyticsProgram extends CatalogAnalyticsScope {
+  programId: string;
+  programName: string;
+}
+export interface CatalogAnalyticsFeed extends CatalogAnalyticsScope {
+  feedId: string;
+  feedName: string;
+  programId: string;
+  programName: string;
+  enabled: boolean;
+  networkActive: boolean;
+  lastSuccessfulSyncAt: number | null;
+  lastError: string | null;
+}
+export interface CatalogAnalyticsCategory extends CatalogAnalyticsScope {
+  categoryId: string;
+  subcategoryId: string | null;
+  categoryName: string;
+  subcategoryName: string | null;
+  parentCategoryId: string | null;
+  status: boolean | string | null;
+}
+export interface CatalogAnalyticsCategorySegment extends CatalogAnalyticsScope {
+  sourceType: 'program' | 'feed';
+  sourceId: string;
+  taxonomyId: string;
+}
+export interface CatalogAnalytics {
+  version: 1;
+  total: CatalogAnalyticsScope;
+  programs: CatalogAnalyticsProgram[];
+  feeds: CatalogAnalyticsFeed[];
+  categories: CatalogAnalyticsCategory[];
+  categorySegments: CatalogAnalyticsCategorySegment[];
+}
+
 export interface FashionCatalogOverview {
   version: number;
   generatedAt: number;
@@ -178,6 +240,7 @@ export interface FashionCatalogOverview {
   summary: FashionCoverage;
   usable: FashionCoverage;
   merchants: FashionMerchantOverview[];
+  analytics?: CatalogAnalytics;
 }
 
 export interface FashionOverviewJob {
