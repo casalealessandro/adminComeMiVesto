@@ -195,6 +195,29 @@ describe('AffiliateCatalogService release contract', () => {
     photoRequest.flush({ data: { ...creator, photoURL: 'https://storage.test/profile.jpg' } });
   });
 
+  it('fetches an AI pilot only for a specific affiliate feed', () => {
+    service.getFashionAiFeedPilot('feed one').subscribe();
+    const req = http.expectOne(`${baseUrl}/fashion-ai/feeds/feed%20one`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: null });
+  });
+
+  it('previews feed-specific candidate counts and a budget without requesting any AI call', () => {
+    service.previewFashionAiFeedPilot('feed-1', 10, 0.10).subscribe();
+    const req = http.expectOne(`${baseUrl}/fashion-ai/feeds/feed-1/preview`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ maxProducts: 10, maxBudgetUsd: 0.10 });
+    req.flush({ data: { status: 'PREVIEW_READY', selectedIds: [] } });
+  });
+
+  it('sends a matching runId and acknowledged USD budget on explicit paid confirmation', () => {
+    service.confirmFashionAiFeedPilot('feed-1', 'run-abc', 0.25).subscribe();
+    const req = http.expectOne(`${baseUrl}/fashion-ai/feeds/feed-1/confirm`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ runId: 'run-abc', acknowledgedBudgetUsd: 0.25 });
+    req.flush({ data: { status: 'QUEUED', runId: 'run-abc' } });
+  });
+
   it('reads the cached fashion overview without scanning products or calling AI', () => {
     const status = { job: null, snapshot: null };
     let result: unknown;
