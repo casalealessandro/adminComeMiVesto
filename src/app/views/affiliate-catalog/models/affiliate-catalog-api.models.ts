@@ -266,6 +266,7 @@ export type AffiliateFeedCreateInput = Pick<
 
 export type AffiliateFeedUpdateInput = Partial<Pick<
   AffiliateFeed,
+  | 'networkFeedId'
   | 'name'
   | 'enabled'
   | 'adapterType'
