@@ -1,196 +1,250 @@
-<section class="catalog-audit" aria-labelledby="catalog-audit-title" [attr.aria-busy]="loading">
-  <header class="catalog-audit__header">
+<section class="catalog-analytics container-fluid py-3" aria-labelledby="analytics-title">
+  <header class="analytics-header">
     <div>
-      <h2 id="catalog-audit-title">Analisi catalogo</h2>
-      <p class="catalog-audit__description">
-        Controlla lo stato del catalogo, la qualità dei dati e le categorie ComeMiVesto.
+      <h2 id="analytics-title" class="h4 mb-1">Analisi catalogo</h2>
+      <p class="text-muted mb-1">Quanti prodotti abbiamo, quali possiamo usare negli outfit e cosa manca per classificarli bene.</p>
+      <p class="small text-muted mb-0" *ngIf="generatedAt">
+        Fotografia del {{ generatedAt | date:'dd/MM/yyyy HH:mm' }} · dati non in tempo reale
       </p>
     </div>
-
-    <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading">
-      <span class="mdi mdi-refresh" [class.spin]="loading" aria-hidden="true"></span>
-      Aggiorna analisi
-    </button>
+    <div class="analytics-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading || processing">
+        <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna visualizzazione
+      </button>
+      <button type="button" class="btn btn-primary" (click)="recalculate()" [disabled]="loading || processing || jobRunning">
+        <span *ngIf="processing" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        Ricalcola panoramica
+      </button>
+    </div>
   </header>
 
-
-  <div *ngIf="error" class="alert alert-danger catalog-audit__error" role="alert">
-    <span>{{ error }}</span>
-    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
+  <div class="alert alert-danger mt-3" role="alert" *ngIf="error">{{ error }}</div>
+  <div class="alert alert-info mt-3" role="status" *ngIf="notice">{{ notice }}</div>
+  <div class="alert alert-info mt-3" role="status" *ngIf="jobRunning">
+    Elaborazione in background ({{ job?.scanned | number }} prodotti letti).
+    I dati sotto restano quelli dell'ultimo report completato.
+  </div>
+  <div class="alert alert-warning mt-3" *ngIf="job?.status === 'FAILED'">
+    Ultima elaborazione non riuscita: {{ job?.lastError || 'controlla lo stato del job' }}.
+  </div>
+  <div class="alert alert-warning mt-3" *ngIf="isOutdated && !jobRunning">
+    Alcuni feed sono stati sincronizzati dopo questa panoramica. Ricalcola per ottenere i conteggi aggiornati.
+  </div>
+  <div class="py-4 text-muted" *ngIf="loading && !report">
+    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span> Lettura panoramica…
+  </div>
+  <div class="alert alert-secondary mt-3" *ngIf="!loading && !report">
+    Non c'è ancora una fotografia compatibile con la nuova analisi. Premi
+    <strong>Ricalcola panoramica</strong> per elaborare i prodotti sul backend, senza utilizzare OpenAI.
+    <span *ngIf="jobRunning">Il calcolo è già in corso.</span>
   </div>
 
-  <div *ngIf="loading && !audit" class="catalog-audit__loading" aria-live="polite">
-    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-    Analisi del catalogo in corso…
-  </div>
-
-  <ng-container *ngIf="audit as data">
-    <div class="catalog-audit__generated">
-      <span class="mdi mdi-clock-outline" aria-hidden="true"></span>
-      Report generato {{ data.generatedAt | date:'medium' }}
-    </div>
-
-    <section class="catalog-audit__section" aria-labelledby="catalog-summary-title">
-      <div class="catalog-audit__section-heading">
-        <div>
-          <p class="catalog-audit__eyebrow">Panoramica</p>
-          <h3 id="catalog-summary-title">Stato del catalogo</h3>
+  <ng-container *ngIf="report as data">
+    <section class="analytics-filters" aria-label="Filtri catalogo">
+      <div class="analytics-filter">
+        <label for="analytics-program" class="form-label small">Programma affiliato</label>
+        <select id="analytics-program" class="form-select" [value]="selectedProgramId"
+          (change)="setProgram($any($event.target).value)">
+          <option value="">Tutti i programmi</option>
+          <option *ngFor="let program of data.programs" [value]="program.programId">{{ program.programName }}</option>
+        </select>
+      </div>
+      <div class="analytics-filter">
+        <label for="analytics-feed" class="form-label small">Feed</label>
+        <select id="analytics-feed" class="form-select" [value]="selectedFeedId"
+          (change)="setFeed($any($event.target).value)">
+          <option value="">Tutti i feed</option>
+          <option *ngFor="let feed of visibleFeeds" [value]="feed.feedId">{{ feed.feedName }}</option>
+        </select>
+      </div>
+      <div class="analytics-filter analytics-filter--scope">
+        <label class="form-label small">Prodotti considerati</label>
+        <div class="btn-group w-100" role="group" aria-label="Ambito dei conteggi">
+          <button type="button" class="btn btn-sm" (click)="setScope('usable')"
+            [class.btn-primary]="scope === 'usable'" [class.btn-outline-primary]="scope !== 'usable'"
+            [attr.aria-pressed]="scope === 'usable'">Utilizzabili</button>
+          <button type="button" class="btn btn-sm" (click)="setScope('all')"
+            [class.btn-primary]="scope === 'all'" [class.btn-outline-primary]="scope !== 'all'"
+            [attr.aria-pressed]="scope === 'all'">Tutti</button>
         </div>
       </div>
+    </section>
+    <p class="small text-muted mt-2">
+      <ng-container *ngIf="scope === 'usable'">La disponibilità richiede programma/feed abilitati, prodotto attivo e visibile, immagine valida, categoria, genere e offerta commerciale utilizzabile sul feed.</ng-container>
+      <ng-container *ngIf="scope === 'all'">Include anche prodotti storici, disattivati e senza offerte utilizzabili.</ng-container>
+      I prodotti presenti in più feed vengono contati una volta globalmente e una volta per ogni feed collegato.
+    </p>
 
-      <div class="catalog-audit__kpis">
-        <article class="audit-kpi">
-          <span class="mdi mdi-package-variant-closed audit-kpi__icon" aria-hidden="true"></span>
-          <div><strong>{{ data.catalog.summary.total }}</strong><span>Prodotti totali</span></div>
+    <section class="analytics-section" aria-labelledby="analytics-summary">
+      <h3 id="analytics-summary" class="h5">Panoramica prodotti</h3>
+      <div class="analytics-kpis">
+        <article class="analytics-kpi">
+          <span>Prodotti {{ scope === 'usable' ? 'utilizzabili' : 'nel catalogo' }}</span>
+          <strong>{{ counts.total | number }}</strong>
+          <small>{{ counts.active | number }} con flag prodotto attivo</small>
         </article>
-        <article class="audit-kpi">
-          <span class="mdi mdi-check-circle-outline audit-kpi__icon" aria-hidden="true"></span>
-          <div><strong>{{ data.catalog.summary.active }}</strong><span>Prodotti attivi</span></div>
-          <small>{{ percentage(data.catalog.summary.active, data.catalog.summary.total) }}%</small>
+        <article class="analytics-kpi">
+          <span>Tassonomia completa</span>
+          <strong>{{ counts.taxonomyComplete | number }}</strong>
+          <small>{{ percentage(counts.taxonomyComplete, counts.total) }}% del perimetro selezionato</small>
         </article>
-        <article class="audit-kpi">
-          <span class="mdi mdi-archive-outline audit-kpi__icon" aria-hidden="true"></span>
-          <div><strong>{{ data.catalog.summary.inactive }}</strong><span>Prodotti inattivi</span></div>
+        <article class="analytics-kpi" [class.analytics-kpi--warning]="missingTaxonomy(counts) > 0">
+          <span>Tassonomia incompleta / errata</span>
+          <strong>{{ missingTaxonomy(counts) | number }}</strong>
+          <small>Inclusi riferimenti non validi</small>
         </article>
-        <article class="audit-kpi" [class.audit-kpi--warning]="data.catalog.summary.withoutCategory > 0">
-          <span class="mdi mdi-tag-off-outline audit-kpi__icon" aria-hidden="true"></span>
-          <div><strong>{{ data.catalog.summary.withoutCategory }}</strong><span>Senza categoria</span></div>
-          <small>{{ percentage(data.catalog.summary.withoutCategory, data.catalog.summary.total) }}%</small>
+        <article class="analytics-kpi">
+          <span>Fashion Profile v2</span>
+          <strong>{{ counts.fashionV2 | number }}</strong>
+          <small>{{ percentage(counts.fashionV2, counts.total) }}% del perimetro selezionato</small>
         </article>
+      </div>
+      <p class="small text-muted mt-2 mb-0" *ngIf="scope === 'usable'">
+        Esclusi dal catalogo outfit: {{ (source?.all?.total || 0) - counts.total | number }}
+        prodotti nel perimetro selezionato.
+      </p>
+    </section>
+
+    <section class="analytics-section" aria-labelledby="analytics-feed-title">
+      <div class="analytics-section-header">
+        <div>
+          <h3 id="analytics-feed-title" class="h5 mb-1">Stato dei feed</h3>
+          <p class="text-muted small mb-0">Programma, abilitazione, prodotti e ultime sincronizzazioni.</p>
+        </div>
+        <a routerLink="/affiliate-catalog/feeds" class="btn btn-sm btn-outline-primary">Gestisci feed</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle analytics-table">
+          <thead><tr><th>Feed</th><th>Stato</th><th class="text-end">Prodotti</th><th class="text-end">Tassonomia completa</th><th>Ultima sync riuscita</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let feed of visibleFeeds">
+              <td><strong>{{ feed.feedName }}</strong><small class="d-block text-muted">{{ feed.programName }}</small></td>
+              <td><span class="badge" [class.text-bg-success]="feed.enabled && feed.networkActive"
+                [class.text-bg-secondary]="!feed.enabled || !feed.networkActive">{{ feedStatus(feed) }}</span>
+                <small *ngIf="feed.lastError" class="d-block text-danger" [title]="feed.lastError">Ultimo errore sync</small></td>
+              <td class="text-end fw-semibold">{{ feedCounts(feed).total | number }}</td>
+              <td class="text-end">{{ feedCounts(feed).taxonomyComplete | number }}</td>
+              <td>{{ feed.lastSuccessfulSyncAt ? (feed.lastSuccessfulSyncAt | date:'dd/MM/yyyy HH:mm') : 'Mai' }}</td>
+            </tr>
+            <tr *ngIf="!visibleFeeds.length"><td colspan="5">Nessun feed presente nel filtro corrente.</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <section class="catalog-audit__section" aria-labelledby="catalog-quality-title">
-      <div class="catalog-audit__section-heading">
+    <section class="analytics-section" aria-labelledby="analytics-taxonomy-title">
+      <div class="analytics-section-header">
         <div>
-          <p class="catalog-audit__eyebrow">Completezza</p>
-          <h3 id="catalog-quality-title">Qualità dati</h3>
+          <h3 id="analytics-taxonomy-title" class="h5 mb-1">Categorie ComeMiVesto</h3>
+          <p class="text-muted small mb-0">Categorie e sottocategorie vere, comprese quelle senza prodotti. Apri una categoria per il dettaglio.</p>
         </div>
-        <span>{{ data.catalog.summary.total }} prodotti analizzati</span>
       </div>
-
-      <div class="catalog-audit__quality-grid">
-        <article class="quality-card">
-          <div class="quality-card__heading"><span>Immagini</span><strong>{{ percentage(data.catalog.dataQuality.withImages, data.catalog.summary.total) }}%</strong></div>
-          <div class="progress" role="progressbar" aria-label="Prodotti con immagini" [attr.aria-valuenow]="percentage(data.catalog.dataQuality.withImages, data.catalog.summary.total)" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress-bar" [style.width.%]="percentage(data.catalog.dataQuality.withImages, data.catalog.summary.total)"></div>
-          </div>
-          <small>{{ data.catalog.dataQuality.withImages }} con immagini · {{ data.catalog.dataQuality.withoutImages }} senza</small>
-        </article>
-
-        <article class="quality-card">
-          <div class="quality-card__heading"><span>Target gender</span><strong>{{ percentage(data.catalog.dataQuality.withGenderTargets, data.catalog.summary.total) }}%</strong></div>
-          <div class="progress" role="progressbar" aria-label="Prodotti con target gender" [attr.aria-valuenow]="percentage(data.catalog.dataQuality.withGenderTargets, data.catalog.summary.total)" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress-bar" [style.width.%]="percentage(data.catalog.dataQuality.withGenderTargets, data.catalog.summary.total)"></div>
-          </div>
-          <small>{{ data.catalog.dataQuality.withGenderTargets }} valorizzati · {{ data.catalog.dataQuality.withoutGenderTargets }} mancanti</small>
-        </article>
-
-        <article class="quality-card">
-          <div class="quality-card__heading"><span>Colore normalizzato</span><strong>{{ percentage(data.catalog.dataQuality.withNormalizedColor, data.catalog.summary.total) }}%</strong></div>
-          <div class="progress" role="progressbar" aria-label="Prodotti con colore normalizzato" [attr.aria-valuenow]="percentage(data.catalog.dataQuality.withNormalizedColor, data.catalog.summary.total)" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress-bar" [style.width.%]="percentage(data.catalog.dataQuality.withNormalizedColor, data.catalog.summary.total)"></div>
-          </div>
-          <small>{{ data.catalog.dataQuality.withNormalizedColor }} valorizzati · {{ data.catalog.dataQuality.withoutNormalizedColor }} mancanti</small>
-        </article>
+      <div class="analytics-taxonomy-issues">
+        <div><strong>{{ counts.missingCategory | number }}</strong><span>Senza categoria</span></div>
+        <div><strong>{{ counts.missingSubcategory | number }}</strong><span>Senza sottocategoria</span></div>
+        <div><strong>{{ counts.invalidCategory | number }}</strong><span>Categoria non valida</span></div>
+        <div><strong>{{ counts.invalidSubcategory | number }}</strong><span>Sottocategoria errata</span></div>
       </div>
-    </section>
-
-    <section class="catalog-audit__section" aria-labelledby="catalog-categories-title">
-      <div class="catalog-audit__section-heading">
-        <div>
-          <p class="catalog-audit__eyebrow">Sorgente affiliate</p>
-          <h3 id="catalog-categories-title">Categorie importate</h3>
-        </div>
-        <span>{{ data.catalog.categories.length }} categorie</span>
-      </div>
-
-      <div *ngIf="!data.catalog.categories.length" class="catalog-audit__empty">
-        <span class="mdi mdi-tag-multiple-outline" aria-hidden="true"></span>
-        Nessuna categoria presente nel catalogo.
-      </div>
-
-      <div class="catalog-audit__category-list" *ngIf="data.catalog.categories.length">
-        <details class="audit-category" *ngFor="let category of data.catalog.categories">
+      <div class="analytics-category-list">
+        <details class="analytics-category" *ngFor="let category of categories">
           <summary>
-            <div class="audit-category__title">
-              <strong>{{ categoryLabel(category.category) }}</strong>
-              <span>{{ category.subcategories.length }} sottocategorie</span>
+            <div class="analytics-category-name">
+              <strong>{{ category.categoryName }}</strong>
+              <small *ngIf="category.status === false">Categoria disabilitata</small>
             </div>
-            <div class="audit-category__summary">
-              <strong>{{ category.totalProducts }}</strong>
-              <span>prodotti</span>
+            <div class="analytics-category-numbers">
+              <strong>{{ categoryCounts(category).total | number }}</strong>
+              <small>prodotti · {{ categoryCounts(category).taxonomyComplete | number }} tassonomia completa</small>
             </div>
           </summary>
-
-          <div class="audit-category__body">
-            <div class="audit-category__metrics">
-              <span><strong>{{ category.activeProducts }}</strong> attivi</span>
-              <span><strong>{{ category.withImages }}</strong> con immagini</span>
-              <span><strong>{{ category.withGender }}</strong> con gender</span>
-              <span><strong>{{ category.withColor }}</strong> con colore</span>
-            </div>
-
-            <div class="audit-subcategories" *ngIf="category.subcategories.length">
-              <div class="audit-subcategory audit-subcategory--head" aria-hidden="true">
-                <span>Sottocategoria</span><span>Prodotti</span><span>Attivi</span><span>Immagini</span><span>Gender</span><span>Colore</span>
-              </div>
-              <div class="audit-subcategory" *ngFor="let subcategory of category.subcategories">
-                <strong>{{ subcategoryLabel(subcategory.subcategory) }}</strong>
-                <span data-label="Prodotti">{{ subcategory.totalProducts }}</span>
-                <span data-label="Attivi">{{ subcategory.activeProducts }}</span>
-                <span data-label="Immagini">{{ subcategory.withImages }}</span>
-                <span data-label="Gender">{{ subcategory.withGender }}</span>
-                <span data-label="Colore">{{ subcategory.withColor }}</span>
-              </div>
+          <div class="analytics-category-body">
+            <p class="small text-muted">Sono inclusi anche prodotti con sottocategoria mancante o non valida.</p>
+            <a [routerLink]="['/affiliate-catalog/products']"
+              [queryParams]="{ affiliateProgramId: selectedProgramId || null, category: category.categoryId }"
+              class="small">Apri prodotti della categoria</a>
+            <div class="table-responsive mt-2">
+              <table class="table table-sm analytics-table">
+                <thead><tr><th>Sottocategoria</th><th class="text-end">Totali</th><th class="text-end">Tassonomia completa</th><th class="text-end">Fashion v2</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let child of childrenFor(category.categoryId)">
+                    <td>{{ child.subcategoryName }}</td>
+                    <td class="text-end">{{ categoryCounts(child).total | number }}</td>
+                    <td class="text-end">{{ categoryCounts(child).taxonomyComplete | number }}</td>
+                    <td class="text-end">{{ categoryCounts(child).fashionV2 | number }}</td>
+                  </tr>
+                  <tr *ngIf="!childrenFor(category.categoryId).length"><td colspan="4">Nessuna sottocategoria definita.</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </details>
+        <p class="text-muted" *ngIf="!categories.length">La tassonomia ComeMiVesto è vuota.</p>
       </div>
+      <p class="small text-muted mb-0 mt-2" *ngIf="selectedFeedId">
+        Il collegamento «Apri prodotti» applica il filtro categoria, ma la pagina Prodotti non dispone ancora del filtro feed:
+        in questa tabella i numeri sono invece specifici del feed selezionato.
+      </p>
     </section>
 
-    <section class="catalog-audit__section" aria-labelledby="cmv-taxonomy-title">
-      <div class="catalog-audit__section-heading">
+    <section class="analytics-section" aria-labelledby="analytics-fashion-title">
+      <div class="analytics-section-header">
         <div>
-          <p class="catalog-audit__eyebrow">Tassonomia portale</p>
-          <h3 id="cmv-taxonomy-title">Categorie ComeMiVesto</h3>
+          <h3 id="analytics-fashion-title" class="h5 mb-1">Intelligenza Fashion</h3>
+          <p class="text-muted small mb-0">Copertura reale dei segnali v2 utilizzati dal generatore di outfit.</p>
         </div>
-        <span>{{ data.comeMiVestoCategories.length }} voci</span>
+        <a routerLink="/affiliate-catalog/fashion-enrichment" class="btn btn-sm btn-outline-primary">Apri Intelligenza Fashion</a>
       </div>
-
-      <div *ngIf="!data.comeMiVestoCategories.length" class="catalog-audit__empty">
-        <span class="mdi mdi-file-tree-outline" aria-hidden="true"></span>
-        Nessuna categoria ComeMiVesto disponibile.
+      <div class="analytics-profile-stats">
+        <div><strong>{{ counts.fashionV2 | number }}</strong><span>Profili v2</span></div>
+        <div><strong>{{ counts.fashionLegacy | number }}</strong><span>Profili precedenti</span></div>
+        <div><strong>{{ counts.fashionMissing | number }}</strong><span>Senza profilo</span></div>
+        <div><strong>{{ counts.fashionLocked | number }}</strong><span>Profili bloccati</span></div>
       </div>
-
-      <div class="taxonomy-grid" *ngIf="data.comeMiVestoCategories.length">
-        <article class="taxonomy-card" *ngFor="let category of rootCategories">
-          <header>
-            <div>
-              <strong>{{ category.categoryName || 'Categoria senza nome' }}</strong>
-              <small>ID: {{ category.id }}</small>
-            </div>
-            <span class="badge" [ngClass]="taxonomyStatusClass(category)">{{ taxonomyStatus(category) }}</span>
-          </header>
-          <div class="taxonomy-card__meta"><span>Gender: {{ taxonomyGender(category) }}</span><span>Ordine: {{ category.order ?? '—' }}</span></div>
-          <div class="taxonomy-card__children" *ngIf="childrenFor(category.id).length">
-            <span class="taxonomy-child" *ngFor="let child of childrenFor(category.id)">
-              <strong>{{ child.categoryName || 'Senza nome' }}</strong>
-              <small>{{ taxonomyGender(child) }}</small>
-            </span>
+      <div class="analytics-progress-list">
+        <div *ngFor="let metric of [
+          { name: 'Stagione riconosciuta', count: counts.withSeasons },
+          { name: 'Stile riconosciuto', count: counts.withStyles },
+          { name: 'Vestibilità riconosciuta', count: counts.withFit },
+          { name: 'Peso visivo riconosciuto', count: counts.withVisualWeight }
+        ]">
+          <div class="d-flex justify-content-between gap-2">
+            <span>{{ metric.name }}</span>
+            <strong>{{ metric.count | number }} / {{ counts.total | number }}</strong>
           </div>
-          <p *ngIf="!childrenFor(category.id).length" class="taxonomy-card__no-children">Nessuna sottocategoria collegata.</p>
-        </article>
-      </div>
-
-      <div class="catalog-audit__orphans" *ngIf="orphanCategories.length">
-        <h4>Categorie con parent non risolto</h4>
-        <div>
-          <span class="badge text-bg-warning" *ngFor="let category of orphanCategories">
-            {{ category.categoryName || category.id }} → {{ category.parentCategory }}
-          </span>
+          <div class="progress" role="progressbar" [attr.aria-label]="metric.name"
+            [attr.aria-valuenow]="percentage(metric.count, counts.total)" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" [style.width.%]="percentage(metric.count, counts.total)"></div>
+          </div>
         </div>
       </div>
+      <p class="small text-muted mt-2 mb-0">
+        Un profilo salvato non significa che stagione o stile siano riconosciuti.
+        I profili precedenti alla v2 non sono conteggiati come segnali disponibili per lo stylist.
+      </p>
+    </section>
+
+    <section class="analytics-section" aria-labelledby="analytics-quality-title">
+      <h3 id="analytics-quality-title" class="h5">Qualità dei dati</h3>
+      <div class="analytics-progress-list">
+        <div *ngFor="let metric of [
+          { name: 'Con immagini', count: counts.withImages },
+          { name: 'Con destinatari / genere', count: counts.withGender },
+          { name: 'Con colore normalizzato', count: counts.withColor }
+        ]">
+          <div class="d-flex justify-content-between gap-2">
+            <span>{{ metric.name }}</span>
+            <strong>{{ metric.count | number }} ({{ percentage(metric.count, counts.total) }}%)</strong>
+          </div>
+          <div class="progress" role="progressbar" [attr.aria-label]="metric.name"
+            [attr.aria-valuenow]="percentage(metric.count, counts.total)" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" [style.width.%]="percentage(metric.count, counts.total)"></div>
+          </div>
+        </div>
+      </div>
+      <p class="small text-muted mt-2 mb-0">
+        Questa è una fotografia read-only del catalogo canonico, non modifica import, prodotti,
+        classificatori né avvia chiamate OpenAI.
+      </p>
     </section>
   </ng-container>
 </section>
