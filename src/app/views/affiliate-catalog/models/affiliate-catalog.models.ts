@@ -52,6 +52,40 @@ export interface AffiliateFeed {
   updatedAt: number;
 }
 
+export type AffiliateFeedCleanupMode = 'PRODUCTS_ONLY' | 'FEED_AND_PRODUCTS';
+export interface AffiliateFeedCleanupImpact {
+  offers: number;
+  productsAffected: number;
+  productsToDelete: number;
+  productsPreservedForOutfits: number;
+  productsPreservedForOtherFeeds: number;
+  approvedOutfitsAffected: number;
+  outfitExamples: { id: string; title: string }[];
+}
+
+export interface AffiliateFeedCleanupJob {
+  feedId: string;
+  runId: string;
+  mode: AffiliateFeedCleanupMode;
+  status: 'QUEUED' | 'PREVIEWING' | 'PREVIEW_READY' | 'RUNNING' | 'SUCCESS' | 'FAILED';
+  stage: 'PREVIEW' | 'LEGACY' | 'PRODUCTS' | 'OFFERS' | 'FINALIZE';
+  cursor: string | null;
+  createdAt: number;
+  updatedAt: number;
+  completedAt: number | null;
+  previewAt: number | null;
+  preview: AffiliateFeedCleanupImpact | null;
+  progress: {
+    productsDeleted: number;
+    productsDetached: number;
+    productsPreservedForOutfits: number;
+    productsPreservedForOtherFeeds: number;
+    variantsDeleted: number;
+    offersDeleted: number;
+  };
+  lastError: string | null;
+}
+
 export interface FashionCoverage {
   total: number;
   active: number;

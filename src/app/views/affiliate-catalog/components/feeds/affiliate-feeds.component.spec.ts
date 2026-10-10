@@ -12,13 +12,13 @@ describe('Affiliate feeds grid configuration', () => {
     expect(columns.some((column) => column.type === 'campoButton')).toBeFalse();
   });
 
-  it('adds sync, mapping and edit actions for administrators', () => {
+  it('adds sync, mapping and both verified deletion actions for administrators', () => {
     const columns = buildAffiliateFeedColumns(true)[0].data;
     const actions = columns
       .filter((column) => column.type === 'campoButton')
       .map((column) => column.button?.name);
 
-    expect(actions).toEqual(['sync', 'mapping', 'deactivate-products', 'edit']);
+    expect(actions).toEqual(['sync', 'mapping', 'deactivate-products', 'delete-products', 'delete-feed', 'edit']);
   });
 
   it('exposes an explicit non-destructive feed product deactivation action', () => {
@@ -30,12 +30,14 @@ describe('Affiliate feeds grid configuration', () => {
     expect(action?.button?.hint).toContain('Disattiva prodotti');
   });
 
-  it('does not expose a delete action', () => {
+  it('exposes both explicit, distinct feed cleanup actions', () => {
     const columns = buildAffiliateFeedColumns(true)[0].data;
     const actionNames = columns
       .filter((column) => column.type === 'campoButton')
       .map((column) => column.button?.name);
 
+    expect(actionNames).toContain('delete-products');
+    expect(actionNames).toContain('delete-feed');
     expect(actionNames).not.toContain('delete');
   });
 });

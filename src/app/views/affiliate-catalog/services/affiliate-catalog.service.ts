@@ -5,6 +5,8 @@ import { environment } from '../../../../environments/environment';
 import { AffiliateCatalogAudit } from '../models/affiliate-catalog-audit.models';
 import {
   AffiliateFeed,
+  AffiliateFeedCleanupJob,
+  AffiliateFeedCleanupMode,
   AffiliateProgram,
   AffiliateSyncRun,
   CatalogProduct,
@@ -201,6 +203,27 @@ export class AffiliateCatalogService {
     return this.http
       .post<AffiliateApiResponse<AffiliateSyncRun>>(`${this.baseUrl}/feeds/${id}/sync`, {})
       .pipe(map((response) => response.data));
+  }
+
+  getFeedCleanupStatus(id: string): Observable<AffiliateFeedCleanupJob | null> {
+    return this.http.get<AffiliateApiResponse<AffiliateFeedCleanupJob | null>>(
+      `${this.baseUrl}/feeds/${encodeURIComponent(id)}/cleanup`,
+    ).pipe(map((response) => response.data));
+  }
+
+  previewFeedCleanup(id: string, mode: AffiliateFeedCleanupMode): Observable<AffiliateFeedCleanupJob> {
+    return this.http.post<AffiliateApiResponse<AffiliateFeedCleanupJob>>(
+      `${this.baseUrl}/feeds/${encodeURIComponent(id)}/cleanup-preview`, { mode },
+    ).pipe(map((response) => response.data));
+  }
+
+  confirmFeedCleanup(
+    id: string, mode: AffiliateFeedCleanupMode, previewRunId: string,
+  ): Observable<AffiliateFeedCleanupJob> {
+    return this.http.post<AffiliateApiResponse<AffiliateFeedCleanupJob>>(
+      `${this.baseUrl}/feeds/${encodeURIComponent(id)}/cleanup-confirm`,
+      { mode, previewRunId },
+    ).pipe(map((response) => response.data));
   }
 
   deactivateFeedProductsDryRun(id: string): Observable<AffiliateFeedDeactivationReport> {

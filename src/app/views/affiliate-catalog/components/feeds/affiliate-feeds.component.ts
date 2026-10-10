@@ -13,6 +13,8 @@ import {
 } from '../../forms/affiliate-feed-form-host.component';
 import {
   AffiliateFeed,
+  AffiliateFeedCleanupJob,
+  AffiliateFeedCleanupMode,
   AffiliateProgram,
   AffiliateSyncRun,
 } from '../../models/affiliate-catalog.models';
@@ -114,6 +116,26 @@ export function buildAffiliateFeedColumns(canManage: boolean): Colonne[] {
         },
       },
       {
+        ...baseColumn('', 'Elimina prodotti', 94, 'campoButton'),
+        button: {
+          text: '',
+          name: 'delete-products',
+          event: 'delete-products',
+          icon: 'mdi mdi-delete-sweep-outline',
+          hint: 'Elimina i prodotti del feed, mantenendo il feed disabilitato',
+        },
+      },
+      {
+        ...baseColumn('', 'Elimina feed', 90, 'campoButton'),
+        button: {
+          text: '',
+          name: 'delete-feed',
+          event: 'delete-feed',
+          icon: 'mdi mdi-delete-forever-outline',
+          hint: 'Elimina il feed e i prodotti non protetti',
+        },
+      },
+      {
         ...baseColumn('', 'Modifica', 72, 'campoButton'),
         button: {
           text: '',
@@ -154,6 +176,8 @@ export class AffiliateFeedsComponent implements OnInit {
   deactivationNotice: { feedName: string } | null = null;
   readonly syncingFeedIds = new Set<string>();
   readonly deactivatingFeedIds = new Set<string>();
+  readonly cleaningFeedIds = new Set<string>();
+  cleanupNotice: { feed: AffiliateFeed; job: AffiliateFeedCleanupJob } | null = null;
 
   private programsById = new Map<string, AffiliateProgram>();
 
@@ -224,6 +248,22 @@ export class AffiliateFeedsComponent implements OnInit {
     return this.deactivatingFeedIds.has(feedId);
   }
 
+  isCleaning(feedId: string): boolean {
+    return this.cleaningFeedIds.has(feedId);
+  }
+
+  cleanupModeLabel(mode: AffiliateFeedCleanupMode): string {
+    return mode === 'PRODUCTS_ONLY' ? 'Elimina prodotti' : 'Elimina feed e prodotti';
+  }
+
+  cleanupStatusLabel(status: AffiliateFeedCleanupJob['status']): string {
+    return {
+      QUEUED: 'In coda', PREVIEWING: 'Verifica in corso',
+      PREVIEW_READY: 'Verifica pronta', RUNNING: 'Cancellazione in corso',
+      SUCCESS: 'Completata', FAILED: 'Errore',
+    }[status];
+  }
+
   openCreate(): void {
     if (!this.auth.isAdmin()) return;
     if (!this.programs.length) {
@@ -287,7 +327,136 @@ export class AffiliateFeedsComponent implements OnInit {
       this.requestDeactivateProducts(event.rowData);
       return;
     }
+    if (event.name === 'delete-products') {
+      this.requestCleanup(event.rowData, 'PRODUCTS_ONLY');
+      return;
+    }
+    if (event.name === 'delete-feed') {
+      this.requestCleanup(event.rowData, 'FEED_AND_PRODUCTS');
+      return;
+    }
     if (event.name === 'edit') this.openEdit(event.rowData);
+  }
+
+  requestCleanup(feed: AffiliateFeed, mode: AffiliateFeedCleanupMode): void {
+    if (!this.auth.isAdmin() || !feed?.id ||
+      this.isSyncing(feed.id) || this.isDeactivating(feed.id) || this.isCleaning(feed.id)) return;
+
+    this.cleaningFeedIds.add(feed.id);
+    this.syncError = '';
+    this.affiliateCatalogService.getFeedCleanupStatus(feed.id)
+      .pipe(finalize(() => this.cleaningFeedIds.delete(feed.id)))
+      .subscribe({
+        next: (job) => {
+          if (job) this.cleanupNotice = { feed, job };
+          if (job && (job.status === 'QUEUED' || job.status === 'PREVIEWING' || job.status === 'RUNNING')) {
+            alert(
+              'Operazione ancora in corso. Puoi chiudere il browser e ricontrollare più tardi.',
+              this.cleanupModeLabel(job.mode),
+            );
+            return;
+          }
+          if (job?.status === 'PREVIEW_READY' && job.mode === mode &&
+              job.previewAt !== null && Date.now() - job.previewAt <= 15 * 60 * 1000) {
+            this.confirmCleanupImpact(feed, job);
+            return;
+          }
+          if (job?.status === 'SUCCESS' && job.mode === mode) {
+            this.refresh();
+            alert(
+              mode === 'PRODUCTS_ONLY'
+                ? 'Prodotti del feed eliminati. Il feed è conservato e disabilitato.'
+                : 'Feed e prodotti non protetti eliminati. La lista verrà aggiornata.',
+              'Cancellazione completata',
+            );
+            return;
+          }
+          confirm(
+            mode === 'PRODUCTS_ONLY'
+              ? 'Verificare quanti prodotti e offerte possono essere eliminati? Il feed verrà mantenuto ma disabilitato dopo la conferma finale.'
+              : 'Verificare quanti prodotti e offerte possono essere eliminati insieme alla configurazione del feed? Gli outfit approvati saranno conservati.',
+            'Verifica prima di eliminare',
+            (confirmed) => { if (confirmed) this.startCleanupPreview(feed, mode); },
+          );
+        },
+        error: () => { this.syncError = 'Impossibile verificare lo stato della cancellazione del feed.'; },
+      });
+  }
+
+  private startCleanupPreview(feed: AffiliateFeed, mode: AffiliateFeedCleanupMode): void {
+    if (this.isCleaning(feed.id)) return;
+    this.cleaningFeedIds.add(feed.id);
+    this.affiliateCatalogService.previewFeedCleanup(feed.id, mode)
+      .pipe(finalize(() => this.cleaningFeedIds.delete(feed.id)))
+      .subscribe({
+        next: (job) => {
+          this.cleanupNotice = { feed, job };
+          alert(
+            'Verifica avviata in background, senza cancellare dati. Quando è pronta, premi «Controlla verifica» per vedere numeri e confermare.',
+            'Verifica avviata',
+          );
+        },
+        error: (error: { status?: number }) => {
+          this.syncError = error?.status === 409
+            ? 'Verifica o sincronizzazione già in corso: riprova dopo il completamento.'
+            : 'Impossibile avviare la verifica preliminare.';
+        },
+      });
+  }
+
+  checkCleanupNotice(): void {
+    if (!this.cleanupNotice) return;
+    const { feed, job } = this.cleanupNotice;
+    this.requestCleanup(feed, job.mode);
+  }
+
+  private confirmCleanupImpact(feed: AffiliateFeed, job: AffiliateFeedCleanupJob): void {
+    if (!job.preview) {
+      this.syncError = 'Anteprima incompleta. Ripetere la verifica.';
+      return;
+    }
+    const impact = job.preview;
+    const examples = impact.outfitExamples.map((outfit) =>
+      '• ' + (outfit.title || 'Outfit senza titolo') + ' (' + outfit.id + ')').join('\n');
+    const report = [
+      'Feed: ' + feed.name,
+      'Offerte che verranno eliminate: ' + impact.offers,
+      'Prodotti coinvolti: ' + impact.productsAffected,
+      'Prodotti da cancellare: ' + impact.productsToDelete,
+      'Prodotti da conservare perché presenti in outfit approvati: ' + impact.productsPreservedForOutfits,
+      'Prodotti condivisi con altri feed da conservare: ' + impact.productsPreservedForOtherFeeds,
+      'Outfit approvati coinvolti: ' + impact.approvedOutfitsAffected,
+      examples ? '\nEsempi outfit conservati:\n' + examples : '',
+      job.mode === 'PRODUCTS_ONLY'
+        ? '\nIl feed rimarrà configurato ma disabilitato.'
+        : '\nVerrà eliminata anche la configurazione del feed.',
+      '\nL’operazione è irreversibile. Nessun outfit approvato verrà eliminato.',
+      '\nCONFERMI LA CANCELLAZIONE?',
+    ].filter(Boolean).join('\n');
+
+    confirm(report, this.cleanupModeLabel(job.mode), (confirmed) => {
+      if (confirmed) this.confirmCleanup(feed, job);
+    });
+  }
+
+  private confirmCleanup(feed: AffiliateFeed, job: AffiliateFeedCleanupJob): void {
+    if (this.isCleaning(feed.id)) return;
+    this.cleaningFeedIds.add(feed.id);
+    this.syncError = '';
+    this.affiliateCatalogService.confirmFeedCleanup(feed.id, job.mode, job.runId)
+      .pipe(finalize(() => this.cleaningFeedIds.delete(feed.id)))
+      .subscribe({
+        next: (running) => {
+          this.cleanupNotice = { feed, job: running };
+          alert('Cancellazione accodata sul backend. Puoi chiudere la pagina e controllare più tardi.',
+            'Cancellazione avviata');
+        },
+        error: (error: { status?: number }) => {
+          this.syncError = error?.status === 409
+            ? 'Il feed è cambiato o la verifica è scaduta. Esegui una nuova anteprima prima di cancellare.'
+            : 'Non è stato possibile avviare la cancellazione.';
+        },
+      });
   }
 
   requestDeactivateProducts(feed: AffiliateFeed): void {

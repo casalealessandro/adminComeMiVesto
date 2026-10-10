@@ -216,6 +216,29 @@ describe('AffiliateCatalogService release contract', () => {
     expect(started).toEqual({ runId: 'run-1', status: 'QUEUED', scanned: 0 });
   });
 
+  it('uses a read-only status request before offering feed removal', () => {
+    service.getFeedCleanupStatus('my feed').subscribe();
+    const req = http.expectOne(`${baseUrl}/feeds/my%20feed/cleanup`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: null });
+  });
+
+  it('starts a dry-run preview, not an immediate destructive deletion', () => {
+    service.previewFeedCleanup('feedA', 'PRODUCTS_ONLY').subscribe();
+    const req = http.expectOne(`${baseUrl}/feeds/feedA/cleanup-preview`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ mode: 'PRODUCTS_ONLY' });
+    req.flush({ data: { status: 'QUEUED', runId: 'run-preview' } });
+  });
+
+  it('sends the explicit preview id and exact cleanup mode only after confirmation', () => {
+    service.confirmFeedCleanup('feedA', 'FEED_AND_PRODUCTS', 'run-preview').subscribe();
+    const req = http.expectOne(`${baseUrl}/feeds/feedA/cleanup-confirm`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ mode: 'FEED_AND_PRODUCTS', previewRunId: 'run-preview' });
+    req.flush({ data: { status: 'QUEUED', runId: 'run-preview' } });
+  });
+
   it('loads programs from the configured API base and unwraps data without adding auth headers', () => {
     let response: AffiliateProgram[] | undefined;
     service.getPrograms().subscribe((value) => response = value);
