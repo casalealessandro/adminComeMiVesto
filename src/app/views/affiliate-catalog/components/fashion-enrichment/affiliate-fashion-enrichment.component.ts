@@ -113,106 +113,20 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     const job = this.aiJob;
     if (!this.canManageAi || !job || !this.aiPreviewReady || !this.aiAccepted ||
       !job.selectedIds.length || this.aiBusy || !this.selectedAiFeedId) return;
-    confirm(
-      'Autorizzi espressamente il test OpenAI sul feed «' + job.feedName +
-      '» per ' + job.selectedIds.length + ' prodotti, con soglia di arresto preventiva di 
-
-  refresh(): void {
-    if (this.loading) return;
-    this.loading = true;
-    this.error = '';
-    this.service.getFashionOverview().pipe(finalize(() => this.loading = false)).subscribe({
-      next: (data) => {
-        this.overview = data.snapshot;
-        this.job = data.job;
-      },
-      error: () => { this.error = 'Impossibile recuperare la panoramica fashion.'; },
+    const message = [
+      'Autorizzi il test OpenAI sul feed «' + job.feedName + '»?',
+      'Prodotti: ' + job.selectedIds.length,
+      'Soglia preventiva: USD ' + job.maxBudgetUsd.toFixed(2),
+      'La fatturazione effettiva può differire dalla stima e una richiesta fallita può comportare addebiti non misurabili.',
+      'I risultati sono solo per revisione: non vengono pubblicati negli outfit.',
+    ].join('\n');
+    confirm(message, 'Conferma spesa AI', (approved: boolean) => {
+      if (approved) this.launchConfirmedAi(job);
     });
-  }
-
-  requestOverview(): void {
-    if (this.processing || this.jobRunning) return;
-    this.processing = true;
-    this.error = '';
-    this.notice = '';
-    this.service.refreshFashionOverview().pipe(finalize(() => this.processing = false)).subscribe({
-      next: (job) => {
-        this.job = job;
-        this.notice = 'Analisi del catalogo avviata. Il lavoro prosegue su Firebase anche se chiudi questa pagina.';
-      },
-      error: (err: { status?: number }) => {
-        this.error = err?.status === 409
-          ? 'È già in corso una panoramica. Aggiorna lo stato prima di riprovare.'
-          : 'Impossibile avviare la panoramica. Nessuna analisi AI è stata avviata.';
-      },
-    });
-  }
-
-  get jobRunning(): boolean {
-    return this.job?.status === 'QUEUED' || this.job?.status === 'RUNNING';
-  }
-
-  /** Old version-1 snapshots cannot be shown as usable: ask for a new report. */
-  get effectiveOverview(): FashionCatalogOverview | null {
-    return this.overview?.version === 2 ? this.overview : null;
-  }
-
-  get visibleCoverage(): FashionCoverage | null {
-    const overview = this.effectiveOverview;
-    return overview ? (this.scope === 'usable' ? overview.usable : overview.summary) : null;
-  }
-
-  get merchants(): FashionMerchantOverview[] {
-    const merchants = this.effectiveOverview?.merchants ?? [];
-    return merchants.filter((merchant) =>
-      (this.scope === 'all' || merchant.usable.total > 0)
-      && (!this.selectedProgramId || merchant.programId === this.selectedProgramId));
-  }
-
-  get merchantOptions(): FashionMerchantOverview[] {
-    return (this.effectiveOverview?.merchants ?? [])
-      .filter((merchant) => this.scope === 'all' || merchant.usable.total > 0);
-  }
-
-  setScope(scope: 'usable' | 'all'): void {
-    if (this.scope === scope) return;
-    this.scope = scope;
-    this.selectedProgramId = '';
-  }
-
-  coverageForMerchant(merchant: FashionMerchantOverview): FashionCoverage {
-    return this.scope === 'usable' ? merchant.usable : merchant;
-  }
-
-  examplesForMerchant(merchant: FashionMerchantOverview): FashionCatalogExample[] {
-    return this.scope === 'usable' ? merchant.usableExamples : merchant.examples;
-  }
-
-  percentage(value: number, total: number): number {
-    if (total <= 0 || !Number.isFinite(value)) return 0;
-    return Math.min(100, Math.max(0, Math.round(100 * value / total)));
-  }
-
-  isOutdated(merchant: FashionMerchantOverview): boolean {
-    return !!this.overview && merchant.lastSuccessfulSyncAt !== null
-      && merchant.lastSuccessfulSyncAt > this.overview.generatedAt;
-  }
-
-  jobStatus(value: FashionOverviewJob['status']): string {
-    return {
-      QUEUED: 'In coda', RUNNING: 'In elaborazione', SUCCESS: 'Completato', FAILED: 'Errore',
-    }[value];
-  }
-}
- +
-      job.maxBudgetUsd.toFixed(2) +
-      '? Il costo effettivo dipende dai token fatturati; potrebbero esserci addebiti non misurabili se la richiesta fallisce. Le analisi sono solo per revisione, non pubblicate.',
-      'Conferma spesa AI',
-      (approved) => { if (approved) this.launchConfirmedAi(job); },
-    );
   }
 
   private launchConfirmedAi(job: FashionAiPilotJob): void {
+    if (this.aiBusy || !this.canManageAi) return;
     this.aiBusy = true;
     this.aiError = '';
     this.service.confirmFashionAiFeedPilot(job.feedId, job.runId, job.maxBudgetUsd)
@@ -221,12 +135,12 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
         next: (started) => {
           this.aiJob = started;
           this.aiAccepted = false;
-          this.aiNotice = 'Test AI avviato in background. Aggiorna lo stato per vedere il consumo.';
+          this.aiNotice = 'Test AI avviato in background. Aggiorna lo stato per vedere i consumi.';
         },
         error: (err: { status?: number }) => {
           this.aiError = err.status === 409
-            ? 'Anteprima scaduta, feed cambiato o test già in corso: rifai la verifica.'
-            : 'Impossibile avviare il test AI. Controlla lo stato prima di riprovare.';
+            ? 'Anteprima scaduta, feed cambiato o test già in corso: ripeti la verifica.'
+            : 'Non è stato possibile avviare il test AI. Controlla lo stato prima di riprovare.';
         },
       });
   }
@@ -238,6 +152,8 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       FAILED: 'Interrotto per errore', STOPPED_BUDGET: 'Sospeso per budget',
     }[status];
   }
+
+
 
   refresh(): void {
     if (this.loading) return;
