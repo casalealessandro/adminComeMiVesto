@@ -62,6 +62,9 @@ export interface CatalogProduct {
   subcategory: string;
   normalizedColor: string;
   materials: string[];
+  /** Curated season values; empty means not specified. */
+  seasons?: Array<'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER'>;
+  seasonsLocked?: boolean;
   images: string[];
   sourceFeedIds: string[];
   active: boolean;
