@@ -174,8 +174,8 @@
             </article>
           </div>
           <p class="analytics-fashion-breakdown__evidence">
-            Evidenze: {{ stats.withFeedEvidence ?? 0 | number }} prodotti con dati espliciti del feed ·
-            {{ stats.withRuleEvidence ?? 0 | number }} con regole di classificazione.
+            Evidenze: {{ (stats.withFeedEvidence ?? 0) | number }} prodotti con dati espliciti del feed ·
+            {{ (stats.withRuleEvidence ?? 0) | number }} con regole di classificazione.
           </p>
           <p class="small text-muted mb-0">
             Gli stili e le stagioni possono essere multipli. Gli attributi sconosciuti non vengono inventati;
