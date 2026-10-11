@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { GridLoadRequest } from '../../../../core/public-api';
+import { AuthService } from '../../../../services/auth.service';
+import { PopUpService } from '../../../../core/popup/popup.service';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
@@ -177,6 +179,8 @@ describe('Affiliate products', () => {
         providers: [
           provideRouter([]),
           { provide: AffiliateCatalogService, useValue: service },
+          { provide: AuthService, useValue: { isAdmin: () => true } },
+          { provide: PopUpService, useValue: { setNewPopUp: () => {}, getOutputComponent: () => Promise.resolve({ name: 'cancelled' }), destroyCurrentOpenPopUpByGuid: () => {} } },
         ],
       }).compileComponents();
 
@@ -194,6 +198,12 @@ describe('Affiliate products', () => {
       expect(component.dataProvider).toBeDefined();
       expect(component.columns[0].data.find((column) => column.dataField === 'category')?.lista?.options)
         .toEqual([{ value: 'Clothing', label: 'Clothing' }]);
+    });
+
+    it('shows the edit action for admins without changing detail navigation', () => {
+      component.refresh();
+      const actions = component.columns[0].data.filter((column) => column.type === 'campoButton');
+      expect(actions.map((column) => column.button?.name)).toEqual(['detail', 'edit']);
     });
 
     it('tracks mobile cards by the canonical product id', () => {
