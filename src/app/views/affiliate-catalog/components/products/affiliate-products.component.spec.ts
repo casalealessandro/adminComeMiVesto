@@ -74,6 +74,9 @@ describe('Affiliate products', () => {
     const filterable = columns.filter((column) => column.allowFiltering === true);
 
     expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
+    expect(buildAffiliateProductColumns([program], ['Clothing'], true)[0].data
+      .filter((column) => column.type === 'campoButton').map((column) => column.button?.name))
+      .toEqual(['detail', 'edit']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
     expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category']);
     expect(columns.map((column) => column.colCaption)).toContain('Visibile app');
