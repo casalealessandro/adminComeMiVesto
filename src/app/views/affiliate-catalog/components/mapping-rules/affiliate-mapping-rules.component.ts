@@ -75,6 +75,19 @@ export class AffiliateMappingRulesComponent implements OnInit {
     });
     this.editingExisting = false;
   }
+  importExistingRules(): void {
+    if (!this.auth.isAdmin() || this.saving ||
+      !confirm('Importare in Firestore le regole attuali? Quelle già presenti non saranno sovrascritte.')) return;
+    this.saving = true;
+    this.error = '';
+    this.api.seedMappingRules().pipe(finalize(() => this.saving = false)).subscribe({
+      next: result => {
+        this.notice = `Importazione completata: ${result.created} regole create, ${result.existing} già presenti.`;
+        this.refresh();
+      },
+      error: () => this.error = 'Importazione dei dizionari non riuscita.',
+    });
+  }
   cancel(): void { this.editing = null; }
   save(): void {
     if (!this.auth.isAdmin() || !this.editing || this.saving) return;
