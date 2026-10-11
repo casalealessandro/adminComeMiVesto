@@ -430,7 +430,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       affiliateProgramId: this.dataGrid?.providerFilterValue('affiliateProgramId') || null,
       category: this.dataGrid?.providerFilterValue('category') || null,
       visibleInApp: this.dataGrid?.providerFilterValue('visibleInAppFilter') || null,
-      season: this.selectedSeason || null,
+      ...(this.selectedSeason ? { season: this.selectedSeason } : {}),
     };
 
     await this.router.navigate([], {
