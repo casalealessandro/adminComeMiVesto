@@ -1,0 +1,96 @@
+<section class="p-3" aria-label="Dizionari di classificazione">
+  <header class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h2 class="h4 mb-1">Dizionari di classificazione</h2>
+      <p class="text-muted mb-0">Gestisci i termini riconosciuti nei feed affiliati.</p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading">Aggiorna</button>
+  </header>
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+  <div *ngIf="notice" class="alert alert-success" role="status">{{ notice }}</div>
+  <div class="row g-2 mb-3">
+    <div class="col-12 col-md-4">
+      <label class="form-label" for="rule-type">Dizionario</label>
+      <select id="rule-type" class="form-select" [(ngModel)]="type" (ngModelChange)="cancel()">
+        <option *ngFor="let entry of types" [ngValue]="entry">{{ entry }}</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-8">
+      <label class="form-label" for="rule-query">Cerca regola</label>
+      <input id="rule-query" class="form-control" [(ngModel)]="query" placeholder="Termine, categoria o ID">
+    </div>
+  </div>
+  <p *ngIf="loading">Caricamento regole...</p>
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span class="text-muted">{{ totalMatches }} regole trovate (massimo 150 visualizzate)</span>
+    <button *ngIf="auth.isAdmin()" class="btn btn-primary btn-sm" type="button" (click)="add()">Nuova regola</button>
+  </div>
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-sm table-hover align-middle">
+      <thead><tr><th>Valore</th><th>Termini riconosciuti</th><th>Attiva</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let rule of filtered">
+          <td><strong>{{ rule.label }}</strong><div class="text-muted small">{{ rule.id }}</div></td>
+          <td>{{ rule.aliases.join(', ') }}</td>
+          <td>{{ rule.enabled ? 'Sì' : 'No' }}</td>
+          <td class="text-nowrap text-end">
+            <button *ngIf="auth.isAdmin()" type="button" class="btn btn-sm btn-outline-primary me-1" (click)="edit(rule)">Modifica</button>
+            <button *ngIf="auth.isAdmin() && rule.enabled" type="button" class="btn btn-sm btn-outline-danger" (click)="disable(rule)">Disattiva</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <form *ngIf="editing as item" class="border rounded p-3 mt-4" (ngSubmit)="save()">
+    <h3 class="h5">{{ item.origin === 'CUSTOM' && !all.includes(item) ? 'Modifica regola' : 'Regola' }}</h3>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label" for="rule-id">ID</label>
+        <input id="rule-id" class="form-control" name="id" [(ngModel)]="item.id" [readonly]="!!all.find" required>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label" for="rule-label">Nome</label>
+        <input id="rule-label" class="form-control" name="label" [(ngModel)]="item.label" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="rule-aliases">Termini riconosciuti (uno per riga)</label>
+        <textarea id="rule-aliases" class="form-control" rows="4" name="aliases" [(ngModel)]="aliasesText"></textarea>
+      </div>
+      <div class="col-md-6" *ngIf="item.type === 'CATEGORY'">
+        <label class="form-label" for="rule-category">Categoria ComeMiVesto</label>
+        <input id="rule-category" class="form-control" name="category" [ngModel]="field('category')" (ngModelChange)="updateField('category', $event)">
+      </div>
+      <div class="col-md-6" *ngIf="item.type === 'CATEGORY'">
+        <label class="form-label" for="rule-subcategory">Sottocategoria</label>
+        <input id="rule-subcategory" class="form-control" name="subcategory" [ngModel]="field('subcategory')" (ngModelChange)="updateField('subcategory', $event)">
+      </div>
+      <div class="col-md-6" *ngIf="item.type === 'COLOR'">
+        <label class="form-label" for="rule-color">ID colore ComeMiVesto</label>
+        <input id="rule-color" class="form-control" name="color" [ngModel]="field('colorId')" (ngModelChange)="updateField('colorId', $event)">
+      </div>
+      <div class="col-md-6" *ngIf="item.type === 'SEASON'">
+        <label class="form-label" for="rule-seasons">Stagioni (separate da virgola)</label>
+        <input id="rule-seasons" class="form-control" name="seasons" [(ngModel)]="seasonsText" placeholder="SPRING, SUMMER">
+      </div>
+      <div class="col-md-6" *ngIf="item.type === 'STYLE' || item.type === 'FIT' || item.type === 'MATERIAL'">
+        <label class="form-label" for="rule-value">Valore canonico</label>
+        <input id="rule-value" class="form-control" name="value" [ngModel]="field('value')" (ngModelChange)="updateField('value', $event)">
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="rule-note">Nota / evidenza</label>
+        <textarea id="rule-note" rows="2" class="form-control" name="note" [(ngModel)]="item.note"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-check-label">
+          <input class="form-check-input me-2" type="checkbox" name="enabled" [(ngModel)]="item.enabled">Attiva
+        </label>
+      </div>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-primary" type="submit" [disabled]="saving">Salva regola</button>
+      <button class="btn btn-outline-secondary" type="button" (click)="cancel()">Annulla</button>
+    </div>
+  </form>
+  <p class="text-muted small mt-3">Le regole vengono salvate su Firestore. L'attivazione durante le sincronizzazioni sarà effettuata dopo la verifica del backend.</p>
+</section>
