@@ -169,13 +169,17 @@
             {{ product.lastSeenAt | date:'dd/MM/yyyy HH:mm' }}
           </span>
 
+          <button *ngIf="auth.isAdmin()" type="button" class="btn btn-sm btn-outline-secondary"
+            (click)="openEdit(product)" [attr.aria-label]="'Modifica prodotto ' + product.name">
+            <span class="mdi mdi-pencil-outline" aria-hidden="true"></span> Modifica
+          </button>
           <button
             type="button"
             class="btn btn-sm btn-outline-primary affiliate-product-card__detail"
             (click)="openDetail(product)"
             [attr.aria-label]="'Gestisci prodotto ' + product.name">
-            <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>
-            <span>Gestisci</span>
+            <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
+            <span>Dettaglio</span>
           </button>
         </footer>
       </div>
