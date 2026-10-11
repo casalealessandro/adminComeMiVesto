@@ -14,6 +14,10 @@ import {
   AffiliateProductCursorRequest,
   CatalogTaxonomyRepairResult,
 } from '../../models/affiliate-catalog-api.models';
+import { AuthService } from '../../../../services/auth.service';
+import { PopUpService } from '../../../../core/popup/popup.service';
+import { alert } from '../../../../core/dialogs/ui-dialogs';
+import { AffiliateProductFormResult } from '../../forms/affiliate-product-form-host.component';
 import { AffiliateProgram, CatalogProduct, CatalogSeason } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -82,6 +86,7 @@ export interface AffiliateProductsProviderCallbacks {
 export function buildAffiliateProductColumns(
   programs: AffiliateProgram[] = [],
   categories: string[] = [],
+  canEdit = false,
 ): Colonne[] {
   const programOptions = [...programs]
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -131,6 +136,12 @@ export function buildAffiliateProductColumns(
     },
   ];
 
+  if (canEdit) {
+    columns.push({
+      ...baseColumn('', 'Modifica', 76, 'campoButton'),
+      button: { text: '', name: 'edit', event: 'edit', icon: 'mdi mdi-pencil-outline', hint: 'Modifica prodotto' },
+    });
+  }
   return [{ itemType: 'group', groupDataField: '', data: columns }];
 }
 
@@ -224,6 +235,8 @@ export function createAffiliateProductsProvider(
 })
 export class AffiliateProductsComponent implements OnInit, OnDestroy {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
+  private readonly popupService = inject(PopUpService);
+  readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly seasonOptions = CATALOG_SEASON_OPTIONS;
@@ -335,7 +348,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ programs, categories }) => {
           this.programNames = new Map(programs.map((program) => [program.id, program.name]));
-          this.columns = buildAffiliateProductColumns(programs, categories);
+          this.columns = buildAffiliateProductColumns(programs, categories, this.auth.isAdmin());
           this.dataProvider = createAffiliateProductsProvider(
             this.affiliateCatalogService,
             this.programNames,
@@ -448,6 +461,32 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   gridAction(event: { name?: string; rowData?: AffiliateProductGridRow }): void {
     if (event?.name === 'detail' && event.rowData) void this.openDetail(event.rowData);
+    if (event?.name === 'edit' && event.rowData) this.openEdit(event.rowData);
+  }
+
+  openEdit(product: CatalogProduct): void {
+    if (!this.auth.isAdmin() || !product?.id) return;
+    const guid = `affiliate-product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    this.popupService.setNewPopUp(
+      guid, 'AffiliateProductFormHostComponent', { productId: product.id },
+      760, undefined, undefined, false, true,
+      'Modifica prodotto', 'center', false,
+    );
+    void this.popupService.getOutputComponent(guid).then((result: AffiliateProductFormResult) => {
+      this.popupService.destroyCurrentOpenPopUpByGuid(guid);
+      if (result?.name !== 'saved') return;
+      // Keep the current season and remote column filters after saving.
+      this.restoredFilters = {
+        ...(this.dataGrid?.providerFilterValue('affiliateProgramId')
+          ? { affiliateProgramId: this.dataGrid.providerFilterValue('affiliateProgramId') } : {}),
+        ...(this.dataGrid?.providerFilterValue('category')
+          ? { category: this.dataGrid.providerFilterValue('category') } : {}),
+        ...(this.dataGrid?.providerFilterValue('visibleInApp')
+          ? { visibleInApp: this.dataGrid.providerFilterValue('visibleInApp') } : {}),
+      };
+      this.refresh();
+      alert('Prodotto aggiornato per ComeMiVesto.', 'Operazione completata');
+    });
   }
 
   private onProviderLoadStart(append: boolean): void {
