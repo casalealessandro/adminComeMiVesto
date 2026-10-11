@@ -475,15 +475,13 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     void this.popupService.getOutputComponent(guid).then((result: AffiliateProductFormResult) => {
       this.popupService.destroyCurrentOpenPopUpByGuid(guid);
       if (result?.name !== 'saved') return;
-      // Keep the current season and remote column filters after saving.
-      this.restoredFilters = {
-        ...(this.dataGrid?.providerFilterValue('affiliateProgramId')
-          ? { affiliateProgramId: this.dataGrid.providerFilterValue('affiliateProgramId') } : {}),
-        ...(this.dataGrid?.providerFilterValue('category')
-          ? { category: this.dataGrid.providerFilterValue('category') } : {}),
-        ...(this.dataGrid?.providerFilterValue('visibleInAppFilter')
-          ? { visibleInApp: this.dataGrid.providerFilterValue('visibleInApp') } : {}),
-      };
+      // Preserve only scalar remote filter values; providerFilterValue returns unknown.
+      const filters: Record<string, string> = {};
+      for (const field of ['affiliateProgramId', 'category', 'visibleInAppFilter']) {
+        const value = this.dataGrid?.providerFilterValue(field);
+        if (typeof value === 'string' && value) filters[field] = value;
+      }
+      this.restoredFilters = filters;
       this.refresh();
       alert('Prodotto aggiornato per ComeMiVesto.', 'Operazione completata');
     });
