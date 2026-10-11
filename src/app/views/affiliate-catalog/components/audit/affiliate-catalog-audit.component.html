@@ -132,11 +132,67 @@
       </div>
     </section>
 
+    <ng-template #fashionBreakdown let-stats>
+      <ng-container *ngIf="hasFashionBreakdown(stats); else olderBreakdown">
+        <div class="analytics-fashion-breakdown">
+          <div class="analytics-fashion-breakdown__summary">
+            <span><strong>{{ stats.fashionV2 | number }}</strong> profili v2</span>
+            <span><strong>{{ stats.fashionLegacy | number }}</strong> precedenti</span>
+            <span><strong>{{ stats.fashionMissing | number }}</strong> senza profilo</span>
+            <span><strong>{{ stats.fashionLocked | number }}</strong> bloccati</span>
+          </div>
+          <div class="analytics-fashion-breakdown__grid">
+            <article>
+              <h5>Stagioni</h5>
+              <p>{{ stats.withSeasons | number }} con stagione · {{ missingFashionV2(stats, 'withSeasons') | number }} v2 senza stagione</p>
+              <div *ngFor="let season of seasons" class="analytics-fashion-breakdown__value">
+                <span>{{ season.label }}</span><strong>{{ (stats.seasonCounts?.[season.id] ?? 0) | number }}</strong>
+              </div>
+              <small>{{ stats.multiSeason ?? 0 }} associati a più stagioni</small>
+            </article>
+            <article>
+              <h5>Stili</h5>
+              <p>{{ stats.withStyles | number }} con stile · {{ missingFashionV2(stats, 'withStyles') | number }} v2 senza stile</p>
+              <div *ngFor="let item of fashionItems(stats, 'styleCounts')" class="analytics-fashion-breakdown__value">
+                <span>{{ item.label }}</span><strong>{{ item.count | number }}</strong>
+              </div>
+              <small *ngIf="!fashionItems(stats, 'styleCounts').length">Nessuno stile riconosciuto</small>
+            </article>
+            <article>
+              <h5>Vestibilità (fit)</h5>
+              <p>{{ stats.withFit | number }} riconosciute · {{ missingFashionV2(stats, 'withFit') | number }} v2 sconosciute</p>
+              <div *ngFor="let item of fashionItems(stats, 'fitCounts')" class="analytics-fashion-breakdown__value">
+                <span>{{ item.label }}</span><strong>{{ item.count | number }}</strong>
+              </div>
+            </article>
+            <article>
+              <h5>Peso visivo</h5>
+              <p>{{ stats.withVisualWeight | number }} riconosciuti · {{ missingFashionV2(stats, 'withVisualWeight') | number }} v2 sconosciuti</p>
+              <div *ngFor="let item of fashionItems(stats, 'visualWeightCounts')" class="analytics-fashion-breakdown__value">
+                <span>{{ item.label }}</span><strong>{{ item.count | number }}</strong>
+              </div>
+            </article>
+          </div>
+          <p class="analytics-fashion-breakdown__evidence">
+            Evidenze: {{ stats.withFeedEvidence ?? 0 | number }} prodotti con dati espliciti del feed ·
+            {{ stats.withRuleEvidence ?? 0 | number }} con regole di classificazione.
+          </p>
+          <p class="small text-muted mb-0">
+            Gli stili e le stagioni possono essere multipli. Gli attributi sconosciuti non vengono inventati;
+            i conteggi Fashion si riferiscono ai soli profili v2.
+          </p>
+        </div>
+      </ng-container>
+      <ng-template #olderBreakdown>
+        <p class="small text-muted my-2">Dettaglio non presente nella fotografia salvata. Dopo l'aggiornamento backend, usa «Ricalcola panoramica».</p>
+      </ng-template>
+    </ng-template>
+
     <section class="analytics-section" aria-labelledby="analytics-taxonomy-title">
       <div class="analytics-section-header">
         <div>
           <h3 id="analytics-taxonomy-title" class="h5 mb-1">Categorie ComeMiVesto</h3>
-          <p class="text-muted small mb-0">Categorie e sottocategorie vere, comprese quelle senza prodotti. Apri una categoria per il dettaglio.</p>
+          <p class="text-muted small mb-0">Per ogni categoria vedi prodotti classificati, errori e valori realmente riconosciuti da Fashion v2.</p>
         </div>
       </div>
       <div class="analytics-taxonomy-issues">
@@ -145,6 +201,7 @@
         <div><strong>{{ counts.invalidCategory | number }}</strong><span>Categoria non valida</span></div>
         <div><strong>{{ counts.invalidSubcategory | number }}</strong><span>Sottocategoria errata</span></div>
       </div>
+      <p class="alert alert-warning small" *ngIf="!hasFashionBreakdown(counts)">Questa panoramica è precedente alla correzione della lettura delle sottocategorie: i vecchi zeri non sono attendibili. Dopo il deploy backend, premi «Ricalcola panoramica».</p>
       <div class="analytics-category-list">
         <details class="analytics-category" *ngFor="let category of categories">
           <summary>
@@ -158,7 +215,12 @@
             </div>
           </summary>
           <div class="analytics-category-body">
-            <p class="small text-muted">Sono inclusi anche prodotti con sottocategoria mancante o non valida.</p>
+            <div class="analytics-taxonomy-detail" aria-label="Completezza della categoria">
+              <span><strong>{{ categoryCounts(category).taxonomyComplete | number }}</strong> classificati correttamente</span>
+              <span><strong>{{ categoryCounts(category).missingSubcategory | number }}</strong> senza sottocategoria</span>
+              <span><strong>{{ categoryCounts(category).invalidSubcategory | number }}</strong> sottocategoria non valida</span>
+              <span><strong>{{ categoryCounts(category).fashionV2 | number }}</strong> con Fashion v2</span>
+            </div>
             <a [routerLink]="['/affiliate-catalog/products']"
               [queryParams]="{ affiliateProgramId: selectedProgramId || null, category: category.categoryId }"
               class="small">Apri prodotti della categoria</a>
@@ -172,9 +234,28 @@
                     <td class="text-end">{{ categoryCounts(child).taxonomyComplete | number }}</td>
                     <td class="text-end">{{ categoryCounts(child).fashionV2 | number }}</td>
                   </tr>
+                  <tr *ngIf="unclassifiedSubcategory(categoryCounts(category)) > 0" class="table-warning">
+                    <td>Non assegnati a una sottocategoria valida</td>
+                    <td class="text-end">{{ unclassifiedSubcategory(categoryCounts(category)) | number }}</td>
+                    <td class="text-end">0</td><td class="text-end">—</td>
+                  </tr>
                   <tr *ngIf="!childrenFor(category.categoryId).length"><td colspan="4">Nessuna sottocategoria definita.</td></tr>
                 </tbody>
               </table>
+            </div>
+            <details class="analytics-fashion-details mt-3">
+              <summary>Mostra stagioni, stili, vestibilità ed evidenze Fashion v2 della categoria</summary>
+              <ng-container *ngTemplateOutlet="fashionBreakdown; context: { $implicit: categoryCounts(category) }"></ng-container>
+            </details>
+            <div class="analytics-subcategory-details" *ngIf="childrenFor(category.categoryId).length">
+              <details class="analytics-fashion-details" *ngFor="let child of childrenFor(category.categoryId)">
+                <summary>
+                  {{ child.subcategoryName }}:
+                  {{ categoryCounts(child).total | number }} prodotti,
+                  {{ categoryCounts(child).fashionV2 | number }} Fashion v2
+                </summary>
+                <ng-container *ngTemplateOutlet="fashionBreakdown; context: { $implicit: categoryCounts(child) }"></ng-container>
+              </details>
             </div>
           </div>
         </details>
