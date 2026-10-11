@@ -125,6 +125,10 @@ describe('Affiliate product detail', () => {
       subcategory: 'Shirts',
       normalizedColor: 'BLUE',
       genderTargets: ['D'],
+      fashionSeasons: [],
+      fashionStyleAffinities: [],
+      fashionFit: 'UNKNOWN',
+      fashionVisualWeight: 'UNKNOWN',
     });
     expect(component.programName()).toBe(program.name);
     expect(component.sourceFeedName(feed.id)).toBe(feed.name);
@@ -171,6 +175,10 @@ describe('Affiliate product detail', () => {
       subcategory: 'Shirts',
       normalizedColor: 'BLUE',
       genderTargets: ['U'],
+      fashionSeasons: [],
+      fashionStyleAffinities: [],
+      fashionFit: 'UNKNOWN',
+      fashionVisualWeight: 'UNKNOWN',
     });
   });
 
@@ -186,6 +194,20 @@ describe('Affiliate product detail', () => {
       normalizedColor: 'G',
       genderTargets: ['U'],
     });
+  });
+
+  it('maps persisted Fashion form fields to existing fashionProfile without touching other values', () => {
+    const unchanged = {
+      category: product.category,
+      subcategory: product.subcategory,
+      normalizedColor: product.normalizedColor,
+      genderTargets: product.genderTargets,
+    };
+    expect(buildAffiliateProductCurationUpdate(product, true, unchanged)).toEqual({});
+    expect(buildAffiliateProductCurationUpdate(product, true, {
+      ...unchanged, fashionSeasons: ['SPRING', 'AUTUMN'],
+      fashionFit: 'WIDE',
+    })).toEqual({ fashionProfile: { seasons: ['SPRING', 'AUTUMN'], fit: 'WIDE' } });
   });
 
   it('can persist the visibility switch together with an unchanged DynamicForm', () => {
