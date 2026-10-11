@@ -4,9 +4,16 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
   CatalogAnalytics, CatalogAnalyticsCategory, CatalogAnalyticsCounts, CatalogAnalyticsFeed,
-  CatalogAnalyticsScope, FashionOverviewJob, FashionOverviewResponse,
+  CatalogAnalyticsScope, CatalogSeason, FashionOverviewJob, FashionOverviewResponse,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+
+export const AUDIT_SEASONS: ReadonlyArray<{ id: CatalogSeason; label: string }> = [
+  { id: 'SPRING', label: 'Primavera' },
+  { id: 'SUMMER', label: 'Estate' },
+  { id: 'AUTUMN', label: 'Autunno' },
+  { id: 'WINTER', label: 'Inverno' },
+];
 
 export function auditPercentage(value: number, total: number): number {
   if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return 0;
@@ -30,6 +37,7 @@ const ZERO_COUNTS: CatalogAnalyticsCounts = {
 })
 export class AffiliateCatalogAuditComponent implements OnInit {
   private readonly service = inject(AffiliateCatalogService);
+  readonly seasons = AUDIT_SEASONS;
 
   overview: FashionOverviewResponse | null = null;
   scope: 'usable' | 'all' = 'usable';
@@ -130,6 +138,14 @@ export class AffiliateCatalogAuditComponent implements OnInit {
     if (!feed.networkActive) return 'Programma non attivo';
     return feed.enabled ? 'Attivo' : 'Feed disabilitato';
   }
+  get hasSeasonDistribution(): boolean {
+    return this.counts.seasonCounts !== undefined;
+  }
+
+  seasonCount(season: CatalogSeason): number {
+    return this.counts.seasonCounts?.[season] ?? 0;
+  }
+
   missingTaxonomy(counts: CatalogAnalyticsCounts): number {
     return counts.total - counts.taxonomyComplete;
   }

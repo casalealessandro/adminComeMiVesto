@@ -10,6 +10,7 @@ import {
   buildAffiliateProductColumns,
   buildAffiliateProductGridRows,
   buildAffiliateProductRemoteRequest,
+  affiliateProductSeasonsLabel,
   createAffiliateProductsProvider,
 } from './affiliate-products.component';
 
@@ -97,7 +98,14 @@ describe('Affiliate products', () => {
     expect(buildAffiliateProductGridRows([{ ...product, active: false, enabledForApp: true }], new Map())[0].visibleInAppFilter).toBe('false');
     expect(rows[0].categoryLabel).toBe('Clothing / Shirts');
     expect(rows[0].genderLabel).toBe('U, D');
+    expect(rows[0].seasonLabel).toBe('—');
+    expect(affiliateProductSeasonsLabel(['WINTER', 'SPRING', 'WINTER'])).toBe('Primavera, Inverno');
     expect(rows[0].sourceFeedCount).toBe(2);
+  });
+
+  it('passes a chosen season to remote requests rather than filtering loaded rows locally', () => {
+    expect(buildAffiliateProductRemoteRequest({ pageSize: 50 }, 'AUTUMN'))
+      .toEqual({ limit: 50, season: 'AUTUMN' });
   });
 
   it('falls back to the canonical program id when program lookup is unavailable', () => {

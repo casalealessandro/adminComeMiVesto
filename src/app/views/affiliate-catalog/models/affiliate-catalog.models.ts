@@ -173,6 +173,8 @@ export interface FashionMerchantOverview extends FashionCoverage {
 
 
 /** Read-only additive analytics calculated by the existing asynchronous fashion snapshot job. */
+export type CatalogSeason = 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
+
 export interface CatalogAnalyticsCounts {
   total: number;
   active: number;
@@ -189,6 +191,9 @@ export interface CatalogAnalyticsCounts {
   fashionMissing: number;
   fashionLocked: number;
   withSeasons: number;
+  /** Added by newer snapshots; optional for historical analysis reports. */
+  seasonCounts?: Partial<Record<CatalogSeason, number>>;
+  multiSeason?: number;
   withStyles: number;
   withFit: number;
   withVisualWeight: number;

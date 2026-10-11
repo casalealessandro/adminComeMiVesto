@@ -90,6 +90,18 @@
     <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Riprova</button>
   </div>
 
+  <div class="mb-3 d-flex flex-wrap align-items-end gap-2" aria-label="Filtro stagione prodotti">
+    <div>
+      <label for="affiliate-product-season" class="form-label small mb-1">Stagione</label>
+      <select id="affiliate-product-season" class="form-select" [value]="selectedSeason"
+        (change)="setSeason($any($event.target).value)" [disabled]="loading || productsLoading || loadingMore">
+        <option value="">Tutte le stagioni</option>
+        <option *ngFor="let season of seasonOptions" [value]="season.id">{{ season.label }}</option>
+      </select>
+    </div>
+    <span class="small text-muted pb-2">Un capo può appartenere a più stagioni. Il filtro cerca in tutto il catalogo.</span>
+  </div>
+
   <p *ngIf="loading || productsLoading" class="affiliate-products__loading" aria-live="polite">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
     {{ loading ? 'Caricamento filtri…' : 'Caricamento prodotti…' }}
@@ -167,6 +179,10 @@
           <span *ngIf="product.genderTargets?.length" class="affiliate-product-card__chip">
             <span class="mdi mdi-account-outline" aria-hidden="true"></span>
             {{ genderLabel(product) }}
+          </span>
+          <span class="affiliate-product-card__chip">
+            <span class="mdi mdi-calendar-month-outline" aria-hidden="true"></span>
+            Stagioni: {{ seasonLabel(product) }}
           </span>
         </div>
 

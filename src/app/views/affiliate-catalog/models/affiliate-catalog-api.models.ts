@@ -22,6 +22,7 @@ export interface AffiliateProductCursorRequest extends AffiliateCursorRequest {
   category?: string;
   affiliateProgramId?: string;
   visibleInApp?: boolean;
+  season?: 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
 }
 
 export type AffiliateProductUpdateInput = Partial<Pick<

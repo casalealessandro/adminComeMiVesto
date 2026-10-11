@@ -14,10 +14,23 @@ import {
   AffiliateProductCursorRequest,
   CatalogTaxonomyRepairResult,
 } from '../../models/affiliate-catalog-api.models';
-import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
+import { AffiliateProgram, CatalogProduct, CatalogSeason } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 export const AFFILIATE_PRODUCTS_PAGE_SIZE = 50;
+export const CATALOG_SEASON_OPTIONS: ReadonlyArray<{ id: CatalogSeason; label: string }> = [
+  { id: 'SPRING', label: 'Primavera' },
+  { id: 'SUMMER', label: 'Estate' },
+  { id: 'AUTUMN', label: 'Autunno' },
+  { id: 'WINTER', label: 'Inverno' },
+];
+
+export function affiliateProductSeasonsLabel(seasons?: readonly string[]): string {
+  if (!seasons?.length) return '—';
+  const selected = new Set(seasons);
+  const labels = CATALOG_SEASON_OPTIONS.filter((option) => selected.has(option.id)).map((option) => option.label);
+  return labels.length ? labels.join(', ') : '—';
+}
 
 const baseColumn = (
   dataField: string,
@@ -55,6 +68,7 @@ export interface AffiliateProductGridRow extends CatalogProduct {
   visibleInAppFilter: 'true' | 'false';
   categoryLabel: string;
   genderLabel: string;
+  seasonLabel: string;
   sourceFeedCount: number;
 }
 
@@ -96,6 +110,7 @@ export function buildAffiliateProductColumns(
     baseColumn('subcategory', 'Sottocategoria', 150),
     baseColumn('normalizedColor', 'Colore', 110),
     baseColumn('genderLabel', 'Target', 150),
+    baseColumn('seasonLabel', 'Stagioni', 190),
     baseColumn('sourceFeedCount', 'Feed', 70, 'campoNumber'),
     baseColumn('activeLabel', 'Attivo catalogo', 110),
     {
@@ -130,11 +145,12 @@ export function buildAffiliateProductGridRows(
     visibleInAppFilter: product.active && product.enabledForApp !== false ? 'true' : 'false',
     categoryLabel: [product.category, product.subcategory].filter(Boolean).join(' / ') || '—',
     genderLabel: product.genderTargets?.filter(Boolean).join(', ') || '—',
+    seasonLabel: affiliateProductSeasonsLabel(product.fashionProfile?.seasons),
     sourceFeedCount: product.sourceFeedIds?.length ?? 0,
   }));
 }
 
-export function buildAffiliateProductRemoteRequest(request: GridLoadRequest): AffiliateProductCursorRequest {
+export function buildAffiliateProductRemoteRequest(request: GridLoadRequest, season?: CatalogSeason): AffiliateProductCursorRequest {
   const exactFilter = (field: string): string | undefined => {
     const filter = request.filters?.find((item) => item.field === field && item.operator === 'eq');
     if (typeof filter?.value !== 'string') return undefined;
@@ -160,6 +176,7 @@ export function buildAffiliateProductRemoteRequest(request: GridLoadRequest): Af
     ...(cursor ? { cursor } : {}),
     ...(q ? { q } : {}),
     ...(category ? { category } : {}),
+    ...(season ? { season } : {}),
     ...(affiliateProgramId ? { affiliateProgramId } : {}),
     ...(visibleInApp !== undefined ? { visibleInApp } : {}),
   };
@@ -169,6 +186,7 @@ export function createAffiliateProductsProvider(
   service: AffiliateCatalogService,
   programNames: ReadonlyMap<string, string>,
   callbacks: AffiliateProductsProviderCallbacks = {},
+  season?: CatalogSeason,
 ): GridDataProvider<AffiliateProductGridRow> {
   return {
     async load(request: GridLoadRequest): Promise<GridPage<AffiliateProductGridRow>> {
@@ -180,7 +198,7 @@ export function createAffiliateProductsProvider(
       callbacks.onLoadStart?.(append);
 
       try {
-        const page = await firstValueFrom(service.getProducts(buildAffiliateProductRemoteRequest(request)));
+        const page = await firstValueFrom(service.getProducts(buildAffiliateProductRemoteRequest(request, season)));
         callbacks.onPage?.(page.data, append, page.pagination.hasMore);
         return {
           items: buildAffiliateProductGridRows(page.data, programNames),
@@ -208,6 +226,8 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  readonly seasonOptions = CATALOG_SEASON_OPTIONS;
+  selectedSeason: CatalogSeason | '' = '';
   private dataGrid?: DataGridComponent<AffiliateProductGridRow>;
   private mobileLoadMoreObserver?: IntersectionObserver;
 
@@ -263,6 +283,8 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     const affiliateProgramId = this.route.snapshot.queryParamMap.get('affiliateProgramId')?.trim();
     const category = this.route.snapshot.queryParamMap.get('category')?.trim();
     const visibleInApp = this.route.snapshot.queryParamMap.get('visibleInApp')?.trim();
+    const season = this.route.snapshot.queryParamMap.get('season')?.trim();
+    this.selectedSeason = CATALOG_SEASON_OPTIONS.find((item) => item.id === season)?.id ?? '';
 
     this.restoredFilters = {
       ...(affiliateProgramId ? { affiliateProgramId } : {}),
@@ -277,6 +299,19 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.mobileLoadMoreObserver?.disconnect();
+  }
+
+  setSeason(value: string): void {
+    const next = CATALOG_SEASON_OPTIONS.find((item) => item.id === value)?.id ?? '';
+    if (this.selectedSeason === next) return;
+    // Preserve existing grid-side remote filters when recreating the provider.
+    for (const field of ['affiliateProgramId', 'category', 'visibleInAppFilter']) {
+      const current = this.dataGrid?.providerFilterValue(field);
+      if (typeof current === 'string' && current) this.restoredFilters[field] = current;
+      else delete this.restoredFilters[field];
+    }
+    this.selectedSeason = next;
+    this.refresh();
   }
 
   refresh(): void {
@@ -310,6 +345,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
               onLoadError: (append) => this.onProviderLoadError(append),
               onLoadEnd: (append) => this.onProviderLoadEnd(append),
             },
+            this.selectedSeason || undefined,
           );
         },
         error: () => {
@@ -379,6 +415,10 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     return product.genderTargets?.filter(Boolean).join(', ') || '—';
   }
 
+  seasonLabel(product: CatalogProduct): string {
+    return affiliateProductSeasonsLabel(product.fashionProfile?.seasons);
+  }
+
   materialsLabel(product: CatalogProduct): string {
     return product.materials?.filter(Boolean).join(', ') || '—';
   }
@@ -390,6 +430,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       affiliateProgramId: this.dataGrid?.providerFilterValue('affiliateProgramId') || null,
       category: this.dataGrid?.providerFilterValue('category') || null,
       visibleInApp: this.dataGrid?.providerFilterValue('visibleInAppFilter') || null,
+      ...(this.selectedSeason ? { season: this.selectedSeason } : {}),
     };
 
     await this.router.navigate([], {

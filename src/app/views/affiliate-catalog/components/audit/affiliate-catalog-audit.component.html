@@ -217,6 +217,32 @@
           </div>
         </div>
       </div>
+      <div class="mt-3" aria-label="Distribuzione per stagione" *ngIf="hasSeasonDistribution; else seasonBreakdownUnavailable">
+        <h4 class="h6 mb-2">Distribuzione per stagione</h4>
+        <div class="analytics-progress-list">
+          <div *ngFor="let season of seasons">
+            <div class="d-flex justify-content-between gap-2">
+              <span>{{ season.label }}</span>
+              <strong>{{ seasonCount(season.id) | number }} / {{ counts.total | number }}</strong>
+            </div>
+            <div class="progress" role="progressbar" [attr.aria-label]="season.label"
+              [attr.aria-valuenow]="percentage(seasonCount(season.id), counts.total)"
+              aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" [style.width.%]="percentage(seasonCount(season.id), counts.total)"></div>
+            </div>
+          </div>
+        </div>
+        <p class="small text-muted mt-2 mb-0">
+          Senza stagione: <strong>{{ (counts.total - counts.withSeasons) | number }}</strong>.
+          Più stagioni: <strong>{{ (counts.multiSeason ?? 0) | number }}</strong>.
+          Lo stesso prodotto può comparire in più stagioni, ma viene contato una sola volta nel totale.
+        </p>
+      </div>
+      <ng-template #seasonBreakdownUnavailable>
+        <p class="small text-muted mt-3 mb-0">
+          Per visualizzare la distribuzione per stagione, genera una nuova analisi con «Ricalcola analisi».
+        </p>
+      </ng-template>
       <p class="small text-muted mt-2 mb-0">
         Un profilo salvato non significa che stagione o stile siano riconosciuti.
         I profili precedenti alla v2 non sono conteggiati come segnali disponibili per lo stylist.

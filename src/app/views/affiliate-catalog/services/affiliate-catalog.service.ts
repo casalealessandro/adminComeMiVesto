@@ -333,6 +333,9 @@ export class AffiliateCatalogService {
     if (request?.category) {
       params = params.set('category', request.category);
     }
+    if (request?.season) {
+      params = params.set('season', request.season);
+    }
     if (request?.affiliateProgramId) {
       params = params.set('affiliateProgramId', request.affiliateProgramId);
     }
