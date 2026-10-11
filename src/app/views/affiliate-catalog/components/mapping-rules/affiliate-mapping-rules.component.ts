@@ -30,6 +30,7 @@ export class AffiliateMappingRulesComponent implements OnInit {
   error = '';
   notice = '';
   editing: AffiliateMappingRule | null = null;
+  editingExisting = false;
   aliasesText = '';
   seasonsText = '';
 
@@ -56,6 +57,7 @@ export class AffiliateMappingRulesComponent implements OnInit {
   edit(rule: AffiliateMappingRule): void {
     this.error = '';
     this.notice = '';
+    this.editingExisting = true;
     this.editing = structuredClone(rule);
     this.aliasesText = rule.aliases.join('\n');
     this.seasonsText = Array.isArray(rule.data['seasons']) ? (rule.data['seasons'] as string[]).join(', ') : '';
@@ -71,6 +73,7 @@ export class AffiliateMappingRulesComponent implements OnInit {
     this.edit({
       id: '', type: this.type, label: '', aliases: [], enabled: true, data, origin: 'CUSTOM',
     });
+    this.editingExisting = false;
   }
   cancel(): void { this.editing = null; }
   save(): void {
