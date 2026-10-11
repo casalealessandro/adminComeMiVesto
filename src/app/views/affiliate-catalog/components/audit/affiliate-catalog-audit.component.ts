@@ -15,6 +15,25 @@ export const AUDIT_SEASONS: ReadonlyArray<{ id: CatalogSeason; label: string }> 
   { id: 'WINTER', label: 'Inverno' },
 ];
 
+const FASHION_LABELS: Record<string, string> = {
+  CASUAL: 'Casual', BUSINESS: 'Business', SPORTY: 'Sportivo', SMART_CASUAL: 'Smart casual',
+  ELEGANT: 'Elegante', ALTERNATIVE: 'Alternative', FESTIVAL: 'Festival',
+  CLASSIC: 'Classico', TRENDY: 'Trendy', STREETWEAR: 'Streetwear',
+  SLIM: 'Slim', REGULAR: 'Regular', RELAXED: 'Relaxed', WIDE: 'Wide',
+  LIGHT: 'Leggero', HEAVY: 'Pesante', UNKNOWN: 'Sconosciuto',
+};
+
+export interface FashionBreakdownItem { key: string; label: string; count: number; }
+
+export function fashionBreakdownItems(
+  distribution?: Record<string, number>,
+): FashionBreakdownItem[] {
+  return Object.entries(distribution ?? {})
+    .filter(([, count]) => Number.isFinite(count) && count > 0)
+    .map(([key, count]) => ({ key, label: FASHION_LABELS[key] ?? key, count }))
+    .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label, 'it'));
+}
+
 export function auditPercentage(value: number, total: number): number {
   if (!Number.isFinite(value) || !Number.isFinite(total) || total <= 0) return 0;
   return Math.max(0, Math.min(100, Math.round((value / total) * 100)));
@@ -144,6 +163,26 @@ export class AffiliateCatalogAuditComponent implements OnInit {
 
   seasonCount(season: CatalogSeason): number {
     return this.counts.seasonCounts?.[season] ?? 0;
+  }
+
+  /** Distinguish old snapshots from an actual zero in the richer breakdown. */
+  hasFashionBreakdown(counts: CatalogAnalyticsCounts): boolean {
+    return counts.seasonCounts !== undefined && counts.styleCounts !== undefined
+      && counts.fitCounts !== undefined && counts.visualWeightCounts !== undefined;
+  }
+
+  fashionItems(counts: CatalogAnalyticsCounts, metric: 'styleCounts' | 'fitCounts' | 'visualWeightCounts'):
+    FashionBreakdownItem[] {
+    return fashionBreakdownItems(counts[metric]);
+  }
+
+  /** Every recognized child is counted once; the rest are unassigned/invalid. */
+  unclassifiedSubcategory(counts: CatalogAnalyticsCounts): number {
+    return counts.missingSubcategory + counts.invalidSubcategory;
+  }
+
+  missingFashionV2(counts: CatalogAnalyticsCounts, field: 'withSeasons' | 'withStyles' | 'withFit' | 'withVisualWeight'): number {
+    return Math.max(0, counts.fashionV2 - counts[field]);
   }
 
   missingTaxonomy(counts: CatalogAnalyticsCounts): number {

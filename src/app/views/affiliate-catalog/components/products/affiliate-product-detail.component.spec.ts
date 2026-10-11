@@ -13,9 +13,19 @@ import {
   buildAffiliateProductCurationUpdate,
   normalizeCatalogGenderTarget,
   normalizeCatalogGenderTargets,
+  fashionDetailLabel,
+  fashionDetailList,
 } from './affiliate-product-detail.component';
 
 describe('Affiliate product detail', () => {
+  it('renders saved v2 seasons, style, fit and missing values in Italian', () => {
+    expect(fashionDetailList(['SPRING', 'AUTUMN'])).toBe('Primavera, Autunno');
+    expect(fashionDetailList(['SMART_CASUAL', 'BUSINESS'])).toBe('Smart casual, Business');
+    expect(fashionDetailLabel('WIDE')).toBe('Wide');
+    expect(fashionDetailLabel('UNKNOWN')).toBe('Sconosciuto');
+    expect(fashionDetailList([])).toBe('Sconosciuto');
+  });
+
   const program: AffiliateProgram = {
     id: 'program-1',
     network: 'TRADEDOUBLER',

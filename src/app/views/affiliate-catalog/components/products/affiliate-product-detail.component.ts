@@ -11,6 +11,24 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 
 export const AFFILIATE_PRODUCT_CURATION_FORM = 'affiliateProductCurationForm';
 
+const FASHION_DETAIL_LABELS: Record<string, string> = {
+  SPRING: 'Primavera', SUMMER: 'Estate', AUTUMN: 'Autunno', WINTER: 'Inverno',
+  CASUAL: 'Casual', BUSINESS: 'Business', SPORTY: 'Sportivo', SMART_CASUAL: 'Smart casual',
+  ELEGANT: 'Elegante', ALTERNATIVE: 'Alternative', FESTIVAL: 'Festival',
+  CLASSIC: 'Classico', TRENDY: 'Trendy', STREETWEAR: 'Streetwear',
+  SLIM: 'Slim', REGULAR: 'Regular', RELAXED: 'Relaxed', WIDE: 'Wide',
+  LIGHT: 'Leggero', HEAVY: 'Pesante', UNKNOWN: 'Sconosciuto',
+};
+
+export function fashionDetailLabel(value?: string): string {
+  return value ? (FASHION_DETAIL_LABELS[value] ?? value) : 'Sconosciuto';
+}
+
+export function fashionDetailList(values?: readonly string[]): string {
+  return values?.length ? values.map(fashionDetailLabel).join(', ') : 'Sconosciuto';
+}
+
+
 export function affiliateProductDetailErrorMessage(status?: number): string {
   if (status === 401 || status === 403) return 'Non sei autorizzato a consultare questo prodotto.';
   if (status === 404) return 'Il prodotto richiesto non è più disponibile.';
@@ -186,6 +204,10 @@ export class AffiliateProductDetailComponent implements OnInit {
     if (!this.product) return '—';
     return [this.product.category, this.product.subcategory].filter(Boolean).join(' / ') || '—';
   }
+
+  fashionValue(value?: string): string { return fashionDetailLabel(value); }
+
+  fashionValues(values?: readonly string[]): string { return fashionDetailList(values); }
 
   genderLabel(): string {
     return this.product?.genderTargets?.filter(Boolean).join(', ') || '—';

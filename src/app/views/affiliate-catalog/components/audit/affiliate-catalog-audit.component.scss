@@ -69,3 +69,27 @@
   .analytics-kpi { padding: .7rem; }
   .analytics-category > summary { align-items: flex-start; }
 }
+
+.analytics-taxonomy-detail, .analytics-fashion-breakdown__summary {
+  display: flex; flex-wrap: wrap; gap: .45rem .85rem; margin: .3rem 0 .8rem;
+}
+.analytics-taxonomy-detail span, .analytics-fashion-breakdown__summary span {
+  font-size: .84rem; padding: .4rem .55rem; border: 1px solid var(--bs-border-color);
+  border-radius: .4rem; background: var(--bs-tertiary-bg);
+}
+.analytics-fashion-details { min-width: 0; margin-top: .5rem; border: 1px solid var(--bs-border-color); border-radius: .5rem; }
+.analytics-fashion-details > summary { cursor: pointer; padding: .65rem .75rem; font-weight: 600; overflow-wrap: anywhere; }
+.analytics-fashion-details[open] > summary { border-bottom: 1px solid var(--bs-border-color); }
+.analytics-subcategory-details { margin-top: .9rem; }
+.analytics-fashion-breakdown { padding: .75rem; min-width: 0; }
+.analytics-fashion-breakdown__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.analytics-fashion-breakdown__grid article { min-width: 0; border: 1px solid var(--bs-border-color); border-radius: .5rem; padding: .7rem; }
+.analytics-fashion-breakdown__grid h5 { font-size: .95rem; margin-bottom: .45rem; }
+.analytics-fashion-breakdown__grid p, .analytics-fashion-breakdown__grid small { font-size: .8rem; color: var(--bs-secondary-color); }
+.analytics-fashion-breakdown__value { display: flex; gap: .5rem; justify-content: space-between; padding: .18rem 0; font-size: .85rem; }
+.analytics-fashion-breakdown__value span { overflow-wrap: anywhere; }
+.analytics-fashion-breakdown__evidence { margin: .7rem 0 .35rem; font-size: .85rem; }
+@media (max-width: 560px) {
+  .analytics-fashion-breakdown__grid { grid-template-columns: minmax(0, 1fr); }
+  .analytics-category-numbers { max-width: 48%; }
+}
