@@ -101,6 +101,13 @@ export class AffiliateMappingRulesComponent implements OnInit {
       error: () => this.error = 'Impossibile disattivare la regola.',
     });
   }
+  genderTargetsValue(): string {
+    const values = this.editing?.data['genderTargets'];
+    return Array.isArray(values) ? values.filter((x): x is string => typeof x === 'string').join(',') : 'U';
+  }
+  setGenderTargets(value: string): void {
+    if (this.editing) this.editing.data = { ...this.editing.data, genderTargets: value.split(',') };
+  }
   field(field: string): string {
     const value = this.editing?.data[field];
     return typeof value === 'string' ? value : '';
