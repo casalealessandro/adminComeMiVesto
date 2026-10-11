@@ -6,7 +6,7 @@ import { AuthService } from '../../../../services/auth.service';
 import { AffiliateCatalogService, AffiliateMappingRule, AffiliateMappingRuleType } from '../../services/affiliate-catalog.service';
 
 const RULE_TYPES: AffiliateMappingRuleType[] =
-  ['CATEGORY', 'COLOR', 'GENDER', 'SEASON', 'STYLE', 'FIT', 'MATERIAL'];
+  ['CATEGORY', 'COLOR', 'GENDER', 'SEASON'];
 const FASHION_SEASONS = ['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'];
 const splitAliases = (value: string): string[] =>
   [...new Set(value.split(/\r?\n|,/g).map(x => x.trim()).filter(Boolean))];
