@@ -13,6 +13,7 @@ import { StylesComponent } from './views/styles/styles.component';
 import { ReportsComponent } from './views/reports/reports.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { StaticPagesComponent } from './views/static-pages/static-pages.component';
+import { AffiliateMappingRulesComponent } from './views/affiliate-catalog/components/mapping-rules/affiliate-mapping-rules.component';
 import { AffiliateCatalogComponent } from './views/affiliate-catalog/affiliate-catalog.component';
 import { AffiliateFashionEnrichmentComponent } from './views/affiliate-catalog/components/fashion-enrichment/affiliate-fashion-enrichment.component';
 import { AffiliateCatalogAuditComponent } from './views/affiliate-catalog/components/audit/affiliate-catalog-audit.component';
@@ -45,6 +46,7 @@ export const routes:Routes = [
         { path: '', redirectTo: 'programs', pathMatch: 'full' },
         { path: 'programs', component: AffiliateProgramsComponent },
         { path: 'feeds', component: AffiliateFeedsComponent },
+        { path: 'mapping-rules', component: AffiliateMappingRulesComponent },
         { path: 'audit', component: AffiliateCatalogAuditComponent },
         { path: 'fashion-enrichment', component: AffiliateFashionEnrichmentComponent },
         { path: 'outfit-preview', component: AffiliateOutfitPreviewComponent },
