@@ -61,6 +61,12 @@ export class AffiliateCatalogService {
   private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
 
 
+  seedMappingRules(): Observable<{ total: number; created: number; existing: number }> {
+    return this.http.post<AffiliateApiResponse<{ total: number; created: number; existing: number }>>(
+      `${this.baseUrl}/mapping-rules/seed`, {},
+    ).pipe(map(response => response.data));
+  }
+
   getMappingRules(): Observable<AffiliateMappingRule[]> {
     return this.http.get<AffiliateApiResponse<AffiliateMappingRule[]>>(`${this.baseUrl}/mapping-rules`)
       .pipe(map(response => response.data));
