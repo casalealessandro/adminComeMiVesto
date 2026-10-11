@@ -41,11 +41,42 @@ import {
 import { AiOutfitPublishRequest, AiOutfitPublishedResult } from '../models/ai-outfit-publish.models';
 import { AiCreator, AiCreatorCreateInput, AiCreatorUpdateInput } from '../models/ai-creator.models';
 
+
+export type AffiliateMappingRuleType = 'CATEGORY' | 'COLOR' | 'GENDER' | 'SEASON' | 'STYLE' | 'FIT' | 'MATERIAL';
+export interface AffiliateMappingRule {
+  id: string;
+  type: AffiliateMappingRuleType;
+  label: string;
+  aliases: string[];
+  enabled: boolean;
+  data: Record<string, unknown>;
+  note?: string;
+  origin?: 'BUILTIN' | 'CUSTOM';
+}
+
 @Injectable({ providedIn: 'root' })
 export class AffiliateCatalogService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiBaseUrl;
   private readonly baseUrl = `${this.apiUrl}/admin/affiliate`;
+
+
+  getMappingRules(): Observable<AffiliateMappingRule[]> {
+    return this.http.get<AffiliateApiResponse<AffiliateMappingRule[]>>(`${this.baseUrl}/mapping-rules`)
+      .pipe(map(response => response.data));
+  }
+
+  saveMappingRule(rule: AffiliateMappingRule): Observable<AffiliateMappingRule> {
+    const { id, type, label, aliases, enabled, data, note } = rule;
+    return this.http.put<AffiliateApiResponse<AffiliateMappingRule>>(
+      `${this.baseUrl}/mapping-rules/${encodeURIComponent(id)}`,
+      { type, label, aliases, enabled, data, note: note ?? '' },
+    ).pipe(map(response => response.data));
+  }
+
+  disableMappingRule(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/mapping-rules/${encodeURIComponent(id)}`);
+  }
 
   getFashionAiFeedPilot(feedId: string): Observable<FashionAiPilotJob | null> {
     return this.http.get<AffiliateApiResponse<FashionAiPilotJob | null>>(
