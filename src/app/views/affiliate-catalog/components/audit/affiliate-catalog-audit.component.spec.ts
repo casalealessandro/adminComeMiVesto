@@ -83,6 +83,19 @@ describe('AffiliateCatalogAuditComponent', () => {
     expect(component.counts.total).toBe(5);
   });
 
+  it('shows per-season counts only when the selected snapshot contains them', () => {
+    component.refresh();
+    expect(component.hasSeasonDistribution).toBeFalse();
+    const analytics = component.overview?.snapshot?.analytics;
+    if (!analytics) throw new Error('Missing report fixture');
+    analytics.total.usable.seasonCounts = { SPRING: 2, AUTUMN: 1, SUMMER: 0, WINTER: 0 };
+    analytics.total.usable.multiSeason = 1;
+    expect(component.hasSeasonDistribution).toBeTrue();
+    expect(component.seasonCount('SPRING')).toBe(2);
+    component.setProgram('a');
+    expect(component.hasSeasonDistribution).toBeFalse();
+  });
+
   it('starts an explicitly requested background refresh without OpenAI', () => {
     service.refreshFashionOverview.and.returnValue(of({ runId: 'r1', status: 'QUEUED',
       scanned: 0, startedAt: 1, updatedAt: 1, completedAt: null, lastError: null }));
