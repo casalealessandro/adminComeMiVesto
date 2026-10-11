@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { GridLoadRequest } from '../../../../core/public-api';
+import { AuthService } from '../../../../services/auth.service';
+import { PopUpService } from '../../../../core/popup/popup.service';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
@@ -75,6 +77,8 @@ describe('Affiliate products', () => {
     const filterable = columns.filter((column) => column.allowFiltering === true);
 
     expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
+    expect(buildAffiliateProductColumns([program], ['Clothing'], true)[0].data.filter((column) => column.type === 'campoButton')
+      .map((column) => column.button?.name)).toEqual(['detail', 'edit']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
     expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'visibleInAppFilter']);
     expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
@@ -187,6 +191,8 @@ describe('Affiliate products', () => {
         providers: [
           provideRouter([]),
           { provide: AffiliateCatalogService, useValue: service },
+          { provide: AuthService, useValue: { isAdmin: () => true } },
+          { provide: PopUpService, useValue: { setNewPopUp: () => {}, getOutputComponent: () => Promise.resolve({ name: 'cancelled' }), destroyCurrentOpenPopUpByGuid: () => {} } },
         ],
       }).compileComponents();
 

@@ -28,7 +28,9 @@ export interface AffiliateProductCursorRequest extends AffiliateCursorRequest {
 export type AffiliateProductUpdateInput = Partial<Pick<
   CatalogProduct,
   'enabledForApp' | 'category' | 'subcategory' | 'genderTargets' | 'normalizedColor'
->>;
+>> & {
+  fashionProfile?: Partial<Pick<NonNullable<CatalogProduct['fashionProfile']>, 'seasons' | 'styleAffinities' | 'fit' | 'visualWeight'>>;
+};
 
 export interface AffiliateCursorPage<T> {
   data: T[];
