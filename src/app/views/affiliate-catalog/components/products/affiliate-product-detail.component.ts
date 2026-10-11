@@ -43,6 +43,10 @@ export interface AffiliateProductCurationFormData {
   subcategory: string;
   normalizedColor: string;
   genderTargets: CatalogGenderTarget[];
+  fashionSeasons: string[];
+  fashionStyleAffinities: string[];
+  fashionFit: string;
+  fashionVisualWeight: string;
 }
 
 export interface AffiliateProductCurationFormEvent {
@@ -73,6 +77,10 @@ export function buildAffiliateProductCurationFormData(product: CatalogProduct): 
     subcategory: product.subcategory ?? '',
     normalizedColor: product.normalizedColor ?? '',
     genderTargets: normalizeCatalogGenderTargets(product.genderTargets),
+    fashionSeasons: product.fashionProfile?.seasons ?? [],
+    fashionStyleAffinities: product.fashionProfile?.styleAffinities ?? [],
+    fashionFit: product.fashionProfile?.fit ?? 'UNKNOWN',
+    fashionVisualWeight: product.fashionProfile?.visualWeight ?? 'UNKNOWN',
   };
 }
 
@@ -95,6 +103,34 @@ export function buildAffiliateProductCurationUpdate(
   if (subcategory !== (product.subcategory ?? '')) input.subcategory = subcategory;
   if (normalizedColor !== (product.normalizedColor ?? '')) input.normalizedColor = normalizedColor;
   if (!sameValues(genderTargets, currentGenderTargets)) input.genderTargets = genderTargets;
+
+  // Fields are configured in the persisted DynamicForm JSON. Older forms may omit them.
+  const profile = product.fashionProfile;
+  const fashionPatch: NonNullable<AffiliateProductUpdateInput['fashionProfile']> = {};
+  const arrays: Array<[string, 'seasons' | 'styleAffinities']> = [
+    ['fashionSeasons', 'seasons'],
+    ['fashionStyleAffinities', 'styleAffinities'],
+  ];
+  for (const [formField, profileField] of arrays) {
+    if (!Object.prototype.hasOwnProperty.call(formData, formField)) continue;
+    const values = formData[formField];
+    if (!Array.isArray(values)) continue;
+    const current = profile?.[profileField] ?? [];
+    if (!sameValues(values, current)) fashionPatch[profileField] = values;
+  }
+  const singles: Array<[string, 'fit' | 'visualWeight']> = [
+    ['fashionFit', 'fit'],
+    ['fashionVisualWeight', 'visualWeight'],
+  ];
+  for (const [formField, profileField] of singles) {
+    if (!Object.prototype.hasOwnProperty.call(formData, formField)) continue;
+    const nextValue = formData[formField];
+    if (typeof nextValue !== 'string' || !nextValue) continue;
+    if (nextValue !== (profile?.[profileField] ?? 'UNKNOWN')) {
+      fashionPatch[profileField] = nextValue;
+    }
+  }
+  if (Object.keys(fashionPatch).length) input.fashionProfile = fashionPatch;
 
   return input;
 }
