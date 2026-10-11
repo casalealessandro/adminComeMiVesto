@@ -115,6 +115,7 @@ describe('Affiliate product detail', () => {
       subcategory: 'Shirts',
       normalizedColor: 'BLUE',
       genderTargets: ['D'],
+      seasons: [],
     });
     expect(component.programName()).toBe(program.name);
     expect(component.sourceFeedName(feed.id)).toBe(feed.name);
