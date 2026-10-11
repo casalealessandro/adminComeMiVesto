@@ -2,26 +2,105 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { DataGridComponent } from '../../../../core/data-grid/data-grid.component';
+import { ColData, Colonne } from '../../../../core/data-grid/models/data-grid.models';
+import { DynamicFormComponent } from '../../../../core/forms/dynamic-form/dynamic-form.component';
+import { FORM_DEFINITION_REPOSITORY } from '../../../../core/forms/contracts/form-definition-repository';
+import { confirm } from '../../../../core/dialogs/ui-dialogs';
 import { AuthService } from '../../../../services/auth.service';
 import { AffiliateCatalogService, AffiliateMappingRule, AffiliateMappingRuleType } from '../../services/affiliate-catalog.service';
+import { AffiliateMappingRuleFormRepository, mappingRuleFormId } from './affiliate-mapping-rule-form.repository';
 
-const RULE_TYPES: AffiliateMappingRuleType[] =
-  ['CATEGORY', 'COLOR', 'GENDER', 'SEASON'];
-const FASHION_SEASONS = ['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'];
-const splitAliases = (value: string): string[] =>
-  [...new Set(value.split(/\r?\n|,/g).map(x => x.trim()).filter(Boolean))];
+const TYPES: AffiliateMappingRuleType[] = ['CATEGORY', 'COLOR', 'GENDER', 'SEASON'];
+const values = (input: unknown): string[] => Array.isArray(input) ?
+  input.filter((v): v is string => typeof v === 'string') : [];
+const lines = (input: unknown): string[] =>
+  [...new Set(String(input ?? '').split(/\r?\n|,/g).map(v => v.trim()).filter(Boolean))];
+
+export interface MappingRuleGridRow extends AffiliateMappingRule {
+  aliasesLabel: string;
+  enabledLabel: string;
+}
+
+const gridColumn = (dataField: string, colCaption: string, colWidth: number, type: ColData['type'] = 'campo'): ColData =>
+  ({ dataField, colCaption, colWidth, type, colVisible: true, allowEditing: false, edit: false });
+
+export function buildMappingRuleColumns(isAdmin: boolean): Colonne[] {
+  const cols: ColData[] = [
+    gridColumn('label', 'Valore', 210),
+    gridColumn('aliasesLabel', 'Termini riconosciuti', 400),
+    gridColumn('enabledLabel', 'Attiva', 80),
+  ];
+  if (isAdmin) cols.push(
+    { ...gridColumn('', 'Modifica', 90, 'campoButton'),
+      button: { text: '', name: 'edit', event: 'edit', icon: 'mdi mdi-pencil-outline', hint: 'Modifica regola' } },
+    { ...gridColumn('', 'Disattiva', 95, 'campoButton'),
+      button: { text: '', name: 'disable', event: 'disable', icon: 'mdi mdi-cancel', hint: 'Disattiva regola' } },
+  );
+  return [{ itemType: 'group', groupDataField: '', data: cols }];
+}
+
+export function mappingRuleFormData(rule: AffiliateMappingRule): Record<string, unknown> {
+  return {
+    id: rule.id, label: rule.label, aliases: rule.aliases.join('\n'),
+    category: rule.data['category'] ?? '', subcategory: rule.data['subcategory'] ?? '',
+    colorId: rule.data['colorId'] ?? '',
+    genders: values(rule.data['genders']).join(','),
+    genderTargets: values(rule.data['genderTargets']).join(','),
+    seasons: values(rule.data['seasons']).join(', '),
+    priority: rule.data['priority'] ?? 100,
+    requireAll: JSON.stringify(rule.data['requireAll'] ?? []),
+    exclude: values(rule.data['exclude']).join('\n'),
+    note: rule.note ?? '', enabled: rule.enabled,
+  };
+}
+
+export function mappingRuleFromForm(
+  base: AffiliateMappingRule,
+  form: Record<string, unknown>,
+  isEditing: boolean,
+): AffiliateMappingRule {
+  const id = isEditing ? base.id : String(form['id'] ?? '').trim();
+  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(id)) throw new Error('ID non valido (lettere, numeri, - o _).');
+  const aliases = lines(form['aliases']);
+  const enabled = form['enabled'] === true;
+  const data: Record<string, unknown> = { ...base.data };
+  if (base.type === 'CATEGORY') {
+    data['category'] = String(form['category'] ?? '').trim();
+    data['subcategory'] = String(form['subcategory'] ?? '').trim();
+    data['genders'] = lines(form['genders']);
+  } else if (base.type === 'COLOR') {
+    data['colorId'] = String(form['colorId'] ?? '').trim();
+  } else if (base.type === 'GENDER') {
+    data['genderTargets'] = lines(form['genderTargets']);
+  } else if (base.type === 'SEASON') {
+    data['category'] = String(form['category'] ?? '').trim();
+    data['seasons'] = lines(form['seasons']).map(s => s.toUpperCase());
+    data['priority'] = Number(form['priority']);
+    const parsed = JSON.parse(String(form['requireAll'] || '[]')) as unknown;
+    if (!Array.isArray(parsed) || !parsed.every(row => Array.isArray(row) && row.every(term => typeof term === 'string'))) {
+      throw new Error('Le condizioni requireAll devono essere un array JSON di liste di termini.');
+    }
+    data['requireAll'] = parsed;
+    data['exclude'] = lines(form['exclude']);
+  }
+  return {
+    ...base, id, label: String(form['label'] ?? '').trim(), aliases, enabled, data,
+    note: String(form['note'] ?? '').trim(),
+  };
+}
 
 @Component({
   selector: 'app-affiliate-mapping-rules',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DataGridComponent, DynamicFormComponent],
+  providers: [{ provide: FORM_DEFINITION_REPOSITORY, useClass: AffiliateMappingRuleFormRepository }],
   templateUrl: './affiliate-mapping-rules.component.html',
 })
 export class AffiliateMappingRulesComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly api = inject(AffiliateCatalogService);
-  readonly types = RULE_TYPES;
-  readonly seasons = FASHION_SEASONS;
+  readonly types = TYPES;
   all: AffiliateMappingRule[] = [];
   type: AffiliateMappingRuleType = 'CATEGORY';
   query = '';
@@ -31,101 +110,82 @@ export class AffiliateMappingRulesComponent implements OnInit {
   notice = '';
   editing: AffiliateMappingRule | null = null;
   editingExisting = false;
-  aliasesText = '';
-  seasonsText = '';
+  formData: Record<string, unknown> = {};
+  columns: Colonne[] = [];
 
-  get filtered(): AffiliateMappingRule[] {
+  ngOnInit(): void {
+    this.columns = buildMappingRuleColumns(this.auth.isAdmin());
+    this.refresh();
+  }
+  get filtered(): MappingRuleGridRow[] {
     const q = this.query.trim().toLocaleLowerCase('it');
     return this.all.filter(r => r.type === this.type &&
       (!q || [r.id, r.label, ...r.aliases].some(v => v.toLocaleLowerCase('it').includes(q))))
-      .slice(0, 150);
+      .map(rule => ({ ...rule, aliasesLabel: rule.aliases.join(', '), enabledLabel: rule.enabled ? 'Sì' : 'No' }));
   }
-  get totalMatches(): number {
-    const q = this.query.trim().toLocaleLowerCase('it');
-    return this.all.filter(r => r.type === this.type &&
-      (!q || [r.id, r.label, ...r.aliases].some(v => v.toLocaleLowerCase('it').includes(q)))).length;
+  get formId(): string {
+    return mappingRuleFormId(this.type, this.editingExisting);
   }
-  ngOnInit(): void { this.refresh(); }
   refresh(): void {
+    if (this.loading) return;
     this.loading = true;
     this.error = '';
     this.api.getMappingRules().pipe(finalize(() => this.loading = false)).subscribe({
-      next: rules => this.all = rules,
-      error: () => this.error = 'Impossibile caricare i dizionari.',
+      next: rules => { this.all = rules; },
+      error: () => { this.error = 'Impossibile caricare i dizionari.'; },
     });
   }
+  onTypeChange(): void { this.cancel(); }
   edit(rule: AffiliateMappingRule): void {
+    if (!this.auth.isAdmin()) return;
+    this.cancel();
     this.error = '';
-    this.notice = '';
     this.editingExisting = true;
     this.editing = structuredClone(rule);
-    this.aliasesText = rule.aliases.join('\n');
-    this.seasonsText = Array.isArray(rule.data['seasons']) ? (rule.data['seasons'] as string[]).join(', ') : '';
+    this.formData = mappingRuleFormData(rule);
   }
   add(): void {
     if (!this.auth.isAdmin()) return;
+    this.cancel();
+    this.error = '';
     const data: Record<string, unknown> = this.type === 'CATEGORY'
       ? { category: '', subcategory: '', genders: [] }
       : this.type === 'COLOR' ? { colorId: '' }
       : this.type === 'GENDER' ? { genderTargets: ['U'] }
-      : this.type === 'SEASON' ? { category: 'Stagioni dichiarate', seasons: ['SUMMER'], priority: 100, requireAll: [], exclude: [] }
-      : { value: '' };
-    this.edit({
-      id: '', type: this.type, label: '', aliases: [], enabled: true, data, origin: 'CUSTOM',
-    });
+      : { category: 'Stagioni dichiarate', seasons: ['SUMMER'], priority: 100, requireAll: [], exclude: [] };
     this.editingExisting = false;
+    this.editing = { id: '', type: this.type, label: '', aliases: [], enabled: true, data, origin: 'CUSTOM' };
+    this.formData = mappingRuleFormData(this.editing);
   }
-  importExistingRules(): void {
-    if (!this.auth.isAdmin() || this.saving ||
-      !confirm('Importare in Firestore le regole attuali? Quelle già presenti non saranno sovrascritte.')) return;
+  cancel(): void { this.editing = null; this.formData = {}; }
+  handleForm(event: { name: string; formData?: Record<string, unknown> }): void {
+    if (event.name === 'cancelForm') { if (!this.saving) this.cancel(); return; }
+    if (event.name !== 'submitForm' || !event.formData || !this.editing || this.saving || !this.auth.isAdmin()) return;
+    let rule: AffiliateMappingRule;
+    try { rule = mappingRuleFromForm(this.editing, event.formData, this.editingExisting); }
+    catch (error) { this.error = error instanceof Error ? error.message : 'Dati non validi.'; return; }
     this.saving = true;
     this.error = '';
-    this.api.seedMappingRules().pipe(finalize(() => this.saving = false)).subscribe({
-      next: result => {
-        this.notice = `Importazione completata: ${result.created} regole create, ${result.existing} già presenti.`;
-        this.refresh();
-      },
-      error: () => this.error = 'Importazione dei dizionari non riuscita.',
-    });
-  }
-  cancel(): void { this.editing = null; }
-  save(): void {
-    if (!this.auth.isAdmin() || !this.editing || this.saving) return;
-    const rule = { ...this.editing };
-    if (!/^[a-zA-Z0-9_-]{1,100}$/.test(rule.id)) {
-      this.error = 'Inserisci un ID valido (lettere, numeri, trattino o underscore).'; return;
-    }
-    rule.aliases = splitAliases(this.aliasesText);
-    if (rule.type === 'SEASON') {
-      rule.data = { ...rule.data, seasons: splitAliases(this.seasonsText.toUpperCase()) };
-    }
-    this.error = '';
-    this.saving = true;
     this.api.saveMappingRule(rule).pipe(finalize(() => this.saving = false)).subscribe({
-      next: () => { this.notice = 'Regola salvata.'; this.editing = null; this.refresh(); },
-      error: () => this.error = 'Salvataggio non riuscito: verifica le associazioni e riprova.',
+      next: () => { this.notice = 'Regola salvata.'; this.cancel(); this.refresh(); },
+      error: () => { this.error = 'Salvataggio non riuscito. Controlla i campi.'; },
     });
+  }
+  gridAction(event: { name?: string; rowData?: MappingRuleGridRow }): void {
+    if (!this.auth.isAdmin() || !event.rowData) return;
+    if (event.name === 'edit') this.edit(event.rowData);
+    if (event.name === 'disable' && event.rowData.enabled) this.disable(event.rowData);
   }
   disable(rule: AffiliateMappingRule): void {
-    if (!this.auth.isAdmin() || this.saving || !confirm('Disattivare questa regola?')) return;
-    this.saving = true;
-    this.api.disableMappingRule(rule.id).pipe(finalize(() => this.saving = false)).subscribe({
-      next: () => { this.notice = 'Regola disattivata.'; this.refresh(); },
-      error: () => this.error = 'Impossibile disattivare la regola.',
+    if (!this.auth.isAdmin() || this.saving) return;
+    confirm('Disattivare la regola? Potrai riattivarla modificandola.', 'Disattiva regola', accepted => {
+      if (!accepted) return;
+      this.saving = true;
+      this.error = '';
+      this.api.disableMappingRule(rule.id).pipe(finalize(() => this.saving = false)).subscribe({
+        next: () => { this.notice = 'Regola disattivata.'; this.cancel(); this.refresh(); },
+        error: () => { this.error = 'Impossibile disattivare la regola.'; },
+      });
     });
-  }
-  genderTargetsValue(): string {
-    const values = this.editing?.data['genderTargets'];
-    return Array.isArray(values) ? values.filter((x): x is string => typeof x === 'string').join(',') : 'U';
-  }
-  setGenderTargets(value: string): void {
-    if (this.editing) this.editing.data = { ...this.editing.data, genderTargets: value.split(',') };
-  }
-  field(field: string): string {
-    const value = this.editing?.data[field];
-    return typeof value === 'string' ? value : '';
-  }
-  updateField(field: string, value: string): void {
-    if (this.editing) this.editing.data = { ...this.editing.data, [field]: value };
   }
 }
