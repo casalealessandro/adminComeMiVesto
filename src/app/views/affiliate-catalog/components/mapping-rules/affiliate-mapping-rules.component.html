@@ -4,7 +4,11 @@
       <h2 class="h4 mb-1">Dizionari di classificazione</h2>
       <p class="text-muted mb-0">Gestisci i termini riconosciuti nei feed affiliati.</p>
     </div>
-    <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading">Aggiorna</button>
+    <div class="d-flex flex-wrap gap-2">
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-outline-primary"
+        (click)="importExistingRules()" [disabled]="loading || saving">Importa dizionari esistenti</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading">Aggiorna</button>
+    </div>
   </header>
   <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
   <div *ngIf="notice" class="alert alert-success" role="status">{{ notice }}</div>
