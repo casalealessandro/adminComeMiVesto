@@ -1,5 +1,5 @@
 import { buildMappingRuleFields } from './affiliate-mapping-rule-form.repository';
-import { buildMappingRuleColumns, mappingRuleFormData, mappingRuleFromForm } from './affiliate-mapping-rules.component';
+import { AffiliateMappingRulesComponent, buildMappingRuleColumns, mappingRuleFormData, mappingRuleFromForm } from './affiliate-mapping-rules.component';
 import { AffiliateMappingRule } from '../../services/affiliate-catalog.service';
 
 describe('Dizionari affiliati con DynamicForm e DataGrid', () => {
@@ -10,6 +10,12 @@ describe('Dizionari affiliati con DynamicForm e DataGrid', () => {
       requireAll: [['abito', 'lino']], exclude: ['invernale'],
     },
   };
+
+  it('non usa un getter che ricrea le righe DataGrid ad ogni change detection', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(AffiliateMappingRulesComponent.prototype, 'filtered');
+    expect(descriptor?.get).toBeUndefined();
+    expect(typeof AffiliateMappingRulesComponent.prototype.applyFilter).toBe('function');
+  });
 
   it('espone colonne DataGrid con modifica e disattivazione solo per admin', () => {
     expect(buildMappingRuleColumns(true)[0].data.some(col => col.button?.name === 'edit')).toBeTrue();
