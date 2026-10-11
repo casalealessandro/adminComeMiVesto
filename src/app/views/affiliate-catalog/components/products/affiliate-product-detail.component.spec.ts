@@ -179,6 +179,24 @@ describe('Affiliate product detail', () => {
     });
   });
 
+  it('saves curated seasons only when the persisted form includes them', () => {
+    const base = {
+      category: product.category,
+      subcategory: product.subcategory,
+      normalizedColor: product.normalizedColor,
+      genderTargets: product.genderTargets,
+    };
+    expect(buildAffiliateProductCurationUpdate(product, true, base)).toEqual({});
+    expect(buildAffiliateProductCurationUpdate(product, true, {
+      ...base,
+      seasons: ['SPRING', 'AUTUMN'],
+    })).toEqual({ seasons: ['SPRING', 'AUTUMN'] });
+    expect(buildAffiliateProductCurationUpdate({
+      ...product,
+      seasons: ['SPRING', 'AUTUMN'],
+    }, true, { ...base, seasons: [] })).toEqual({ seasons: [] });
+  });
+
   it('can persist the visibility switch together with an unchanged DynamicForm', () => {
     expect(buildAffiliateProductCurationUpdate(product, false, {
       category: product.category,
