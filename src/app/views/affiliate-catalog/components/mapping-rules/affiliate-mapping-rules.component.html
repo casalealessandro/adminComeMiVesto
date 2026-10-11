@@ -73,6 +73,22 @@
         <label class="form-label" for="rule-seasons">Stagioni (separate da virgola)</label>
         <input id="rule-seasons" class="form-control" name="seasons" [(ngModel)]="seasonsText" placeholder="SPRING, SUMMER">
       </div>
+      <div class="col-md-6" *ngIf="item.type === 'GENDER'">
+        <label class="form-label" for="rule-gender-targets">Genere destinatario</label>
+        <select id="rule-gender-targets" class="form-select" name="genderTargets"
+          [ngModel]="(item.data['genderTargets'] || []).join(',')"
+          (ngModelChange)="item.data['genderTargets'] = $event.split(',')">
+          <option value="U">Uomo</option>
+          <option value="D">Donna</option>
+          <option value="U,D">Unisex</option>
+        </select>
+      </div>
+      <div class="col-md-6" *ngIf="item.type === 'SEASON'">
+        <label class="form-label" for="rule-priority">Priorità stagionale</label>
+        <input id="rule-priority" class="form-control" type="number" min="0" max="1000"
+          name="priority" [ngModel]="item.data['priority']"
+          (ngModelChange)="item.data['priority'] = $event">
+      </div>
       <div class="col-md-6" *ngIf="item.type === 'STYLE' || item.type === 'FIT' || item.type === 'MATERIAL'">
         <label class="form-label" for="rule-value">Valore canonico</label>
         <input id="rule-value" class="form-control" name="value" [ngModel]="field('value')" (ngModelChange)="updateField('value', $event)">
