@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { CatalogAnalytics, CatalogAnalyticsCounts } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { AffiliateCatalogAuditComponent, auditPercentage } from './affiliate-catalog-audit.component';
+import { AffiliateCatalogAuditComponent, auditPercentage, fashionBreakdownItems } from './affiliate-catalog-audit.component';
 
 const counts = (total: number): CatalogAnalyticsCounts => ({
   total, active: total, taxonomyComplete: total, missingCategory: 0,
@@ -57,6 +57,29 @@ describe('AffiliateCatalogAuditComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(AffiliateCatalogAuditComponent);
     component = fixture.componentInstance;
+  });
+
+  it('lists genuine fashion values, including UNKNOWN, without inventing missing labels', () => {
+    expect(fashionBreakdownItems({ CASUAL: 3, SMART_CASUAL: 2, UNKNOWN: 1 }))
+      .toEqual([
+        { key: 'CASUAL', label: 'Casual', count: 3 },
+        { key: 'SMART_CASUAL', label: 'Smart casual', count: 2 },
+        { key: 'UNKNOWN', label: 'Sconosciuto', count: 1 },
+      ]);
+    expect(fashionBreakdownItems(undefined)).toEqual([]);
+    expect(fashionBreakdownItems({ CASUAL: 0 })).toEqual([]);
+  });
+
+  it('distinguishes legacy snapshots from complete metrics and displays missing fields', () => {
+    const summary = { ...counts(7), fashionV2: 4, withStyles: 1,
+      missingSubcategory: 2, invalidSubcategory: 1 };
+    expect(component.hasFashionBreakdown(summary)).toBeFalse();
+    expect(component.unclassifiedSubcategory(summary)).toBe(3);
+    expect(component.missingFashionV2(summary, 'withStyles')).toBe(3);
+    expect(component.hasFashionBreakdown({
+      ...summary, seasonCounts: {}, styleCounts: {}, fitCounts: { UNKNOWN: 4 },
+      visualWeightCounts: { UNKNOWN: 4 },
+    })).toBeTrue();
   });
 
   it('loads a cached snapshot without calling the expensive catalog audit scan', () => {
