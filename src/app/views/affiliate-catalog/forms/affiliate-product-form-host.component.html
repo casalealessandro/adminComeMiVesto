@@ -1,0 +1,23 @@
+<section class="affiliate-product-form" aria-live="polite">
+  <p *ngIf="loading" class="text-muted">Caricamento prodotto…</p>
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && product as item">
+    <p class="mb-2"><strong>{{ item.brand }}</strong> — {{ item.name }}</p>
+    <p class="text-muted small">Modifica la classificazione ComeMiVesto. I dati originali del feed non vengono alterati.</p>
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="affiliate-product-popup-visible"
+        [(ngModel)]="enabledForApp" [disabled]="!item.active || saving">
+      <label class="form-check-label" for="affiliate-product-popup-visible">Mostra questo prodotto in ComeMiVesto</label>
+    </div>
+    <app-dynamic-form
+      [service]="formId"
+      [editData]="buildFormData(item)"
+      [showBottomButtons]="true"
+      [inputBtnLeftName]="'Annulla'"
+      [inputBtnRightName]="'Salva modifiche'"
+      [loading]="saving"
+      (submitFormEvent)="handleForm($event)">
+    </app-dynamic-form>
+  </ng-container>
+</section>
