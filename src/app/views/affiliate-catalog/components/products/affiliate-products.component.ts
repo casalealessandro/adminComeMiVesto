@@ -481,7 +481,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
           ? { affiliateProgramId: this.dataGrid.providerFilterValue('affiliateProgramId') } : {}),
         ...(this.dataGrid?.providerFilterValue('category')
           ? { category: this.dataGrid.providerFilterValue('category') } : {}),
-        ...(this.dataGrid?.providerFilterValue('visibleInApp')
+        ...(this.dataGrid?.providerFilterValue('visibleInAppFilter')
           ? { visibleInApp: this.dataGrid.providerFilterValue('visibleInApp') } : {}),
       };
       this.refresh();
