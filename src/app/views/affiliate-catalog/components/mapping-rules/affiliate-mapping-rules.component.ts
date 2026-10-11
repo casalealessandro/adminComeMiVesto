@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 import { DataGridComponent } from '../../../../core/data-grid/data-grid.component';
 import { ColData, Colonne } from '../../../../core/data-grid/models/data-grid.models';
 import { DynamicFormComponent } from '../../../../core/forms/dynamic-form/dynamic-form.component';
@@ -133,9 +133,9 @@ export class AffiliateMappingRulesComponent implements OnInit {
     if (this.loading) return;
     this.loading = true;
     this.error = '';
-    this.api.getMappingRules().pipe(finalize(() => this.loading = false)).subscribe({
+    this.api.getMappingRules().pipe(timeout({ first: 20000 }), finalize(() => this.loading = false)).subscribe({
       next: rules => { this.all = rules; this.applyFilter(); },
-      error: () => { this.error = 'Impossibile caricare i dizionari.'; },
+      error: () => { this.error = 'Caricamento dizionari non riuscito o scaduto. Riprova con Aggiorna e controlla la risposta HTTP di mapping-rules.'; },
     });
   }
   onTypeChange(): void { this.cancel(); this.applyFilter(); }
