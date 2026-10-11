@@ -43,11 +43,11 @@
   </div>
 
   <form *ngIf="editing as item" class="border rounded p-3 mt-4" (ngSubmit)="save()">
-    <h3 class="h5">{{ item.origin === 'CUSTOM' && !all.includes(item) ? 'Modifica regola' : 'Regola' }}</h3>
+    <h3 class="h5">{{ editingExisting ? 'Modifica regola' : 'Nuova regola' }}</h3>
     <div class="row g-3">
       <div class="col-md-4">
         <label class="form-label" for="rule-id">ID</label>
-        <input id="rule-id" class="form-control" name="id" [(ngModel)]="item.id" [readonly]="!!all.find" required>
+        <input id="rule-id" class="form-control" name="id" [(ngModel)]="item.id" [readonly]="editingExisting" required>
       </div>
       <div class="col-md-8">
         <label class="form-label" for="rule-label">Nome</label>
