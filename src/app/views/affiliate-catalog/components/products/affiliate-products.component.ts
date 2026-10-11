@@ -414,6 +414,10 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     void this.popupService.getOutputComponent(guid).then((result: AffiliateProductFormResult) => {
       this.popupService.destroyCurrentOpenPopUpByGuid(guid);
       if (result?.name !== 'saved') return;
+      this.restoredFilters = {
+        ...(this.dataGrid?.providerFilterValue('affiliateProgramId') ? { affiliateProgramId: this.dataGrid.providerFilterValue('affiliateProgramId') } : {}),
+        ...(this.dataGrid?.providerFilterValue('category') ? { category: this.dataGrid.providerFilterValue('category') } : {}),
+      };
       this.refresh();
       alert('Prodotto aggiornato per ComeMiVesto.', 'Operazione completata');
     });
