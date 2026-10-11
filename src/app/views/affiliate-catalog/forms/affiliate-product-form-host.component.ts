@@ -35,6 +35,7 @@ export class AffiliateProductFormHostComponent implements OnInit {
 
   readonly formId = AFFILIATE_PRODUCT_CURATION_FORM;
   product: CatalogProduct | null = null;
+  formData: ReturnType<typeof buildAffiliateProductCurationFormData> | null = null;
   enabledForApp = false;
   loading = false;
   saving = false;
@@ -51,14 +52,11 @@ export class AffiliateProductFormHostComponent implements OnInit {
       .subscribe({
         next: (product) => {
           this.product = product;
+          this.formData = buildAffiliateProductCurationFormData(product);
           this.enabledForApp = product.active && product.enabledForApp !== false;
         },
         error: () => this.error = 'Impossibile caricare il prodotto da modificare.',
       });
-  }
-
-  buildFormData(product: CatalogProduct) {
-    return buildAffiliateProductCurationFormData(product);
   }
 
   handleForm(event: AffiliateProductCurationFormEvent): void {
