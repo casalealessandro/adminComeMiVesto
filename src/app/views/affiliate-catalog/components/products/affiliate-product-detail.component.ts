@@ -25,6 +25,7 @@ export interface AffiliateProductCurationFormData {
   subcategory: string;
   normalizedColor: string;
   genderTargets: CatalogGenderTarget[];
+  seasons?: Array<'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER'>;
 }
 
 export interface AffiliateProductCurationFormEvent {
@@ -55,6 +56,7 @@ export function buildAffiliateProductCurationFormData(product: CatalogProduct): 
     subcategory: product.subcategory ?? '',
     normalizedColor: product.normalizedColor ?? '',
     genderTargets: normalizeCatalogGenderTargets(product.genderTargets),
+    seasons: product.seasons ?? [],
   };
 }
 
@@ -77,6 +79,16 @@ export function buildAffiliateProductCurationUpdate(
   if (subcategory !== (product.subcategory ?? '')) input.subcategory = subcategory;
   if (normalizedColor !== (product.normalizedColor ?? '')) input.normalizedColor = normalizedColor;
   if (!sameValues(genderTargets, currentGenderTargets)) input.genderTargets = genderTargets;
+  // Legacy stored forms may not yet have seasons; only update when the field is present.
+  if (Object.prototype.hasOwnProperty.call(formData, 'seasons')) {
+    const seasons = formData['seasons'];
+    if (Array.isArray(seasons)) {
+      const validSeasons = ['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'];
+      const normalized = [...new Set(seasons.filter((item): item is 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER' =>
+        typeof item === 'string' && validSeasons.includes(item)))];
+      if (!sameValues(normalized, product.seasons ?? [])) input.seasons = normalized;
+    }
+  }
 
   return input;
 }
