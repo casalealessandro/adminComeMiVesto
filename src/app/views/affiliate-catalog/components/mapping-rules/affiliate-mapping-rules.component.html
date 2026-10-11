@@ -19,7 +19,7 @@
     </div>
     <div class="col-12 col-md-8">
       <label for="rule-search" class="form-label">Cerca</label>
-      <input id="rule-search" class="form-control" [(ngModel)]="query" placeholder="Valore, termine o ID">
+      <input id="rule-search" class="form-control" [(ngModel)]="query" (ngModelChange)="applyFilter()" placeholder="Valore, termine o ID">
     </div>
   </div>
 
