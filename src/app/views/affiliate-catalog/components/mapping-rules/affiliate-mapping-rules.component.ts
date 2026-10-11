@@ -117,9 +117,12 @@ export class AffiliateMappingRulesComponent implements OnInit {
     this.columns = buildMappingRuleColumns(this.auth.isAdmin());
     this.refresh();
   }
-  get filtered(): MappingRuleGridRow[] {
+  /** Stable reference for the DataGrid signal input: never allocate on each change-detection cycle. */
+  filtered: MappingRuleGridRow[] = [];
+
+  applyFilter(): void {
     const q = this.query.trim().toLocaleLowerCase('it');
-    return this.all.filter(r => r.type === this.type &&
+    this.filtered = this.all.filter(r => r.type === this.type &&
       (!q || [r.id, r.label, ...r.aliases].some(v => v.toLocaleLowerCase('it').includes(q))))
       .map(rule => ({ ...rule, aliasesLabel: rule.aliases.join(', '), enabledLabel: rule.enabled ? 'Sì' : 'No' }));
   }
@@ -131,11 +134,11 @@ export class AffiliateMappingRulesComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.api.getMappingRules().pipe(finalize(() => this.loading = false)).subscribe({
-      next: rules => { this.all = rules; },
+      next: rules => { this.all = rules; this.applyFilter(); },
       error: () => { this.error = 'Impossibile caricare i dizionari.'; },
     });
   }
-  onTypeChange(): void { this.cancel(); }
+  onTypeChange(): void { this.cancel(); this.applyFilter(); }
   edit(rule: AffiliateMappingRule): void {
     if (!this.auth.isAdmin()) return;
     this.cancel();
