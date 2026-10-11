@@ -23,7 +23,7 @@ export interface MappingRuleGridRow extends AffiliateMappingRule {
 }
 
 const gridColumn = (dataField: string, colCaption: string, colWidth: number, type: ColData['type'] = 'campo'): ColData =>
-  ({ dataField, colCaption, colWidth, type, colVisible: true, allowEditing: false, edit: false });
+  ({ dataField, colCaption, colWidth, type, colVisible: true, allowEditing: false, edit: false, groupDataField: undefined });
 
 export function buildMappingRuleColumns(isAdmin: boolean): Colonne[] {
   const cols: ColData[] = [
