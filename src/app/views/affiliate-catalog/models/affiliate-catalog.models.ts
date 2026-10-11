@@ -194,6 +194,12 @@ export interface CatalogAnalyticsCounts {
   /** Added by newer snapshots; optional for historical analysis reports. */
   seasonCounts?: Partial<Record<CatalogSeason, number>>;
   multiSeason?: number;
+  /** Added by the richer breakdown; older snapshots do not have these fields. */
+  styleCounts?: Record<string, number>;
+  fitCounts?: Record<string, number>;
+  visualWeightCounts?: Record<string, number>;
+  withFeedEvidence?: number;
+  withRuleEvidence?: number;
   withStyles: number;
   withFit: number;
   withVisualWeight: number;
