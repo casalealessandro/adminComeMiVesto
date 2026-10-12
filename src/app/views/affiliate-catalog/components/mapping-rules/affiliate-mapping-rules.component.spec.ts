@@ -1,5 +1,6 @@
 import { buildMappingRuleFields } from './affiliate-mapping-rule-form.repository';
 import { AffiliateMappingRulesComponent, buildMappingRuleColumns, mappingRuleFormData, mappingRuleFromForm } from './affiliate-mapping-rules.component';
+import { comeMiVestoPopupComponents } from '../../../../app-popup-components';
 import { AffiliateMappingRule } from '../../services/affiliate-catalog.service';
 
 describe('Dizionari affiliati con DynamicForm e DataGrid', () => {
@@ -15,6 +16,10 @@ describe('Dizionari affiliati con DynamicForm e DataGrid', () => {
     const descriptor = Object.getOwnPropertyDescriptor(AffiliateMappingRulesComponent.prototype, 'filtered');
     expect(descriptor?.get).toBeUndefined();
     expect(typeof AffiliateMappingRulesComponent.prototype.applyFilter).toBe('function');
+  });
+
+  it('registra il DynamicForm nel popup core', () => {
+    expect(comeMiVestoPopupComponents.some(x => x.name === 'AffiliateMappingRuleFormHostComponent')).toBeTrue();
   });
 
   it('espone colonne DataGrid con modifica e disattivazione solo per admin', () => {
