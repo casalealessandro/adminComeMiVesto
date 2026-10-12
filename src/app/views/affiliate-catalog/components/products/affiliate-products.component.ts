@@ -469,7 +469,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     const guid = `affiliate-product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     this.popupService.setNewPopUp(
       guid, 'AffiliateProductFormHostComponent', { productId: product.id },
-      760, undefined, undefined, false, true,
+      920, undefined, undefined, false, true,
       'Modifica prodotto', 'center', false,
     );
     void this.popupService.getOutputComponent(guid).then((result: AffiliateProductFormResult) => {
