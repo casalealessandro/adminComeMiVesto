@@ -33,6 +33,39 @@ describe('Dizionari affiliati con DynamicForm e DataGrid', () => {
     expect(buildMappingRuleFields('SEASON', true).some(field => field.name === 'requireAll')).toBeTrue();
   });
 
+  it('usa la tassonomia reale per categoria e sottocategoria in cascata in creazione e modifica', () => {
+    for (const editing of [false, true]) {
+      const fields = buildMappingRuleFields('CATEGORY', editing);
+      const category = fields.find(field => field.name === 'category');
+      const subcategory = fields.find(field => field.name === 'subcategory');
+      expect(category?.type).toBe('selectBox');
+      expect(category?.required).toBeTrue();
+      expect(category?.selectOptions).toEqual(jasmine.objectContaining({
+        remote: true, api: 'outfitCategories', parent: null,
+        valueExp: 'id', displayExp: 'categoryName',
+      }));
+      expect(subcategory?.type).toBe('selectBox');
+      expect(subcategory?.selectOptions).toEqual(jasmine.objectContaining({
+        remote: true, api: 'outfitCategories', parent: 'category',
+        valueExp: 'id', displayExp: 'categoryName',
+      }));
+    }
+    expect(buildMappingRuleFields('SEASON', true).some(field => field.name === 'subcategory')).toBeFalse();
+  });
+
+  it('mantiene gli ID di categoria e sottocategoria in modifica', () => {
+    const current: AffiliateMappingRule = {
+      id: 'category-123', type: 'CATEGORY', label: 'T-shirt', aliases: ['maglietta'],
+      enabled: true, data: { category: 'M_Maglieria', subcategory: 'tshirt', genders: [] },
+    };
+    const form = mappingRuleFormData(current);
+    expect(form['category']).toBe('M_Maglieria');
+    expect(form['subcategory']).toBe('tshirt');
+    const updated = mappingRuleFromForm(current, form, true);
+    expect(updated.data['category']).toBe('M_Maglieria');
+    expect(updated.data['subcategory']).toBe('tshirt');
+  });
+
   it('preserva le condizioni stagionali e le esclusioni durante la modifica', () => {
     const form = mappingRuleFormData(season);
     const mapped = mappingRuleFromForm(season, { ...form, aliases: 'lino\nlinen' }, true);
