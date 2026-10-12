@@ -48,20 +48,5 @@
     (emittendButtonCellClick)="gridAction($event)">
   </app-data-grid>
 
-  <section *ngIf="editing as current" class="border rounded p-3 mt-4" aria-labelledby="mapping-rule-form-title">
-    <h3 id="mapping-rule-form-title" class="h5 mb-3">
-      {{ editingExisting ? 'Modifica regola' : 'Nuova regola' }} · {{ current.type }}
-    </h3>
-    <p *ngIf="editingExisting" class="text-muted small">ID: {{ current.id }}</p>
-    <app-dynamic-form
-      [service]="formId"
-      [editData]="formData"
-      [loading]="saving"
-      [showBottomButtons]="true"
-      [inputBtnLeftName]="'Annulla'"
-      [inputBtnRightName]="'Salva regola'"
-      (submitFormEvent)="handleForm($event)">
-    </app-dynamic-form>
-  </section>
   <p class="text-muted small mt-3">Le modifiche vengono applicate alle successive sincronizzazioni. I prodotti già importati non cambiano automaticamente.</p>
 </section>
