@@ -26,6 +26,7 @@ export interface AffiliateProductFormResult {
   standalone: true,
   imports: [CommonModule, FormsModule, DynamicFormComponent],
   templateUrl: './affiliate-product-form-host.component.html',
+  styleUrl: './affiliate-product-form-host.component.scss',
 })
 export class AffiliateProductFormHostComponent implements OnInit {
   private readonly catalog = inject(AffiliateCatalogService);
@@ -57,6 +58,10 @@ export class AffiliateProductFormHostComponent implements OnInit {
         },
         error: () => this.error = 'Impossibile caricare il prodotto da modificare.',
       });
+  }
+
+  productImage(product: CatalogProduct): string | null {
+    return product.images?.find((image) => typeof image === 'string' && image.trim().length > 0) || null;
   }
 
   handleForm(event: AffiliateProductCurationFormEvent): void {
