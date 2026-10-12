@@ -4,12 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { finalize, timeout } from 'rxjs';
 import { DataGridComponent } from '../../../../core/data-grid/data-grid.component';
 import { ColData, Colonne } from '../../../../core/data-grid/models/data-grid.models';
-import { DynamicFormComponent } from '../../../../core/forms/dynamic-form/dynamic-form.component';
-import { FORM_DEFINITION_REPOSITORY } from '../../../../core/forms/contracts/form-definition-repository';
 import { confirm } from '../../../../core/dialogs/ui-dialogs';
 import { AuthService } from '../../../../services/auth.service';
 import { AffiliateCatalogService, AffiliateMappingRule, AffiliateMappingRuleType } from '../../services/affiliate-catalog.service';
-import { AffiliateMappingRuleFormRepository, mappingRuleFormId } from './affiliate-mapping-rule-form.repository';
+import { PopUpService } from '../../../../core/popup/popup.service';
+import type { AffiliateMappingRuleFormContext, AffiliateMappingRuleFormResult } from './affiliate-mapping-rule-form-host.component';
 
 const TYPES: AffiliateMappingRuleType[] = ['CATEGORY', 'COLOR', 'GENDER', 'SEASON'];
 const values = (input: unknown): string[] => Array.isArray(input) ?
@@ -93,13 +92,13 @@ export function mappingRuleFromForm(
 @Component({
   selector: 'app-affiliate-mapping-rules',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent, DynamicFormComponent],
-  providers: [{ provide: FORM_DEFINITION_REPOSITORY, useClass: AffiliateMappingRuleFormRepository }],
+  imports: [CommonModule, FormsModule, DataGridComponent],
   templateUrl: './affiliate-mapping-rules.component.html',
 })
 export class AffiliateMappingRulesComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly api = inject(AffiliateCatalogService);
+  private readonly popupService = inject(PopUpService);
   readonly types = TYPES;
   all: AffiliateMappingRule[] = [];
   type: AffiliateMappingRuleType = 'CATEGORY';
@@ -108,9 +107,6 @@ export class AffiliateMappingRulesComponent implements OnInit {
   saving = false;
   error = '';
   notice = '';
-  editing: AffiliateMappingRule | null = null;
-  editingExisting = false;
-  formData: Record<string, unknown> = {};
   columns: Colonne[] = [];
 
   ngOnInit(): void {
@@ -126,9 +122,6 @@ export class AffiliateMappingRulesComponent implements OnInit {
       (!q || [r.id, r.label, ...r.aliases].some(v => v.toLocaleLowerCase('it').includes(q))))
       .map(rule => ({ ...rule, aliasesLabel: rule.aliases.join(', '), enabledLabel: rule.enabled ? 'Sì' : 'No' }));
   }
-  get formId(): string {
-    return mappingRuleFormId(this.type, this.editingExisting);
-  }
   refresh(): void {
     if (this.loading) return;
     this.loading = true;
@@ -138,42 +131,43 @@ export class AffiliateMappingRulesComponent implements OnInit {
       error: () => { this.error = 'Caricamento dizionari non riuscito o scaduto. Riprova con Aggiorna e controlla la risposta HTTP di mapping-rules.'; },
     });
   }
-  onTypeChange(): void { this.cancel(); this.applyFilter(); }
+  onTypeChange(): void { this.applyFilter(); }
+
   edit(rule: AffiliateMappingRule): void {
     if (!this.auth.isAdmin()) return;
-    this.cancel();
-    this.error = '';
-    this.editingExisting = true;
-    this.editing = structuredClone(rule);
-    this.formData = mappingRuleFormData(rule);
+    this.openRulePopup({ mode: 'edit', rule: structuredClone(rule) });
   }
+
   add(): void {
     if (!this.auth.isAdmin()) return;
-    this.cancel();
-    this.error = '';
     const data: Record<string, unknown> = this.type === 'CATEGORY'
       ? { category: '', subcategory: '', genders: [] }
       : this.type === 'COLOR' ? { colorId: '' }
       : this.type === 'GENDER' ? { genderTargets: ['U'] }
       : { category: 'Stagioni dichiarate', seasons: ['SUMMER'], priority: 100, requireAll: [], exclude: [] };
-    this.editingExisting = false;
-    this.editing = { id: '', type: this.type, label: '', aliases: [], enabled: true, data, origin: 'CUSTOM' };
-    this.formData = mappingRuleFormData(this.editing);
-  }
-  cancel(): void { this.editing = null; this.formData = {}; }
-  handleForm(event: { name: string; formData?: Record<string, unknown> }): void {
-    if (event.name === 'cancelForm') { if (!this.saving) this.cancel(); return; }
-    if (event.name !== 'submitForm' || !event.formData || !this.editing || this.saving || !this.auth.isAdmin()) return;
-    let rule: AffiliateMappingRule;
-    try { rule = mappingRuleFromForm(this.editing, event.formData, this.editingExisting); }
-    catch (error) { this.error = error instanceof Error ? error.message : 'Dati non validi.'; return; }
-    this.saving = true;
-    this.error = '';
-    this.api.saveMappingRule(rule).pipe(finalize(() => this.saving = false)).subscribe({
-      next: () => { this.notice = 'Regola salvata.'; this.cancel(); this.refresh(); },
-      error: () => { this.error = 'Salvataggio non riuscito. Controlla i campi.'; },
+    this.openRulePopup({
+      mode: 'create',
+      rule: { id: '', type: this.type, label: '', aliases: [], enabled: true, data, origin: 'CUSTOM' },
     });
   }
+
+  private openRulePopup(context: AffiliateMappingRuleFormContext): void {
+    this.error = '';
+    const guid = `affiliate-mapping-rule-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const title = context.mode === 'edit' ? 'Modifica regola' : 'Nuova regola';
+    this.popupService.setNewPopUp(
+      guid, 'AffiliateMappingRuleFormHostComponent', context, 760,
+      undefined, undefined, false, true, title, 'center', false,
+    );
+    void this.popupService.getOutputComponent(guid).then((result: AffiliateMappingRuleFormResult) => {
+      this.popupService.destroyCurrentOpenPopUpByGuid(guid);
+      if (result?.name === 'saved') {
+        this.notice = context.mode === 'edit' ? 'Regola aggiornata.' : 'Regola creata.';
+        this.refresh();
+      }
+    });
+  }
+
   gridAction(event: { name?: string; rowData?: MappingRuleGridRow }): void {
     if (!this.auth.isAdmin() || !event.rowData) return;
     if (event.name === 'edit') this.edit(event.rowData);
@@ -186,7 +180,7 @@ export class AffiliateMappingRulesComponent implements OnInit {
       this.saving = true;
       this.error = '';
       this.api.disableMappingRule(rule.id).pipe(finalize(() => this.saving = false)).subscribe({
-        next: () => { this.notice = 'Regola disattivata.'; this.cancel(); this.refresh(); },
+        next: () => { this.notice = 'Regola disattivata.'; this.refresh(); },
         error: () => { this.error = 'Impossibile disattivare la regola.'; },
       });
     });
