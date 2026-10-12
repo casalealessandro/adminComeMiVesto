@@ -37,8 +37,10 @@ export class AffiliateMappingRuleFormHostComponent {
     return mappingRuleFormId(this.itemData.rule.type, this.itemData.mode === 'edit');
   }
 
-  get formData(): Record<string, unknown> {
-    return mappingRuleFormData(this.itemData.rule);
+  formData: Record<string, unknown> = {};
+
+  ngOnInit(): void {
+    this.formData = mappingRuleFormData(this.itemData.rule);
   }
 
   handleForm(event: { name: string; formData?: Record<string, unknown> }): void {
