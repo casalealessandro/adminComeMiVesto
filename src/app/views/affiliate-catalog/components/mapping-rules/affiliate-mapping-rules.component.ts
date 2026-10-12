@@ -39,54 +39,81 @@ export function buildMappingRuleColumns(isAdmin: boolean): Colonne[] {
   return [{ itemType: 'group', groupDataField: '', data: cols }];
 }
 
+const targetValue = (rule: AffiliateMappingRule): string => {
+  if (rule.type === 'CATEGORY') {
+    const category = String(rule.data['category'] ?? '');
+    const subcategory = String(rule.data['subcategory'] ?? '');
+    return subcategory ? category + ' / ' + subcategory : category;
+  }
+  if (rule.type === 'COLOR') return String(rule.data['colorId'] ?? '');
+  if (rule.type === 'GENDER') return values(rule.data['genderTargets']).join(',');
+  if (rule.type === 'SEASON') return values(rule.data['seasons']).join(',');
+  return '';
+};
+
 export function mappingRuleFormData(rule: AffiliateMappingRule): Record<string, unknown> {
   return {
-    id: rule.id, label: rule.label, aliases: rule.aliases.join('\n'),
-    category: rule.data['category'] ?? '', subcategory: rule.data['subcategory'] ?? '',
-    colorId: rule.data['colorId'] ?? '',
-    genders: values(rule.data['genders']).join(','),
-    genderTargets: values(rule.data['genderTargets']).join(','),
-    seasons: values(rule.data['seasons']).join(', '),
-    priority: rule.data['priority'] ?? 100,
-    requireAll: JSON.stringify(rule.data['requireAll'] ?? []),
-    exclude: values(rule.data['exclude']).join('\n'),
-    note: rule.note ?? '', enabled: rule.enabled,
+    type: rule.type,
+    label: rule.label,
+    value: targetValue(rule),
+    aliases: rule.aliases.join('\n'),
+    note: rule.note ?? '',
+    enabled: rule.enabled,
   };
 }
 
+/** Translate one persisted form shape into the existing per-dictionary API contract. */
 export function mappingRuleFromForm(
   base: AffiliateMappingRule,
   form: Record<string, unknown>,
   isEditing: boolean,
 ): AffiliateMappingRule {
-  const id = isEditing ? base.id : String(form['id'] ?? '').trim();
-  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(id)) throw new Error('ID non valido (lettere, numeri, - o _).');
+  const type = String(form['type'] ?? '').trim();
+  if (type !== base.type) throw new Error('Il dizionario della regola non può essere cambiato.');
+  const value = String(form['value'] ?? '').trim();
+  const label = String(form['label'] ?? '').trim();
   const aliases = lines(form['aliases']);
   const enabled = form['enabled'] === true;
+  if (!value || !label) throw new Error('Descrizione e valore sono obbligatori.');
+  if (enabled && aliases.length === 0) throw new Error('Inserisci almeno un termine riconosciuto.');
   const data: Record<string, unknown> = { ...base.data };
   if (base.type === 'CATEGORY') {
-    data['category'] = String(form['category'] ?? '').trim();
-    data['subcategory'] = String(form['subcategory'] ?? '').trim();
-    data['genders'] = lines(form['genders']);
+    const [category, ...rest] = value.split(/\s+\/\s+/);
+    data['category'] = category.trim();
+    data['subcategory'] = rest.join(' / ').trim();
+    data['genders'] = values(base.data['genders']);
   } else if (base.type === 'COLOR') {
-    data['colorId'] = String(form['colorId'] ?? '').trim();
+    data['colorId'] = value;
   } else if (base.type === 'GENDER') {
-    data['genderTargets'] = lines(form['genderTargets']);
-  } else if (base.type === 'SEASON') {
-    data['category'] = String(form['category'] ?? '').trim();
-    data['seasons'] = lines(form['seasons']).map(s => s.toUpperCase());
-    data['priority'] = Number(form['priority']);
-    const parsed = JSON.parse(String(form['requireAll'] || '[]')) as unknown;
-    if (!Array.isArray(parsed) || !parsed.every(row => Array.isArray(row) && row.every(term => typeof term === 'string'))) {
-      throw new Error('Le condizioni requireAll devono essere un array JSON di liste di termini.');
+    const targets = lines(value);
+    if (!targets.length || targets.some(target => target !== 'U' && target !== 'D')) {
+      throw new Error('Genere valido: U, D oppure U,D.');
     }
-    data['requireAll'] = parsed;
-    data['exclude'] = lines(form['exclude']);
+    data['genderTargets'] = targets;
+  } else if (base.type === 'SEASON') {
+    const seasons = lines(value).map(v => v.toUpperCase());
+    if (seasons.length !== 1 || !['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'].includes(seasons[0])) {
+      throw new Error('Seleziona una delle quattro stagioni.');
+    }
+    // Built-in season documents have canonical, non-changing season identifiers.
+    if (isEditing && /^season-(spring|summer|autumn|winter)$/.test(base.id)
+        && base.id !== 'season-' + seasons[0].toLowerCase()) {
+      throw new Error('Non puoi cambiare la stagione associata alla regola canonica.');
+    }
+    data['category'] = String(base.data['category'] ?? 'Stagioni compatibili');
+    data['seasons'] = seasons;
+    data['priority'] = Number(base.data['priority'] ?? 100);
+    data['requireAll'] = base.data['requireAll'] ?? [];
+    data['exclude'] = base.data['exclude'] ?? [];
   }
-  return {
-    ...base, id, label: String(form['label'] ?? '').trim(), aliases, enabled, data,
-    note: String(form['note'] ?? '').trim(),
-  };
+  // Auto-generated on creation, never change the document ID during editing.
+  const id = isEditing ? base.id :
+    type.toLowerCase() + '-' + value.toLocaleLowerCase('it')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60)
+    + '-' + Date.now().toString(36);
+  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(id)) throw new Error('ID della regola non valido.');
+  return { ...base, id, label, aliases, enabled, data, note: String(form['note'] ?? '').trim() };
 }
 
 @Component({
@@ -140,11 +167,13 @@ export class AffiliateMappingRulesComponent implements OnInit {
 
   add(): void {
     if (!this.auth.isAdmin()) return;
+    // The four seasons are canonical records: edit their terms instead of creating a fifth rule.
+    if (this.type === 'SEASON') { this.error = 'Modifica una delle quattro stagioni esistenti.'; return; }
     const data: Record<string, unknown> = this.type === 'CATEGORY'
       ? { category: '', subcategory: '', genders: [] }
       : this.type === 'COLOR' ? { colorId: '' }
       : this.type === 'GENDER' ? { genderTargets: ['U'] }
-      : { category: 'Stagioni dichiarate', seasons: ['SUMMER'], priority: 100, requireAll: [], exclude: [] };
+      : { category: 'Stagioni compatibili', seasons: ['SUMMER'], priority: 100, requireAll: [], exclude: [] };
     this.openRulePopup({
       mode: 'create',
       rule: { id: '', type: this.type, label: '', aliases: [], enabled: true, data, origin: 'CUSTOM' },
