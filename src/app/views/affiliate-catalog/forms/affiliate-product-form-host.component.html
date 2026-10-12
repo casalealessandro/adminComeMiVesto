@@ -14,7 +14,7 @@
       <div class="affiliate-product-form__identity">
         <p class="affiliate-product-form__brand">{{ item.brand || 'Brand non disponibile' }}</p>
         <h3 class="affiliate-product-form__name">{{ item.name }}</h3>
-        <p class="affiliate-product-form__hint">Modifica la classificazione ComeMiVesto. I dati originali del feed non vengono alterati.</p>
+        <p class="affiliate-product-form__hint">{{ item.description?.trim() || 'Descrizione non disponibile' }}</p>
       </div>
     </header>
 
