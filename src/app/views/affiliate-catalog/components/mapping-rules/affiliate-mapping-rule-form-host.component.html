@@ -1,0 +1,13 @@
+<section class="p-3" aria-live="polite">
+  <p *ngIf="itemData.mode === 'edit'" class="text-muted small mb-2">ID: {{ itemData.rule.id }}</p>
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{ error }}</div>
+  <app-dynamic-form
+    [service]="formId"
+    [editData]="formData"
+    [loading]="saving"
+    [showBottomButtons]="true"
+    [inputBtnLeftName]="'Annulla'"
+    [inputBtnRightName]="'Salva regola'"
+    (submitFormEvent)="handleForm($event)">
+  </app-dynamic-form>
+</section>
