@@ -21,8 +21,20 @@ export function buildMappingRuleFields(type: AffiliateMappingRuleType, editing: 
     { ...field('aliases', 'Termini riconosciuti (uno per riga)', false, 'textArea'), maxLength: 4800 },
   ];
   if (type === 'CATEGORY') fields.push(
-    { ...field('category', 'Categoria ComeMiVesto', true), maxLength: 100 },
-    { ...field('subcategory', 'Sottocategoria'), maxLength: 100 },
+    {
+      ...field('category', 'Categoria ComeMiVesto', true, 'selectBox'),
+      selectOptions: {
+        displayExp: 'categoryName', valueExp: 'id', multiple: false,
+        remote: true, api: 'outfitCategories', parent: null,
+      },
+    },
+    {
+      ...field('subcategory', 'Sottocategoria', false, 'selectBox'),
+      selectOptions: {
+        displayExp: 'categoryName', valueExp: 'id', multiple: false,
+        remote: true, api: 'outfitCategories', parent: 'category',
+      },
+    },
     { ...field('genders', 'Genere applicabile'), type: 'selectBox', selectOptions: select([
       { value: '', label: 'Tutti' }, { value: 'D', label: 'Donna' },
       { value: 'U', label: 'Uomo' }, { value: 'U,D', label: 'Entrambi' },
