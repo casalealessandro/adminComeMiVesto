@@ -2,9 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { finalize } from 'rxjs';
 import { DynamicFormComponent } from '../../../../core/forms/dynamic-form/dynamic-form.component';
-import { FORM_DEFINITION_REPOSITORY } from '../../../../core/forms/contracts/form-definition-repository';
 import { AffiliateCatalogService, AffiliateMappingRule } from '../../services/affiliate-catalog.service';
-import { AffiliateMappingRuleFormRepository, mappingRuleFormId } from './affiliate-mapping-rule-form.repository';
 import { mappingRuleFormData, mappingRuleFromForm } from './affiliate-mapping-rules.component';
 
 export interface AffiliateMappingRuleFormContext {
@@ -21,7 +19,6 @@ export interface AffiliateMappingRuleFormResult {
   selector: 'app-affiliate-mapping-rule-form-host',
   standalone: true,
   imports: [CommonModule, DynamicFormComponent],
-  providers: [{ provide: FORM_DEFINITION_REPOSITORY, useClass: AffiliateMappingRuleFormRepository }],
   templateUrl: './affiliate-mapping-rule-form-host.component.html',
 })
 export class AffiliateMappingRuleFormHostComponent {
@@ -34,7 +31,7 @@ export class AffiliateMappingRuleFormHostComponent {
   error = '';
 
   get formId(): string {
-    return mappingRuleFormId(this.itemData.rule.type, this.itemData.mode === 'edit');
+    return 'affiliate-mapping-rule';
   }
 
   formData: Record<string, unknown> = {};
