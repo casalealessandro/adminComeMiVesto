@@ -1,0 +1,95 @@
+{
+  "id": "affiliate-mapping-rule",
+  "nameForm": "Regola di mapping affiliati",
+  "json": [
+    {
+      "name": "type",
+      "label": "Dizionario",
+      "type": "selectBox",
+      "typeInput": "text",
+      "required": true,
+      "selectOptions": {
+        "displayExp": "label",
+        "valueExp": "value",
+        "multiple": false,
+        "remote": false,
+        "parent": null,
+        "options": [
+          {
+            "label": "Categoria",
+            "value": "CATEGORY"
+          },
+          {
+            "label": "Colore",
+            "value": "COLOR"
+          },
+          {
+            "label": "Genere",
+            "value": "GENDER"
+          },
+          {
+            "label": "Stagione",
+            "value": "SEASON"
+          }
+        ]
+      }
+    },
+    {
+      "name": "label",
+      "label": "Descrizione",
+      "type": "textBox",
+      "typeInput": "text",
+      "required": true,
+      "maxLength": 150
+    },
+    {
+      "name": "value",
+      "label": "Valore di destinazione",
+      "type": "textBox",
+      "typeInput": "text",
+      "required": true,
+      "maxLength": 100,
+      "placeholder": "ID o valore canonico del dizionario"
+    },
+    {
+      "name": "aliases",
+      "label": "Termini riconosciuti (uno per riga)",
+      "type": "textArea",
+      "typeInput": "text",
+      "required": true,
+      "maxLength": 4800
+    },
+    {
+      "name": "note",
+      "label": "Nota / evidenza",
+      "type": "textArea",
+      "typeInput": "text",
+      "required": false,
+      "maxLength": 300
+    },
+    {
+      "name": "enabled",
+      "label": "Attiva",
+      "type": "selectBox",
+      "typeInput": "text",
+      "required": true,
+      "selectOptions": {
+        "displayExp": "label",
+        "valueExp": "value",
+        "multiple": false,
+        "remote": false,
+        "parent": null,
+        "options": [
+          {
+            "label": "Sì",
+            "value": true
+          },
+          {
+            "label": "No",
+            "value": false
+          }
+        ]
+      }
+    }
+  ]
+}
