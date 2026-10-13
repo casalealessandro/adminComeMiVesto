@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, interval, Subscription } from 'rxjs';
 import { DataGridComponent } from '../../../../core/data-grid/data-grid.component';
 import { ColData, Colonne } from '../../../../core/data-grid/models/data-grid.models';
 import { alert, confirm } from '../../../../core/dialogs/ui-dialogs';
@@ -122,7 +122,7 @@ export function buildAffiliateFeedColumns(canManage: boolean): Colonne[] {
           name: 'delete-products',
           event: 'delete-products',
           icon: 'mdi mdi-delete-sweep-outline',
-          hint: 'Elimina i prodotti del feed, mantenendo il feed disabilitato',
+          hint: 'Elimina i prodotti non utilizzati negli outfit senza cambiare lo stato del feed',
         },
       },
       {
@@ -158,7 +158,7 @@ export function buildAffiliateFeedColumns(canManage: boolean): Colonne[] {
   templateUrl: './affiliate-feeds.component.html',
   styleUrl: './affiliate-feeds.component.scss',
 })
-export class AffiliateFeedsComponent implements OnInit {
+export class AffiliateFeedsComponent implements OnInit, OnDestroy {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
   private readonly popupService = inject(PopUpService);
   readonly auth = inject(AuthService);
@@ -178,18 +178,60 @@ export class AffiliateFeedsComponent implements OnInit {
   readonly deactivatingFeedIds = new Set<string>();
   readonly cleaningFeedIds = new Set<string>();
   cleanupNotice: { feed: AffiliateFeed; job: AffiliateFeedCleanupJob } | null = null;
+  cleanupJobs: AffiliateFeedCleanupJob[] = [];
+  visibleCleanupJobs: AffiliateFeedCleanupJob[] = [];
+  cleanupJobsLoading = false;
+  cleanupJobsError = '';
+  private cleanupPolling?: Subscription;
 
   private programsById = new Map<string, AffiliateProgram>();
 
   ngOnInit(): void {
     this.columns = buildAffiliateFeedColumns(this.auth.isAdmin());
     this.refresh();
+    this.cleanupPolling = interval(10000).subscribe(() => {
+      if (this.cleanupJobs.some((job) => this.isCleanupActive(job))) this.loadCleanupJobs();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.cleanupPolling?.unsubscribe();
+  }
+
+  isCleanupActive(job: AffiliateFeedCleanupJob): boolean {
+    return job.status === 'QUEUED' || job.status === 'PREVIEWING' || job.status === 'RUNNING';
+  }
+
+  cleanupFeedName(feedId: string): string {
+    return this.feeds.find((feed) => feed.id === feedId)?.name ?? feedId;
+  }
+
+  loadCleanupJobs(): void {
+    if (this.cleanupJobsLoading) return;
+    this.cleanupJobsLoading = true;
+    this.cleanupJobsError = '';
+    this.affiliateCatalogService.getFeedCleanupJobs()
+      .pipe(finalize(() => this.cleanupJobsLoading = false))
+      .subscribe({
+        next: (jobs) => {
+          this.cleanupJobs = jobs;
+          const recentCutoff = Date.now() - 60 * 60 * 1000;
+          this.visibleCleanupJobs = jobs
+            .filter((job) => this.isCleanupActive(job) || (job.updatedAt ?? 0) >= recentCutoff)
+            .sort((a, b) => Number(this.isCleanupActive(b)) - Number(this.isCleanupActive(a))
+              || b.updatedAt - a.updatedAt);
+        },
+        error: () => {
+          this.cleanupJobsError = 'Impossibile aggiornare le operazioni di pulizia.';
+        },
+      });
   }
 
   refresh(): void {
     if (this.loading) return;
     this.loading = true;
     this.error = '';
+    this.loadCleanupJobs();
 
     forkJoin({
       feeds: this.affiliateCatalogService.getFeeds(),
@@ -396,7 +438,10 @@ export class AffiliateFeedsComponent implements OnInit {
       .pipe(finalize(() => this.cleaningFeedIds.delete(feed.id)))
       .subscribe({
         next: (job) => {
-          this.cleanupNotice = { feed, job };
+          this.cleanupNotice = null;
+          this.cleanupJobs = [...this.cleanupJobs.filter((existing) => existing.feedId !== feed.id), job];
+          this.visibleCleanupJobs = [job, ...this.visibleCleanupJobs.filter((existing) => existing.feedId !== feed.id)];
+          this.loadCleanupJobs();
           alert('Eliminazione prodotti avviata in background. Il feed non verrà disabilitato.', 'Pulizia avviata');
         },
         error: (error: { status?: number }) => {
