@@ -267,6 +267,12 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
+  getFeedCleanupJobs(): Observable<AffiliateFeedCleanupJob[]> {
+    return this.http.get<AffiliateApiResponse<AffiliateFeedCleanupJob[]>>(
+      `${this.baseUrl}/feed-cleanup-jobs`,
+    ).pipe(map((response) => response.data));
+  }
+
   getFeedCleanupStatus(id: string): Observable<AffiliateFeedCleanupJob | null> {
     return this.http.get<AffiliateApiResponse<AffiliateFeedCleanupJob | null>>(
       `${this.baseUrl}/feeds/${encodeURIComponent(id)}/cleanup`,
