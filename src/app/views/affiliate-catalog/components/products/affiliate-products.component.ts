@@ -484,7 +484,11 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   private confirmDeleteProducts(productIds: string[]): void {
     const ids = [...new Set(productIds)];
-    if (!this.auth.isAdmin() || this.deletingProducts || !ids.length || ids.length > 50) return;
+    if (!this.auth.isAdmin() || this.deletingProducts || !ids.length) return;
+    if (ids.length > 50) {
+      alert('Puoi eliminare al massimo 50 prodotti per operazione. Riduci la selezione.', 'Selezione troppo ampia');
+      return;
+    }
     confirm(
       `Eliminare ${ids.length} prodotti selezionati? I prodotti presenti negli outfit o condivisi tra feed saranno conservati. L'operazione non può essere annullata.`,
       'Conferma eliminazione prodotti',
