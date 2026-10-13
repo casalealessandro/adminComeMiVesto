@@ -295,14 +295,18 @@
                      [title]="colRow[col.dataField] ? colRow[col.dataField] : '' "
                      [ngStyle]="{'width.px':col.colWidth, 'min-width.px':col.colWidth,'max-width.px':col.colWidth}"
                      (click)="tdClick($event,col,i,rowIndex)">
-                     <ng-container>
-
+                     <ng-container *ngIf="col.type === 'selection'; else regularGridCell">
+                        <input type="checkbox" class="checkbox-input"
+                           [checked]="!!rowSelected[rowIndex]"
+                           [attr.aria-label]="'Seleziona riga ' + (rowIndex + 1)"
+                           (click)="clickToSelectRowMultiple($event, rowIndex, colRow)">
+                     </ng-container>
+                     <ng-template #regularGridCell>
                         <app-td-item [colProperty]="col" [searchText]="searchText" [rowIndex]="rowIndex"
                            [value]="colRow[col.dataField]" [colType]="col.type"
                            (btnActionClick)="btnActionClick($event)">
                         </app-td-item>
-
-                     </ng-container>
+                     </ng-template>
 
                   </td>
 
