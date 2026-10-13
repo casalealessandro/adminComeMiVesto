@@ -273,6 +273,12 @@ export class AffiliateCatalogService {
     ).pipe(map((response) => response.data));
   }
 
+  startFeedProductsCleanup(id: string): Observable<AffiliateFeedCleanupJob> {
+    return this.http.post<AffiliateApiResponse<AffiliateFeedCleanupJob>>(
+      `${this.baseUrl}/feeds/${encodeURIComponent(id)}/cleanup-products`, {},
+    ).pipe(map((response) => response.data));
+  }
+
   previewFeedCleanup(id: string, mode: AffiliateFeedCleanupMode): Observable<AffiliateFeedCleanupJob> {
     return this.http.post<AffiliateApiResponse<AffiliateFeedCleanupJob>>(
       `${this.baseUrl}/feeds/${encodeURIComponent(id)}/cleanup-preview`, { mode },
