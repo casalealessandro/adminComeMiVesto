@@ -78,8 +78,9 @@ describe('Affiliate products', () => {
 
     expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
     expect(buildAffiliateProductColumns([program], ['Clothing'], true)[0].data.filter((column) => column.type === 'campoButton')
-      .map((column) => column.button?.name)).toEqual(['detail', 'edit']);
+      .map((column) => column.button?.name)).toEqual(['detail', 'edit', 'delete']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
+    expect(buildAffiliateProductColumns([program], ['Clothing'], true)[0].data.some((column) => column.button?.name === 'delete')).toBeTrue();
     expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'visibleInAppFilter']);
     expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);

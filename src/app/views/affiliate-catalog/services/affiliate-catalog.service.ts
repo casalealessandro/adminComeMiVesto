@@ -331,6 +331,17 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
+  deleteSelectedProducts(productIds: string[]): Observable<{
+    requested: number; deleted: number; protectedByOutfits: number;
+    sharedAcrossFeeds: number; notFound: number; deletedOffers: number; deletedVariants: number;
+  }> {
+    return this.http.post<AffiliateApiResponse<{
+      requested: number; deleted: number; protectedByOutfits: number;
+      sharedAcrossFeeds: number; notFound: number; deletedOffers: number; deletedVariants: number;
+    }>>(`${this.baseUrl}/products/delete-selected`, { productIds })
+      .pipe(map((response) => response.data));
+  }
+
   getProduct(id: string): Observable<CatalogProduct> {
     return this.http
       .get<AffiliateApiResponse<CatalogProduct>>(`${this.baseUrl}/products/${id}`)

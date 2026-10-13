@@ -119,6 +119,16 @@
     <span *ngIf="hasMore" class="badge text-bg-light">altri disponibili</span>
   </div>
 
+  <div *ngIf="auth.isAdmin() && !loading && dataProvider" class="d-flex gap-2 align-items-center mb-2">
+    <button type="button" class="btn btn-sm btn-outline-danger"
+      (click)="deleteSelectedProducts()"
+      [disabled]="deletingProducts || !dataGridSelectedCount()">
+      <span class="mdi mdi-delete-sweep-outline" aria-hidden="true"></span>
+      Elimina selezionati ({{ dataGridSelectedCount() }})
+    </button>
+    <span class="small text-muted">Seleziona le righe tramite le caselle; massimo 50 prodotti per operazione.</span>
+  </div>
+
   <div class="affiliate-products__desktop" *ngIf="!loading && dataProvider && columns.length">
     <app-data-grid
       [idTable]="'affiliate-products-grid'"
@@ -129,6 +139,7 @@
       [isEditableNewRow]="false"
       [isEditableEditRow]="false"
       [isEditableDeleteRow]="false"
+      [selectionRowMode]="auth.isAdmin() ? 'multiple' : 'single'"
       [showToolbarTop]="false"
       [showToolbarBottom]="false"
       [showFilter]="true"
@@ -192,6 +203,10 @@
             {{ product.lastSeenAt | date:'dd/MM/yyyy HH:mm' }}
           </span>
 
+          <button *ngIf="auth.isAdmin()" type="button" class="btn btn-sm btn-outline-danger"
+            (click)="confirmDeleteSingleProduct(product)" [disabled]="deletingProducts">
+            <span class="mdi mdi-delete-outline" aria-hidden="true"></span> Elimina
+          </button>
           <button *ngIf="auth.isAdmin()" type="button" class="btn btn-sm btn-outline-secondary"
             (click)="openEdit(product)" [attr.aria-label]="'Modifica prodotto ' + product.name">
             <span class="mdi mdi-pencil-outline" aria-hidden="true"></span> Modifica
