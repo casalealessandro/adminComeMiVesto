@@ -99,7 +99,7 @@
         <div class="text-muted small">
           {{ cleanupModeLabel(job.mode) }}
           <ng-container *ngIf="isCleanupActive(job)"> · Fase {{ job.stage }}</ng-container>
-          · {{ job.updatedAt | date:'short' }}
+          · Ultimo aggiornamento: {{ job.updatedAt | date:'dd/MM/yyyy HH:mm:ss' }}
         </div>
         <div class="small">
           Prodotti eliminati: {{ job.progress.productsDeleted }}
