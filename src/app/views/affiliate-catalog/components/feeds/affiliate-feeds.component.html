@@ -106,6 +106,9 @@
           · Conservati negli outfit: {{ job.progress.productsPreservedForOutfits }}
           · Offerte eliminate: {{ job.progress.offersDeleted }}
         </div>
+        <div *ngIf="hasOldCleanupProgress(job)" class="small text-warning" role="status">
+          Nessun aggiornamento da oltre 35 minuti: verifica lo stato. Potrebbe essere un'elaborazione bloccata.
+        </div>
         <div *ngIf="job.status === 'STOP_REQUESTED'" class="small text-muted" role="status">
           Arresto richiesto: il blocco già avviato può ancora terminare.
         </div>
