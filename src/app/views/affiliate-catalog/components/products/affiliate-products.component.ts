@@ -16,7 +16,7 @@ import {
 } from '../../models/affiliate-catalog-api.models';
 import { AuthService } from '../../../../services/auth.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
-import { alert } from '../../../../core/dialogs/ui-dialogs';
+import { alert, confirm } from '../../../../core/dialogs/ui-dialogs';
 import { AffiliateProductFormResult } from '../../forms/affiliate-product-form-host.component';
 import { AffiliateProgram, CatalogProduct, CatalogSeason } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
@@ -142,6 +142,13 @@ export function buildAffiliateProductColumns(
       button: { text: '', name: 'edit', event: 'edit', icon: 'mdi mdi-pencil-outline', hint: 'Modifica prodotto' },
     });
   }
+  if (canEdit) {
+    columns.push({
+      ...baseColumn('', 'Elimina', 76, 'campoButton'),
+      button: { text: '', name: 'delete', event: 'delete',
+        icon: 'mdi mdi-delete-outline', hint: 'Elimina prodotto se non utilizzato negli outfit' },
+    });
+  }
   return [{ itemType: 'group', groupDataField: '', data: columns }];
 }
 
@@ -251,6 +258,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   loading = false;
   productsLoading = false;
   loadingMore = false;
+  deletingProducts = false;
   taxonomyLoading = false;
   taxonomyApplying = false;
   taxonomyRepair: CatalogTaxonomyRepairResult | null = null;
@@ -330,6 +338,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   refresh(): void {
     if (this.loading || this.loadingMore) return;
 
+    this.dataGrid?.clearSelectedRows();
     this.loading = true;
     this.productsLoading = true;
     this.error = '';
@@ -459,9 +468,45 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     );
   }
 
+  deleteSelectedProducts(): void {
+    if (!this.auth.isAdmin() || this.deletingProducts) return;
+    const ids = this.dataGrid?.getSelectedRows().map((row) => row.id) ?? [];
+    this.confirmDeleteProducts(ids);
+  }
+
+  private confirmDeleteProducts(productIds: string[]): void {
+    const ids = [...new Set(productIds)];
+    if (!this.auth.isAdmin() || this.deletingProducts || !ids.length || ids.length > 50) return;
+    confirm(
+      `Eliminare ${ids.length} prodotti selezionati? I prodotti presenti negli outfit o condivisi tra feed saranno conservati. L'operazione non può essere annullata.`,
+      'Conferma eliminazione prodotti',
+      (accepted) => { if (accepted) this.executeDeleteProducts(ids); },
+    );
+  }
+
+  private executeDeleteProducts(ids: string[]): void {
+    this.deletingProducts = true;
+    this.affiliateCatalogService.deleteSelectedProducts(ids)
+      .pipe(finalize(() => this.deletingProducts = false))
+      .subscribe({
+        next: (result) => {
+          this.dataGrid?.clearSelectedRows();
+          alert(`Eliminati: ${result.deleted}. Protetti dagli outfit: ${result.protectedByOutfits}. Condivisi con altri feed: ${result.sharedAcrossFeeds}. Non trovati: ${result.notFound}.`,
+            'Eliminazione prodotti completata');
+          this.refresh();
+        },
+        error: (error: { status?: number }) => {
+          alert(error?.status === 409
+            ? 'Un feed associato è in sincronizzazione o pulizia. Attendi e riprova.'
+            : 'Impossibile completare l’eliminazione dei prodotti.', 'Errore eliminazione');
+        },
+      });
+  }
+
   gridAction(event: { name?: string; rowData?: AffiliateProductGridRow }): void {
     if (event?.name === 'detail' && event.rowData) void this.openDetail(event.rowData);
     if (event?.name === 'edit' && event.rowData) this.openEdit(event.rowData);
+    if (event?.name === 'delete' && event.rowData) this.confirmDeleteProducts([event.rowData.id]);
   }
 
   openEdit(product: CatalogProduct): void {
