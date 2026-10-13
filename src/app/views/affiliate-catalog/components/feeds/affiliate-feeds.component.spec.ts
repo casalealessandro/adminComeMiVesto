@@ -3,6 +3,7 @@ import {
   affiliateFeedSyncErrorMessage,
   affiliateCleanupCanStop,
   affiliateCleanupIsActive,
+  affiliateCleanupHasOldProgress,
   buildAffiliateFeedColumns,
 } from './affiliate-feeds.component';
 import { AffiliateFeed, AffiliateFeedCleanupJob, AffiliateProgram } from '../../models/affiliate-catalog.models';
@@ -136,4 +137,10 @@ describe('Affiliate feed cleanup stop states', () => {
       expect(affiliateCleanupIsActive({ ...job, status })).toBeFalse();
     }
   });
+  it('warns when RUNNING has not updated for 35 minutes without declaring it finished', () => {
+    expect(affiliateCleanupHasOldProgress({ ...job, status: 'RUNNING', updatedAt: 1000 }, 1000 + 34 * 60 * 1000)).toBeFalse();
+    expect(affiliateCleanupHasOldProgress({ ...job, status: 'RUNNING', updatedAt: 1000 }, 1000 + 36 * 60 * 1000)).toBeTrue();
+    expect(affiliateCleanupHasOldProgress({ ...job, status: 'STOPPED', updatedAt: 1000 }, 1000 + 36 * 60 * 1000)).toBeFalse();
+  });
+
 });
