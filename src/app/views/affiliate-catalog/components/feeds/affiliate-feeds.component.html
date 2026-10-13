@@ -69,6 +69,49 @@
     </div>
   </div>
 
+  <section class="affiliate-feeds__operations" aria-labelledby="affiliate-cleanup-operations-title">
+    <div class="affiliate-feeds__operations-header">
+      <div>
+        <h3 id="affiliate-cleanup-operations-title">Operazioni di pulizia</h3>
+        <p class="text-muted small mb-0">Stato delle eliminazioni per feed · aggiornamento automatico ogni 10 secondi durante la lavorazione</p>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary"
+        (click)="loadCleanupJobs()" [disabled]="cleanupJobsLoading">
+        <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna stati
+      </button>
+    </div>
+    <p *ngIf="cleanupJobsError" class="text-danger small" role="alert">{{ cleanupJobsError }}</p>
+    <p *ngIf="!cleanupJobsLoading && !visibleCleanupJobs.length && !cleanupJobsError"
+      class="text-muted small mb-0">Nessuna eliminazione in corso. Le operazioni concluse restano visibili per un'ora.</p>
+    <div class="affiliate-feeds__operations-list" *ngIf="visibleCleanupJobs.length">
+      <article class="affiliate-feeds__operation" *ngFor="let job of visibleCleanupJobs">
+        <div class="affiliate-feeds__operation-top">
+          <strong>{{ cleanupFeedName(job.feedId) }}</strong>
+          <span class="badge"
+            [class.text-bg-primary]="isCleanupActive(job)"
+            [class.text-bg-success]="job.status === 'SUCCESS'"
+            [class.text-bg-danger]="job.status === 'FAILED'"
+            [class.text-bg-secondary]="job.status === 'PREVIEW_READY'">
+            {{ cleanupStatusLabel(job.status) }}
+          </span>
+        </div>
+        <div class="text-muted small">
+          {{ cleanupModeLabel(job.mode) }}
+          <ng-container *ngIf="isCleanupActive(job)"> · Fase {{ job.stage }}</ng-container>
+          · {{ job.updatedAt | date:'short' }}
+        </div>
+        <div class="small">
+          Prodotti eliminati: {{ job.progress.productsDeleted }}
+          · Conservati negli outfit: {{ job.progress.productsPreservedForOutfits }}
+          · Offerte eliminate: {{ job.progress.offersDeleted }}
+        </div>
+        <div *ngIf="job.status === 'FAILED' && job.lastError" class="text-danger small" role="alert">
+          {{ job.lastError }}
+        </div>
+      </article>
+    </div>
+  </section>
+
   <label *ngIf="feeds.length" class="affiliate-feeds__search">
     <span>Cerca feed</span>
     <input
