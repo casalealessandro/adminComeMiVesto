@@ -88,26 +88,42 @@
         <div class="affiliate-feeds__operation-top">
           <strong>{{ cleanupFeedName(job.feedId) }}</strong>
           <span class="badge"
-            [class.text-bg-primary]="isCleanupActive(job)"
+            [class.text-bg-primary]="job.status === 'QUEUED' || job.status === 'PREVIEWING' || job.status === 'RUNNING'"
+            [class.text-bg-warning]="job.status === 'STOP_REQUESTED'"
             [class.text-bg-success]="job.status === 'SUCCESS'"
             [class.text-bg-danger]="job.status === 'FAILED'"
-            [class.text-bg-secondary]="job.status === 'PREVIEW_READY'">
+            [class.text-bg-secondary]="job.status === 'PREVIEW_READY' || job.status === 'STOPPED'">
             {{ cleanupStatusLabel(job.status) }}
           </span>
         </div>
         <div class="text-muted small">
           {{ cleanupModeLabel(job.mode) }}
           <ng-container *ngIf="isCleanupActive(job)"> · Fase {{ job.stage }}</ng-container>
-          · {{ job.updatedAt | date:'short' }}
+          · Ultimo aggiornamento: {{ job.updatedAt | date:'dd/MM/yyyy HH:mm:ss' }}
         </div>
         <div class="small">
           Prodotti eliminati: {{ job.progress.productsDeleted }}
           · Conservati negli outfit: {{ job.progress.productsPreservedForOutfits }}
           · Offerte eliminate: {{ job.progress.offersDeleted }}
         </div>
+        <div *ngIf="hasOldCleanupProgress(job)" class="small text-warning" role="status">
+          Nessun aggiornamento da oltre 35 minuti: verifica lo stato. Potrebbe essere un'elaborazione bloccata.
+        </div>
+        <div *ngIf="job.status === 'STOP_REQUESTED'" class="small text-muted" role="status">
+          Arresto richiesto: il blocco già avviato può ancora terminare.
+        </div>
+        <div *ngIf="job.status === 'STOPPED'" class="small text-muted" role="status">
+          L'operazione è stata interrotta. I prodotti già eliminati non vengono ripristinati.
+        </div>
         <div *ngIf="job.status === 'FAILED' && job.lastError" class="text-danger small" role="alert">
           {{ job.lastError }}
         </div>
+        <button *ngIf="canStopCleanup(job)" type="button" class="btn btn-sm btn-outline-danger align-self-start"
+          (click)="requestStopCleanup(job)" [disabled]="isStoppingCleanup(job.feedId)"
+          [attr.aria-label]="'Interrompi pulizia ' + cleanupFeedName(job.feedId)">
+          <span class="mdi mdi-stop-circle-outline" aria-hidden="true"></span>
+          {{ isStoppingCleanup(job.feedId) ? 'Richiesta…' : 'Interrompi eliminazione' }}
+        </button>
       </article>
     </div>
   </section>

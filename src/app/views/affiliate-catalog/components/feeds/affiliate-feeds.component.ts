@@ -47,6 +47,20 @@ export interface AffiliateFeedSyncNotice {
   run: AffiliateSyncRun;
 }
 
+export function affiliateCleanupIsActive(job: AffiliateFeedCleanupJob): boolean {
+  return job.status === 'QUEUED' || job.status === 'PREVIEWING' ||
+    job.status === 'RUNNING' || job.status === 'STOP_REQUESTED';
+}
+
+export function affiliateCleanupCanStop(job: AffiliateFeedCleanupJob): boolean {
+  return job.status === 'QUEUED' || job.status === 'PREVIEWING' || job.status === 'RUNNING';
+}
+
+export function affiliateCleanupHasOldProgress(job: AffiliateFeedCleanupJob, now = Date.now()): boolean {
+  // This is a warning only. Lack of progress does not prove that the worker has finished.
+  return job.status === 'RUNNING' && now - job.updatedAt >= 35 * 60 * 1000;
+}
+
 export function affiliateFeedSyncEligibility(
   feed: AffiliateFeed,
   program?: AffiliateProgram,
@@ -177,6 +191,7 @@ export class AffiliateFeedsComponent implements OnInit, OnDestroy {
   readonly syncingFeedIds = new Set<string>();
   readonly deactivatingFeedIds = new Set<string>();
   readonly cleaningFeedIds = new Set<string>();
+  readonly stoppingFeedIds = new Set<string>();
   cleanupNotice: { feed: AffiliateFeed; job: AffiliateFeedCleanupJob } | null = null;
   cleanupJobs: AffiliateFeedCleanupJob[] = [];
   visibleCleanupJobs: AffiliateFeedCleanupJob[] = [];
@@ -199,7 +214,55 @@ export class AffiliateFeedsComponent implements OnInit, OnDestroy {
   }
 
   isCleanupActive(job: AffiliateFeedCleanupJob): boolean {
-    return job.status === 'QUEUED' || job.status === 'PREVIEWING' || job.status === 'RUNNING';
+    return affiliateCleanupIsActive(job);
+  }
+
+  canStopCleanup(job: AffiliateFeedCleanupJob): boolean {
+    return this.auth.isAdmin() && affiliateCleanupCanStop(job);
+  }
+
+  isStoppingCleanup(feedId: string): boolean {
+    return this.stoppingFeedIds.has(feedId);
+  }
+
+  hasOldCleanupProgress(job: AffiliateFeedCleanupJob): boolean {
+    return affiliateCleanupHasOldProgress(job);
+  }
+
+  requestStopCleanup(job: AffiliateFeedCleanupJob): void {
+    if (!this.canStopCleanup(job) || this.isStoppingCleanup(job.feedId)) return;
+    confirm(
+      'Interrompere la pulizia del feed «' + this.cleanupFeedName(job.feedId) +
+      '»? I prodotti già eliminati non verranno ripristinati. Il blocco già avviato può ancora terminare; il feed manterrà il suo stato attuale.',
+      'Interrompi eliminazione',
+      (accepted) => { if (accepted) this.stopCleanup(job); },
+    );
+  }
+
+  private stopCleanup(job: AffiliateFeedCleanupJob): void {
+    if (!this.canStopCleanup(job) || this.isStoppingCleanup(job.feedId)) return;
+    this.stoppingFeedIds.add(job.feedId);
+    this.affiliateCatalogService.stopFeedCleanup(job.feedId, job.runId)
+      .pipe(finalize(() => this.stoppingFeedIds.delete(job.feedId)))
+      .subscribe({
+        next: (updated) => {
+          this.cleanupJobs = this.cleanupJobs.map((current) =>
+            current.feedId === updated.feedId ? updated : current);
+          this.visibleCleanupJobs = this.visibleCleanupJobs.map((current) =>
+            current.feedId === updated.feedId ? updated : current);
+          if (this.cleanupNotice?.feed.id === updated.feedId) {
+            this.cleanupNotice = { ...this.cleanupNotice, job: updated };
+          }
+          this.loadCleanupJobs();
+        },
+        error: (error: { status?: number }) => {
+          if (error?.status === 409) {
+            this.loadCleanupJobs();
+          } else {
+            this.cleanupJobsError = 'Impossibile richiedere l’interruzione. Riprova.';
+          }
+        },
+      });
   }
 
   cleanupFeedName(feedId: string): string {
@@ -302,6 +365,7 @@ export class AffiliateFeedsComponent implements OnInit, OnDestroy {
     return {
       QUEUED: 'In coda', PREVIEWING: 'Verifica in corso',
       PREVIEW_READY: 'Verifica pronta', RUNNING: 'Cancellazione in corso',
+      STOP_REQUESTED: 'Interruzione richiesta', STOPPED: 'Interrotta',
       SUCCESS: 'Completata', FAILED: 'Errore',
     }[status];
   }
