@@ -373,17 +373,13 @@ export class AffiliateFeedsComponent implements OnInit {
           if (job?.status === 'SUCCESS' && job.mode === mode && mode === 'FEED_AND_PRODUCTS') {
             this.refresh();
             alert(
-              mode === 'PRODUCTS_ONLY'
-                ? 'Prodotti del feed eliminati. Il feed è conservato e disabilitato.'
-                : 'Feed e prodotti non protetti eliminati. La lista verrà aggiornata.',
+              'Feed e prodotti non protetti eliminati. La lista verrà aggiornata.',
               'Cancellazione completata',
             );
             return;
           }
           confirm(
-            mode === 'PRODUCTS_ONLY'
-              ? 'Verificare quanti prodotti e offerte possono essere eliminati? Il feed verrà mantenuto ma disabilitato dopo la conferma finale.'
-              : 'Verificare quanti prodotti e offerte possono essere eliminati insieme alla configurazione del feed? Gli outfit approvati saranno conservati.',
+            'Verificare quanti prodotti e offerte possono essere eliminati insieme alla configurazione del feed? I prodotti presenti negli outfit saranno conservati.',
             'Verifica prima di eliminare',
             (confirmed) => { if (confirmed) this.startCleanupPreview(feed, mode); },
           );
