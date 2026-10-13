@@ -50,6 +50,7 @@
     <div>
       <strong>{{ cleanupModeLabel(notice.job.mode) }} · {{ cleanupStatusLabel(notice.job.status) }}</strong>
       <span>{{ notice.feed.name }}</span>
+      <span *ngIf="notice.job.status === 'SUCCESS' && notice.job.mode === 'PRODUCTS_ONLY'">Eliminati {{ notice.job.progress.productsDeleted }} prodotti; conservati {{ notice.job.progress.productsPreservedForOutfits }} perché presenti negli outfit. Il feed non è stato disabilitato dalla pulizia.</span>
       <span *ngIf="notice.job.status === 'PREVIEW_READY'">
         Anteprima completata, nessun dato eliminato. Controlla l'impatto e conferma entro 15 minuti.
       </span>
