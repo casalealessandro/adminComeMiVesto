@@ -468,6 +468,14 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     );
   }
 
+  dataGridSelectedCount(): number {
+    return this.dataGrid?.getSelectedRows().length ?? 0;
+  }
+
+  confirmDeleteSingleProduct(product: CatalogProduct): void {
+    if (product?.id) this.confirmDeleteProducts([product.id]);
+  }
+
   deleteSelectedProducts(): void {
     if (!this.auth.isAdmin() || this.deletingProducts) return;
     const ids = this.dataGrid?.getSelectedRows().map((row) => row.id) ?? [];
