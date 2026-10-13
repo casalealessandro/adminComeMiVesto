@@ -1,9 +1,11 @@
 import {
   affiliateFeedSyncEligibility,
   affiliateFeedSyncErrorMessage,
+  affiliateCleanupCanStop,
+  affiliateCleanupIsActive,
   buildAffiliateFeedColumns,
 } from './affiliate-feeds.component';
-import { AffiliateFeed, AffiliateProgram } from '../../models/affiliate-catalog.models';
+import { AffiliateFeed, AffiliateFeedCleanupJob, AffiliateProgram } from '../../models/affiliate-catalog.models';
 
 describe('Affiliate feeds grid configuration', () => {
   it('keeps the read-only grid free from action columns', () => {
@@ -106,5 +108,32 @@ describe('Affiliate feed sync error mapping', () => {
 
   it('keeps unexpected failures generic', () => {
     expect(affiliateFeedSyncErrorMessage(500)).toContain('non riuscito');
+  });
+});
+
+describe('Affiliate feed cleanup stop states', () => {
+  const job: AffiliateFeedCleanupJob = {
+    feedId: 'feed-1', runId: 'test-run', mode: 'PRODUCTS_ONLY',
+    status: 'RUNNING', stage: 'PRODUCTS', cursor: null,
+    createdAt: 1, updatedAt: 2, completedAt: null,
+    previewAt: null, preview: null,
+    progress: {
+      productsDeleted: 2, productsDetached: 0, productsPreservedForOutfits: 0,
+      productsPreservedForOtherFeeds: 0, variantsDeleted: 0, offersDeleted: 0,
+    },
+    lastError: null,
+  };
+
+  it('allows stopping active cleanup but never a completed or already stopping operation', () => {
+    for (const status of ['QUEUED', 'PREVIEWING', 'RUNNING'] as const) {
+      expect(affiliateCleanupCanStop({ ...job, status })).toBeTrue();
+      expect(affiliateCleanupIsActive({ ...job, status })).toBeTrue();
+    }
+    expect(affiliateCleanupCanStop({ ...job, status: 'STOP_REQUESTED' })).toBeFalse();
+    expect(affiliateCleanupIsActive({ ...job, status: 'STOP_REQUESTED' })).toBeTrue();
+    for (const status of ['STOPPED', 'SUCCESS', 'FAILED', 'PREVIEW_READY'] as const) {
+      expect(affiliateCleanupCanStop({ ...job, status })).toBeFalse();
+      expect(affiliateCleanupIsActive({ ...job, status })).toBeFalse();
+    }
   });
 });
