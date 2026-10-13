@@ -67,7 +67,7 @@ export interface AffiliateFeedCleanupJob {
   feedId: string;
   runId: string;
   mode: AffiliateFeedCleanupMode;
-  status: 'QUEUED' | 'PREVIEWING' | 'PREVIEW_READY' | 'RUNNING' | 'SUCCESS' | 'FAILED';
+  status: 'QUEUED' | 'PREVIEWING' | 'PREVIEW_READY' | 'RUNNING' | 'STOP_REQUESTED' | 'STOPPED' | 'SUCCESS' | 'FAILED';
   stage: 'PREVIEW' | 'LEGACY' | 'PRODUCTS' | 'OFFERS' | 'FINALIZE';
   cursor: string | null;
   createdAt: number;
