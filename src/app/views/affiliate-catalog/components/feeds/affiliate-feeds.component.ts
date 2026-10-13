@@ -56,6 +56,11 @@ export function affiliateCleanupCanStop(job: AffiliateFeedCleanupJob): boolean {
   return job.status === 'QUEUED' || job.status === 'PREVIEWING' || job.status === 'RUNNING';
 }
 
+export function affiliateCleanupHasOldProgress(job: AffiliateFeedCleanupJob, now = Date.now()): boolean {
+  // This is a warning only. Lack of progress does not prove that the worker has finished.
+  return job.status === 'RUNNING' && now - job.updatedAt >= 35 * 60 * 1000;
+}
+
 export function affiliateFeedSyncEligibility(
   feed: AffiliateFeed,
   program?: AffiliateProgram,
@@ -220,6 +225,10 @@ export class AffiliateFeedsComponent implements OnInit, OnDestroy {
     return this.stoppingFeedIds.has(feedId);
   }
 
+  hasOldCleanupProgress(job: AffiliateFeedCleanupJob): boolean {
+    return affiliateCleanupHasOldProgress(job);
+  }
+
   requestStopCleanup(job: AffiliateFeedCleanupJob): void {
     if (!this.canStopCleanup(job) || this.isStoppingCleanup(job.feedId)) return;
     confirm(
@@ -247,10 +256,11 @@ export class AffiliateFeedsComponent implements OnInit, OnDestroy {
           this.loadCleanupJobs();
         },
         error: (error: { status?: number }) => {
-          this.cleanupJobsError = error?.status === 409
-            ? 'Il job è cambiato oppure è già concluso: aggiorna lo stato.'
-            : 'Impossibile richiedere l’interruzione. Riprova.';
-          this.loadCleanupJobs();
+          if (error?.status === 409) {
+            this.loadCleanupJobs();
+          } else {
+            this.cleanupJobsError = 'Impossibile richiedere l’interruzione. Riprova.';
+          }
         },
       });
   }
