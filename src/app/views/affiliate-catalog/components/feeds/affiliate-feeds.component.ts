@@ -293,7 +293,7 @@ export class AffiliateFeedsComponent implements OnInit {
   }
 
   requestSync(feed: AffiliateFeed): void {
-    if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id) || this.isDeactivating(feed.id)) return;
+    if (!this.auth.isAdmin() || !feed?.id || this.isSyncing(feed.id) || this.isDeactivating(feed.id) || this.isCleaning(feed.id)) return;
 
     const eligibilityError = affiliateFeedSyncEligibility(
       feed,
@@ -342,6 +342,15 @@ export class AffiliateFeedsComponent implements OnInit {
     if (!this.auth.isAdmin() || !feed?.id ||
       this.isSyncing(feed.id) || this.isDeactivating(feed.id) || this.isCleaning(feed.id)) return;
 
+    if (mode === 'PRODUCTS_ONLY') {
+      confirm(
+        'Eliminare i prodotti di questo feed? I prodotti usati in qualsiasi outfit saranno conservati. Il feed manterrà il suo stato attuale.',
+        'Conferma eliminazione prodotti',
+        (confirmed) => { if (confirmed) this.startDirectProductsCleanup(feed); },
+      );
+      return;
+    }
+
     this.cleaningFeedIds.add(feed.id);
     this.syncError = '';
     this.affiliateCatalogService.getFeedCleanupStatus(feed.id)
@@ -361,7 +370,7 @@ export class AffiliateFeedsComponent implements OnInit {
             this.confirmCleanupImpact(feed, job);
             return;
           }
-          if (job?.status === 'SUCCESS' && job.mode === mode) {
+          if (job?.status === 'SUCCESS' && job.mode === mode && mode === 'FEED_AND_PRODUCTS') {
             this.refresh();
             alert(
               mode === 'PRODUCTS_ONLY'
@@ -380,6 +389,25 @@ export class AffiliateFeedsComponent implements OnInit {
           );
         },
         error: () => { this.syncError = 'Impossibile verificare lo stato della cancellazione del feed.'; },
+      });
+  }
+
+  private startDirectProductsCleanup(feed: AffiliateFeed): void {
+    if (this.isCleaning(feed.id)) return;
+    this.cleaningFeedIds.add(feed.id);
+    this.syncError = '';
+    this.affiliateCatalogService.startFeedProductsCleanup(feed.id)
+      .pipe(finalize(() => this.cleaningFeedIds.delete(feed.id)))
+      .subscribe({
+        next: (job) => {
+          this.cleanupNotice = { feed, job };
+          alert('Eliminazione prodotti avviata in background. Il feed non verrà disabilitato.', 'Pulizia avviata');
+        },
+        error: (error: { status?: number }) => {
+          this.syncError = error?.status === 409
+            ? 'Sincronizzazione o pulizia già in corso: riprova al termine.'
+            : 'Impossibile avviare la pulizia dei prodotti.';
+        },
       });
   }
 
@@ -407,6 +435,16 @@ export class AffiliateFeedsComponent implements OnInit {
   checkCleanupNotice(): void {
     if (!this.cleanupNotice) return;
     const { feed, job } = this.cleanupNotice;
+    if (job.mode === 'PRODUCTS_ONLY') {
+      this.cleaningFeedIds.add(feed.id);
+      this.affiliateCatalogService.getFeedCleanupStatus(feed.id)
+        .pipe(finalize(() => this.cleaningFeedIds.delete(feed.id)))
+        .subscribe({
+          next: (updated) => { if (updated) this.cleanupNotice = { feed, job: updated }; this.refresh(); },
+          error: () => { this.syncError = 'Impossibile aggiornare lo stato della pulizia.'; },
+        });
+      return;
+    }
     this.requestCleanup(feed, job.mode);
   }
 
