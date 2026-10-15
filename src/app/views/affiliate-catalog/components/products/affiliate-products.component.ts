@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { firstValueFrom, finalize, forkJoin } from 'rxjs';
+import { firstValueFrom, finalize, forkJoin, Subscription, timer, exhaustMap } from 'rxjs';
 import {
   ColData,
   Colonne,
@@ -12,7 +12,7 @@ import {
 } from '../../../../core/public-api';
 import {
   AffiliateProductCursorRequest,
-  CatalogTaxonomyRepairResult,
+  AffiliateUnclassifiedCleanupJob,
 } from '../../models/affiliate-catalog-api.models';
 import { AuthService } from '../../../../services/auth.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
@@ -259,10 +259,14 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   productsLoading = false;
   loadingMore = false;
   deletingProducts = false;
-  taxonomyLoading = false;
-  taxonomyApplying = false;
-  taxonomyRepair: CatalogTaxonomyRepairResult | null = null;
-  taxonomyError = '';
+  cleanupPanelOpen = false;
+  cleanupLoading = false;
+  cleanupSubmitting = false;
+  cleanupJob: AffiliateUnclassifiedCleanupJob | null = null;
+  cleanupError = '';
+  cleanupConfirmationText = '';
+  cleanupBackupConfirmed = false;
+  private cleanupPolling?: Subscription;
   error = '';
   loadMoreError = '';
   hasMore = false;
@@ -320,6 +324,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.mobileLoadMoreObserver?.disconnect();
+    this.cleanupPolling?.unsubscribe();
   }
 
   setSeason(value: string): void {
@@ -377,39 +382,164 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       });
   }
 
-  analyzeMissingTaxonomies(): void {
-    if (this.taxonomyLoading || this.taxonomyApplying) return;
-    this.taxonomyLoading = true;
-    this.taxonomyError = '';
-    this.affiliateCatalogService
-      .repairProductTaxonomies(false)
-      .pipe(finalize(() => this.taxonomyLoading = false))
-      .subscribe({
-        next: (result) => this.taxonomyRepair = result,
-        error: () => this.taxonomyError = 'Impossibile analizzare le tassonomie mancanti.',
-      });
+  /** Opens the already existing job if the page was refreshed: opening never starts deletion. */
+  openCleanupPanel(): void {
+    if (!this.auth.isAdmin()) return;
+    this.cleanupPanelOpen = true;
+    this.fetchCleanupStatus(true);
   }
 
-  applyTaxonomySuggestions(): void {
-    if (!this.taxonomyRepair?.suggested || this.taxonomyLoading || this.taxonomyApplying) return;
-    this.taxonomyApplying = true;
-    this.taxonomyError = '';
-    this.affiliateCatalogService
-      .repairProductTaxonomies(true)
-      .pipe(finalize(() => this.taxonomyApplying = false))
+  closeCleanupPanel(): void {
+    this.cleanupPanelOpen = false;
+    this.cleanupPolling?.unsubscribe();
+    this.cleanupPolling = undefined;
+    this.cleanupError = '';
+    this.cleanupConfirmationText = '';
+    this.cleanupBackupConfirmed = false;
+  }
+
+  refreshCleanupStatus(): void {
+    if (this.cleanupPanelOpen && !this.cleanupLoading && !this.cleanupSubmitting) {
+      this.fetchCleanupStatus(true);
+    }
+  }
+
+  private fetchCleanupStatus(showLoading: boolean): void {
+    if (!this.cleanupPanelOpen) return;
+    if (showLoading) this.cleanupLoading = true;
+    this.affiliateCatalogService.getUnclassifiedCleanupStatus()
+      .pipe(finalize(() => { if (showLoading) this.cleanupLoading = false; }))
       .subscribe({
-        next: (result) => {
-          this.taxonomyRepair = result;
-          if (result.updated > 0) this.refresh();
+        next: (job) => {
+          if (!this.cleanupPanelOpen) return;
+          this.cleanupError = '';
+          this.setCleanupJob(job);
         },
-        error: () => this.taxonomyError = 'Impossibile applicare le tassonomie proposte.',
+        error: (error: { status?: number }) => {
+          if (!this.cleanupPanelOpen) return;
+          this.cleanupError = this.cleanupApiError(error, 'Impossibile leggere lo stato della bonifica.');
+          this.stopCleanupPolling();
+        },
       });
   }
 
-  closeTaxonomyRepair(): void {
-    if (this.taxonomyLoading || this.taxonomyApplying) return;
-    this.taxonomyRepair = null;
-    this.taxonomyError = '';
+  private setCleanupJob(job: AffiliateUnclassifiedCleanupJob | null): void {
+    const previous = this.cleanupJob;
+    if (previous?.runId !== job?.runId || (previous?.status !== 'PREVIEW_READY' && job?.status === 'PREVIEW_READY')) {
+      this.cleanupConfirmationText = '';
+      this.cleanupBackupConfirmed = false;
+    }
+    this.cleanupJob = job;
+
+    if (job?.status === 'PREVIEWING' || job?.status === 'RUNNING' || job?.status === 'STOP_REQUESTED') {
+      this.startCleanupPolling();
+    } else {
+      this.stopCleanupPolling();
+    }
+    if (job?.status === 'SUCCESS' && previous?.status === 'RUNNING') {
+      this.refresh();
+    }
+  }
+
+  private startCleanupPolling(): void {
+    if (this.cleanupPolling || !this.cleanupPanelOpen) return;
+    this.cleanupPolling = timer(4000, 4000)
+      .pipe(exhaustMap(() => this.affiliateCatalogService.getUnclassifiedCleanupStatus()))
+      .subscribe({
+        next: (job) => {
+          if (this.cleanupPanelOpen) {
+            this.cleanupError = '';
+            this.setCleanupJob(job);
+          }
+        },
+        error: (error: { status?: number }) => {
+          if (this.cleanupPanelOpen) {
+            this.cleanupError = this.cleanupApiError(error, 'Impossibile aggiornare lo stato della bonifica.');
+          }
+          this.stopCleanupPolling();
+        },
+      });
+  }
+
+  private stopCleanupPolling(): void {
+    this.cleanupPolling?.unsubscribe();
+    this.cleanupPolling = undefined;
+  }
+
+  requestCleanupPreview(): void {
+    if (!this.auth.isAdmin() || !this.cleanupPanelOpen || this.cleanupSubmitting
+      || this.cleanupLoading || this.isCleanupActive()) return;
+    this.cleanupSubmitting = true;
+    this.cleanupError = '';
+    this.cleanupConfirmationText = '';
+    this.cleanupBackupConfirmed = false;
+    this.affiliateCatalogService.previewUnclassifiedCleanup()
+      .pipe(finalize(() => this.cleanupSubmitting = false))
+      .subscribe({
+        next: (job) => this.setCleanupJob(job),
+        error: (error: { status?: number }) =>
+          this.cleanupError = this.cleanupApiError(error, 'Impossibile avviare l’anteprima della bonifica.'),
+      });
+  }
+
+  isCleanupActive(): boolean {
+    return ['PREVIEWING', 'RUNNING', 'STOP_REQUESTED'].includes(this.cleanupJob?.status ?? '');
+  }
+
+  canConfirmCleanup(): boolean {
+    return this.auth.isAdmin() && this.cleanupPanelOpen && !this.cleanupLoading && !this.cleanupSubmitting
+      && this.cleanupJob?.status === 'PREVIEW_READY'
+      && this.cleanupJob.preview.eligible > 0
+      && this.cleanupBackupConfirmed && this.cleanupConfirmationText.trim().toUpperCase() === 'ELIMINA';
+  }
+
+  confirmCleanupDeletion(): void {
+    if (!this.canConfirmCleanup()) return;
+    const job = this.cleanupJob!;
+    confirm(
+      `La bonifica eliminerà fino a ${job.preview.eligible} prodotti non classificati, ${job.preview.variants} varianti e ${job.preview.offers} offerte. I prodotti protetti saranno conservati. Hai verificato il backup Firestore? L'operazione è irreversibile.`,
+      'Conferma definitiva bonifica catalogo',
+      (accepted) => { if (accepted) this.executeCleanupDeletion(job.runId); },
+    );
+  }
+
+  private executeCleanupDeletion(runId: string): void {
+    if (!this.canConfirmCleanup() || this.cleanupJob?.runId !== runId) return;
+    this.cleanupSubmitting = true;
+    this.cleanupError = '';
+    this.affiliateCatalogService.confirmUnclassifiedCleanup(runId)
+      .pipe(finalize(() => this.cleanupSubmitting = false))
+      .subscribe({
+        next: (job) => {
+          this.cleanupConfirmationText = '';
+          this.cleanupBackupConfirmed = false;
+          this.setCleanupJob(job);
+        },
+        error: (error: { status?: number }) =>
+          this.cleanupError = this.cleanupApiError(error, 'Impossibile confermare la bonifica.'),
+      });
+  }
+
+  requestCleanupStop(): void {
+    const job = this.cleanupJob;
+    if (!this.auth.isAdmin() || !this.cleanupPanelOpen || !job
+      || !['PREVIEWING', 'RUNNING'].includes(job.status) || this.cleanupSubmitting) return;
+    this.cleanupSubmitting = true;
+    this.cleanupError = '';
+    this.affiliateCatalogService.stopUnclassifiedCleanup(job.runId)
+      .pipe(finalize(() => this.cleanupSubmitting = false))
+      .subscribe({
+        next: (updated) => this.setCleanupJob(updated),
+        error: (error: { status?: number }) =>
+          this.cleanupError = this.cleanupApiError(error, 'Impossibile richiedere l’arresto della bonifica.'),
+      });
+  }
+
+  private cleanupApiError(error: { status?: number }, fallback: string): string {
+    if (error?.status === 404) return 'Funzione non disponibile: verifica che il backend aggiornato sia stato distribuito.';
+    if (error?.status === 409) return 'Operazione non consentita: anteprima scaduta, tassonomia modificata o sincronizzazione in corso. Aggiorna lo stato ed eventualmente ripeti l’anteprima.';
+    if (error?.status === 403) return 'Non disponi dei permessi di amministratore per questa operazione.';
+    return fallback;
   }
 
   async loadMore(): Promise<void> {
