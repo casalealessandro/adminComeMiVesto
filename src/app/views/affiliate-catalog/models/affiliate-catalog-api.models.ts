@@ -61,6 +61,41 @@ export interface CatalogTaxonomyRepairResult {
   previewTruncated: boolean;
 }
 
+/** Global cleanup of unclassified affiliate catalog products (not feed cleanup). */
+export type AffiliateUnclassifiedCleanupStatus =
+  | 'PREVIEWING' | 'PREVIEW_READY' | 'RUNNING'
+  | 'STOP_REQUESTED' | 'STOPPED' | 'SUCCESS' | 'FAILED';
+
+export interface AffiliateUnclassifiedCleanupCounters {
+  scanned: number;
+  unclassified: number;
+  eligible: number;
+  protectedManual: number;
+  protectedOutfits: number;
+  protectedShared: number;
+  variants: number;
+  offers: number;
+}
+
+export interface AffiliateUnclassifiedCleanupJob {
+  runId: string;
+  status: AffiliateUnclassifiedCleanupStatus;
+  cursor: string | null;
+  createdAt: number;
+  updatedAt: number;
+  completedAt: number | null;
+  previewCompletedAt: number | null;
+  taxonomyFingerprint: string | null;
+  preview: AffiliateUnclassifiedCleanupCounters;
+  deleted: {
+    products: number;
+    variants: number;
+    offers: number;
+    skippedProtected: number;
+  };
+  lastError: string | null;
+}
+
 export interface AffiliateFeedDeactivationOutfit {
   outfitId: string;
   title: string;

@@ -1,4 +1,4 @@
-<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || productsLoading || loadingMore || taxonomyLoading || taxonomyApplying">
+<section class="affiliate-products" aria-labelledby="affiliate-products-title" [attr.aria-busy]="loading || productsLoading || loadingMore || cleanupLoading || cleanupSubmitting">
   <header class="affiliate-products__header">
     <div>
       <h2 id="affiliate-products-title">Prodotti</h2>
@@ -9,13 +9,14 @@
 
     <div class="affiliate-products__actions">
       <button
+        *ngIf="auth.isAdmin()"
         type="button"
-        class="btn btn-outline-secondary"
-        (click)="analyzeMissingTaxonomies()"
-        [disabled]="loading || productsLoading || loadingMore || taxonomyLoading || taxonomyApplying">
-        <span *ngIf="taxonomyLoading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        <span *ngIf="!taxonomyLoading" class="mdi mdi-tag-search-outline" aria-hidden="true"></span>
-        {{ taxonomyLoading ? 'Analisi…' : 'Analizza tassonomie mancanti' }}
+        class="btn btn-outline-danger"
+        (click)="openCleanupPanel()"
+        [disabled]="cleanupLoading || cleanupSubmitting">
+        <span *ngIf="cleanupLoading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span *ngIf="!cleanupLoading" class="mdi mdi-delete-sweep-outline" aria-hidden="true"></span>
+        Bonifica catalogo
       </button>
 
       <button type="button" class="btn btn-outline-primary" (click)="refresh()" [disabled]="loading || productsLoading || loadingMore">
@@ -26,63 +27,118 @@
   </header>
 
 
-  <div *ngIf="taxonomyError" class="alert alert-danger affiliate-products__error" role="alert">
-    <span>{{ taxonomyError }}</span>
-    <button type="button" class="btn btn-sm btn-outline-danger" (click)="analyzeMissingTaxonomies()" [disabled]="taxonomyLoading || taxonomyApplying">Riprova</button>
-  </div>
-
-  <section *ngIf="taxonomyRepair as repair" class="taxonomy-repair" aria-labelledby="taxonomy-repair-title">
-    <header class="taxonomy-repair__header">
+  <section *ngIf="cleanupPanelOpen && auth.isAdmin()" class="catalog-cleanup" aria-labelledby="catalog-cleanup-title">
+    <header class="catalog-cleanup__header">
       <div>
-        <h3 id="taxonomy-repair-title">Tassonomie mancanti</h3>
-        <p>Controlla i prodotti senza sottocategoria e propone solo associazioni sicure.</p>
+        <h3 id="catalog-cleanup-title">Bonifica prodotti non classificati</h3>
+        <p>Controlla il catalogo completo, inclusi i prodotti inattivi. L'analisi è una simulazione: non cancella nulla.</p>
       </div>
-      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeTaxonomyRepair()" [disabled]="taxonomyApplying">Chiudi</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeCleanupPanel()">Chiudi</button>
     </header>
 
-    <div class="taxonomy-repair__summary" role="status">
-      <div><strong>{{ repair.scanned }}</strong><span>senza sottocategoria</span></div>
-      <div><strong>{{ repair.eligible }}</strong><span>analizzabili</span></div>
-      <div><strong>{{ repair.suggested }}</strong><span>proposte sicure</span></div>
-      <div><strong>{{ repair.ambiguous }}</strong><span>ambigue</span></div>
-      <div><strong>{{ repair.noMatch }}</strong><span>senza match</span></div>
-      <div><strong>{{ repair.invalidCategory }}</strong><span>categoria non gestibile</span></div>
+    <div *ngIf="cleanupError" class="alert alert-danger catalog-cleanup__error" role="alert">
+      <span>{{ cleanupError }}</span>
+      <button type="button" class="btn btn-sm btn-outline-danger" (click)="refreshCleanupStatus()"
+        [disabled]="cleanupLoading || cleanupSubmitting">Aggiorna stato</button>
     </div>
 
-    <div *ngIf="repair.updated > 0" class="alert alert-success taxonomy-repair__message" role="status">
-      <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
-      Aggiornate {{ repair.updated }} sottocategorie. I prodotti già classificati non verranno sovrascritti da questa operazione.
-    </div>
-
-    <div *ngIf="repair.preview.length" class="taxonomy-repair__preview">
-      <article *ngFor="let suggestion of repair.preview" class="taxonomy-repair__item">
-        <div>
-          <strong>{{ suggestion.productName || suggestion.productId }}</strong>
-          <span>Match descrizione: “{{ suggestion.matchedText }}”</span>
-        </div>
-        <div class="taxonomy-repair__target">
-          <span class="mdi mdi-arrow-right" aria-hidden="true"></span>
-          <strong>{{ suggestion.suggestedSubcategoryName }}</strong>
-        </div>
-      </article>
-    </div>
-
-    <p *ngIf="repair.previewTruncated" class="taxonomy-repair__hint">
-      La preview mostra le prime 100 proposte. Per sicurezza vengono applicate solo quelle visualizzate; riesegui l'analisi per il blocco successivo.
+    <p *ngIf="cleanupLoading" class="catalog-cleanup__hint" role="status">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      Caricamento stato bonifica…
     </p>
 
-    <p *ngIf="!repair.preview.length && repair.updated === 0" class="taxonomy-repair__hint">
-      Nessuna sottocategoria può essere assegnata automaticamente con i criteri conservativi attuali.
-    </p>
+    <ng-container *ngIf="!cleanupLoading">
+      <p class="catalog-cleanup__hint" *ngIf="!cleanupJob">
+        Nessuna analisi disponibile. Avvia un'anteprima per conoscere i prodotti eliminabili prima di qualsiasi cancellazione.
+      </p>
 
-    <footer *ngIf="repair.suggested > 0 && repair.updated === 0" class="taxonomy-repair__footer">
-      <span>Nessun prodotto viene modificato finché non confermi questa operazione.</span>
-      <button type="button" class="btn btn-primary" (click)="applyTaxonomySuggestions()" [disabled]="taxonomyApplying || taxonomyLoading">
-        <span *ngIf="taxonomyApplying" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        <span *ngIf="!taxonomyApplying" class="mdi mdi-check" aria-hidden="true"></span>
-        {{ taxonomyApplying ? 'Applicazione…' : 'Applica ' + repair.preview.length + ' proposte visualizzate' }}
-      </button>
-    </footer>
+      <ng-container *ngIf="cleanupJob as job">
+        <div class="catalog-cleanup__status" role="status" aria-live="polite">
+          <span class="badge text-bg-secondary" *ngIf="job.status === 'PREVIEWING'">Analisi in corso</span>
+          <span class="badge text-bg-info" *ngIf="job.status === 'PREVIEW_READY'">Anteprima pronta</span>
+          <span class="badge text-bg-warning" *ngIf="job.status === 'RUNNING'">Cancellazione in corso</span>
+          <span class="badge text-bg-warning" *ngIf="job.status === 'STOP_REQUESTED'">Arresto richiesto</span>
+          <span class="badge text-bg-secondary" *ngIf="job.status === 'STOPPED'">Interrotta</span>
+          <span class="badge text-bg-success" *ngIf="job.status === 'SUCCESS'">Completata</span>
+          <span class="badge text-bg-danger" *ngIf="job.status === 'FAILED'">Errore</span>
+          <span class="catalog-cleanup__hint">ID operazione: {{ job.runId }}</span>
+          <span class="catalog-cleanup__hint" *ngIf="isCleanupActive()">
+            Aggiornamento automatico ogni 4 secondi
+          </span>
+        </div>
+
+        <div class="catalog-cleanup__summary" aria-label="Riepilogo bonifica">
+          <div><strong>{{ job.preview.scanned | number }}</strong><span>prodotti analizzati</span></div>
+          <div><strong>{{ job.preview.unclassified | number }}</strong><span>non classificati</span></div>
+          <div><strong>{{ job.preview.eligible | number }}</strong><span>eliminabili</span></div>
+          <div><strong>{{ job.preview.protectedManual | number }}</strong><span>classificazioni protette</span></div>
+          <div><strong>{{ job.preview.protectedOutfits | number }}</strong><span>protetti da outfit</span></div>
+          <div><strong>{{ job.preview.protectedShared | number }}</strong><span>condivisi tra feed</span></div>
+          <div><strong>{{ job.preview.variants | number }}</strong><span>varianti coinvolte</span></div>
+          <div><strong>{{ job.preview.offers | number }}</strong><span>offerte coinvolte</span></div>
+        </div>
+
+        <div class="catalog-cleanup__summary" *ngIf="job.status === 'RUNNING' || job.status === 'STOP_REQUESTED' || job.status === 'STOPPED' || job.status === 'SUCCESS'">
+          <div><strong>{{ job.deleted.products | number }}</strong><span>prodotti eliminati</span></div>
+          <div><strong>{{ job.deleted.variants | number }}</strong><span>varianti eliminate</span></div>
+          <div><strong>{{ job.deleted.offers | number }}</strong><span>offerte eliminate</span></div>
+          <div><strong>{{ job.deleted.skippedProtected | number }}</strong><span>salvati dai controlli</span></div>
+        </div>
+
+        <div *ngIf="job.status === 'FAILED'" class="alert alert-danger" role="alert">
+          Operazione non completata. {{ job.lastError || 'Verifica lo stato del backend e ripeti l’analisi.' }}
+        </div>
+        <div *ngIf="job.status === 'SUCCESS'" class="alert alert-success" role="status">
+          Bonifica completata. I prodotti protetti e quelli classificati sono stati conservati.
+        </div>
+
+        <div *ngIf="job.status === 'PREVIEW_READY' && job.preview.eligible === 0" class="alert alert-info" role="status">
+          Nessun prodotto idoneo alla cancellazione. Non è necessario confermare.
+        </div>
+
+        <div *ngIf="job.status === 'PREVIEW_READY' && job.preview.eligible > 0" class="catalog-cleanup__confirmation">
+          <p class="catalog-cleanup__warning">
+            <span class="mdi mdi-alert-outline" aria-hidden="true"></span>
+            Attenzione: confermando eliminerai definitivamente fino a {{ job.preview.eligible | number }} prodotti
+            non classificati, con le relative varianti e offerte. Un rollback del codice non può recuperarli.
+            L'anteprima è valida per 60 minuti.
+          </p>
+          <label class="form-check">
+            <input type="checkbox" class="form-check-input"
+              [checked]="cleanupBackupConfirmed"
+              (change)="cleanupBackupConfirmed = $any($event.target).checked">
+            <span class="form-check-label">Ho verificato la disponibilità di un backup Firestore ripristinabile.</span>
+          </label>
+          <div class="catalog-cleanup__confirmation-field">
+            <label for="catalog-cleanup-confirm" class="form-label">
+              Scrivi <strong>ELIMINA</strong> per abilitare la conferma
+            </label>
+            <input id="catalog-cleanup-confirm" class="form-control" type="text"
+              autocomplete="off" [value]="cleanupConfirmationText"
+              (input)="cleanupConfirmationText = $any($event.target).value"
+              [disabled]="cleanupSubmitting" placeholder="ELIMINA">
+          </div>
+          <button type="button" class="btn btn-danger" (click)="confirmCleanupDeletion()"
+            [disabled]="!canConfirmCleanup()">
+            <span *ngIf="cleanupSubmitting" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            Conferma cancellazione massiva
+          </button>
+        </div>
+      </ng-container>
+
+      <footer class="catalog-cleanup__footer">
+        <button type="button" class="btn btn-outline-primary" (click)="requestCleanupPreview()"
+          [disabled]="cleanupSubmitting || cleanupLoading || isCleanupActive()">
+          <span *ngIf="cleanupSubmitting && !isCleanupActive()" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          {{ cleanupJob?.status === 'PREVIEW_READY' ? 'Ripeti analisi' : 'Analizza catalogo' }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary" (click)="refreshCleanupStatus()"
+          [disabled]="cleanupLoading || cleanupSubmitting">Aggiorna stato</button>
+        <button type="button" class="btn btn-outline-danger"
+          *ngIf="cleanupJob?.status === 'PREVIEWING' || cleanupJob?.status === 'RUNNING'"
+          (click)="requestCleanupStop()" [disabled]="cleanupSubmitting">Arresta operazione</button>
+      </footer>
+    </ng-container>
   </section>
 
   <div *ngIf="error" class="alert alert-danger affiliate-products__error" role="alert">

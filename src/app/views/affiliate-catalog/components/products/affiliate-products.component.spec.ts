@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { GridLoadRequest } from '../../../../core/public-api';
 import { AuthService } from '../../../../services/auth.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AffiliateProgram, CatalogProduct } from '../../models/affiliate-catalog.models';
+import { AffiliateUnclassifiedCleanupJob } from '../../models/affiliate-catalog-api.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
   AFFILIATE_PRODUCTS_PAGE_SIZE,
@@ -52,23 +53,22 @@ describe('Affiliate products', () => {
     lastSeenAt: 3,
   };
 
-  const taxonomyPreview = {
-    scanned: 10,
-    eligible: 8,
-    suggested: 2,
-    ambiguous: 1,
-    noMatch: 5,
-    invalidCategory: 2,
-    updated: 0,
-    preview: [{
-      productId: 'product-2',
-      productName: 'Pantalone cargo',
-      category: 'pants-parent',
-      suggestedSubcategory: 'cargo-child',
-      suggestedSubcategoryName: 'Cargo',
-      matchedText: 'Cargo',
-    }],
-    previewTruncated: false,
+  const cleanupPreview: AffiliateUnclassifiedCleanupJob = {
+    runId: '9aa49e50-3333-4444-8888-4e198cf5fe11',
+    status: 'PREVIEW_READY',
+    cursor: null,
+    createdAt: 1000,
+    updatedAt: 1002,
+    completedAt: 1002,
+    previewCompletedAt: 1002,
+    taxonomyFingerprint: 'abc123',
+    preview: {
+      scanned: 100, unclassified: 25, eligible: 12,
+      protectedManual: 4, protectedOutfits: 5, protectedShared: 4,
+      variants: 15, offers: 14,
+    },
+    deleted: { products: 0, variants: 0, offers: 0, skippedProtected: 0 },
+    lastError: null,
   };
 
   it('keeps the products grid read-only and exposes Programma, Categoria and Visibile app as filters', () => {
@@ -166,7 +166,7 @@ describe('Affiliate products', () => {
     expect(onPage).toHaveBeenCalledWith([product], false, true);
   });
 
-  describe('component metadata, taxonomy repair and detail navigation', () => {
+  describe('component metadata, catalog cleanup and detail navigation', () => {
     let fixture: ComponentFixture<AffiliateProductsComponent>;
     let component: AffiliateProductsComponent;
     let service: jasmine.SpyObj<AffiliateCatalogService>;
@@ -177,7 +177,10 @@ describe('Affiliate products', () => {
         'getProducts',
         'getPrograms',
         'getProductCategories',
-        'repairProductTaxonomies',
+        'getUnclassifiedCleanupStatus',
+        'previewUnclassifiedCleanup',
+        'confirmUnclassifiedCleanup',
+        'stopUnclassifiedCleanup',
       ]);
       service.getPrograms.and.returnValue(of([program]));
       service.getProductCategories.and.returnValue(of(['Clothing']));
@@ -185,7 +188,10 @@ describe('Affiliate products', () => {
         data: [product],
         pagination: { nextCursor: null, hasMore: false },
       }));
-      service.repairProductTaxonomies.and.returnValue(of(taxonomyPreview));
+      service.getUnclassifiedCleanupStatus.and.returnValue(of(null));
+      service.previewUnclassifiedCleanup.and.returnValue(of({ ...cleanupPreview, status: 'PREVIEWING' }));
+      service.confirmUnclassifiedCleanup.and.returnValue(of({ ...cleanupPreview, status: 'RUNNING' }));
+      service.stopUnclassifiedCleanup.and.returnValue(of({ ...cleanupPreview, status: 'STOP_REQUESTED' }));
 
       await TestBed.configureTestingModule({
         imports: [AffiliateProductsComponent],
@@ -217,31 +223,101 @@ describe('Affiliate products', () => {
       expect(component.trackByProductId(0, product)).toBe(product.id);
     });
 
-    it('analyzes missing taxonomies without applying changes', () => {
-      component.analyzeMissingTaxonomies();
+    it('opens the catalog cleanup panel and reads status without starting a destructive operation', () => {
+      service.getUnclassifiedCleanupStatus.and.returnValue(of(cleanupPreview));
 
-      expect(service.repairProductTaxonomies).toHaveBeenCalledOnceWith(false);
-      expect(component.taxonomyRepair).toEqual(taxonomyPreview);
+      component.openCleanupPanel();
+
+      expect(component.cleanupPanelOpen).toBeTrue();
+      expect(component.cleanupJob).toEqual(cleanupPreview);
+      expect(service.getUnclassifiedCleanupStatus).toHaveBeenCalledTimes(1);
+      expect(service.previewUnclassifiedCleanup).not.toHaveBeenCalled();
+      expect(service.confirmUnclassifiedCleanup).not.toHaveBeenCalled();
     });
 
-    it('applies only after an explicit preview and refreshes products when updates were written', () => {
-      component.taxonomyRepair = taxonomyPreview;
-      service.repairProductTaxonomies.and.returnValue(of({ ...taxonomyPreview, updated: 2 }));
-      const refresh = spyOn(component, 'refresh');
+    it('starts only the preview when requested', () => {
+      component.openCleanupPanel();
+      component.requestCleanupPreview();
 
-      component.applyTaxonomySuggestions();
-
-      expect(service.repairProductTaxonomies).toHaveBeenCalledOnceWith(true);
-      expect(component.taxonomyRepair?.updated).toBe(2);
-      expect(refresh).toHaveBeenCalledTimes(1);
+      expect(service.previewUnclassifiedCleanup).toHaveBeenCalledTimes(1);
+      expect(component.cleanupJob?.status).toBe('PREVIEWING');
+      expect(service.confirmUnclassifiedCleanup).not.toHaveBeenCalled();
     });
 
-    it('does not call apply when there are no safe suggestions', () => {
-      component.taxonomyRepair = { ...taxonomyPreview, suggested: 0, preview: [] };
+    it('requires a ready preview, verified backup and typed ELIMINA before enabling deletion', () => {
+      service.getUnclassifiedCleanupStatus.and.returnValue(of(cleanupPreview));
+      component.openCleanupPanel();
 
-      component.applyTaxonomySuggestions();
+      expect(component.canConfirmCleanup()).toBeFalse();
+      component.cleanupConfirmationText = 'ELIMINA';
+      expect(component.canConfirmCleanup()).toBeFalse();
+      component.cleanupBackupConfirmed = true;
+      expect(component.canConfirmCleanup()).toBeTrue();
 
-      expect(service.repairProductTaxonomies).not.toHaveBeenCalled();
+      // The network request can only be executed after the final confirmation dialog is accepted.
+      expect(service.confirmUnclassifiedCleanup).not.toHaveBeenCalled();
+      (component as any).executeCleanupDeletion(cleanupPreview.runId);
+      expect(service.confirmUnclassifiedCleanup).toHaveBeenCalledOnceWith(cleanupPreview.runId);
+      expect(component.cleanupJob?.status).toBe('RUNNING');
+      expect(component.cleanupBackupConfirmed).toBeFalse();
+      expect(component.cleanupConfirmationText).toBe('');
+    });
+
+    it('does not submit a deletion when no products are eligible', () => {
+      service.getUnclassifiedCleanupStatus.and.returnValue(of({
+        ...cleanupPreview, preview: { ...cleanupPreview.preview, eligible: 0 },
+      }));
+      component.openCleanupPanel();
+      component.cleanupBackupConfirmed = true;
+      component.cleanupConfirmationText = 'ELIMINA';
+
+      expect(component.canConfirmCleanup()).toBeFalse();
+      (component as any).executeCleanupDeletion(cleanupPreview.runId);
+      expect(service.confirmUnclassifiedCleanup).not.toHaveBeenCalled();
+    });
+
+    it('requires confirmation of the current run before sending any deletion', () => {
+      service.getUnclassifiedCleanupStatus.and.returnValue(of(cleanupPreview));
+      component.openCleanupPanel();
+      component.cleanupBackupConfirmed = true;
+      component.cleanupConfirmationText = 'ELIMINA';
+
+      (component as any).executeCleanupDeletion('stale-run-id');
+
+      expect(service.confirmUnclassifiedCleanup).not.toHaveBeenCalled();
+    });
+
+    it('can stop a running cleanup and preserve its status', () => {
+      service.getUnclassifiedCleanupStatus.and.returnValue(of({ ...cleanupPreview, status: 'RUNNING' }));
+      component.openCleanupPanel();
+      component.requestCleanupStop();
+
+      expect(service.stopUnclassifiedCleanup).toHaveBeenCalledOnceWith(cleanupPreview.runId);
+      expect(component.cleanupJob?.status).toBe('STOP_REQUESTED');
+    });
+
+    it('shows a clear error if the backend cleanup endpoint is not yet deployed', () => {
+      service.getUnclassifiedCleanupStatus.and.returnValue(
+        throwError(() => ({ status: 404 })),
+      );
+      component.openCleanupPanel();
+
+      expect(component.cleanupError).toContain('backend aggiornato');
+      expect(service.previewUnclassifiedCleanup).not.toHaveBeenCalled();
+    });
+
+    it('closing the cleanup panel disables confirmation and stops polling', () => {
+      service.getUnclassifiedCleanupStatus.and.returnValue(of(cleanupPreview));
+      component.openCleanupPanel();
+      component.cleanupBackupConfirmed = true;
+      component.cleanupConfirmationText = 'ELIMINA';
+
+      component.closeCleanupPanel();
+
+      expect(component.cleanupPanelOpen).toBeFalse();
+      expect(component.canConfirmCleanup()).toBeFalse();
+      expect(component.cleanupConfirmationText).toBe('');
+      expect(component.cleanupBackupConfirmed).toBeFalse();
     });
 
     it('preserves active filters when navigating to the product detail', async () => {
