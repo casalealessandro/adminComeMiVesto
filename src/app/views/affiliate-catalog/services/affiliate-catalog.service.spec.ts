@@ -491,6 +491,46 @@ describe('AffiliateCatalogService release contract', () => {
     expect(response).toEqual(['Clothing', 'Shoes']);
   });
 
+
+  it('reads the global unclassified cleanup status without starting a new job', () => {
+    let response: unknown;
+    service.getUnclassifiedCleanupStatus().subscribe((value) => response = value);
+    const request = http.expectOne(`${baseUrl}/catalog-unclassified-cleanup`);
+    expect(request.request.method).toBe('GET');
+    const job = { runId: 'preview-1', status: 'PREVIEW_READY', preview: { eligible: 5 } };
+    request.flush({ data: job });
+    expect(response).toEqual(job);
+  });
+
+  it('starts preview with an empty body and never sends a destructive command', () => {
+    let response: unknown;
+    service.previewUnclassifiedCleanup().subscribe((value) => response = value);
+    const request = http.expectOne(`${baseUrl}/catalog-unclassified-cleanup/preview`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    const job = { runId: 'preview-2', status: 'PREVIEWING' };
+    request.flush({ data: job });
+    expect(response).toEqual(job);
+  });
+
+  it('confirms deletion only with the exact preview runId', () => {
+    let response: unknown;
+    service.confirmUnclassifiedCleanup('run-id-123').subscribe((value) => response = value);
+    const request = http.expectOne(`${baseUrl}/catalog-unclassified-cleanup/confirm`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ runId: 'run-id-123' });
+    request.flush({ data: { runId: 'run-id-123', status: 'RUNNING' } });
+    expect(response).toEqual({ runId: 'run-id-123', status: 'RUNNING' });
+  });
+
+  it('sends a stop request for the current cleanup run', () => {
+    service.stopUnclassifiedCleanup('run-id-123').subscribe();
+    const request = http.expectOne(`${baseUrl}/catalog-unclassified-cleanup/stop`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ runId: 'run-id-123' });
+    request.flush({ data: { runId: 'run-id-123', status: 'STOP_REQUESTED' } });
+  });
+
   it('omits cursor pagination parameters when they are not provided', () => {
     service.getProducts().subscribe();
 
