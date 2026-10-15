@@ -35,6 +35,7 @@ import {
   AiOutfitPreviewRequest,
   AiOutfitPreviewResult,
   CatalogTaxonomyRepairResult,
+  AffiliateUnclassifiedCleanupJob,
   OutfitColorOption,
   OutfitStyleOption,
 } from '../models/affiliate-catalog-api.models';
@@ -357,6 +358,38 @@ export class AffiliateCatalogService {
   updateProduct(id: string, input: AffiliateProductUpdateInput): Observable<CatalogProduct> {
     return this.http
       .put<AffiliateApiResponse<CatalogProduct>>(`${this.baseUrl}/products/${id}`, input)
+      .pipe(map((response) => response.data));
+  }
+
+  getUnclassifiedCleanupStatus(): Observable<AffiliateUnclassifiedCleanupJob | null> {
+    return this.http
+      .get<AffiliateApiResponse<AffiliateUnclassifiedCleanupJob | null>>(
+        `${this.baseUrl}/catalog-unclassified-cleanup`,
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  previewUnclassifiedCleanup(): Observable<AffiliateUnclassifiedCleanupJob> {
+    return this.http
+      .post<AffiliateApiResponse<AffiliateUnclassifiedCleanupJob>>(
+        `${this.baseUrl}/catalog-unclassified-cleanup/preview`, {},
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  confirmUnclassifiedCleanup(runId: string): Observable<AffiliateUnclassifiedCleanupJob> {
+    return this.http
+      .post<AffiliateApiResponse<AffiliateUnclassifiedCleanupJob>>(
+        `${this.baseUrl}/catalog-unclassified-cleanup/confirm`, { runId },
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  stopUnclassifiedCleanup(runId: string): Observable<AffiliateUnclassifiedCleanupJob> {
+    return this.http
+      .post<AffiliateApiResponse<AffiliateUnclassifiedCleanupJob>>(
+        `${this.baseUrl}/catalog-unclassified-cleanup/stop`, { runId },
+      )
       .pipe(map((response) => response.data));
   }
 
