@@ -10,7 +10,13 @@ import { AffiliateCatalogService, AffiliateMappingRule, AffiliateMappingRuleType
 import { PopUpService } from '../../../../core/popup/popup.service';
 import type { AffiliateMappingRuleFormContext, AffiliateMappingRuleFormResult } from './affiliate-mapping-rule-form-host.component';
 
-const TYPES: AffiliateMappingRuleType[] = ['CATEGORY', 'COLOR', 'GENDER', 'SEASON', 'STYLE'];
+const EDITABLE_TYPES: readonly AffiliateMappingRuleType[] = ['CATEGORY', 'COLOR', 'GENDER', 'SEASON', 'STYLE'];
+
+/** Only expose STYLE once the connected backend actually returns STYLE rules. */
+export const mappingRuleSelectTypes = (rules: readonly AffiliateMappingRule[]): AffiliateMappingRuleType[] => {
+  const available = new Set(rules.map(rule => rule.type));
+  return EDITABLE_TYPES.filter(type => type !== 'STYLE' || available.has('STYLE'));
+};
 const values = (input: unknown): string[] => Array.isArray(input) ?
   input.filter((v): v is string => typeof v === 'string') : [];
 const lines = (input: unknown): string[] =>
@@ -101,7 +107,7 @@ export class AffiliateMappingRulesComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly api = inject(AffiliateCatalogService);
   private readonly popupService = inject(PopUpService);
-  readonly types = TYPES;
+  types: AffiliateMappingRuleType[] = mappingRuleSelectTypes([]);
   all: AffiliateMappingRule[] = [];
   type: AffiliateMappingRuleType = 'CATEGORY';
   query = '';
@@ -129,7 +135,12 @@ export class AffiliateMappingRulesComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.api.getMappingRules().pipe(timeout({ first: 20000 }), finalize(() => this.loading = false)).subscribe({
-      next: rules => { this.all = rules; this.applyFilter(); },
+      next: rules => {
+        this.all = rules;
+        this.types = mappingRuleSelectTypes(rules);
+        if (!this.types.includes(this.type)) this.type = 'CATEGORY';
+        this.applyFilter();
+      },
       error: () => { this.error = 'Caricamento dizionari non riuscito o scaduto. Riprova con Aggiorna e controlla la risposta HTTP di mapping-rules.'; },
     });
   }
