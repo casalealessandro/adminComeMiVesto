@@ -18,7 +18,7 @@ import { AuthService } from '../../../../services/auth.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { alert, confirm } from '../../../../core/dialogs/ui-dialogs';
 import { AffiliateProductFormResult } from '../../forms/affiliate-product-form-host.component';
-import { AffiliateProgram, CatalogProduct, CatalogSeason } from '../../models/affiliate-catalog.models';
+import { AffiliateProgram, CatalogProduct, CatalogSeason, CatalogReclassificationPreview, FashionEnrichmentJob } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 export const AFFILIATE_PRODUCTS_PAGE_SIZE = 50;
@@ -259,6 +259,13 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   productsLoading = false;
   loadingMore = false;
   deletingProducts = false;
+  reclassificationPanelOpen = false;
+  reclassificationBusy = false;
+  reclassificationPreview: CatalogReclassificationPreview | null = null;
+  reclassificationJob: FashionEnrichmentJob | null = null;
+  reclassificationError = '';
+  reclassificationNotice = '';
+  private reclassificationPolling?: Subscription;
   cleanupPanelOpen = false;
   cleanupLoading = false;
   cleanupSubmitting = false;
@@ -325,6 +332,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.mobileLoadMoreObserver?.disconnect();
     this.cleanupPolling?.unsubscribe();
+    this.reclassificationPolling?.unsubscribe();
   }
 
   setSeason(value: string): void {
@@ -380,6 +388,119 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
           this.error = 'Impossibile inizializzare i filtri del catalogo affiliato.';
         },
       });
+  }
+
+  openReclassificationPanel(): void {
+    if (!this.auth.isAdmin()) return;
+    this.reclassificationPanelOpen = true;
+    this.refreshReclassificationStatus();
+  }
+
+  closeReclassificationPanel(): void {
+    this.reclassificationPanelOpen = false;
+    this.reclassificationPolling?.unsubscribe();
+    this.reclassificationPolling = undefined;
+    this.reclassificationError = '';
+    this.reclassificationNotice = '';
+    this.reclassificationPreview = null;
+  }
+
+  get reclassificationRunning(): boolean {
+    return this.reclassificationJob?.status === 'QUEUED' || this.reclassificationJob?.status === 'RUNNING';
+  }
+
+  private setReclassificationJob(job: FashionEnrichmentJob | null): void {
+    const previous = this.reclassificationJob;
+    this.reclassificationJob = job;
+    if (this.reclassificationRunning) {
+      this.startReclassificationPolling();
+    } else {
+      this.reclassificationPolling?.unsubscribe();
+      this.reclassificationPolling = undefined;
+      if (job?.mode === 'RECLASSIFY' && job.status === 'SUCCESS' && previous?.status === 'RUNNING') {
+        this.refresh();
+      }
+    }
+  }
+
+  refreshReclassificationStatus(): void {
+    if (!this.reclassificationPanelOpen) return;
+    this.affiliateCatalogService.getCatalogReclassificationJob().subscribe({
+      next: (job) => this.setReclassificationJob(job),
+      error: () => { this.reclassificationError = 'Impossibile leggere lo stato della riclassificazione.'; },
+    });
+  }
+
+  private startReclassificationPolling(): void {
+    if (!this.reclassificationPanelOpen || this.reclassificationPolling) return;
+    this.reclassificationPolling = timer(4000, 4000).pipe(
+      exhaustMap(() => this.affiliateCatalogService.getCatalogReclassificationJob()),
+    ).subscribe({
+      next: (job) => this.setReclassificationJob(job),
+      error: () => {
+        this.reclassificationError = 'Impossibile aggiornare lo stato. Riprova manualmente.';
+        this.reclassificationPolling?.unsubscribe();
+        this.reclassificationPolling = undefined;
+      },
+    });
+  }
+
+  previewReclassification(): void {
+    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || this.reclassificationBusy || this.reclassificationRunning) return;
+    this.reclassificationPreview = null;
+    this.reclassificationError = '';
+    this.reclassificationNotice = '';
+    this.reclassificationBusy = true;
+    this.affiliateCatalogService.previewCatalogReclassification()
+      .pipe(finalize(() => this.reclassificationBusy = false))
+      .subscribe({
+        next: (preview) => { this.reclassificationPreview = preview; },
+        error: () => { this.reclassificationError = 'Impossibile calcolare l’anteprima. Nessun prodotto è stato modificato.'; },
+      });
+  }
+
+  confirmReclassification(): void {
+    const preview = this.reclassificationPreview;
+    if (!this.auth.isAdmin() || !preview || this.reclassificationBusy || this.reclassificationRunning) return;
+    confirm(
+      'Applicare i dizionari attivi al catalogo completo? L’anteprima riguarda solo i primi '
+      + preview.sampleLimit + ' prodotti. I campi già classificati e le modifiche manuali saranno rispettati. '
+      + 'Non vengono modificati prezzi, offerte, immagini o disponibilità.',
+      'Conferma riclassificazione prodotti',
+      (accepted) => { if (accepted) this.launchReclassification(preview.version); },
+    );
+  }
+
+  private launchReclassification(version: string): void {
+    if (this.reclassificationBusy || !this.reclassificationPanelOpen || !this.auth.isAdmin()
+        || this.reclassificationPreview?.version !== version || this.reclassificationRunning) return;
+    this.reclassificationBusy = true;
+    this.reclassificationError = '';
+    this.affiliateCatalogService.startCatalogReclassification(version)
+      .pipe(finalize(() => this.reclassificationBusy = false))
+      .subscribe({
+        next: (job) => {
+          this.reclassificationPreview = null;
+          this.reclassificationNotice = 'Riclassificazione avviata. Puoi chiudere la pagina e consultare lo stato in seguito.';
+          this.setReclassificationJob(job);
+        },
+        error: (error: { status?: number }) => {
+          this.reclassificationError = error.status === 409
+            ? 'Dizionari modificati o job già in corso: aggiorna lo stato e ripeti l’anteprima.'
+            : 'Avvio non riuscito. Nessun nuovo job confermato; verifica lo stato prima di riprovare.';
+        },
+      });
+  }
+
+  reclassificationValue(field: string, value: unknown): string {
+    if (value === null || value === undefined || value === '') return '—';
+    if (field === 'fashionProfile' && typeof value === 'object' && !Array.isArray(value)) {
+      const profile = value as { styleAffinities?: string[]; seasons?: string[]; fit?: string };
+      const styles = profile.styleAffinities?.join(', ') || 'non identificati';
+      const seasons = profile.seasons?.join(', ') || 'non determinate';
+      return 'Stili: ' + styles + ' · Stagioni: ' + seasons + ' · Fit: ' + (profile.fit || 'UNKNOWN');
+    }
+    return Array.isArray(value) ? value.join(', ') : String(value);
   }
 
   /** Opens the already existing job if the page was refreshed: opening never starts deletion. */
