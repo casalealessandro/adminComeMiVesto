@@ -8,6 +8,11 @@
     </div>
 
     <div class="affiliate-products__actions">
+      <button *ngIf="auth.isAdmin()" type="button" class="btn btn-outline-primary"
+        (click)="openReclassificationPanel()" [disabled]="reclassificationBusy">
+        <span class="mdi mdi-auto-fix" aria-hidden="true"></span> Ricalcola classificazioni
+      </button>
+
       <button
         *ngIf="auth.isAdmin()"
         type="button"
@@ -26,6 +31,70 @@
     </div>
   </header>
 
+
+  <section *ngIf="reclassificationPanelOpen && auth.isAdmin()" class="catalog-cleanup"
+    aria-labelledby="catalog-reclassification-title">
+    <header class="catalog-cleanup__header">
+      <div>
+        <h3 id="catalog-reclassification-title">Ricalcola classificazioni</h3>
+        <p>Rilegge il catalogo Firestore con i dizionari attivi: non richiama Tradedoubler né servizi AI.
+          Conserva le classificazioni già valide e i campi bloccati manualmente.</p>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeReclassificationPanel()">Chiudi</button>
+    </header>
+
+    <div *ngIf="reclassificationError" class="alert alert-danger" role="alert">{{ reclassificationError }}</div>
+    <div *ngIf="reclassificationNotice" class="alert alert-info" role="status">{{ reclassificationNotice }}</div>
+
+    <div *ngIf="reclassificationJob as job" class="catalog-cleanup__status" aria-live="polite">
+      <strong>Ultimo job:
+        {{ job.status === 'QUEUED' ? 'In coda' : job.status === 'RUNNING' ? 'In corso' :
+          job.status === 'SUCCESS' ? 'Completato' : 'Non riuscito' }}
+      </strong>
+      <span class="text-muted" *ngIf="job.mode !== 'RECLASSIFY'">Arricchimento fashion esistente (worker condiviso)</span>
+      <span>Analizzati: {{ job.scanned | number }} · Modificati: {{ job.updated | number }}
+        · Invariati: {{ job.unchanged | number }}
+        · Saltati per concorrenza: {{ (job.skippedConcurrent || 0) | number }}</span>
+      <span *ngIf="job.lastError" class="text-danger">{{ job.lastError }}</span>
+      <span *ngIf="reclassificationRunning" class="text-muted">Aggiornamento stato automatico ogni 4 secondi.</span>
+    </div>
+
+    <div *ngIf="reclassificationPreview as preview" class="mt-3">
+      <p><strong>Anteprima non modificante su {{ preview.scanned | number }} prodotti</strong>
+        (primi {{ preview.sampleLimit }} del catalogo, non una stima del totale).</p>
+      <div class="catalog-cleanup__summary">
+        <div><strong>{{ preview.wouldUpdate | number }}</strong><span>da aggiornare nel campione</span></div>
+        <div><strong>{{ preview.unchanged | number }}</strong><span>invariati nel campione</span></div>
+      </div>
+      <details *ngIf="preview.examples.length" class="mt-2">
+        <summary>Esamina {{ preview.examples.length }} esempi prima/dopo</summary>
+        <div *ngFor="let example of preview.examples" class="border-bottom py-2">
+          <a [routerLink]="['/affiliate-catalog/products', example.id]">{{ example.name || example.id }}</a>
+          <div *ngFor="let field of example.fields" class="small mt-1">
+            <strong>{{ field }}:</strong>
+            <div>Prima: {{ reclassificationValue(field, example.before[field]) }}</div>
+            <div>Dopo: {{ reclassificationValue(field, example.after[field]) }}</div>
+          </div>
+        </div>
+      </details>
+      <p class="small text-muted mt-2">Confermando verrà percorso tutto il catalogo a blocchi, anche se il campione
+        non presenta cambiamenti. Le modifiche concorrenti vengono saltate e possono essere riprese in un successivo passaggio.</p>
+    </div>
+
+    <footer class="catalog-cleanup__footer">
+      <button type="button" class="btn btn-outline-primary" (click)="previewReclassification()"
+        [disabled]="reclassificationBusy || reclassificationRunning">
+        <span *ngIf="reclassificationBusy" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        Analizza 100 prodotti
+      </button>
+      <button type="button" class="btn btn-primary" (click)="confirmReclassification()"
+        [disabled]="!reclassificationPreview || reclassificationBusy || reclassificationRunning">
+        Conferma aggiornamento catalogo
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="refreshReclassificationStatus()"
+        [disabled]="reclassificationBusy">Aggiorna stato</button>
+    </footer>
+  </section>
 
   <section *ngIf="cleanupPanelOpen && auth.isAdmin()" class="catalog-cleanup" aria-labelledby="catalog-cleanup-title">
     <header class="catalog-cleanup__header">
