@@ -305,6 +305,16 @@
             </article>
           </div>
 
+          <app-ai-outfit-draft-editor
+            *ngIf="outfit.draftId && !publishedId(outfit)"
+            [outfit]="outfit"
+            [draft]="draftFor(outfit)"
+            [occasion]="preview.request.occasion"
+            [styleOptions]="styleOptions"
+            (draftUpdated)="onDraftUpdated($event)"
+            (editingChange)="setDraftEditing(outfit, $event)">
+          </app-ai-outfit-draft-editor>
+
           <div class="outfit-card__tag-help">
             <span class="mdi mdi-crosshairs-gps" aria-hidden="true"></span>
             I pin sono posizionati automaticamente. Per correggerne uno, seleziona il relativo prodotto e poi tocca il punto corretto sull'immagine.
@@ -315,7 +325,7 @@
               type="button"
               class="outfit-card__approve"
               (click)="publish(outfit)"
-              [disabled]="isPublishing(outfit) || isDiscarding(outfit) || !!publishedId(outfit)">
+              [disabled]="isPublishing(outfit) || isDiscarding(outfit) || !!publishedId(outfit) || imageNeedsRefresh(outfit) || editingDraftIds.has(outfitKey(outfit))">
               <span class="mdi" [class.mdi-loading]="isPublishing(outfit)" [class.mdi-spin]="isPublishing(outfit)" [class.mdi-check-circle-outline]="!isPublishing(outfit)" aria-hidden="true"></span>
               {{ publishedId(outfit) ? 'Outfit salvato' : (isPublishing(outfit) ? 'Salvataggio…' : 'Approva e salva') }}
             </button>
