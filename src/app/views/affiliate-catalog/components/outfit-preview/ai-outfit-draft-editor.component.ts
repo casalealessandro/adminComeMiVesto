@@ -47,7 +47,7 @@ export class AiOutfitDraftEditorComponent {
   replacementIndex: number | null = null;
   replacementQuery = '';
   replacements: CatalogProduct[] = [];
-  selectedReplacement: CatalogProduct | null = null;
+  readonly selectedReplacements = new Map<number, CatalogProduct>();
   searching = false;
 
   startEditing(): void {
@@ -70,7 +70,7 @@ export class AiOutfitDraftEditorComponent {
     this.error = '';
     this.replacementIndex = null;
     this.replacements = [];
-    this.selectedReplacement = null;
+    this.selectedReplacements.clear();
     this.editing = true;
     this.editingChange.emit(true);
   }
@@ -81,6 +81,7 @@ export class AiOutfitDraftEditorComponent {
     this.form = null;
     this.replacementIndex = null;
     this.replacements = [];
+    this.selectedReplacements.clear();
     this.editingChange.emit(false);
   }
 
@@ -88,7 +89,6 @@ export class AiOutfitDraftEditorComponent {
     this.replacementIndex = index;
     this.replacementQuery = '';
     this.replacements = [];
-    this.selectedReplacement = null;
     this.error = '';
   }
 
@@ -120,7 +120,7 @@ export class AiOutfitDraftEditorComponent {
       ...this.form.products[this.replacementIndex],
       catalogProductId: product.id,
     };
-    this.selectedReplacement = product;
+    this.selectedReplacements.set(this.replacementIndex, product);
     this.replacementIndex = null;
     this.replacements = [];
     this.error = '';
@@ -129,8 +129,9 @@ export class AiOutfitDraftEditorComponent {
   replacementLabel(index: number): string {
     if (!this.form) return '';
     const newId = this.form.products[index]?.catalogProductId;
-    return newId === this.selectedReplacement?.id
-      ? `${this.selectedReplacement.brand} · ${this.selectedReplacement.name}`
+    const replacement = this.selectedReplacements.get(index);
+    return newId === replacement?.id
+      ? `${replacement.brand} · ${replacement.name}`
       : newId === this.outfit.products[index]?.catalogProductId
         ? this.outfit.products[index].name
         : `Nuovo prodotto selezionato (${newId})`;
