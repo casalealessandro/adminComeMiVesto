@@ -149,6 +149,7 @@ export class AiOutfitDraftEditorComponent {
       .pipe(finalize(() => this.saving = false))
       .subscribe({
         next: (updated) => {
+          this.saving = false;
           this.draftUpdated.emit(updated);
           this.cancel();
         },
