@@ -25,7 +25,7 @@
         <textarea name="draftDescription" [(ngModel)]="edit.description" maxlength="1000" rows="3" [disabled]="saving"></textarea>
       </label>
       <label>Genere
-        <select name="draftGender" [(ngModel)]="edit.gender" [disabled]="saving || !!outfit.creatorUid">
+        <select name="draftGender" [(ngModel)]="edit.gender" [disabled]="saving || !!outfit.creatorUid || !!draft?.request?.creatorUid">
           <option value="U">Uomo</option><option value="D">Donna</option>
         </select>
       </label>
