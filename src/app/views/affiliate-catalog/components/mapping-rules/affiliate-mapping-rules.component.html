@@ -13,8 +13,9 @@
   <div class="row g-2 mb-3">
     <div class="col-12 col-md-4">
       <label for="rule-type" class="form-label">Dizionario</label>
-      <select id="rule-type" class="form-select" [(ngModel)]="type" (ngModelChange)="onTypeChange()">
-        <option *ngFor="let entry of types" [ngValue]="entry">{{ entry }}</option>
+      <select id="rule-type" class="form-select" data-dictionary-options="api-aware-v2"
+              [(ngModel)]="type" (ngModelChange)="onTypeChange()">
+        <option *ngFor="let entry of types" [value]="entry">{{ entry }}</option>
       </select>
     </div>
     <div class="col-12 col-md-8">
