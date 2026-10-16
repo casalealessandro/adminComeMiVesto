@@ -24,7 +24,8 @@ export interface outfit {
   editedAt?: any;
   outfitSubCategory?: any,
   outfitCategory?: any,
-  status: 'approved' | 'rifiutato' | 'pending'
+  status: 'approved' | 'rifiutato' | 'pending' | 'suspended';
+  statusBeforeSuspension?: 'approved' | 'rifiutato' | 'pending';
   feedId?: any
 
 }
