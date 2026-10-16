@@ -18,7 +18,8 @@ export function buildMappingRuleFields(type: AffiliateMappingRuleType, editing: 
   const fields: DynamicFormField[] = [
     ...(editing ? [] : [{ ...field('id', 'ID regola', true), maxLength: 100, placeholder: 'es. nuovo-colore-stone' }]),
     { ...field('label', 'Descrizione', true), maxLength: 150 },
-    { ...field('aliases', 'Termini riconosciuti (uno per riga)', false, 'textArea'), maxLength: 4800 },
+    // Up to 100 aliases, each at most 120 characters, separated by newlines.
+    { ...field('aliases', 'Termini riconosciuti (uno per riga)', false, 'textArea'), maxLength: 12100 },
   ];
   if (type === 'CATEGORY') fields.push(
     {
