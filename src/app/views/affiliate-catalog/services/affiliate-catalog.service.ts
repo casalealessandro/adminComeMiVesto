@@ -12,6 +12,7 @@ import {
   CatalogProduct,
   FashionEnrichmentBatch,
   FashionEnrichmentJob,
+  CatalogReclassificationPreview,
   FashionEnrichmentStatus,
   FashionOverviewResponse,
   FashionOverviewJob,
@@ -118,6 +119,24 @@ export class AffiliateCatalogService {
   refreshFashionOverview(): Observable<FashionOverviewJob> {
     return this.http.post<AffiliateApiResponse<FashionOverviewJob>>(`${this.baseUrl}/fashion-overview`, {})
       .pipe(map((response) => response.data));
+  }
+
+  previewCatalogReclassification(): Observable<CatalogReclassificationPreview> {
+    return this.http.post<AffiliateApiResponse<CatalogReclassificationPreview>>(
+      this.baseUrl + '/products/reclassification/preview', {},
+    ).pipe(map(response => response.data));
+  }
+
+  getCatalogReclassificationJob(): Observable<FashionEnrichmentJob | null> {
+    return this.http.get<AffiliateApiResponse<FashionEnrichmentJob | null>>(
+      this.baseUrl + '/products/reclassification/job',
+    ).pipe(map(response => response.data));
+  }
+
+  startCatalogReclassification(expectedVersion: string): Observable<FashionEnrichmentJob> {
+    return this.http.post<AffiliateApiResponse<FashionEnrichmentJob>>(
+      this.baseUrl + '/products/reclassification/job', { expectedVersion },
+    ).pipe(map(response => response.data));
   }
 
   getFashionEnrichmentJob(): Observable<FashionEnrichmentJob | null> {
