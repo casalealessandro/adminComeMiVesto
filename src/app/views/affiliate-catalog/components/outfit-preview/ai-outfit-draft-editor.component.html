@@ -14,6 +14,12 @@
     </button>
   </div>
   <small *ngIf="regenerationError" class="text-danger" role="alert">{{ regenerationError }}</small>
+  <small *ngIf="draft?.imageRegenerationCount" class="draft-editor__hint">
+    Immagini rigenerate: {{ draft?.imageRegenerationCount }}.
+    <ng-container *ngIf="draft?.lastImageRegenerationUsage as usage">
+      Ultima rigenerazione: {{ usage.totalTokens }} token misurati; costo monetario dell'immagine non disponibile.
+    </ng-container>
+  </small>
 
   <form *ngIf="editing && form as edit" class="draft-editor__form" (ngSubmit)="save()">
     <h4>Modifica outfit</h4>
