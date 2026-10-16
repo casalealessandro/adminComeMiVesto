@@ -279,8 +279,26 @@ export interface FashionProductProfile {
   evidence: { field: string; source: string; matched: string }[];
 }
 
+export interface CatalogReclassificationPreview {
+  version: string;
+  scanned: number;
+  wouldUpdate: number;
+  unchanged: number;
+  sampleLimit: number;
+  examples: Array<{
+    id: string;
+    name: string;
+    fields: string[];
+    before: Record<string, unknown>;
+    after: Record<string, unknown>;
+  }>;
+}
+
 export interface FashionEnrichmentJob {
   runId: string;
+  mode?: 'PROFILE_ONLY' | 'RECLASSIFY';
+  expectedVersion?: string | null;
+  skippedConcurrent?: number;
   status: 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED';
   scanned: number;
   updated: number;
