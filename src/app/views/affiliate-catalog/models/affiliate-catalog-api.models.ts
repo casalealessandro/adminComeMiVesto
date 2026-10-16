@@ -239,6 +239,17 @@ export interface AiOutfitPreviewResult {
   outfits: AiOutfitPreviewOutfit[];
 }
 
+export interface AiOutfitDraftEditRequest {
+  expectedRevision: number;
+  title: string;
+  description: string;
+  gender: AiOutfitPreviewOutfit['gender'];
+  season: AiOutfitPreviewOutfit['season'];
+  style: AiOutfitPreviewOutfit['style'];
+  occasion: AiOutfitPreviewOccasion;
+  products: Array<Pick<AiOutfitPreviewProduct, 'catalogProductId' | 'role' | 'x' | 'y'>>;
+}
+
 export interface AiOutfitDraft {
   id: string;
   batchId: string;
@@ -259,6 +270,12 @@ export interface AiOutfitDraft {
   publishedOutfitId?: string;
   approvedBy?: string;
   approvedAt?: number;
+  /** Optional for older persisted drafts. */
+  revision?: number;
+  imageNeedsRegeneration?: boolean;
+  imageRegenerating?: boolean;
+  imageRegenerationCount?: number;
+  lastImageRegenerationUsage?: AiOutfitTokenUsage;
 }
 
 export type AffiliateProgramCreateInput = Pick<
