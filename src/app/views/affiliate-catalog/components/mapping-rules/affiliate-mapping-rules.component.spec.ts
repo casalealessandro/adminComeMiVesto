@@ -33,6 +33,15 @@ describe('Dizionari affiliati con DynamicForm e DataGrid', () => {
     expect(buildMappingRuleFields('SEASON', true).some(field => field.name === 'requireAll')).toBeTrue();
   });
 
+  it('permette di editare 100 termini di 120 caratteri ciascuno', () => {
+    const aliasesField = buildMappingRuleFields('SEASON', true).find(field => field.name === 'aliases');
+    expect(aliasesField?.maxLength).toBeGreaterThanOrEqual(100 * 120 + 99);
+    const aliases = Array.from({ length: 100 }, (_, index) => ('term-' + index).padEnd(120, 'x'));
+    const form = { ...mappingRuleFormData(season), aliases: aliases.join('\n') };
+    const mapped = mappingRuleFromForm(season, form, true);
+    expect(mapped.aliases).toEqual(aliases);
+  });
+
   it('usa la tassonomia reale per categoria e sottocategoria in cascata in creazione e modifica', () => {
     for (const editing of [false, true]) {
       const fields = buildMappingRuleFields('CATEGORY', editing);
