@@ -32,6 +32,7 @@ import {
   AffiliateProgramCreateInput,
   AffiliateProgramUpdateInput,
   AiOutfitDraft,
+  AiOutfitDraftEditRequest,
   AiOutfitPreviewRequest,
   AiOutfitPreviewResult,
   CatalogTaxonomyRepairResult,
@@ -170,6 +171,21 @@ export class AffiliateCatalogService {
 
   discardOutfitDraft(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/outfit-generator/drafts/${encodeURIComponent(id)}`);
+  }
+
+  updateOutfitDraft(id: string, input: AiOutfitDraftEditRequest): Observable<AiOutfitDraft> {
+    return this.http
+      .put<AffiliateApiResponse<AiOutfitDraft>>(`${this.baseUrl}/outfit-generator/drafts/${encodeURIComponent(id)}`, input)
+      .pipe(map((response) => response.data));
+  }
+
+  regenerateOutfitDraftImage(id: string, expectedRevision: number): Observable<AiOutfitDraft> {
+    return this.http
+      .post<AffiliateApiResponse<AiOutfitDraft>>(
+        `${this.baseUrl}/outfit-generator/drafts/${encodeURIComponent(id)}/regenerate-image`,
+        { expectedRevision },
+      )
+      .pipe(map((response) => response.data));
   }
 
   publishOutfitPreview(input: AiOutfitPublishRequest): Observable<AiOutfitPublishedResult> {

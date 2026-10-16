@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { AiOutfitDraftEditorComponent } from './ai-outfit-draft-editor.component';
 import { of, Subject, throwError } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AiOutfitPreviewResult } from '../../models/affiliate-catalog-api.models';
@@ -64,7 +66,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators', 'getOutfitStyles'],
+      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators', 'getOutfitStyles', 'updateOutfitDraft', 'regenerateOutfitDraftImage', 'getProducts'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -273,4 +275,88 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(component.error).toContain('amministratori');
     expect(component.loading).toBeFalse();
   });
+  it('edits persisted metadata without regenerating AI and blocks stale-image approval', () => {
+    component.generate();
+    fixture.detectChanges();
+    const outfit = component.result!.outfits[0];
+    const draft = {
+      id: 'draft-1',
+      batchId: 'batch-1',
+      batchIndex: 0,
+      status: 'PENDING' as const,
+      createdAt: 1,
+      updatedAt: 1,
+      generatedAt: 1,
+      generatedBy: 'admin-1',
+      model: 'gpt-5.6-terra',
+      providerResponseId: null,
+      request: { ...previewResult.request },
+      candidatesEvaluated: 3,
+      imagesEvaluated: 3,
+      usage: previewResult.usage,
+      outfit: structuredClone(outfit),
+    };
+    component.pendingDrafts = [draft];
+    service.updateOutfitDraft.and.returnValue(of({
+      ...draft,
+      revision: 1,
+      imageNeedsRegeneration: true,
+      outfit: { ...outfit, title: 'Nuovo titolo' },
+    }));
+    fixture.detectChanges();
+    const editor = fixture.debugElement.query(By.directive(AiOutfitDraftEditorComponent))
+      .componentInstance as AiOutfitDraftEditorComponent;
+    editor.startEditing();
+    editor.form!.title = 'Nuovo titolo';
+    editor.save();
+    fixture.detectChanges();
+    expect(service.updateOutfitDraft).toHaveBeenCalledWith('draft-1',
+      jasmine.objectContaining({ title: 'Nuovo titolo', expectedRevision: 0 }));
+    expect(service.regenerateOutfitDraftImage).not.toHaveBeenCalled();
+    expect(component.result!.outfits[0].title).toBe('Nuovo titolo');
+    expect(component.imageNeedsRefresh(component.result!.outfits[0])).toBeTrue();
+    component.publish(component.result!.outfits[0]);
+    expect(service.publishOutfitPreview).not.toHaveBeenCalled();
+  });
+
+  it('asks explicitly before the paid single image regeneration', () => {
+    component.generate();
+    fixture.detectChanges();
+    const outfit = component.result!.outfits[0];
+    const draft = {
+      id: 'draft-1',
+      batchId: 'batch-1',
+      batchIndex: 0,
+      status: 'PENDING' as const,
+      createdAt: 1,
+      updatedAt: 1,
+      generatedAt: 1,
+      generatedBy: 'admin-1',
+      model: 'gpt-5.6-terra',
+      providerResponseId: null,
+      request: { ...previewResult.request },
+      candidatesEvaluated: 3,
+      imagesEvaluated: 3,
+      usage: previewResult.usage,
+      outfit: structuredClone(outfit),
+      revision: 1,
+      imageNeedsRegeneration: true,
+    };
+    component.pendingDrafts = [draft];
+    service.regenerateOutfitDraftImage.and.returnValue(of({
+      ...draft,
+      revision: 2,
+      imageNeedsRegeneration: false,
+      outfit: { ...outfit, previewImageUrl: 'https://storage.test/new.png' },
+    }));
+    fixture.detectChanges();
+    spyOn(window, 'confirm').and.returnValue(true);
+    const editor = fixture.debugElement.query(By.directive(AiOutfitDraftEditorComponent))
+      .componentInstance as AiOutfitDraftEditorComponent;
+    editor.regenerateImage();
+    expect(service.regenerateOutfitDraftImage).toHaveBeenCalledWith('draft-1', 1);
+    expect(component.result!.outfits[0].previewImageUrl).toBe('https://storage.test/new.png');
+    expect(component.imageNeedsRefresh(component.result!.outfits[0])).toBeFalse();
+  });
+
 });

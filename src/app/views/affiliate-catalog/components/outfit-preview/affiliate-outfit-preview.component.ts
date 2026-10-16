@@ -18,6 +18,7 @@ import { AffiliateFeed } from '../../models/affiliate-catalog.models';
 import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
+import { AiOutfitDraftEditorComponent } from './ai-outfit-draft-editor.component';
 
 interface SelectOption<T extends string> {
   value: T;
@@ -27,7 +28,7 @@ interface SelectOption<T extends string> {
 @Component({
   selector: 'app-affiliate-outfit-preview',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AiOutfitDraftEditorComponent],
   templateUrl: './affiliate-outfit-preview.component.html',
   styleUrls: ['./affiliate-outfit-preview.component.scss', './affiliate-outfit-publish.scss', './affiliate-outfit-count.scss'],
 })
@@ -87,6 +88,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   readonly published = new Map<string, string>();
   readonly publishErrors = new Map<string, string>();
   readonly selectedProductByOutfit = new Map<string, string>();
+  readonly editingDraftIds = new Set<string>();
 
   ngOnInit(): void {
     this.stylesLoading = true;
@@ -261,9 +263,44 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       });
   }
 
+  draftFor(outfit: AiOutfitPreviewOutfit): AiOutfitDraft | undefined {
+    return outfit.draftId ? this.pendingDrafts.find((draft) => draft.id === outfit.draftId) : undefined;
+  }
+
+  imageNeedsRefresh(outfit: AiOutfitPreviewOutfit): boolean {
+    const draft = this.draftFor(outfit);
+    return Boolean(draft?.imageNeedsRegeneration || draft?.imageRegenerating);
+  }
+
+  onDraftUpdated(updated: AiOutfitDraft): void {
+    this.pendingDrafts = [
+      updated,
+      ...this.pendingDrafts.filter((draft) => draft.id !== updated.id),
+    ];
+    if (this.result) {
+      this.result.outfits = this.result.outfits.map((outfit) =>
+        outfit.draftId === updated.id ? { ...updated.outfit, draftId: updated.id } : outfit);
+      if (this.resumedDraftId === updated.id) {
+        this.result.request = { ...updated.request };
+      }
+    }
+    this.editingDraftIds.delete(updated.id);
+    this.publishErrors.delete(updated.id);
+  }
+
+  setDraftEditing(outfit: AiOutfitPreviewOutfit, editing: boolean): void {
+    if (!outfit.draftId) return;
+    if (editing) this.editingDraftIds.add(outfit.draftId);
+    else this.editingDraftIds.delete(outfit.draftId);
+  }
+
   publish(outfit: AiOutfitPreviewOutfit): void {
     const key = this.outfitKey(outfit);
     if (this.publishing.has(key) || this.published.has(key)) return;
+    if (this.imageNeedsRefresh(outfit) || this.editingDraftIds.has(key)) {
+      this.publishErrors.set(key, 'Salva le modifiche e rigenera l’immagine prima di pubblicare.');
+      return;
+    }
 
     const creatorUid = outfit.creatorUid || this.result?.request.creatorUid || this.request.creatorUid;
     const input: AiOutfitPublishRequest = {
