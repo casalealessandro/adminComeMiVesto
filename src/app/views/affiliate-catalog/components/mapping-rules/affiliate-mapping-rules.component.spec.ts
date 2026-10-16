@@ -33,6 +33,25 @@ describe('Dizionari affiliati con DynamicForm e DataGrid', () => {
     expect(buildMappingRuleFields('SEASON', true).some(field => field.name === 'requireAll')).toBeTrue();
   });
 
+  it('supporta il dizionario STYLE con selezione dello stile canonico', () => {
+    const fields = buildMappingRuleFields('STYLE', true);
+    const target = fields.find(field => field.name === 'styleValue');
+    expect(target?.type).toBe('selectBox');
+    expect(target?.selectOptions?.options?.length).toBe(10);
+    expect(buildMappingRuleFields('STYLE', true).some(field => field.name === 'requireAll')).toBeFalse();
+    const style: AffiliateMappingRule = {
+      id: 'style-sporty', type: 'STYLE', label: 'Sportivo', aliases: ['scarpe running'],
+      enabled: false, data: { value: 'SPORTY' },
+    };
+    const form = mappingRuleFormData(style);
+    expect(form['styleValue']).toBe('SPORTY');
+    const updated = mappingRuleFromForm(style, { ...form, styleValue: 'ELEGANT', aliases: 'abito da sera' }, true);
+    expect(updated.id).toBe('style-sporty');
+    expect(updated.data['value']).toBe('ELEGANT');
+    expect(updated.aliases).toEqual(['abito da sera']);
+    expect(updated.enabled).toBeFalse();
+  });
+
   it('usa la tassonomia reale per categoria e sottocategoria in cascata in creazione e modifica', () => {
     for (const editing of [false, true]) {
       const fields = buildMappingRuleFields('CATEGORY', editing);

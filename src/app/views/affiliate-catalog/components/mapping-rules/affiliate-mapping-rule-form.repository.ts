@@ -47,6 +47,21 @@ export function buildMappingRuleFields(type: AffiliateMappingRuleType, editing: 
       { value: 'U', label: 'Uomo' }, { value: 'D', label: 'Donna' }, { value: 'U,D', label: 'Unisex' },
     ]),
   });
+  if (type === 'STYLE') fields.push({
+    ...field('styleValue', 'Stile ComeMiVesto', true, 'selectBox'),
+    selectOptions: select([
+      { value: 'CASUAL', label: 'Casual' },
+      { value: 'BUSINESS', label: 'Business' },
+      { value: 'SPORTY', label: 'Sporty' },
+      { value: 'SMART_CASUAL', label: 'Smart Casual' },
+      { value: 'ELEGANT', label: 'Elegant' },
+      { value: 'ALTERNATIVE', label: 'Alternative' },
+      { value: 'FESTIVAL', label: 'Festival' },
+      { value: 'CLASSIC', label: 'Classic' },
+      { value: 'TRENDY', label: 'Trendy' },
+      { value: 'STREETWEAR', label: 'Streetwear' },
+    ]),
+  });
   if (type === 'SEASON') fields.push(
     { ...field('category', 'Categoria della regola', true), maxLength: 100 },
     { ...field('seasons', 'Stagioni (separate da virgola)', true), placeholder: 'SPRING, SUMMER' },
@@ -66,7 +81,7 @@ export function buildMappingRuleFields(type: AffiliateMappingRuleType, editing: 
 @Injectable()
 export class AffiliateMappingRuleFormRepository implements FormDefinitionRepository {
   getFormById(id: string): Observable<FormDefinition> {
-    const match = /^affiliate-rule-(category|color|gender|season)-(create|edit)$/.exec(id);
+    const match = /^affiliate-rule-(category|color|gender|season|style)-(create|edit)$/.exec(id);
     if (!match) return throwError(() => new Error('Form dizionario non trovato'));
     const type = match[1].toUpperCase() as AffiliateMappingRuleType;
     return of({ id, nameForm: id, json: buildMappingRuleFields(type, match[2] === 'edit') });
