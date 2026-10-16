@@ -26,6 +26,7 @@ export class OutfitsComponent {
   taxonomyOptions: Record<'gender' | 'season' | 'style', Array<{ id: string; value: string }>> = { gender: [], season: [], style: [] };
   loading = false;
   error = '';
+  private readonly busyIds = new Set<string>();
   filtersOpen = false;
   page = 1;
   limit = 10;
@@ -39,7 +40,9 @@ export class OutfitsComponent {
     { type:'campoDateTime', colVisible:true, allowEditing:false, dataField:'createdAt', colWidth:'110', colCaption:'Creazione', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, dataField:'status', colWidth:'100', colCaption:'Stato', edit:false, groupDataField:undefined },
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Approva', edit:false, groupDataField:undefined, button:{ text:'', name:'approve', event:'approve', icon:'mdi mdi-check', hint:'Approva' } },
-    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Rifiuta', edit:false, groupDataField:undefined, button:{ text:'', name:'reject', event:'reject', icon:'mdi mdi-close', hint:'Rifiuta' } }
+    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Rifiuta', edit:false, groupDataField:undefined, button:{ text:'', name:'reject', event:'reject', icon:'mdi mdi-close', hint:'Rifiuta' } },
+    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'72', colCaption:'Visibilità', edit:false, groupDataField:undefined, button:{ text:'', name:'toggleSuspend', event:'toggleSuspend', icon:'mdi mdi-pause-circle-outline', hint:'Sospendi / Riattiva' } },
+    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'65', colCaption:'Elimina', edit:false, groupDataField:undefined, button:{ text:'', name:'deleteOutfit', event:'deleteOutfit', icon:'mdi mdi-trash-can-outline', hint:'Elimina outfit' } }
   ] }];
 
   ngOnInit(): void { this.loadCreators(); this.loadTaxonomies(); void this.loadOutfits(); }
@@ -76,13 +79,77 @@ export class OutfitsComponent {
   previous(): void { if (this.page > 1) { this.page--; void this.loadOutfits(); } }
   next(): void { if (this.page * this.limit < this.total) { this.page++; void this.loadOutfits(); } }
   editOutfit(event: any): void { const value = event?.data || event; if (event?.cancel !== undefined) event.cancel = true; this.router.navigate(['/outfit-detail', value.id]); }
+  isBusy(item: outfit): boolean { return this.busyIds.has(String(item.id)); }
+
   async updateStatus(item: outfit, status: outfit['status']): Promise<void> {
-    try { await this.outfitService.updateAdminOutfit(item.id, { status }); item.status = status; alert('Stato outfit aggiornato.', 'Operazione completata'); }
-    catch { this.error = 'Aggiornamento stato non riuscito.'; }
+    const id = String(item.id);
+    if (!id || this.busyIds.has(id) || item.status === status) return;
+    this.busyIds.add(id);
+    this.error = '';
+    try {
+      await this.outfitService.updateAdminOutfit(id, { status });
+      await this.loadOutfits();
+      alert('Stato outfit aggiornato.', 'Operazione completata');
+    } catch {
+      this.error = 'Aggiornamento stato non riuscito. L’outfit non è stato modificato.';
+    } finally {
+      this.busyIds.delete(id);
+    }
   }
-  removeOutfit(item: outfit): void { confirm(`Eliminare l’outfit “${item.title}”?`, 'Conferma', yes => { if (yes) void this.deleteConfirmed(item); }); }
-  private async deleteConfirmed(item: outfit): Promise<void> { try { await this.outfitService.deleteAdminOutfit(item.id); this.outfits = this.outfits.filter(value => value.id !== item.id); this.total--; } catch { this.error = 'Eliminazione non riuscita.'; } }
-  async eventToolbarOutfit(event:any): Promise<void> { const name=event.name||event.id; if(name==='addButton') await this.router.navigate(['/outfit-detail']); }
-  gridEvent(event:any): void { if(event.name==='delRows') this.removeOutfit(event.rowData); }
-  statusGridEvent(event:any): void { if(event.name==='approve') void this.updateStatus(event.rowData, 'approved'); if(event.name==='reject') void this.updateStatus(event.rowData, 'rifiutato'); }
+
+  toggleSuspension(item: outfit): void {
+    if (this.isBusy(item)) return;
+    const restoring = item.status === 'suspended';
+    // Without a saved previous state, never approve an outfit implicitly.
+    const targetStatus: outfit['status'] = restoring ? (item.statusBeforeSuspension || 'pending') : 'suspended';
+    const message = restoring
+      ? 'Riattivare questo outfit e ripristinare il suo stato precedente?'
+      : 'Sospendere questo outfit? Non sarà più visibile nel feed pubblico.';
+    confirm(message, 'Conferma', yes => {
+      if (yes) void this.updateStatus(item, targetStatus);
+    });
+  }
+
+  removeOutfit(item: outfit): void {
+    if (this.isBusy(item)) return;
+    confirm('Eliminare definitivamente questo outfit? L’operazione non è reversibile.', 'Conferma eliminazione', yes => {
+      if (yes) void this.deleteConfirmed(item);
+    });
+  }
+
+  private async deleteConfirmed(item: outfit): Promise<void> {
+    const id = String(item.id);
+    if (!id || this.busyIds.has(id)) return;
+    this.busyIds.add(id);
+    this.error = '';
+    try {
+      await this.outfitService.deleteAdminOutfit(id);
+      if (this.outfits.length === 1 && this.page > 1) this.page--;
+      await this.loadOutfits();
+      alert('Outfit eliminato.', 'Operazione completata');
+    } catch {
+      this.error = 'Eliminazione non riuscita. L’outfit è ancora presente.';
+    } finally {
+      this.busyIds.delete(id);
+    }
+  }
+
+  async eventToolbarOutfit(event: any): Promise<void> {
+    const name = event.name || event.id;
+    if (name === 'addButton') await this.router.navigate(['/outfit-detail']);
+  }
+
+  gridEvent(event: any): void {
+    // Deletion uses the dedicated action button, not the DataGrid local row removal.
+    if (event.name === 'delRows') this.removeOutfit(event.rowData);
+  }
+
+  statusGridEvent(event: any): void {
+    const item = event.rowData as outfit;
+    if (!item || this.isBusy(item)) return;
+    if (event.name === 'approve') void this.updateStatus(item, 'approved');
+    if (event.name === 'reject') void this.updateStatus(item, 'rifiutato');
+    if (event.name === 'toggleSuspend') this.toggleSuspension(item);
+    if (event.name === 'deleteOutfit') this.removeOutfit(item);
+  }
 }
