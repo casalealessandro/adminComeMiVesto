@@ -10,7 +10,7 @@ import { AffiliateCatalogService, AffiliateMappingRule, AffiliateMappingRuleType
 import { PopUpService } from '../../../../core/popup/popup.service';
 import type { AffiliateMappingRuleFormContext, AffiliateMappingRuleFormResult } from './affiliate-mapping-rule-form-host.component';
 
-const TYPES: AffiliateMappingRuleType[] = ['CATEGORY', 'COLOR', 'GENDER', 'SEASON'];
+const TYPES: AffiliateMappingRuleType[] = ['CATEGORY', 'COLOR', 'GENDER', 'SEASON', 'STYLE'];
 const values = (input: unknown): string[] => Array.isArray(input) ?
   input.filter((v): v is string => typeof v === 'string') : [];
 const lines = (input: unknown): string[] =>
@@ -43,7 +43,7 @@ export function mappingRuleFormData(rule: AffiliateMappingRule): Record<string, 
   return {
     id: rule.id, label: rule.label, aliases: rule.aliases.join('\n'),
     category: rule.data['category'] ?? '', subcategory: rule.data['subcategory'] ?? '',
-    colorId: rule.data['colorId'] ?? '',
+    colorId: rule.data['colorId'] ?? '', styleValue: rule.data['value'] ?? 'SPORTY',
     genders: values(rule.data['genders']).join(','),
     genderTargets: values(rule.data['genderTargets']).join(','),
     seasons: values(rule.data['seasons']).join(', '),
@@ -72,6 +72,8 @@ export function mappingRuleFromForm(
     data['colorId'] = String(form['colorId'] ?? '').trim();
   } else if (base.type === 'GENDER') {
     data['genderTargets'] = lines(form['genderTargets']);
+  } else if (base.type === 'STYLE') {
+    data['value'] = String(form['styleValue'] ?? '').trim();
   } else if (base.type === 'SEASON') {
     data['category'] = String(form['category'] ?? '').trim();
     data['seasons'] = lines(form['seasons']).map(s => s.toUpperCase());
@@ -144,10 +146,11 @@ export class AffiliateMappingRulesComponent implements OnInit {
       ? { category: '', subcategory: '', genders: [] }
       : this.type === 'COLOR' ? { colorId: '' }
       : this.type === 'GENDER' ? { genderTargets: ['U'] }
+      : this.type === 'STYLE' ? { value: 'SPORTY' }
       : { category: 'Stagioni dichiarate', seasons: ['SUMMER'], priority: 100, requireAll: [], exclude: [] };
     this.openRulePopup({
       mode: 'create',
-      rule: { id: '', type: this.type, label: '', aliases: [], enabled: true, data, origin: 'CUSTOM' },
+      rule: { id: '', type: this.type, label: '', aliases: [], enabled: this.type !== 'STYLE', data, origin: 'CUSTOM' },
     });
   }
 
