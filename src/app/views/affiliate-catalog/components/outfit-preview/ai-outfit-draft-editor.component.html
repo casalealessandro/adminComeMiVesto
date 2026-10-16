@@ -1,0 +1,89 @@
+<section class="draft-editor" *ngIf="outfit.draftId" aria-label="Modifica bozza AI">
+  <button *ngIf="!editing" type="button" class="btn btn-sm btn-outline-primary"
+    (click)="startEditing()" [disabled]="regenerating || draft?.imageRegenerating">
+    <span class="mdi mdi-pencil-outline" aria-hidden="true"></span> Modifica outfit
+  </button>
+
+  <div class="draft-editor__stale" *ngIf="draft?.imageNeedsRegeneration || draft?.imageRegenerating" role="status">
+    <strong>Immagine da aggiornare</strong>
+    <p>Hai modificato la composizione o le informazioni visive del look. L'immagine precedente non è più valida per la pubblicazione.</p>
+    <button *ngIf="!editing" type="button" class="btn btn-sm btn-outline-primary"
+      (click)="regenerateImage()" [disabled]="regenerating || draft?.imageRegenerating">
+      <span class="mdi" [class.mdi-loading]="regenerating" [class.mdi-spin]="regenerating" [class.mdi-image-sync-outline]="!regenerating" aria-hidden="true"></span>
+      {{ regenerating || draft?.imageRegenerating ? 'Rigenerazione in corso…' : 'Rigenera solo questa immagine (AI a pagamento)' }}
+    </button>
+  </div>
+  <small *ngIf="regenerationError" class="text-danger" role="alert">{{ regenerationError }}</small>
+
+  <form *ngIf="editing && form as edit" class="draft-editor__form" (ngSubmit)="save()">
+    <h4>Modifica outfit</h4>
+    <div class="draft-editor__fields">
+      <label class="draft-editor__wide">Titolo
+        <input type="text" name="draftTitle" [(ngModel)]="edit.title" maxlength="160" required [disabled]="saving">
+      </label>
+      <label class="draft-editor__wide">Descrizione
+        <textarea name="draftDescription" [(ngModel)]="edit.description" maxlength="1000" rows="3" [disabled]="saving"></textarea>
+      </label>
+      <label>Genere
+        <select name="draftGender" [(ngModel)]="edit.gender" [disabled]="saving || !!outfit.creatorUid">
+          <option value="U">Uomo</option><option value="D">Donna</option>
+        </select>
+      </label>
+      <label>Stagione
+        <select name="draftSeason" [(ngModel)]="edit.season" [disabled]="saving">
+          <option *ngFor="let item of seasons" [ngValue]="item.value">{{ item.label }}</option>
+        </select>
+      </label>
+      <label>Stile
+        <select name="draftStyle" [(ngModel)]="edit.style" [disabled]="saving">
+          <option *ngFor="let item of styleOptions" [ngValue]="item.value">{{ item.label }}</option>
+        </select>
+      </label>
+      <label>Occasione
+        <select name="draftOccasion" [(ngModel)]="edit.occasion" [disabled]="saving">
+          <option *ngFor="let item of occasions" [ngValue]="item.value">{{ item.label }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="draft-editor__products">
+      <strong>Prodotti del look</strong>
+      <p>Puoi sostituire ciascun capo con un prodotto della stessa categoria. Il prezzo e i link saranno ricontrollati dal backend.</p>
+      <div *ngFor="let product of outfit.products; let i = index" class="draft-editor__product">
+        <img *ngIf="product.images?.[0]" [src]="product.images[0]" [alt]="product.name" loading="lazy">
+        <div>
+          <small>{{ product.role }}</small>
+          <span>{{ replacementLabel(i) }}</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showReplacements(i)" [disabled]="saving">
+          Sostituisci
+        </button>
+      </div>
+    </div>
+
+    <div class="draft-editor__search" *ngIf="replacementIndex !== null">
+      <label>Cerca un prodotto alternativo
+        <input type="search" name="replacementSearch" [(ngModel)]="replacementQuery" placeholder="Nome o marca" [disabled]="searching">
+      </label>
+      <button type="button" class="btn btn-sm btn-outline-primary" (click)="findReplacements()"
+        [disabled]="searching || !replacementQuery.trim()">
+        {{ searching ? 'Ricerca…' : 'Cerca nel catalogo' }}
+      </button>
+      <div class="draft-editor__results" *ngIf="replacements.length">
+        <button type="button" *ngFor="let product of replacements" (click)="chooseReplacement(product)">
+          <img *ngIf="product.images?.[0]" [src]="product.images[0]" [alt]="product.name" loading="lazy">
+          <span><strong>{{ product.brand }}</strong> {{ product.name }}</span>
+          <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+    <p class="draft-editor__hint">Salvare solo testo e descrizione non genera nuove immagini. Se cambi capi, stagione, stile o occasione dovrai rigenerare la fotografia prima di pubblicare.</p>
+    <small class="text-danger" role="alert" *ngIf="error">{{ error }}</small>
+    <div class="draft-editor__actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving">Annulla</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving || searching">
+        {{ saving ? 'Salvataggio…' : 'Salva modifiche alla bozza' }}
+      </button>
+    </div>
+  </form>
+</section>
