@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom, finalize, forkJoin, Subscription, timer, exhaustMap } from 'rxjs';
 import {
   ColData,
@@ -236,7 +236,7 @@ export function createAffiliateProductsProvider(
 @Component({
   selector: 'app-affiliate-products',
   standalone: true,
-  imports: [CommonModule, DataGridComponent],
+  imports: [CommonModule, DataGridComponent, RouterLink],
   templateUrl: './affiliate-products.component.html',
   styleUrl: './affiliate-products.component.scss',
 })
