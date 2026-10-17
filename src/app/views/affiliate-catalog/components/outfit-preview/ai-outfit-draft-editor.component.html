@@ -4,15 +4,18 @@
     <span class="mdi mdi-pencil-outline" aria-hidden="true"></span> Modifica outfit
   </button>
 
-  <div class="draft-editor__stale" *ngIf="draft?.imageNeedsRegeneration || draft?.imageRegenerating" role="status">
+  <div class="draft-editor__stale" *ngIf="draft?.imageNeedsRegeneration" role="status">
     <strong>Immagine da aggiornare</strong>
-    <p>Questa bozza risulta avere un'immagine da aggiornare. Le nuove modifiche a stile, stagione, occasione o testo non la invalidano; la sostituzione di un prodotto si.</p>
+    <p>Hai sostituito un prodotto del look. Rigenera l'immagine prima della pubblicazione; le modifiche editoriali non richiedono una nuova immagine.</p>
     <button *ngIf="!editing" type="button" class="btn btn-sm btn-outline-primary"
       (click)="regenerateImage()" [disabled]="regenerating || draft?.imageRegenerating">
       <span class="mdi" [class.mdi-loading]="regenerating" [class.mdi-spin]="regenerating" [class.mdi-image-sync-outline]="!regenerating" aria-hidden="true"></span>
       {{ regenerating || draft?.imageRegenerating ? 'Rigenerazione in corso…' : 'Rigenera solo questa immagine (AI a pagamento)' }}
     </button>
   </div>
+  <small *ngIf="draft?.imageRegenerating && !draft?.imageNeedsRegeneration" class="draft-editor__hint" role="status">
+    Rigenerazione dell'immagine in corso…
+  </small>
   <small *ngIf="regenerationError" class="text-danger" role="alert">{{ regenerationError }}</small>
   <small *ngIf="draft?.imageRegenerationCount" class="draft-editor__hint">
     Immagini rigenerate: {{ draft?.imageRegenerationCount }}.
