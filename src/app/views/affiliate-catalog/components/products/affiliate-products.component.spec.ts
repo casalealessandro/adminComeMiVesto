@@ -76,11 +76,12 @@ describe('Affiliate products', () => {
     const actions = columns.filter((column) => column.type === 'campoButton');
     const filterable = columns.filter((column) => column.allowFiltering === true);
 
-    expect(actions.map((column) => column.button?.name)).toEqual(['detail']);
+    expect(actions.map((column) => column.button?.name)).toEqual([]);
     expect(buildAffiliateProductColumns([program], ['Clothing'], true)[0].data.filter((column) => column.type === 'campoButton')
-      .map((column) => column.button?.name)).toEqual(['detail', 'edit', 'delete']);
+      .map((column) => column.button?.name)).toEqual(['edit']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
-    expect(buildAffiliateProductColumns([program], ['Clothing'], true)[0].data.some((column) => column.button?.name === 'delete')).toBeTrue();
+    expect(columns.some((column) => column.dataField === 'imagePreview' && column.type === 'campoImg')).toBeTrue();
+    expect(columns.some((column) => column.dataField === 'sourceFeedCount')).toBeFalse();
     expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'visibleInAppFilter']);
     expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
@@ -102,7 +103,8 @@ describe('Affiliate products', () => {
     expect(rows[0].visibleInAppFilter).toBe('true');
     expect(buildAffiliateProductGridRows([{ ...product, active: false, enabledForApp: true }], new Map())[0].visibleInAppFilter).toBe('false');
     expect(rows[0].categoryLabel).toBe('Clothing / Shirts');
-    expect(rows[0].genderLabel).toBe('U, D');
+    expect(rows[0].genderLabel).toBe('Uomo, Donna');
+    expect(rows[0].imagePreview).toBe(product.images[0]);
     expect(rows[0].seasonLabel).toBe('—');
     expect(affiliateProductSeasonsLabel(['WINTER', 'SPRING', 'WINTER'])).toBe('Primavera, Inverno');
     expect(rows[0].sourceFeedCount).toBe(2);
