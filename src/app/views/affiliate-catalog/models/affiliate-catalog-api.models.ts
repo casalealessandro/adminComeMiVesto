@@ -20,6 +20,7 @@ export interface AffiliateCursorRequest {
 export interface AffiliateProductCursorRequest extends AffiliateCursorRequest {
   q?: string;
   category?: string;
+  subcategory?: string;
   affiliateProgramId?: string;
   visibleInApp?: boolean;
   season?: 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
