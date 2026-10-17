@@ -145,3 +145,11 @@
         animation: none;
     }
 }
+
+/* Catalog thumbnails reuse the existing campoImg tooltip without cropping products. */
+:host ::ng-deep .contet-data .cell-img {
+    width: 48px;
+    height: 60px;
+    max-height: 60px;
+    object-fit: contain;
+}
