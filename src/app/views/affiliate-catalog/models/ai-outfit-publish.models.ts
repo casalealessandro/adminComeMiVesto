@@ -7,6 +7,7 @@ export interface AiOutfitPublishRequest {
   gender: AiOutfitPreviewOutfit['gender'];
   season: AiOutfitPreviewOutfit['season'];
   style: AiOutfitPreviewOutfit['style'];
+  occasion: import('./affiliate-catalog-api.models').AiOutfitPreviewOccasion;
   creatorUid?: string;
   draftId?: string;
   products: Array<{
