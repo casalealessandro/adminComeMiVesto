@@ -161,6 +161,41 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(host.textContent).toContain('Merchant A');
   });
 
+  it('shows the optional outerwear warning on generated looks and pending drafts without blocking review', () => {
+    const preview = structuredClone(previewResult);
+    preview.outfits[0].editorialWarnings = ['MISSING_OPTIONAL_OUTERWEAR'];
+    service.generateOutfitPreview.and.returnValue(of(preview));
+    component.generate();
+    fixture.detectChanges();
+
+    const host: HTMLElement = fixture.nativeElement;
+    const warning = host.querySelector('.outfit-card .alert-warning[role="status"]');
+    expect(warning?.textContent).toContain('Capospalla non disponibile');
+    expect(host.querySelectorAll('.outfit-card .alert-warning[role="status"]').length).toBe(1);
+    expect(host.querySelectorAll('.outfit-card__approve').length).toBe(3);
+
+    component.pendingDrafts = [{
+      id: 'draft-1',
+      batchId: 'batch-1',
+      batchIndex: 0,
+      status: 'PENDING',
+      createdAt: 1,
+      updatedAt: 1,
+      generatedAt: 1,
+      generatedBy: 'admin-1',
+      model: 'fake',
+      providerResponseId: null,
+      request: preview.request,
+      candidatesEvaluated: 3,
+      imagesEvaluated: 3,
+      usage: preview.usage,
+      outfit: { ...preview.outfits[0] },
+    }];
+    fixture.detectChanges();
+    expect(host.querySelector('.draft-card .alert-warning[role="status"]')?.textContent)
+      .toContain('Capospalla non disponibile');
+  });
+
   it('shows when the creator profile photo was used as visual identity reference', () => {
     service.generateOutfitPreview.and.returnValue(of({
       ...structuredClone(previewResult),
