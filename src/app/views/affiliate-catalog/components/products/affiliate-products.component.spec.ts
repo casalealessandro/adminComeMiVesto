@@ -349,6 +349,7 @@ describe('Affiliate products', () => {
         providerFilterValue: (field: string) => {
           if (field === 'affiliateProgramId') return program.id;
           if (field === 'category') return 'Clothing';
+          if (field === 'subcategory') return 'Shirts';
           if (field === 'visibleInAppFilter') return 'false';
           return undefined;
         },
@@ -360,6 +361,7 @@ describe('Affiliate products', () => {
         queryParams: {
           affiliateProgramId: program.id,
           category: 'Clothing',
+          subcategory: 'Shirts',
           visibleInApp: 'false',
         },
         queryParamsHandling: 'merge',
