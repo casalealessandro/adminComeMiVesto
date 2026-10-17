@@ -59,7 +59,6 @@ export function buildBulkProductPatch(selection: BulkCurationSelection, data: {
   return patch;
 }
 
-export const CATALOG_SEASON_OPTIONS
 export const CATALOG_SEASON_OPTIONS: ReadonlyArray<{ id: CatalogSeason; label: string }> = [
   { id: 'SPRING', label: 'Primavera' },
   { id: 'SUMMER', label: 'Estate' },
