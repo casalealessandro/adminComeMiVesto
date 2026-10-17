@@ -26,6 +26,7 @@ describe('AffiliateCatalogService AI outfit publish', () => {
       gender: 'U',
       season: 'P',
       style: 'C',
+      occasion: 'OFFICE',
       products: [
         { catalogProductId: 'p1', role: 'top' },
         { catalogProductId: 'p2', role: 'bottom' },
