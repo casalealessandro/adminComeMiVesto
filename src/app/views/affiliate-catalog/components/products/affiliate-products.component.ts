@@ -74,6 +74,7 @@ export interface AffiliateProductGridRow extends CatalogProduct {
   genderLabel: string;
   seasonLabel: string;
   sourceFeedCount: number;
+  imagePreview: string;
 }
 
 export interface AffiliateProductsProviderCallbacks {
@@ -101,6 +102,7 @@ export function buildAffiliateProductColumns(
 
   const columns: ColData[] = [
     baseColumn('brand', 'Brand', 130),
+    baseColumn('imagePreview', 'Immagine', 82, 'campoImg'),
     baseColumn('name', 'Prodotto', 230),
     {
       ...baseColumn('affiliateProgramId', 'Programma', 180, 'campoLista'),
@@ -116,7 +118,6 @@ export function buildAffiliateProductColumns(
     baseColumn('normalizedColor', 'Colore', 110),
     baseColumn('genderLabel', 'Target', 150),
     baseColumn('seasonLabel', 'Stagioni', 190),
-    baseColumn('sourceFeedCount', 'Feed', 70, 'campoNumber'),
     baseColumn('activeLabel', 'Attivo catalogo', 110),
     {
       ...baseColumn('visibleInAppFilter', 'Visibile app', 105, 'campoLista'),
@@ -124,32 +125,19 @@ export function buildAffiliateProductColumns(
       lista: listOptions(visibilityOptions, 'value', 'label'),
     },
     baseColumn('lastSeenAt', 'Ultima rilevazione', 145, 'campoDateTime'),
-    {
-      ...baseColumn('', 'Dettaglio', 76, 'campoButton'),
-      button: {
-        text: '',
-        name: 'detail',
-        event: 'detail',
-        icon: 'mdi mdi-eye-outline',
-        hint: 'Apri dettaglio prodotto',
-      },
-    },
   ];
-
   if (canEdit) {
     columns.push({
       ...baseColumn('', 'Modifica', 76, 'campoButton'),
       button: { text: '', name: 'edit', event: 'edit', icon: 'mdi mdi-pencil-outline', hint: 'Modifica prodotto' },
     });
   }
-  if (canEdit) {
-    columns.push({
-      ...baseColumn('', 'Elimina', 76, 'campoButton'),
-      button: { text: '', name: 'delete', event: 'delete',
-        icon: 'mdi mdi-delete-outline', hint: 'Elimina prodotto se non utilizzato negli outfit' },
-    });
-  }
   return [{ itemType: 'group', groupDataField: '', data: columns }];
+}
+
+export function affiliateGenderLabel(targets?: readonly string[]): string {
+  const labels: Record<string, string> = { U: 'Uomo', D: 'Donna' };
+  return targets?.filter(Boolean).map((target) => labels[target] || target).join(', ') || '—';
 }
 
 export function buildAffiliateProductGridRows(
@@ -162,7 +150,8 @@ export function buildAffiliateProductGridRows(
     activeLabel: product.active ? 'Sì' : 'No',
     visibleInAppFilter: product.active && product.enabledForApp !== false ? 'true' : 'false',
     categoryLabel: [product.category, product.subcategory].filter(Boolean).join(' / ') || '—',
-    genderLabel: product.genderTargets?.filter(Boolean).join(', ') || '—',
+    genderLabel: affiliateGenderLabel(product.genderTargets),
+    imagePreview: product.images?.find((image) => typeof image === 'string' && /^https:\/\//i.test(image.trim())) || '',
     seasonLabel: affiliateProductSeasonsLabel(product.fashionProfile?.seasons),
     sourceFeedCount: product.sourceFeedIds?.length ?? 0,
   }));
@@ -247,6 +236,10 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly seasonOptions = CATALOG_SEASON_OPTIONS;
+  readonly productContextActions = [
+    { id: 'detail', nameEvent: 'detail', text: 'Dettaglio', icon: 'mdi mdi-eye-outline', disabled: false, visible: true, cssClass: null, widget: 'button' as const, position: 'left' as const },
+    { id: 'delete', nameEvent: 'delete', text: 'Elimina', icon: 'mdi mdi-delete-outline', disabled: false, visible: this.auth.isAdmin(), cssClass: null, widget: 'button' as const, position: 'left' as const },
+  ];
   selectedSeason: CatalogSeason | '' = '';
   private dataGrid?: DataGridComponent<AffiliateProductGridRow>;
   private mobileLoadMoreObserver?: IntersectionObserver;
@@ -685,7 +678,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   }
 
   genderLabel(product: CatalogProduct): string {
-    return product.genderTargets?.filter(Boolean).join(', ') || '—';
+    return affiliateGenderLabel(product.genderTargets);
   }
 
   seasonLabel(product: CatalogProduct): string {
