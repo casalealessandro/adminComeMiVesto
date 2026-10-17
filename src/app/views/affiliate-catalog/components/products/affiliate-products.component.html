@@ -245,6 +245,7 @@
   </div>
 
   <div *ngIf="auth.isAdmin() && !loading && dataProvider" class="d-flex gap-2 align-items-center mb-2">
+    <button type="button" class="btn btn-sm btn-outline-primary"\n      (click)="openBulkEdit()"\n      [disabled]="bulkSaving || deletingProducts || !dataGridSelectedCount()">\n      <span class="mdi mdi-pencil-box-multiple-outline" aria-hidden="true"></span>\n      Modifica selezionati ({{ dataGridSelectedCount() }})\n    </button>
     <button type="button" class="btn btn-sm btn-outline-danger"
       (click)="deleteSelectedProducts()"
       [disabled]="deletingProducts || !dataGridSelectedCount()">
@@ -368,4 +369,87 @@
       {{ loadingMore ? 'Caricamento…' : 'Carica altri' }}
     </button>
   </div>
+  <div *ngIf="bulkOpen" class="affiliate-bulk-backdrop" role="presentation" (click)="closeBulkEdit()">
+    <section class="affiliate-bulk-dialog" role="dialog" aria-modal="true"
+      aria-labelledby="affiliate-bulk-title" (click)="$event.stopPropagation()">
+      <header class="affiliate-bulk-dialog__header">
+        <div>
+          <h3 id="affiliate-bulk-title">Modifica {{ bulkSelectionIds.length }} prodotti</h3>
+          <p class="small text-muted mb-0">Attiva solo i campi da modificare. Gli altri dati rimangono invariati.</p>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Chiudi"
+          [disabled]="bulkSaving" (click)="closeBulkEdit()">×</button>
+      </header>
+      <div class="affiliate-bulk-dialog__body">
+        <div class="alert alert-danger" *ngIf="bulkError" role="alert">{{ bulkError }}</div>
+        <div class="affiliate-bulk-field">
+          <label class="form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="bulkApply.category" [disabled]="bulkSaving">
+            <span class="form-check-label fw-semibold">Applica categoria e sottocategoria</span>
+          </label>
+          <div *ngIf="bulkApply.category" class="affiliate-bulk-two-col">
+            <label>Categoria
+              <select class="form-select" [ngModel]="bulkCategory" (ngModelChange)="changeBulkCategory($event)"
+                [disabled]="bulkLoadingCategories || bulkSaving">
+                <option value="">Seleziona categoria</option>
+                <option *ngFor="let cat of bulkCategories" [value]="cat.id">{{ cat.categoryName }}</option>
+              </select>
+            </label>
+            <label>Sottocategoria
+              <select class="form-select" [(ngModel)]="bulkSubcategory"
+                [disabled]="!bulkCategory || bulkLoadingCategories || bulkSaving">
+                <option value="">Seleziona sottocategoria</option>
+                <option *ngFor="let cat of bulkSubcategories" [value]="cat.id">{{ cat.categoryName }}</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="affiliate-bulk-field">
+          <label class="form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="bulkApply.styles" [disabled]="bulkSaving">
+            <span class="form-check-label fw-semibold">Applica stili</span>
+          </label>
+          <div *ngIf="bulkApply.styles" class="affiliate-bulk-options">
+            <label class="form-check" *ngFor="let style of bulkStyleOptions">
+              <input class="form-check-input" type="checkbox" [checked]="bulkStyles.includes(style.id)"
+                (change)="toggleBulkOption('styles', style.id, $any($event.target).checked)" [disabled]="bulkSaving">
+              <span class="form-check-label">{{ style.label }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="affiliate-bulk-field">
+          <label class="form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="bulkApply.seasons" [disabled]="bulkSaving">
+            <span class="form-check-label fw-semibold">Applica stagioni</span>
+          </label>
+          <div *ngIf="bulkApply.seasons" class="affiliate-bulk-options">
+            <label class="form-check" *ngFor="let season of seasonOptions">
+              <input class="form-check-input" type="checkbox" [checked]="bulkSeasons.includes(season.id)"
+                (change)="toggleBulkOption('seasons', season.id, $any($event.target).checked)" [disabled]="bulkSaving">
+              <span class="form-check-label">{{ season.label }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="affiliate-bulk-field">
+          <label class="form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="bulkApply.visibility" [disabled]="bulkSaving">
+            <span class="form-check-label fw-semibold">Applica visibilità nell'app</span>
+          </label>
+          <select *ngIf="bulkApply.visibility" class="form-select" [(ngModel)]="bulkVisible" [disabled]="bulkSaving">
+            <option [ngValue]="true">Visibile</option>
+            <option [ngValue]="false">Nascosto</option>
+          </select>
+        </div>
+        <p class="small text-muted mb-0">Massimo 50 prodotti. I prodotti vengono aggiornati uno alla volta usando l'API già esistente; un errore viene segnalato nel riepilogo.</p>
+      </div>
+      <footer class="affiliate-bulk-dialog__footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeBulkEdit()" [disabled]="bulkSaving">Annulla</button>
+        <button type="button" class="btn btn-primary" (click)="confirmBulkEdit()" [disabled]="bulkSaving || bulkLoadingCategories">
+          <span *ngIf="bulkSaving" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+          {{ bulkSaving ? 'Aggiornamento in corso…' : 'Applica modifiche' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+
 </section>
