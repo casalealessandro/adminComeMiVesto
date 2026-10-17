@@ -105,6 +105,8 @@ export class DataGridComponent<T = any> implements OnDestroy {
   @Input()
   colonne!: Colonne[];
   @Input() isEditable: boolean = false
+  /** Optional domain actions in the existing row context menu. */
+  @Input() rowContextActions?: button[];
 
   @Input() modeEdit: string = 'row';
 
@@ -825,7 +827,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
         colCaption: undefined,
         allowFiltering: undefined,
         dataField: '',
-        editorbuttons: [
+        editorbuttons: this.rowContextActions ?? [
           {
             id: 'edit',
             nameEvent: 'onEditEvent',
@@ -1461,6 +1463,9 @@ export class DataGridComponent<T = any> implements OnDestroy {
         break;
 
       default:
+        if (this.rowContextActions) {
+          this.emittendButtonCellClick.emit({ name: evt.action, rowData: this.rowsData()[evt.rowIndex] });
+        }
         break;
     }
   }
