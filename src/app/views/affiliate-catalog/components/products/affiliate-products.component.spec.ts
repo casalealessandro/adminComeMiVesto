@@ -14,6 +14,7 @@ import {
   buildAffiliateProductGridRows,
   buildAffiliateProductRemoteRequest,
   affiliateProductSeasonsLabel,
+  buildBulkProductPatch,
   createAffiliateProductsProvider,
 } from './affiliate-products.component';
 
@@ -110,6 +111,17 @@ describe('Affiliate products', () => {
     expect(rows[0].sourceFeedCount).toBe(2);
   });
 
+  it('updates only explicitly selected bulk fields, preserving all other fields', () => {
+    expect(buildBulkProductPatch(
+      { category: false, styles: true, seasons: false, visibility: true },
+      { category: 'unused', subcategory: 'unused', styles: ['CASUAL'], seasons: ['WINTER'], visible: false },
+    )).toEqual({ fashionProfile: { styleAffinities: ['CASUAL'] }, enabledForApp: false });
+    expect(buildBulkProductPatch(
+      { category: true, styles: false, seasons: true, visibility: false },
+      { category: 'shirt', subcategory: 'shirt-casual', styles: [], seasons: ['SUMMER'], visible: true },
+    )).toEqual({ category: 'shirt', subcategory: 'shirt-casual', fashionProfile: { seasons: ['SUMMER'] } });
+  });
+
   it('passes a chosen season to remote requests rather than filtering loaded rows locally', () => {
     expect(buildAffiliateProductRemoteRequest({ pageSize: 50 }, 'AUTUMN'))
       .toEqual({ limit: 50, season: 'AUTUMN' });
@@ -179,6 +191,7 @@ describe('Affiliate products', () => {
         'getProducts',
         'getPrograms',
         'getProductCategories',
+        'getCurationCategories',
         'getUnclassifiedCleanupStatus',
         'previewUnclassifiedCleanup',
         'confirmUnclassifiedCleanup',
@@ -186,6 +199,7 @@ describe('Affiliate products', () => {
       ]);
       service.getPrograms.and.returnValue(of([program]));
       service.getProductCategories.and.returnValue(of(['Clothing']));
+      service.getCurationCategories.and.returnValue(of([{ id: 'c1', categoryName: 'Camicie' }]));
       service.getProducts.and.returnValue(of({
         data: [product],
         pagination: { nextCursor: null, hasMore: false },
