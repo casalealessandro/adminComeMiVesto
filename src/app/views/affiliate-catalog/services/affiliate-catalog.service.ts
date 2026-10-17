@@ -374,6 +374,12 @@ export class AffiliateCatalogService {
     ).pipe(map(response => Array.isArray(response) ? response : response.data));
   }
 
+  getProductSubcategories(): Observable<string[]> {
+    return this.http
+      .get<AffiliateApiResponse<string[]>>(`${this.baseUrl}/product-subcategories`)
+      .pipe(map((response) => response.data));
+  }
+
   getProductCategories(): Observable<string[]> {
     return this.http
       .get<AffiliateApiResponse<string[]>>(`${this.baseUrl}/product-categories`)
@@ -473,6 +479,9 @@ export class AffiliateCatalogService {
     }
     if (request?.category) {
       params = params.set('category', request.category);
+    }
+    if (request?.subcategory) {
+      params = params.set('subcategory', request.subcategory);
     }
     if (request?.season) {
       params = params.set('season', request.season);

@@ -72,8 +72,8 @@ describe('Affiliate products', () => {
     lastError: null,
   };
 
-  it('keeps the products grid read-only and exposes Programma, Categoria and Visibile app as filters', () => {
-    const columns = buildAffiliateProductColumns([program], ['Clothing', 'Shoes'])[0].data;
+  it('keeps the products grid read-only and exposes Programma, Categoria, Sottocategoria and Visibile app as filters', () => {
+    const columns = buildAffiliateProductColumns([program], ['Clothing', 'Shoes'], false, ['Shirts', 'Jeans'])[0].data;
     const actions = columns.filter((column) => column.type === 'campoButton');
     const filterable = columns.filter((column) => column.allowFiltering === true);
 
@@ -83,10 +83,13 @@ describe('Affiliate products', () => {
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
     expect(columns.some((column) => column.dataField === 'imagePreview' && column.type === 'campoImg')).toBeTrue();
     expect(columns.some((column) => column.dataField === 'sourceFeedCount')).toBeFalse();
-    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'visibleInAppFilter']);
+    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']);
     expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
     expect(filterable[2].lista?.options).toEqual([
+      { value: 'Jeans', label: 'Jeans' }, { value: 'Shirts', label: 'Shirts' },
+    ]);
+    expect(filterable[3].lista?.options).toEqual([
       { value: 'true', label: 'Sì' },
       { value: 'false', label: 'No' },
     ]);
@@ -139,6 +142,7 @@ describe('Affiliate products', () => {
       filters: [
         { field: 'affiliateProgramId', operator: 'eq', value: program.id },
         { field: 'category', operator: 'eq', value: 'Clothing' },
+        { field: 'subcategory', operator: 'eq', value: 'Shirts' },
         { field: 'visibleInAppFilter', operator: 'eq', value: 'false' },
       ],
     };
@@ -148,6 +152,7 @@ describe('Affiliate products', () => {
       cursor: 'cursor-2',
       affiliateProgramId: program.id,
       category: 'Clothing',
+      subcategory: 'Shirts',
       visibleInApp: false,
     });
   });
@@ -191,6 +196,7 @@ describe('Affiliate products', () => {
         'getProducts',
         'getPrograms',
         'getProductCategories',
+        'getProductSubcategories',
         'getCurationCategories',
         'getUnclassifiedCleanupStatus',
         'previewUnclassifiedCleanup',
@@ -199,6 +205,7 @@ describe('Affiliate products', () => {
       ]);
       service.getPrograms.and.returnValue(of([program]));
       service.getProductCategories.and.returnValue(of(['Clothing']));
+      service.getProductSubcategories.and.returnValue(of(['Shirts']));
       service.getCurationCategories.and.returnValue(of([{ id: 'c1', categoryName: 'Camicie' }]));
       service.getProducts.and.returnValue(of({
         data: [product],
@@ -342,6 +349,7 @@ describe('Affiliate products', () => {
         providerFilterValue: (field: string) => {
           if (field === 'affiliateProgramId') return program.id;
           if (field === 'category') return 'Clothing';
+          if (field === 'subcategory') return 'Shirts';
           if (field === 'visibleInAppFilter') return 'false';
           return undefined;
         },
@@ -353,6 +361,7 @@ describe('Affiliate products', () => {
         queryParams: {
           affiliateProgramId: program.id,
           category: 'Clothing',
+          subcategory: 'Shirts',
           visibleInApp: 'false',
         },
         queryParamsHandling: 'merge',

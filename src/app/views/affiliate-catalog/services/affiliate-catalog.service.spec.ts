@@ -480,6 +480,17 @@ describe('AffiliateCatalogService release contract', () => {
     expect(response).toEqual(syncRun);
   });
 
+  it('loads subcategory filter options from the complete affiliate catalog', () => {
+    let response: string[] | undefined;
+    service.getProductSubcategories().subscribe((value) => response = value);
+
+    const request = http.expectOne(`${baseUrl}/product-subcategories`);
+    expect(request.request.method).toBe('GET');
+    request.flush({ data: ['Jeans', 'Shirts'] });
+
+    expect(response).toEqual(['Jeans', 'Shirts']);
+  });
+
   it('loads product categories from the affiliate catalog endpoint', () => {
     let response: string[] | undefined;
     service.getProductCategories().subscribe((value) => response = value);
