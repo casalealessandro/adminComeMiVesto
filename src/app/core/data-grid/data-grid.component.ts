@@ -106,7 +106,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
   colonne!: Colonne[];
   @Input() isEditable: boolean = false
   /** Optional domain actions in the existing row context menu. */
-  @Input() rowContextActions?: button[];
+  @Input() rowContextActions?: ColData['editorbuttons'];
 
   @Input() modeEdit: string = 'row';
 
