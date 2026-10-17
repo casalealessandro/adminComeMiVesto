@@ -148,6 +148,11 @@
             <span class="badge text-bg-warning">PENDING</span>
           </div>
           <p>{{ draft.outfit.description }}</p>
+          <div class="alert alert-warning py-2 mb-2" role="status"
+            *ngIf="draft.outfit.editorialWarnings?.includes('MISSING_OPTIONAL_OUTERWEAR')">
+            <strong>Capospalla non disponibile.</strong>
+            Il look è stato generato con i capi essenziali: verifica se serve uno strato esterno prima di pubblicarlo.
+          </div>
           <div class="draft-card__meta">
             <span>{{ draft.outfit.gender }}</span>
             <span>{{ draft.outfit.season }}</span>
@@ -248,6 +253,11 @@
             <strong class="outfit-card__total">{{ outfitTotal(outfit) | currency:(outfit.products[0].currency || 'EUR'):'symbol':'1.0-2' }}</strong>
           </div>
 
+          <div class="alert alert-warning py-2 mb-2" role="status"
+            *ngIf="outfit.editorialWarnings?.includes('MISSING_OPTIONAL_OUTERWEAR')">
+            <strong>Capospalla non disponibile.</strong>
+            Il look è stato generato con i capi essenziali: verifica se serve uno strato esterno prima di pubblicarlo.
+          </div>
           <div class="outfit-card__badges">
             <span>{{ outfit.gender }}</span>
             <span>{{ outfit.season }}</span>
