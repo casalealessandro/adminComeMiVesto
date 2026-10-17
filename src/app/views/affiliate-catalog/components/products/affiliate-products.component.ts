@@ -138,7 +138,6 @@ export function buildAffiliateProductColumns(
   ];
 
   const columns: ColData[] = [
-    baseColumn('brand', 'Brand', 130),
     baseColumn('imagePreview', 'Immagine', 82, 'campoImg'),
     baseColumn('name', 'Prodotto', 230),
     {
