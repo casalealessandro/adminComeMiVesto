@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom, finalize, forkJoin, Subscription, timer, exhaustMap } from 'rxjs';
@@ -11,6 +12,7 @@ import {
   GridPage,
 } from '../../../../core/public-api';
 import {
+  AffiliateProductUpdateInput,
   AffiliateProductCursorRequest,
   AffiliateUnclassifiedCleanupJob,
 } from '../../models/affiliate-catalog-api.models';
@@ -22,6 +24,42 @@ import { AffiliateProgram, CatalogProduct, CatalogSeason, CatalogReclassificatio
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 export const AFFILIATE_PRODUCTS_PAGE_SIZE = 50;
+export const AFFILIATE_BULK_EDIT_LIMIT = 50;
+export const BULK_STYLE_OPTIONS = [
+  { id: 'CASUAL', label: 'Casual' }, { id: 'BUSINESS', label: 'Business' },
+  { id: 'SPORTY', label: 'Sportivo' }, { id: 'SMART_CASUAL', label: 'Smart casual' },
+  { id: 'ELEGANT', label: 'Elegante' }, { id: 'ALTERNATIVE', label: 'Alternative' },
+  { id: 'FESTIVAL', label: 'Festival' }, { id: 'CLASSIC', label: 'Classico' },
+  { id: 'TRENDY', label: 'Trendy' }, { id: 'STREETWEAR', label: 'Streetwear' },
+] as const;
+
+export interface BulkCurationSelection {
+  category: boolean;
+  seasons: boolean;
+  styles: boolean;
+  visibility: boolean;
+}
+
+/** Builds only fields explicitly opted into, never inheriting another product's values. */
+export function buildBulkProductPatch(selection: BulkCurationSelection, data: {
+  category: string; subcategory: string; seasons: string[]; styles: string[]; visible: boolean;
+}): AffiliateProductUpdateInput {
+  const patch: AffiliateProductUpdateInput = {};
+  if (selection.category) {
+    patch.category = data.category;
+    patch.subcategory = data.subcategory;
+  }
+  if (selection.seasons || selection.styles) {
+    patch.fashionProfile = {
+      ...(selection.seasons ? { seasons: [...data.seasons] } : {}),
+      ...(selection.styles ? { styleAffinities: [...data.styles] } : {}),
+    };
+  }
+  if (selection.visibility) patch.enabledForApp = data.visible;
+  return patch;
+}
+
+export const CATALOG_SEASON_OPTIONS
 export const CATALOG_SEASON_OPTIONS: ReadonlyArray<{ id: CatalogSeason; label: string }> = [
   { id: 'SPRING', label: 'Primavera' },
   { id: 'SUMMER', label: 'Estate' },
@@ -225,7 +263,7 @@ export function createAffiliateProductsProvider(
 @Component({
   selector: 'app-affiliate-products',
   standalone: true,
-  imports: [CommonModule, DataGridComponent, RouterLink],
+  imports: [CommonModule, FormsModule, DataGridComponent, RouterLink],
   templateUrl: './affiliate-products.component.html',
   styleUrl: './affiliate-products.component.scss',
 })
@@ -236,6 +274,9 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly seasonOptions = CATALOG_SEASON_OPTIONS;
+  readonly bulkStyleOptions = BULK_STYLE_OPTIONS;
+  readonly bulkEditLimit = AFFILIATE_BULK_EDIT_LIMIT;
+
   readonly productContextActions = [
     { id: 'detail', nameEvent: 'detail', text: 'Dettaglio', icon: 'mdi mdi-eye-outline', disabled: false, visible: true, cssClass: null, widget: 'button' as const, position: 'left' as const },
     { id: 'delete', nameEvent: 'delete', text: 'Elimina', icon: 'mdi mdi-delete-outline', disabled: false, visible: this.auth.isAdmin(), cssClass: null, widget: 'button' as const, position: 'left' as const },
@@ -252,6 +293,20 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   productsLoading = false;
   loadingMore = false;
   deletingProducts = false;
+  bulkOpen = false;
+  bulkSaving = false;
+  bulkLoadingCategories = false;
+  bulkError = '';
+  bulkSelectionIds: string[] = [];
+  bulkCategories: Array<{ id: string; categoryName: string }> = [];
+  bulkSubcategories: Array<{ id: string; categoryName: string }> = [];
+  bulkApply: BulkCurationSelection = { category: false, seasons: false, styles: false, visibility: false };
+  bulkCategory = '';
+  bulkSubcategory = '';
+  bulkSeasons: string[] = [];
+  bulkStyles: string[] = [];
+  bulkVisible = false;
+
   reclassificationPanelOpen = false;
   reclassificationBusy = false;
   reclassificationPreview: CatalogReclassificationPreview | null = null;
@@ -718,6 +773,132 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   confirmDeleteSingleProduct(product: CatalogProduct): void {
     if (product?.id) this.confirmDeleteProducts([product.id]);
+  }
+
+  openBulkEdit(): void {
+    if (!this.auth.isAdmin() || this.bulkSaving || this.deletingProducts) return;
+    const ids = [...new Set(this.dataGrid?.getSelectedRows().map(row => row.id).filter(Boolean) ?? [])];
+    if (!ids.length || ids.length > AFFILIATE_BULK_EDIT_LIMIT) {
+      alert('Seleziona da 1 a 50 prodotti nella griglia.', 'Selezione non valida');
+      return;
+    }
+    this.bulkSelectionIds = ids;
+    this.bulkApply = { category: false, seasons: false, styles: false, visibility: false };
+    this.bulkCategory = '';
+    this.bulkSubcategory = '';
+    this.bulkSeasons = [];
+    this.bulkStyles = [];
+    this.bulkVisible = false;
+    this.bulkError = '';
+    this.bulkSubcategories = [];
+    this.bulkOpen = true;
+    this.bulkLoadingCategories = true;
+    this.affiliateCatalogService.getCurationCategories().pipe(
+      finalize(() => this.bulkLoadingCategories = false),
+    ).subscribe({
+      next: categories => { this.bulkCategories = categories; },
+      error: () => { this.bulkError = 'Impossibile leggere le categorie ComeMiVesto.'; },
+    });
+  }
+
+  closeBulkEdit(): void {
+    if (!this.bulkSaving) this.bulkOpen = false;
+  }
+
+  changeBulkCategory(categoryId: string): void {
+    this.bulkCategory = categoryId;
+    this.bulkSubcategory = '';
+    this.bulkSubcategories = [];
+    if (!categoryId) return;
+    this.bulkLoadingCategories = true;
+    this.affiliateCatalogService.getCurationCategories(categoryId).pipe(
+      finalize(() => this.bulkLoadingCategories = false),
+    ).subscribe({
+      next: items => { this.bulkSubcategories = items; },
+      error: () => { this.bulkError = 'Impossibile caricare le sottocategorie.'; },
+    });
+  }
+
+  toggleBulkOption(field: 'seasons' | 'styles', value: string, checked: boolean): void {
+    const values = field === 'seasons' ? this.bulkSeasons : this.bulkStyles;
+    const next = checked ? [...new Set([...values, value])] : values.filter(item => item !== value);
+    if (field === 'seasons') this.bulkSeasons = next;
+    else this.bulkStyles = next;
+  }
+
+  bulkPatch(): AffiliateProductUpdateInput {
+    return buildBulkProductPatch(this.bulkApply, {
+      category: this.bulkCategory, subcategory: this.bulkSubcategory,
+      seasons: this.bulkSeasons, styles: this.bulkStyles, visible: this.bulkVisible,
+    });
+  }
+
+  bulkValidationError(): string {
+    if (!Object.values(this.bulkApply).some(Boolean)) return 'Seleziona almeno un campo da applicare.';
+    if (this.bulkApply.category && (!this.bulkCategory || !this.bulkSubcategory)) {
+      return 'Seleziona categoria e sottocategoria valide.';
+    }
+    if (this.bulkApply.seasons && !this.bulkSeasons.length) return 'Seleziona almeno una stagione.';
+    if (this.bulkApply.styles && !this.bulkStyles.length) return 'Seleziona almeno uno stile.';
+    if (this.bulkLoadingCategories) return 'Attendi il caricamento delle categorie.';
+    // Enabling a product requires a complete classification for every selected item.
+    if (this.bulkApply.visibility && this.bulkVisible && !this.bulkApply.category) {
+      const selected = this.products.filter(p => this.bulkSelectionIds.includes(p.id));
+      if (selected.some(p => p.active && (!p.category || !p.subcategory))) {
+        return 'Alcuni prodotti non hanno categoria e sottocategoria: applicale prima di renderli visibili.';
+      }
+    }
+    return '';
+  }
+
+  confirmBulkEdit(): void {
+    if (!this.auth.isAdmin() || !this.bulkOpen || this.bulkSaving) return;
+    const validation = this.bulkValidationError();
+    if (validation) { this.bulkError = validation; return; }
+    const ids = [...this.bulkSelectionIds];
+    const patch = this.bulkPatch();
+    const changed = [
+      this.bulkApply.category ? 'categoria e sottocategoria' : '',
+      this.bulkApply.styles ? 'stili' : '',
+      this.bulkApply.seasons ? 'stagioni' : '',
+      this.bulkApply.visibility ? 'visibilità' : '',
+    ].filter(Boolean).join(', ');
+    confirm(
+      `Applicare ${changed} a ${ids.length} prodotti? I campi non selezionati resteranno invariati.`,
+      'Conferma modifica multipla',
+      accepted => { if (accepted) void this.executeBulkEdit(ids, patch); },
+    );
+  }
+
+  private async executeBulkEdit(ids: string[], patch: AffiliateProductUpdateInput): Promise<void> {
+    this.bulkSaving = true;
+    this.bulkError = '';
+    let saved = 0;
+    const failed: string[] = [];
+    // Conservative sequential reuse of the existing authenticated single-product API.
+    // A failure on one product does not silently abandon the remaining selection.
+    for (const id of ids) {
+      try {
+        await firstValueFrom(this.affiliateCatalogService.updateProduct(id, patch));
+        saved++;
+      } catch {
+        failed.push(id);
+      }
+    }
+    this.bulkSaving = false;
+    this.bulkOpen = false;
+    const filters: Record<string, string> = {};
+    for (const field of ['affiliateProgramId', 'category', 'visibleInAppFilter']) {
+      const value = this.dataGrid?.providerFilterValue(field);
+      if (typeof value === 'string' && value) filters[field] = value;
+    }
+    this.restoredFilters = filters;
+    this.refresh();
+    alert(
+      `Aggiornati: ${saved} su ${ids.length}. Non riusciti: ${failed.length}.` +
+      (failed.length ? ` ID non aggiornati: ${failed.join(', ')}` : ''),
+      failed.length ? 'Modifica parzialmente completata' : 'Modifica multipla completata',
+    );
   }
 
   deleteSelectedProducts(): void {
