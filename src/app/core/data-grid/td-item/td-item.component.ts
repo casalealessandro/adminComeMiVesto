@@ -275,7 +275,7 @@ export class TdItemComponent {
         break;
       case 'campoImg':
         this.toolTipImg = text
-        result = `<img src="${text}" class="cell-img" >`
+        result = text ? `<img src="${text}" class="cell-img" >` : "—"
         break;
       case 'campoButton':
         const buttonInfo = this.colProperty['button'];
