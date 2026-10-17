@@ -367,6 +367,13 @@ export class AffiliateCatalogService {
     );
   }
 
+  getCurationCategories(parentId?: string): Observable<Array<{ id: string; categoryName: string }>> {
+    const path = parentId ? `/gen/outfitCategories/${encodeURIComponent(parentId)}` : '/gen/outfitCategories';
+    return this.http.get<AffiliateApiResponse<Array<{ id: string; categoryName: string }>> | Array<{ id: string; categoryName: string }>>(
+      `${this.apiUrl}${path}`,
+    ).pipe(map(response => Array.isArray(response) ? response : response.data));
+  }
+
   getProductCategories(): Observable<string[]> {
     return this.http
       .get<AffiliateApiResponse<string[]>>(`${this.baseUrl}/product-categories`)
