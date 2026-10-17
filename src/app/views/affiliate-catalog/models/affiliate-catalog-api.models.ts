@@ -209,6 +209,8 @@ export interface AiOutfitPreviewProduct {
 }
 
 export interface AiOutfitPreviewOutfit {
+  /** Non-blocking editorial feedback from the planned backend generation. */
+  editorialWarnings?: Array<'MISSING_OPTIONAL_OUTERWEAR'>;
   /** Persisted aiOutfitDrafts document ID assigned by the backend. */
   draftId?: string;
   title: string;
