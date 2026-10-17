@@ -445,3 +445,12 @@
     flex-direction: column;
   }
 }
+
+/* Keep the catalogue preview contained without changing other DataGrid images. */
+.affiliate-products__desktop ::ng-deep .cell-img {
+  width: 48px;
+  height: 60px;
+  max-height: 60px;
+  object-fit: contain;
+  cursor: zoom-in;
+}
