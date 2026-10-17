@@ -6,7 +6,7 @@
 
   <div class="draft-editor__stale" *ngIf="draft?.imageNeedsRegeneration || draft?.imageRegenerating" role="status">
     <strong>Immagine da aggiornare</strong>
-    <p>Hai modificato la composizione o le informazioni visive del look. L'immagine precedente non è più valida per la pubblicazione.</p>
+    <p>Hai sostituito uno o piu prodotti del look. L'immagine precedente non rappresenta piu la composizione aggiornata.</p>
     <button *ngIf="!editing" type="button" class="btn btn-sm btn-outline-primary"
       (click)="regenerateImage()" [disabled]="regenerating || draft?.imageRegenerating">
       <span class="mdi" [class.mdi-loading]="regenerating" [class.mdi-spin]="regenerating" [class.mdi-image-sync-outline]="!regenerating" aria-hidden="true"></span>
@@ -83,7 +83,7 @@
         </button>
       </div>
     </div>
-    <p class="draft-editor__hint">Salvare solo testo e descrizione non genera nuove immagini. Se cambi capi, stagione, stile o occasione dovrai rigenerare la fotografia prima di pubblicare.</p>
+    <p class="draft-editor__hint">Modificare titolo, descrizione, genere, stagione, stile, occasione o posizione dei pin non richiede una nuova immagine. Se sostituisci un prodotto, dovrai rigenerare la fotografia prima della pubblicazione.</p>
     <small class="text-danger" role="alert" *ngIf="error">{{ error }}</small>
     <div class="draft-editor__actions">
       <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving">Annulla</button>
