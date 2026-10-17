@@ -46,6 +46,7 @@
     <label>
       <span>Stile</span>
       <select name="style" [(ngModel)]="request.style" [disabled]="loading || stylesLoading || !styleOptions.length">
+        <option [ngValue]="'AUTO'">Non selezionato — lo sceglie l'AI</option>
         <option *ngFor="let option of styleOptions" [ngValue]="option.value">{{ option.label }}</option>
       </select>
     </label>
@@ -214,7 +215,7 @@
 
     <div class="ai-preview__meta">
       <span>{{ resumedDraftId ? 'Bozza generata' : 'Generati' }} {{ preview.generatedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
-      <span>{{ preview.outfits.length }} outfit · {{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style }}</span>
+      <span>{{ preview.outfits.length }} outfit · {{ preview.request.gender }} · {{ preview.request.season }} · {{ preview.request.occasion }} · {{ preview.request.style === 'AUTO' ? 'Stile automatico' : preview.request.style }}</span>
       <span *ngIf="preview.request.maxTotalPrice">Budget max {{ preview.request.maxTotalPrice | currency:'EUR':'symbol':'1.0-2' }} / outfit</span>
       <span *ngIf="preview.creatorSnapshot?.visualIdentityApplied">Identità visiva creator applicata · {{ preview.creatorSnapshot?.displayName }}</span>
       <span *ngIf="resumedDraftId">Bozza persistita · {{ resumedDraftId }}</span>

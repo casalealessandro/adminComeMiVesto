@@ -65,7 +65,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     gender: 'MAN',
     season: 'SPRING',
     occasion: 'EVERYDAY',
-    style: 'CASUAL',
+    style: 'AUTO',
   };
   outfitCount = 3;
   maxTotalPrice: number | null = null;
@@ -97,9 +97,9 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       .subscribe({
         next: (styles) => {
           this.styleOptions = styles
-            .filter((style) => /^[A-Za-z0-9_-]{1,64}$/.test(style.id) && !!style.value?.trim())
+            .filter((style) => /^[A-Za-z0-9_-]{1,64}$/.test(style.id) && style.id !== 'AUTO' && !!style.value?.trim())
             .map((style) => ({ value: style.id, label: style.value.trim() }));
-          if (this.styleOptions.length && !this.styleOptions.some((style) => style.value === this.request.style)) {
+          if (this.request.style !== 'AUTO' && this.styleOptions.length && !this.styleOptions.some((style) => style.value === this.request.style)) {
             this.request.style = this.styleOptions[0].value;
           }
         },
@@ -208,8 +208,8 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   generate(): void {
     if (this.loading) return;
-    if (this.stylesLoading || !this.styleOptions.some((style) => style.value === this.request.style)) {
-      this.error = 'Seleziona uno stile disponibile dalla tassonomia ComeMiVesto.';
+    if (this.stylesLoading || !this.styleOptions.length || (this.request.style !== 'AUTO' && !this.styleOptions.some((style) => style.value === this.request.style))) {
+      this.error = 'Attendi il caricamento degli stili ComeMiVesto o scegli uno stile valido.';
       return;
     }
     const count = Number(this.outfitCount);

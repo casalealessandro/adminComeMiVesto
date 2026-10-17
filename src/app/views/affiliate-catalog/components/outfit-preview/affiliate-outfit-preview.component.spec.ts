@@ -123,11 +123,24 @@ describe('AffiliateOutfitPreviewComponent', () => {
 
   it('starts from the real baseline request and resolves program labels', () => {
     expect(component.request).toEqual({
-      gender: 'MAN', season: 'SPRING', occasion: 'EVERYDAY', style: 'C',
+      gender: 'MAN', season: 'SPRING', occasion: 'EVERYDAY', style: 'AUTO',
     });
     expect(component.styleOptions).toContain(jasmine.objectContaining({value: 'BOHO', label: 'Boho'}));
     expect(component.programLabel('program-a')).toBe('Merchant A');
     expect(component.programLabel('program-b')).toBe('program-b');
+  });
+
+  it('defaults to non-selected automatic style while allowing explicit taxonomy styles', () => {
+    fixture.detectChanges();
+    const select: HTMLSelectElement = fixture.nativeElement.querySelector('select[name="style"]');
+    expect(select.textContent).toContain('Non selezionato');
+    expect(component.request.style).toBe('AUTO');
+    component.generate();
+    expect(service.generateOutfitPreview).toHaveBeenCalledWith(jasmine.objectContaining({ style: 'AUTO' }));
+    service.generateOutfitPreview.calls.reset();
+    component.request.style = 'BOHO';
+    component.generate();
+    expect(service.generateOutfitPreview).toHaveBeenCalledWith(jasmine.objectContaining({ style: 'BOHO' }));
   });
 
   it('generates a batch and renders hero images next to real product references and usage', () => {
