@@ -26,6 +26,7 @@ export class OutfitsComponent {
       this.outfits = append ? [...this.outfits, ...items] : items;
       this.total = total;
       this.loading = false;
+      this.resolveMissingCreators(items);
     },
     () => { this.error = 'Impossibile caricare gli outfit.'; this.loading = false; },
   );
@@ -35,6 +36,7 @@ export class OutfitsComponent {
   loading = false;
   error = '';
   private readonly busyIds = new Set<string>();
+  private readonly requestedCreatorIds = new Set<string>();
   total = 0;
   subtitle = `Elenco outfit creati nell'app`;
   readonly rowActions: NonNullable<import('../../interface/app.interface').ColData['editorbuttons']> = [
@@ -64,6 +66,7 @@ export class OutfitsComponent {
       next: users => {
         this.creators = users;
         this.refreshCreatorNames();
+        this.resolveMissingCreators(this.outfits);
       },
       error: () => { this.error = 'Impossibile caricare i nomi dei creator.'; }
     });
@@ -73,6 +76,21 @@ export class OutfitsComponent {
     const alias = user?.displayName?.trim();
     const fullName = [user?.nome?.trim(), user?.cognome?.trim()].filter(Boolean).join(' ');
     return alias || fullName || user?.name?.trim() || user?.email || 'Utente non disponibile';
+  }
+  private resolveMissingCreators(items: outfit[]): void {
+    const known = new Set(this.creators.map(user => user.uid));
+    for (const uid of new Set(items.map(item => String(item.userId ?? '')).filter(Boolean))) {
+      if (known.has(uid) || this.requestedCreatorIds.has(uid)) continue;
+      this.requestedCreatorIds.add(uid);
+      this.usersService.getUserProfile(uid).subscribe({
+        next: user => {
+          if (!user?.uid) return;
+          this.creators = [...this.creators.filter(item => item.uid !== user.uid), user];
+          this.refreshCreatorNames();
+        },
+        error: () => { /* Keep a readable fallback instead of exposing the UID. */ }
+      });
+    }
   }
   private refreshCreatorNames(): void {
     this.outfits = this.outfits.map(item => ({ ...item, userName: this.creatorName(String(item.userId ?? '')) }));
