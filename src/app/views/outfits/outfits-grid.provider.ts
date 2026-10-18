@@ -4,7 +4,7 @@ import { outfit, OutfitsService } from '../../services/outfit.service';
 export type OutfitGridFilters = Record<string, string>;
 
 const SUPPORTED_COLUMNS = new Set([
-  'id', 'title', 'description', 'userId', 'gender', 'style', 'season',
+  'id', 'title', 'description', 'imageUrl', 'userId', 'gender', 'style', 'season',
   'status', 'outfitCategory', 'outfitSubCategory', 'color', 'brend',
   'createdAt', 'updatedAt', 'likes', 'visits', 'source', 'createdBy',
 ]);
@@ -29,13 +29,13 @@ export function createOutfitsGridProvider(
       const page = typeof request.continuation === 'number' && request.continuation >= 2
         ? request.continuation : 1;
       const sort = request.sort?.[0] ?? { field: 'createdAt', direction: 'desc' as const };
-      if (!SUPPORTED_COLUMNS.has(sort.field)) throw new Error('Unsupported outfit sort field');
+      const sortField = SUPPORTED_COLUMNS.has(sort.field) ? sort.field : 'createdAt';
       const base = getFilters();
       const explicit = toOutfitRemoteFilters(request);
       const filters: Record<string, string> = {
         ...base,
         search: request.search?.value?.trim() || base['search'] || '',
-        sortField: sort.field,
+        sortField,
         sortDirection: sort.direction,
         gridFilters: JSON.stringify([
           ...explicit,
@@ -58,6 +58,9 @@ export function createOutfitsGridProvider(
         onError();
         throw error;
       }
+    },
+    async delete(item: outfit): Promise<void> {
+      await service.deleteAdminOutfit(String(item.id));
     },
   };
 }
