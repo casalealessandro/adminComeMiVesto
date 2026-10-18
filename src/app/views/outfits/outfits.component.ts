@@ -56,6 +56,7 @@ export class OutfitsComponent {
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'gender', colWidth:'90', colCaption:'Genere', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'90', colCaption:'Stile', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'season', colWidth:'90', colCaption:'Stagione', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'occasion', colWidth:'125', colCaption:'Occasione', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'outfitCategory', colWidth:'140', colCaption:'Categorie', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'color', colWidth:'110', colCaption:'Colori', edit:false, groupDataField:undefined },
     { type:'campoNumber', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'likes', colWidth:'90', colCaption:'Like', edit:false, groupDataField:undefined },
