@@ -310,6 +310,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       gender: outfit.gender,
       season: outfit.season,
       style: outfit.style,
+      occasion: this.result?.request.occasion ?? this.request.occasion,
       ...(creatorUid ? { creatorUid } : {}),
       ...(outfit.draftId ? { draftId: outfit.draftId } : {}),
       products: outfit.products.map((product) => ({
