@@ -28,7 +28,6 @@ type OccasionRow = OutfitOccasion & { activeLabel: string };
 export class OccasionsComponent {
   private readonly api = inject(TaxonomyService);
   readonly columns = columns;
-  readonly codes = ['EVERYDAY', 'OFFICE', 'APERITIVO', 'CEREMONY', 'EVENING', 'SPORT', 'TRAVEL'];
   rows: OccasionRow[] = [];
   error = '';
   loading = false;
@@ -72,7 +71,7 @@ export class OccasionsComponent {
     const value = String(e.formData['value'] ?? '').trim();
     const order = Number(e.formData['order']);
     const active = e.formData['active'];
-    if (!this.codes.includes(id) || !value || !Number.isInteger(order) || order < 0 || typeof active !== 'boolean') {
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(id) || !value || !Number.isInteger(order) || order < 0 || typeof active !== 'boolean') {
       this.error = 'Verifica codice, nome, ordine e stato.'; return;
     }
     const payload = { value, order, active };
