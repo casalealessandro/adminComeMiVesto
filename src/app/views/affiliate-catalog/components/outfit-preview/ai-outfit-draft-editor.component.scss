@@ -4,8 +4,6 @@
 .draft-editor__form { display: grid; gap: .85rem; border: 1px solid var(--bs-border-color, #dee2e6); border-radius: .8rem; padding: .85rem; }
 .draft-editor__form h4 { font-size: 1rem; margin: 0; }
 .draft-editor__fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
-.draft-editor__fields label, .draft-editor__search label { display: grid; gap: .3rem; font-size: .82rem; font-weight: 650; min-width: 0; }
-.draft-editor__fields input, .draft-editor__fields select, .draft-editor__fields textarea, .draft-editor__search input { width: 100%; min-height: 2.5rem; min-width: 0; padding: .45rem .55rem; border: 1px solid var(--bs-border-color, #ced4da); border-radius: .5rem; background: var(--bs-body-bg, #fff); color: var(--bs-body-color, #212529); }
 .draft-editor__wide { grid-column: 1 / -1; }
 .draft-editor__products { display: grid; gap: .5rem; min-width: 0; }
 .draft-editor__products > p, .draft-editor__hint { margin: 0; color: var(--bs-secondary-color, #6c757d); font-size: .78rem; line-height: 1.4; }
@@ -15,12 +13,6 @@
 .draft-editor__product small { font-size: .67rem; color: var(--bs-secondary-color, #6c757d); }
 .draft-editor__product span { overflow-wrap: anywhere; font-size: .78rem; }
 .draft-editor__product button { white-space: nowrap; }
-.draft-editor__search { display: grid; gap: .5rem; border-radius: .6rem; background: var(--bs-tertiary-bg, #f8f9fa); padding: .7rem; }
-.draft-editor__search > button { justify-self: start; }
-.draft-editor__results { display: grid; gap: .35rem; max-height: 18rem; overflow-y: auto; }
-.draft-editor__results > button { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) auto; gap: .55rem; align-items: center; text-align: left; border: 1px solid var(--bs-border-color, #dee2e6); background: var(--bs-body-bg, #fff); color: var(--bs-body-color, #212529); padding: .4rem; border-radius: .5rem; }
-.draft-editor__results img { width: 2.6rem; height: 3rem; object-fit: contain; }
-.draft-editor__results span { overflow-wrap: anywhere; font-size: .8rem; }
 .draft-editor__actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 .draft-editor__stale { display: grid; gap: .35rem; border: 1px solid var(--bs-warning-border-subtle, #ffe69c); background: var(--bs-warning-bg-subtle, #fff3cd); color: var(--bs-warning-text-emphasis, #664d03); border-radius: .6rem; padding: .7rem; }
 .draft-editor__stale p { margin: 0; font-size: .78rem; }
