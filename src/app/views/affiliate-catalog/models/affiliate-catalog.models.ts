@@ -284,6 +284,8 @@ export interface CatalogReclassificationPreview {
   scanned: number;
   wouldUpdate: number;
   unchanged: number;
+  brandFixesInSample?: number;
+  brandReviewsInSample?: number;
   sampleLimit: number;
   examples: Array<{
     id: string;
@@ -299,6 +301,8 @@ export interface FashionEnrichmentJob {
   mode?: 'PROFILE_ONLY' | 'RECLASSIFY';
   expectedVersion?: string | null;
   skippedConcurrent?: number;
+  brandCorrected?: number;
+  brandNeedsReview?: number;
   status: 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED';
   scanned: number;
   updated: number;
