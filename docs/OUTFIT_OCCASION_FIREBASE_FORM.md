@@ -13,23 +13,15 @@ Questa è la configurazione di **un nuovo elemento** nell'array `json` del docum
     "multiple": false,
     "displayExp": "value",
     "valueExp": "id",
-    "remote": false,
-    "api": "",
+    "remote": true,
+    "api": "outfitOccasions",
     "parent": null,
-    "options": [
-      { "id": "EVERYDAY", "value": "Quotidiano", "parent": null },
-      { "id": "OFFICE", "value": "Lavoro / Ufficio", "parent": null },
-      { "id": "APERITIVO", "value": "Aperitivo", "parent": null },
-      { "id": "CEREMONY", "value": "Cerimonia", "parent": null },
-      { "id": "EVENING", "value": "Serata", "parent": null },
-      { "id": "SPORT", "value": "Sport", "parent": null },
-      { "id": "TRAVEL", "value": "Viaggio", "parent": null }
-    ]
+    "options": []
   }
 }
 ```
 
-Le opzioni riflettono `OUTFIT_OCCASIONS` del backend. Il campo resta facoltativo per compatibilità con outfit storici e API precedenti. Se l'outfit non possiede un'occasione, si visualizza nessuna selezione: non assegnare automaticamente `EVERYDAY` a dati esistenti.
+Le opzioni sono caricate da `GET /gen/outfitOccasions`, tassonomia condivisa già disponibile nel backend. Il JSON non deve duplicare le opzioni. L'endpoint restituisce un array di oggetti `{ id, value, order, active }`. Attualmente il componente select remoto non esclude automaticamente le voci con `active: false`: valutare separatamente se filtrare la lista attiva, preservando il valore degli outfit storici. Il campo resta facoltativo per compatibilità con outfit storici e API precedenti. Se l'outfit non possiede un'occasione, si visualizza nessuna selezione: non assegnare automaticamente `EVERYDAY` a dati esistenti.
 
 Per aggiornare il form tramite admin Forms: caricare `outfitForm`, inserirvi l'elemento sopra e salvare; verificare tramite GET `/gen/forms/outfitForm`. Il repository non aggiorna automaticamente il documento configurazione su Firebase.
 
