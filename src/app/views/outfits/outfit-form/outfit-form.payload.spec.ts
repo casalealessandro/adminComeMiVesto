@@ -30,6 +30,14 @@ describe('Outfit DynamicForm payload', () => {
     expect(EDITABLE_OUTFIT_FIELDS).toEqual(['title', 'description', 'gender', 'style', 'season', 'occasion']);
   });
 
+  it('does not send an unset optional occasion for existing outfits', () => {
+    const payload = buildOutfitFormPayload(
+      { title: 'Look storico', occasion: null }, 'https://example.org/old.jpg', [],
+      'https://example.org/old.jpg',
+    );
+    expect(Object.prototype.hasOwnProperty.call(payload, 'occasion')).toBeFalse();
+  });
+
   it('supports imageUrl in a Firebase form when photo editor has not changed the image', () => {
     const result = buildOutfitFormPayload(
       { title: 'Look', imageUrl: 'https://example.org/new.jpg' },

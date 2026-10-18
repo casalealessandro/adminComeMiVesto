@@ -28,6 +28,7 @@ export function buildOutfitFormPayload(
 ): Partial<outfit> {
   const payload: Record<string, unknown> = {};
   for (const key of EDITABLE_OUTFIT_FIELDS) {
+    if (key === 'occasion' && (formData[key] === null || formData[key] === '')) continue;
     if (formData[key] !== undefined) payload[key] = formData[key];
   }
   // FotoOutfit owns image edits; a configured imageUrl form field is supported
