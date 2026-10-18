@@ -3,10 +3,16 @@
   [subTitle]="subtitle"
   [tip]="'...'"
   [addButtonShow]="false"
-  [showSpinner]="false"
+  [showSpinner]="loading()"
   
   
 >
+
+<div *ngIf="error()" class="alert alert-danger" role="alert">{{ error() }}</div>
+<div *ngIf="missingFormFields().length" class="alert alert-warning" role="status">
+  Configurazione Firebase <code>outfitForm</code>: campi modificabili mancanti nel JSON:
+  <strong>{{ missingFormFields().join(', ') }}</strong>. Aggiungerli dalla gestione form per renderli visibili.
+</div>
 
 <label *ngIf="!outfitId" class="target-user">Creator target
   <select class="form-select" [(ngModel)]="targetUserId">
@@ -25,6 +31,7 @@
 
 <app-dynamic-form
 *ngIf="formReady()"
+[loading]="saving()"
 [editData]="outfitData()"
 [service]="'outfitForm'"
 (submitFormEvent)="submitFormOutfit($event)"
