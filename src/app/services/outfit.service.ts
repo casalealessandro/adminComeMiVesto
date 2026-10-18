@@ -7,7 +7,10 @@ import { UserProfile } from '../interface/app.interface';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 export interface outfit {
-  userName: any;
+  userName: string;
+  genderLabel?: string;
+  seasonLabel?: string;
+  occasionLabel?: string;
   id: any;
   title: string;
   description?: string;
