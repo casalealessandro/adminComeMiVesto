@@ -42,6 +42,7 @@ import {
   OutfitColorOption,
   OutfitStyleOption,
 } from '../models/affiliate-catalog-api.models';
+import type { OutfitOccasion } from '../../../services/taxonomy.service';
 import { AiOutfitPublishRequest, AiOutfitPublishedResult } from '../models/ai-outfit-publish.models';
 import { AiCreator, AiCreatorCreateInput, AiCreatorUpdateInput } from '../models/ai-creator.models';
 
@@ -178,6 +179,10 @@ export class AffiliateCatalogService {
 
   getOutfitStyles(): Observable<OutfitStyleOption[]> {
     return this.http.get<OutfitStyleOption[]>(`${this.apiUrl}/gen/outfitStyles?compact=true`);
+  }
+
+  getOutfitOccasions(): Observable<OutfitOccasion[]> {
+    return this.http.get<OutfitOccasion[]>(`${this.apiUrl}/gen/outfitOccasions`);
   }
 
   getOutfitColors(): Observable<OutfitColorOption[]> {
