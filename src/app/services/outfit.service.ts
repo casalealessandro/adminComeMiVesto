@@ -15,6 +15,7 @@ export interface outfit {
   tags: Tag[];
   gender: string; // Assumendo che i valori possibili siano solo "man" o "woman"
   style: string; // Assumendo alcuni stili possibili
+  occasion?: 'EVERYDAY' | 'OFFICE' | 'APERITIVO' | 'CEREMONY' | 'EVENING' | 'SPORT' | 'TRAVEL';
   season: string; // Assumendo alcune stagioni possibili
   color?: string;
   userId: any;
@@ -142,12 +143,12 @@ export class OutfitsService {
   }
 
   private createDto(data: any): any {
-    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'color', 'outfitCategory', 'outfitSubCategory', 'userId'];
+    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'occasion', 'color', 'outfitCategory', 'outfitSubCategory', 'userId'];
     return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]));
   }
 
   private updateDto(data: any): any {
-    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'color', 'outfitCategory', 'outfitSubCategory', 'status'];
+    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'occasion', 'color', 'outfitCategory', 'outfitSubCategory', 'status'];
     return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]));
   }
 
