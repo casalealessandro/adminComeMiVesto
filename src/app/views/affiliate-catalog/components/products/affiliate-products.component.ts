@@ -532,9 +532,13 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   }
 
   brandSuspectReason(reason: CatalogBrandSuspect['reason']): string {
-    return reason === 'UNKNOWN_TAXONOMY'
-      ? 'Il tipo di capo identificato non è presente nella tassonomia attiva'
-      : 'Il brand contiene una parola di abbigliamento, ma il tipo di capo non è identificabile con certezza';
+    if (reason === 'UNKNOWN_TAXONOMY') {
+      return 'La categoria proposta non è presente nella tassonomia attiva';
+    }
+    if (reason === 'UNRESOLVED_SUBCATEGORY') {
+      return 'Tipo di capo riconosciuto, ma sottocategoria non determinabile con certezza';
+    }
+    return 'Il brand contiene una parola di abbigliamento, ma il tipo di capo non è identificabile con certezza';
   }
 
   trackByBrandSuspectId(_index: number, item: CatalogBrandSuspect): string {
