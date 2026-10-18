@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output, ViewChild, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { ColData, Colonne, DataGridComponent, GridDataProvider, GridLoadRequest } from '../../../../core/public-api';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
@@ -21,7 +20,7 @@ export interface OutfitReplacementPickerResult {
 export interface OutfitReplacementRow extends CatalogProduct {
   genderLabel: string;
   styleLabel: string;
-  colorLabel: string;
+  imagePreview: string;
 }
 
 export const PICKER_STYLE_OPTIONS = [
@@ -32,51 +31,63 @@ export const PICKER_STYLE_OPTIONS = [
   { value: 'TRENDY', label: 'Trendy' }, { value: 'STREETWEAR', label: 'Streetwear' },
 ] as const;
 
-const column = (dataField: string, caption: string, width: number): ColData => ({
-  type: 'campo', colVisible: true, allowEditing: false, allowFiltering: false,
+const column = (dataField: string, caption: string, width: number, type: ColData['type'] = 'campo'): ColData => ({
+  type, colVisible: true, allowEditing: false, allowFiltering: false,
   dataField, colWidth: width, colCaption: caption, edit: false, groupDataField: undefined,
 });
 
-export const replacementPickerColumns: Colonne[] = [{
+const listOptions = (options: Array<{ value: string; label: string }>): NonNullable<ColData['lista']> => ({
+  options, valueExp: 'value', displayExp: 'label', multiple: false, remote: false, parent: null,
+});
+
+/** All filtering controls belong to DataGrid Core. The provider translates their
+ * normalized filter fields to the existing paged products API.
+ */
+export const buildReplacementPickerColumns = (
+  category: string,
+  gender: 'U' | 'D',
+  subcategories: readonly string[],
+  colors: ReadonlyArray<{ id: string; value: string }>,
+): Colonne[] => [{
   itemType: 'group', groupDataField: '', data: [
-    column('name', 'Nome', 300),
-    column('genderLabel', 'Genere', 90),
-    column('styleLabel', 'Stile', 180),
-    column('category', 'Categoria', 150),
-    column('subcategory', 'Sottocategoria', 160),
-    column('colorLabel', 'Colore', 125),
+    { ...column('imagePreview', 'Immagine', 84, 'campoImg'), search: false },
+    { ...column('name', 'Nome', 270), allowFiltering: true },
+    {
+      ...column('genderLabel', 'Genere', 110, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions([{ value: gender, label: gender === 'D' ? 'Donna' : 'Uomo' }]),
+    },
+    {
+      ...column('styleLabel', 'Stile', 170, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(PICKER_STYLE_OPTIONS.map(option => ({ ...option }))),
+    },
+    {
+      ...column('category', 'Categoria', 165, 'campoLista'),
+      allowFiltering: true, lista: listOptions([{ value: category, label: category }]),
+    },
+    {
+      ...column('subcategory', 'Sottocategoria', 175, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(subcategories.map(value => ({ value, label: value }))),
+    },
+    {
+      ...column('normalizedColor', 'Colore', 135, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(colors.map(color => ({ value: color.id, label: color.value }))),
+    },
   ],
 }];
 
 @Component({
   selector: 'app-outfit-replacement-picker',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent],
+  imports: [CommonModule, DataGridComponent],
   template: `
     <section class="outfit-product-picker" aria-label="Seleziona un prodotto sostitutivo">
       <p class="small text-muted">Categoria: <strong>{{ itemData.category }}</strong> ·
         Genere: <strong>{{ itemData.gender === 'D' ? 'Donna' : 'Uomo' }}</strong>.
         I prodotti devono essere attivi e visibili nell'app.</p>
-      <div class="picker-filters">
-        <label>Sottocategoria
-          <select [(ngModel)]="subcategory" (ngModelChange)="refresh()" [disabled]="loading">
-            <option value="">Tutte</option>
-            <option *ngFor="let value of subcategories" [value]="value">{{ value }}</option>
-          </select>
-        </label>
-        <label>Stile
-          <select [(ngModel)]="style" (ngModelChange)="refresh()" [disabled]="loading">
-            <option value="">Tutti</option>
-            <option *ngFor="let option of styles" [value]="option.value">{{ option.label }}</option>
-          </select>
-        </label>
-        <label>Colore
-          <select [(ngModel)]="color" (ngModelChange)="refresh()" [disabled]="loading">
-            <option value="">Tutti</option>
-            <option *ngFor="let option of colors" [value]="option.id">{{ option.value }}</option>
-          </select>
-        </label>
-      </div>
       <p *ngIf="loading" role="status">Caricamento filtri…</p>
       <p *ngIf="error" class="text-danger" role="alert">{{ error }}</p>
       <app-data-grid *ngIf="!loading && provider"
@@ -92,12 +103,12 @@ export const replacementPickerColumns: Colonne[] = [{
         [isEditableDeleteRow]="false"
         [showToolbarTop]="true"
         [showToolbarBottom]="false"
-        [showFilter]="false"
-        [isSearchable]="true"
+        [showFilter]="true"
+        [isSearchable]="false"
         [tableHeight]="480"
         (emittendSelectionRow)="selectRow($event)">
       </app-data-grid>
-      <p class="small text-muted">Cerca nel catalogo tramite la barra della griglia, applica i filtri e clicca una riga per scegliere il nuovo prodotto. La sostituzione viene salvata soltanto quando confermi la bozza.</p>
+      <p class="small text-muted">Usa il filtro Nome e i menu nelle intestazioni della griglia per cercare nel catalogo. Clicca una riga per scegliere il nuovo prodotto. La sostituzione viene salvata soltanto quando confermi la bozza.</p>
       <button type="button" class="btn btn-outline-secondary" (click)="result.emit({ name: 'cancelled' })">Annulla</button>
     </section>
   `,
@@ -105,11 +116,7 @@ export const replacementPickerColumns: Colonne[] = [{
     :host { display: block; min-width: 0; }
     .outfit-product-picker { display: grid; gap: .75rem; padding: .6rem; min-width: 0; }
     .outfit-product-picker p { margin: 0; }
-    .picker-filters { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .7rem; }
-    .picker-filters label { display: grid; gap: .2rem; font-size: .85rem; font-weight: 600; }
-    .picker-filters select { width: 100%; padding: .5rem; border: 1px solid var(--bs-border-color,#ced4da); border-radius: .4rem; background: var(--bs-body-bg,#fff); color: var(--bs-body-color,#212529); }
     .outfit-product-picker > button { justify-self: start; }
-    @media(max-width: 660px) { .picker-filters { grid-template-columns: 1fr; } }
   `],
 })
 export class OutfitReplacementPickerComponent implements OnInit {
@@ -126,17 +133,11 @@ export class OutfitReplacementPickerComponent implements OnInit {
     }
   }
 
-  readonly columns = replacementPickerColumns;
+  columns: Colonne[] = [];
   readonly styles = PICKER_STYLE_OPTIONS;
-  subcategory = '';
-  style = '';
-  color = '';
-  subcategories: string[] = [];
-  colors: Array<{ id: string; value: string }> = [];
   provider?: GridDataProvider<OutfitReplacementRow>;
   loading = true;
   error = '';
-  private colorLabels = new Map<string, string>();
 
   ngOnInit(): void {
     if (!this.itemData.category || !['D', 'U'].includes(this.itemData.gender)) {
@@ -149,9 +150,13 @@ export class OutfitReplacementPickerComponent implements OnInit {
       colors: this.catalog.getOutfitColors(),
     }).subscribe({
       next: ({ subcategories, colors }) => {
-        this.subcategories = subcategories.filter(Boolean).sort((a, b) => a.localeCompare(b));
-        this.colors = colors.filter(item => item.id && item.value).sort((a, b) => a.value.localeCompare(b.value));
-        this.colorLabels = new Map(this.colors.map(item => [item.id, item.value]));
+        const validSubcategories = [...new Set(subcategories.filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b));
+        const validColors = colors.filter(item => item.id && item.value)
+          .sort((a, b) => a.value.localeCompare(b.value));
+        this.columns = buildReplacementPickerColumns(
+          this.itemData.category, this.itemData.gender, validSubcategories, validColors,
+        );
         this.provider = { load: (request) => this.loadPage(request) };
         this.loading = false;
       },
@@ -159,12 +164,40 @@ export class OutfitReplacementPickerComponent implements OnInit {
     });
   }
 
-  refresh(): void {
-    if (this.provider && this.grid) void this.grid.refresh();
-  }
-
   async loadPage(request: GridLoadRequest): Promise<{ items: OutfitReplacementRow[]; continuation?: string; hasMore: boolean }> {
-    const query = request.search?.value?.trim();
+    if (request.sort?.length) {
+      throw new Error('L ordinamento remoto non è disponibile per il catalogo prodotti.');
+    }
+
+    const permittedFilters: Record<string, string> = {
+      name: 'contains', genderLabel: 'eq', styleLabel: 'eq',
+      category: 'eq', subcategory: 'eq', normalizedColor: 'eq',
+    };
+    const filters = request.filters ?? [];
+    if (filters.some(filter => permittedFilters[filter.field] !== filter.operator ||
+      typeof filter.value !== 'string')) {
+      throw new Error('Filtro della griglia non supportato dal catalogo prodotti.');
+    }
+    const filterValue = (field: string): string | undefined => {
+      const value = filters.find(filter => filter.field === field)?.value;
+      return typeof value === 'string' ? value.trim() || undefined : undefined;
+    };
+
+    // The outfit slot already determines category and gender. Grid filters may
+    // narrow this scope, never broaden it to incompatible replacement products.
+    const chosenGender = filterValue('genderLabel');
+    const chosenCategory = filterValue('category');
+    if ((chosenGender && chosenGender !== this.itemData.gender) ||
+        (chosenCategory && chosenCategory !== this.itemData.category)) {
+      return { items: [], hasMore: false };
+    }
+
+    const nameFilter = filterValue('name');
+    const globalQuery = request.search?.value?.trim();
+    if (nameFilter && globalQuery && nameFilter !== globalQuery) {
+      throw new Error('Usa il filtro Nome oppure la ricerca generale, non entrambi.');
+    }
+    const query = nameFilter ?? globalQuery;
     const page = await firstValueFrom(this.catalog.getProducts({
       limit: request.pageSize,
       ...(typeof request.continuation === 'string' ? { cursor: request.continuation } : {}),
@@ -173,9 +206,9 @@ export class OutfitReplacementPickerComponent implements OnInit {
       gender: this.itemData.gender,
       visibleInApp: true,
       activeOnly: true,
-      ...(this.subcategory ? { subcategory: this.subcategory } : {}),
-      ...(this.style ? { style: this.style } : {}),
-      ...(this.color ? { color: this.color } : {}),
+      ...(filterValue('subcategory') ? { subcategory: filterValue('subcategory') } : {}),
+      ...(filterValue('styleLabel') ? { style: filterValue('styleLabel') } : {}),
+      ...(filterValue('normalizedColor') ? { color: filterValue('normalizedColor') } : {}),
     }));
     const used = new Set(this.itemData.productIdsInOutfit);
     const items = page.data
@@ -184,8 +217,9 @@ export class OutfitReplacementPickerComponent implements OnInit {
         ...product,
         genderLabel: product.genderTargets.map(code => code === 'D' ? 'Donna' : code === 'U' ? 'Uomo' : code).join(', '),
         styleLabel: product.fashionProfile?.styleAffinities?.map(code =>
-          this.styles.find(option => option.value === code)?.label ?? code).join(', ') || '—',
-        colorLabel: this.colorLabels.get(product.normalizedColor) ?? product.normalizedColor ?? '—',
+          PICKER_STYLE_OPTIONS.find(option => option.value === code)?.label ?? code).join(', ') || '—',
+        imagePreview: product.images?.find(image => typeof image === 'string' &&
+          /^https:\/\//i.test(image.trim())) || '',
       }));
     return { items, hasMore: page.pagination.hasMore, continuation: page.pagination.nextCursor ?? undefined };
   }
