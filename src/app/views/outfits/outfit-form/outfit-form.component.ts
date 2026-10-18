@@ -13,7 +13,7 @@ import { FormService } from '../../../services/form.service';
 import { alert } from '../../../widgets/ui-dialogs';
 
 export const EDITABLE_OUTFIT_FIELDS = [
-  'title', 'description', 'gender', 'style', 'season',
+  'title', 'description', 'gender', 'style', 'season', 'occasion',
 ] as const;
 
 /**
