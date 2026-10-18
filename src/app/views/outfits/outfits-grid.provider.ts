@@ -16,13 +16,13 @@ export const OUTFIT_OCCASION_LABELS: Record<string, string> = {
   CEREMONY: 'Cerimonia', EVENING: 'Sera', SPORT: 'Sport', TRAVEL: 'Viaggio',
 };
 
-export function formatOutfitGridItem(item: outfit, creatorName: (uid: string) => string): outfit {
+export function formatOutfitGridItem(item: outfit, creatorName: (uid: string) => string, occasionName?: (id: string) => string): outfit {
   return {
     ...item,
     userName: creatorName(String(item.userId ?? '')),
     genderLabel: OUTFIT_GENDER_LABELS[item.gender] ?? item.gender ?? '—',
     seasonLabel: OUTFIT_SEASON_LABELS[item.season] ?? item.season ?? '—',
-    occasionLabel: item.occasion ? (OUTFIT_OCCASION_LABELS[item.occasion] ?? item.occasion) : '—',
+    occasionLabel: item.occasion ? (occasionName?.(item.occasion) ?? OUTFIT_OCCASION_LABELS[item.occasion] ?? item.occasion) : '—',
   };
 }
 
@@ -40,6 +40,7 @@ export function createOutfitsGridProvider(
   creatorName: (userId: string) => string,
   onPage: (items: outfit[], append: boolean, total: number) => void,
   onError: () => void,
+  occasionName?: (id: string) => string,
 ): GridDataProvider<outfit> {
   return {
     async load(request: GridLoadRequest): Promise<GridPage<outfit>> {
@@ -62,7 +63,7 @@ export function createOutfitsGridProvider(
       try {
         const rows = await service.getAdminOutfits(filters, page, request.pageSize);
         const total = service.pagination().total;
-        const items = rows.map(item => formatOutfitGridItem(item, creatorName));
+        const items = rows.map(item => formatOutfitGridItem(item, creatorName, occasionName));
         const hasMore = page * request.pageSize < total;
         onPage(items, page > 1, total);
         return {
