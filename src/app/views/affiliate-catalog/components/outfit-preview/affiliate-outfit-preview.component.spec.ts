@@ -269,6 +269,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
       gender: 'U',
       season: 'P',
       style: 'C',
+      occasion: 'EVERYDAY',
       draftId: 'draft-1',
       products: [
         { catalogProductId: 'p-1-1', role: 'TOP', x: 0.38, y: 0.34 },
