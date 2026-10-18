@@ -1,19 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, inject } from '@angular/core';
 import { GridDataProvider } from '../../core/data-grid/data-grid-provider';
-import { createOutfitsGridProvider } from './outfits-grid.provider';
+import { createOutfitsGridProvider, OUTFIT_OCCASION_LABELS } from './outfits-grid.provider';
 import { Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { Colonne, UserProfile } from '../../interface/app.interface';
 import { outfit, OutfitsService } from '../../services/outfit.service';
 import { UserService } from '../../services/user.service';
+import { FormService } from '../../services/form.service';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 
 @Component({ selector: 'app-outfits', standalone: true, imports: [CommonModule, DataGridComponent, AnagraficaWrapperComponent], templateUrl: './outfits.component.html', styleUrl: './outfits.component.scss' })
 export class OutfitsComponent {
   private readonly outfitService = inject(OutfitsService);
   private readonly usersService = inject(UserService);
+  private readonly formService = inject(FormService);
   readonly router = inject(Router);
   @ViewChild(DataGridComponent) set outfitGrid(grid: DataGridComponent<outfit> | undefined) {
     this.grid = grid;
@@ -29,6 +31,7 @@ export class OutfitsComponent {
       this.resolveMissingCreators(items);
     },
     () => { this.error = 'Impossibile caricare gli outfit.'; this.loading = false; },
+    id => this.occasionLabels[id] ?? OUTFIT_OCCASION_LABELS[id] ?? id,
   );
   private readonly appliedFilters: Record<string, string> = {};
   outfits: outfit[] = [];
@@ -37,6 +40,7 @@ export class OutfitsComponent {
   error = '';
   private readonly busyIds = new Set<string>();
   private readonly requestedCreatorIds = new Set<string>();
+  private occasionLabels: Record<string, string> = {};
   total = 0;
   subtitle = `Elenco outfit creati nell'app`;
   readonly rowActions: NonNullable<import('../../interface/app.interface').ColData['editorbuttons']> = [
@@ -60,7 +64,18 @@ export class OutfitsComponent {
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'75', colCaption:'Visibilità', edit:false, groupDataField:undefined, button:{ text:'', name:'toggleSuspend', event:'toggleSuspend', icon:'mdi mdi-pause-circle-outline', hint:'Sospendi / Riattiva' } }
   ] }];
 
-  ngOnInit(): void { this.loadCreators(); }
+  ngOnInit(): void { this.loadCreators(); void this.loadOccasionLabels(); }
+  private async loadOccasionLabels(): Promise<void> {
+    try {
+      const response = await this.formService.getData('outfitOccasions');
+      const options: Array<{id: string; value: string}> = Array.isArray(response) ? response : response?.data ?? [];
+      this.occasionLabels = Object.fromEntries(options.filter(option => option?.id && option?.value).map(option => [option.id, option.value]));
+      this.grid?.rowsData.update(rows => rows.map(item => ({
+        ...item,
+        occasionLabel: item.occasion ? (this.occasionLabels[item.occasion] ?? OUTFIT_OCCASION_LABELS[item.occasion] ?? item.occasion) : '—',
+      })));
+    } catch { /* Canonical fallback labels remain available when the taxonomy is offline. */ }
+  }
   loadCreators(): void {
     this.usersService.getUsers(100).subscribe({
       next: users => {
