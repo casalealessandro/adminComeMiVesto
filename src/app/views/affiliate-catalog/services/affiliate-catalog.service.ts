@@ -492,6 +492,18 @@ export class AffiliateCatalogService {
     if (request?.visibleInApp !== undefined) {
       params = params.set('visibleInApp', String(request.visibleInApp));
     }
+    if (request?.activeOnly !== undefined) {
+      params = params.set('activeOnly', String(request.activeOnly));
+    }
+    if (request?.gender) {
+      params = params.set('gender', request.gender);
+    }
+    if (request?.style) {
+      params = params.set('style', request.style);
+    }
+    if (request?.color) {
+      params = params.set('color', request.color);
+    }
     return params;
   }
 
