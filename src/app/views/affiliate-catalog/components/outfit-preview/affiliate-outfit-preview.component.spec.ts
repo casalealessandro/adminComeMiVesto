@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { AiOutfitDraftEditorComponent } from './ai-outfit-draft-editor.component';
 import { of, Subject, throwError } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+import { PopUpService } from '../../../../core/popup/popup.service';
 import { AiOutfitPreviewResult } from '../../models/affiliate-catalog-api.models';
 import { AffiliateOutfitPreviewComponent } from './affiliate-outfit-preview.component';
 
@@ -113,7 +114,10 @@ describe('AffiliateOutfitPreviewComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AffiliateOutfitPreviewComponent],
-      providers: [{ provide: AffiliateCatalogService, useValue: service }],
+      providers: [
+        { provide: AffiliateCatalogService, useValue: service },
+        { provide: PopUpService, useValue: jasmine.createSpyObj('PopUpService', ['setNewPopUp', 'getOutputComponent', 'destroyCurrentOpenPopUpByGuid']) },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AffiliateOutfitPreviewComponent);

@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { PopUpService } from '../../../../core/popup/popup.service';
+import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import {
   AiOutfitDraft,
   AiOutfitDraftEditRequest,
@@ -20,6 +22,7 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 })
 export class AiOutfitDraftEditorComponent {
   private readonly catalogService = inject(AffiliateCatalogService);
+  private readonly popupService = inject(PopUpService);
 
   @Input({ required: true }) outfit!: AiOutfitPreviewOutfit;
   @Input() draft?: AiOutfitDraft;
@@ -45,10 +48,7 @@ export class AiOutfitDraftEditorComponent {
   regenerationError = '';
   form: AiOutfitDraftEditRequest | null = null;
   replacementIndex: number | null = null;
-  replacementQuery = '';
-  replacements: CatalogProduct[] = [];
   readonly selectedReplacements = new Map<number, CatalogProduct>();
-  searching = false;
 
   startEditing(): void {
     if (!this.outfit.draftId || this.saving || this.regenerating) return;
@@ -69,7 +69,6 @@ export class AiOutfitDraftEditorComponent {
     };
     this.error = '';
     this.replacementIndex = null;
-    this.replacements = [];
     this.selectedReplacements.clear();
     this.editing = true;
     this.editingChange.emit(true);
@@ -80,38 +79,36 @@ export class AiOutfitDraftEditorComponent {
     this.editing = false;
     this.form = null;
     this.replacementIndex = null;
-    this.replacements = [];
     this.selectedReplacements.clear();
     this.editingChange.emit(false);
   }
 
   showReplacements(index: number): void {
+    if (!this.form || this.saving || this.replacementIndex !== null) return;
+    const original = this.outfit.products[index];
+    if (!original?.category) {
+      this.error = 'Il capo da sostituire non ha una categoria valida.';
+      return;
+    }
     this.replacementIndex = index;
-    this.replacementQuery = '';
-    this.replacements = [];
     this.error = '';
-  }
-
-  findReplacements(): void {
-    const query = this.replacementQuery.trim();
-    if (!query || this.replacementIndex === null || !this.form || this.searching) return;
-    this.searching = true;
-    this.replacements = [];
-    const original = this.outfit.products[this.replacementIndex];
-    this.catalogService.getProducts({ q: query, limit: 30, visibleInApp: true })
-      .pipe(finalize(() => this.searching = false))
-      .subscribe({
-        next: (page) => {
-          this.replacements = page.data.filter((product) =>
-            product.active === true
-            && product.enabledForApp !== false
-            && product.category === original.category
-            && product.genderTargets.includes(this.form!.gender)
-            && !this.form!.products.some((used) => used.catalogProductId === product.id));
-          this.error = this.replacements.length ? '' : 'Nessun prodotto compatibile nei primi risultati. Prova una ricerca più specifica.';
-        },
-        error: () => this.error = 'Impossibile cercare i prodotti nel catalogo.',
-      });
+    const guid = `outfit-product-picker-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    this.popupService.setNewPopUp(
+      guid, 'OutfitReplacementPickerComponent', {
+        category: original.category,
+        gender: this.form.gender,
+        productIdsInOutfit: this.form.products.map(product => product.catalogProductId),
+      },
+      1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
+    );
+    void this.popupService.getOutputComponent(guid).then((result: OutfitReplacementPickerResult) => {
+      this.popupService.destroyCurrentOpenPopUpByGuid(guid);
+      if (result?.name === 'selected' && result.product && this.form) {
+        this.chooseReplacement(result.product);
+      } else {
+        this.replacementIndex = null;
+      }
+    });
   }
 
   chooseReplacement(product: CatalogProduct): void {
@@ -122,7 +119,6 @@ export class AiOutfitDraftEditorComponent {
     };
     this.selectedReplacements.set(this.replacementIndex, product);
     this.replacementIndex = null;
-    this.replacements = [];
     this.error = '';
   }
 
