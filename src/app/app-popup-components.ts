@@ -6,6 +6,7 @@ import { AffiliateMappingRuleFormHostComponent } from './views/affiliate-catalog
 import { AffiliateAiCreatorFormHostComponent } from './views/affiliate-catalog/forms/affiliate-ai-creator-form-host.component';
 import { NotificationFormHostComponent } from './views/notifications/forms/notification-form-host.component';
 import { StaticPageFormHostComponent } from './views/static-pages/forms/static-page-form-host.component';
+import { OutfitReplacementPickerComponent } from './views/affiliate-catalog/components/outfit-preview/outfit-replacement-picker.component';
 
 export const comeMiVestoPopupComponents: readonly PopupRegistration[] = [
   { name: 'AffiliateProductFormHostComponent', component: AffiliateProductFormHostComponent },
@@ -15,4 +16,5 @@ export const comeMiVestoPopupComponents: readonly PopupRegistration[] = [
   { name: 'AffiliateMappingRuleFormHostComponent', component: AffiliateMappingRuleFormHostComponent },
   { name: 'NotificationFormHostComponent', component: NotificationFormHostComponent },
   { name: 'StaticPageFormHostComponent', component: StaticPageFormHostComponent },
+  { name: 'OutfitReplacementPickerComponent', component: OutfitReplacementPickerComponent },
 ];
