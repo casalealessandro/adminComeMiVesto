@@ -151,7 +151,7 @@ export interface OutfitColorOption {
 
 export type AiOutfitPreviewGender = 'MAN' | 'WOMAN';
 export type AiOutfitPreviewSeason = 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
-export type AiOutfitPreviewOccasion = 'EVERYDAY' | 'OFFICE' | 'APERITIVO' | 'CEREMONY' | 'EVENING' | 'SPORT' | 'TRAVEL';
+export type AiOutfitPreviewOccasion = string;
 /** API preview style accepts a legacy keyword or the canonical Firestore outfitStyles document ID. */
 export type AiOutfitPreviewStyle = string;
 
