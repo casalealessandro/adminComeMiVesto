@@ -20,7 +20,7 @@ import { AuthService } from '../../../../services/auth.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { alert, confirm } from '../../../../core/dialogs/ui-dialogs';
 import { AffiliateProductFormResult } from '../../forms/affiliate-product-form-host.component';
-import { AffiliateProgram, CatalogProduct, CatalogSeason, CatalogReclassificationPreview, FashionEnrichmentJob } from '../../models/affiliate-catalog.models';
+import { AffiliateProgram, CatalogProduct, CatalogSeason, CatalogReclassificationPreview, FashionEnrichmentJob, CatalogBrandSuspect } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 export const AFFILIATE_PRODUCTS_PAGE_SIZE = 50;
@@ -322,6 +322,14 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   reclassificationJob: FashionEnrichmentJob | null = null;
   reclassificationError = '';
   reclassificationNotice = '';
+  brandSuspectsOpen = false;
+  brandSuspectsLoading = false;
+  brandSuspectsLoaded = false;
+  brandSuspects: CatalogBrandSuspect[] = [];
+  brandSuspectsNextCursor: string | null = null;
+  brandSuspectsScanned = 0;
+  brandSuspectsError = '';
+  private brandSuspectsRequestId = 0;
   private reclassificationPolling?: Subscription;
   cleanupPanelOpen = false;
   cleanupLoading = false;
@@ -458,12 +466,79 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   closeReclassificationPanel(): void {
     this.reclassificationPanelOpen = false;
+    this.brandSuspectsOpen = false;
+    this.brandSuspectsRequestId++;
+    this.brandSuspectsLoading = false;
     this.reclassificationPolling?.unsubscribe();
     this.reclassificationPolling = undefined;
     this.reclassificationError = '';
     this.reclassificationNotice = '';
     this.reclassificationPreview = null;
     this.reclassificationBackupConfirmed = false;
+  }
+
+  toggleBrandSuspects(): void {
+    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen) return;
+    if (this.brandSuspectsOpen) {
+      this.brandSuspectsOpen = false;
+      this.brandSuspectsRequestId++;
+      this.brandSuspectsLoading = false;
+      return;
+    }
+    this.brandSuspectsOpen = true;
+    this.refreshBrandSuspects();
+  }
+
+  refreshBrandSuspects(): void {
+    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || !this.brandSuspectsOpen) return;
+    this.brandSuspectsRequestId++;
+    this.brandSuspects = [];
+    this.brandSuspectsNextCursor = null;
+    this.brandSuspectsScanned = 0;
+    this.brandSuspectsLoaded = false;
+    this.brandSuspectsError = '';
+    this.brandSuspectsLoading = false;
+    this.loadMoreBrandSuspects();
+  }
+
+  loadMoreBrandSuspects(): void {
+    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || !this.brandSuspectsOpen
+      || this.brandSuspectsLoading || (this.brandSuspectsLoaded && !this.brandSuspectsNextCursor)) return;
+    const requestId = ++this.brandSuspectsRequestId;
+    const cursor = this.brandSuspectsNextCursor ?? undefined;
+    this.brandSuspectsError = '';
+    this.brandSuspectsLoading = true;
+    this.affiliateCatalogService.getBrandCategorySuspects(cursor)
+      .pipe(finalize(() => {
+        if (requestId === this.brandSuspectsRequestId) this.brandSuspectsLoading = false;
+      }))
+      .subscribe({
+        next: page => {
+          if (requestId !== this.brandSuspectsRequestId || !this.brandSuspectsOpen) return;
+          // Subsequent pages read the current catalog, so a product might have
+          // been manually curated while review is open. Keep IDs unique.
+          const seen = new Set(this.brandSuspects.map(item => item.id));
+          this.brandSuspects.push(...page.items.filter(item => !seen.has(item.id)));
+          this.brandSuspectsNextCursor = page.nextCursor;
+          this.brandSuspectsScanned += page.scanned;
+          this.brandSuspectsLoaded = true;
+        },
+        error: () => {
+          if (requestId === this.brandSuspectsRequestId) {
+            this.brandSuspectsError = 'Impossibile caricare i prodotti sospetti. Riprova.';
+          }
+        },
+      });
+  }
+
+  brandSuspectReason(reason: CatalogBrandSuspect['reason']): string {
+    return reason === 'UNKNOWN_TAXONOMY'
+      ? 'Il tipo di capo identificato non è presente nella tassonomia attiva'
+      : 'Il brand contiene una parola di abbigliamento, ma il tipo di capo non è identificabile con certezza';
+  }
+
+  trackByBrandSuspectId(_index: number, item: CatalogBrandSuspect): string {
+    return item.id;
   }
 
   get reclassificationRunning(): boolean {
