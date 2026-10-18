@@ -318,6 +318,7 @@ describe('Affiliate products', () => {
       expect(component.brandSuspectsOpen).toBeFalse();
       expect(component.brandSuspectsLoading).toBeFalse();
       expect(component.brandSuspectReason('UNKNOWN_TAXONOMY')).toContain('tassonomia');
+      expect(component.brandSuspectReason('UNRESOLVED_SUBCATEGORY')).toContain('sottocategoria');
     });
 
     it('tracks mobile cards by the canonical product id', () => {
