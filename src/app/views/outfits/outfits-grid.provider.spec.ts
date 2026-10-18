@@ -1,8 +1,25 @@
 import { GridLoadRequest } from '../../core/data-grid/data-grid-provider';
-import { createOutfitsGridProvider, toOutfitRemoteFilters } from './outfits-grid.provider';
+import { createOutfitsGridProvider, formatOutfitGridItem, toOutfitRemoteFilters } from './outfits-grid.provider';
 import { OutfitsService } from '../../services/outfit.service';
 
 describe('Outfits remote grid provider', () => {
+  it('renders full gender, season and occasion labels while preserving canonical API values', () => {
+    const source = {
+      id: 'look-1', userId: 'u-1', title: 'Outfit da lavoro',
+      gender: 'D', season: 'A', occasion: 'OFFICE',
+    } as any;
+    const row = formatOutfitGridItem(source, () => 'Maria Rossi');
+    expect(row.userName).toBe('Maria Rossi');
+    expect(row.genderLabel).toBe('Donna');
+    expect(row.seasonLabel).toBe('Autunno');
+    expect(row.occasionLabel).toBe('Ufficio');
+    expect(formatOutfitGridItem(source, () => 'Maria Rossi', () => 'Lavoro').occasionLabel).toBe('Lavoro');
+    expect(row.gender).toBe('D');
+    expect(row.season).toBe('A');
+    expect(row.occasion).toBe('OFFICE');
+    expect(formatOutfitGridItem({ ...source, occasion: undefined }, () => 'Alias').occasionLabel).toBe('—');
+  });
+
   it('forwards only supported column filters', () => {
     const request: GridLoadRequest = {
       pageSize: 10,
