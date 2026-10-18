@@ -23,6 +23,10 @@ export interface AffiliateProductCursorRequest extends AffiliateCursorRequest {
   subcategory?: string;
   affiliateProgramId?: string;
   visibleInApp?: boolean;
+  activeOnly?: boolean;
+  gender?: 'U' | 'D';
+  style?: string;
+  color?: string;
   season?: 'SPRING' | 'SUMMER' | 'AUTUMN' | 'WINTER';
 }
 
