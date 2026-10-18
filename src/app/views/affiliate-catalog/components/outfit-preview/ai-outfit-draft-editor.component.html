@@ -70,27 +70,11 @@
       </div>
     </div>
 
-    <div class="draft-editor__search" *ngIf="replacementIndex !== null">
-      <label>Cerca un prodotto alternativo
-        <input type="search" name="replacementSearch" [(ngModel)]="replacementQuery" placeholder="Nome o marca" [disabled]="searching">
-      </label>
-      <button type="button" class="btn btn-sm btn-outline-primary" (click)="findReplacements()"
-        [disabled]="searching || !replacementQuery.trim()">
-        {{ searching ? 'Ricerca…' : 'Cerca nel catalogo' }}
-      </button>
-      <div class="draft-editor__results" *ngIf="replacements.length">
-        <button type="button" *ngFor="let product of replacements" (click)="chooseReplacement(product)">
-          <img *ngIf="product.images?.[0]" [src]="product.images[0]" [alt]="product.name" loading="lazy">
-          <span><strong>{{ product.brand }}</strong> {{ product.name }}</span>
-          <span class="mdi mdi-check-circle-outline" aria-hidden="true"></span>
-        </button>
-      </div>
-    </div>
-    <p class="draft-editor__hint">Modificare titolo, descrizione, genere, stagione, stile, occasione o posizione dei pin non richiede una nuova immagine. Se sostituisci un prodotto, dovrai rigenerare la fotografia prima della pubblicazione.</p>
+    <p class="draft-editor__hint">Premi «Sostituisci» per aprire il catalogo con ricerca e filtri. Seleziona una riga per scegliere il nuovo prodotto. Modificare titolo, descrizione, genere, stagione, stile, occasione o posizione dei pin non richiede una nuova immagine. Se sostituisci un prodotto, dovrai rigenerare la fotografia prima della pubblicazione.</p>
     <small class="text-danger" role="alert" *ngIf="error">{{ error }}</small>
     <div class="draft-editor__actions">
       <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="saving">Annulla</button>
-      <button type="submit" class="btn btn-primary" [disabled]="saving || searching">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
         {{ saving ? 'Salvataggio…' : 'Salva modifiche alla bozza' }}
       </button>
     </div>
