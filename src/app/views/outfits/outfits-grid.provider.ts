@@ -4,10 +4,27 @@ import { outfit, OutfitsService } from '../../services/outfit.service';
 export type OutfitGridFilters = Record<string, string>;
 
 const SUPPORTED_COLUMNS = new Set([
-  'id', 'title', 'description', 'imageUrl', 'userId', 'gender', 'style', 'season',
+  'id', 'title', 'description', 'imageUrl', 'userId', 'gender', 'style', 'season', 'occasion',
   'status', 'outfitCategory', 'outfitSubCategory', 'color', 'brend',
   'createdAt', 'updatedAt', 'likes', 'visits', 'source', 'createdBy',
 ]);
+
+export const OUTFIT_GENDER_LABELS: Record<string, string> = { U: 'Uomo', D: 'Donna' };
+export const OUTFIT_SEASON_LABELS: Record<string, string> = { P: 'Primavera', E: 'Estate', A: 'Autunno', I: 'Inverno' };
+export const OUTFIT_OCCASION_LABELS: Record<string, string> = {
+  EVERYDAY: 'Quotidiano', OFFICE: 'Ufficio', APERITIVO: 'Aperitivo',
+  CEREMONY: 'Cerimonia', EVENING: 'Sera', SPORT: 'Sport', TRAVEL: 'Viaggio',
+};
+
+export function formatOutfitGridItem(item: outfit, creatorName: (uid: string) => string): outfit {
+  return {
+    ...item,
+    userName: creatorName(String(item.userId ?? '')),
+    genderLabel: OUTFIT_GENDER_LABELS[item.gender] ?? item.gender ?? '—',
+    seasonLabel: OUTFIT_SEASON_LABELS[item.season] ?? item.season ?? '—',
+    occasionLabel: item.occasion ? (OUTFIT_OCCASION_LABELS[item.occasion] ?? item.occasion) : '—',
+  };
+}
 
 export function toOutfitRemoteFilters(request: GridLoadRequest): GridFilter[] {
   return (request.filters || []).filter(filter =>
@@ -45,7 +62,7 @@ export function createOutfitsGridProvider(
       try {
         const rows = await service.getAdminOutfits(filters, page, request.pageSize);
         const total = service.pagination().total;
-        const items = rows.map(item => ({ ...item, userName: creatorName(item.userId) }));
+        const items = rows.map(item => formatOutfitGridItem(item, creatorName));
         const hasMore = page * request.pageSize < total;
         onPage(items, page > 1, total);
         return {
