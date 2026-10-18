@@ -5,7 +5,7 @@ import { of, Subject, throwError } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AiOutfitPreviewResult } from '../../models/affiliate-catalog-api.models';
-import { AffiliateOutfitPreviewComponent } from './affiliate-outfit-preview.component';
+import { AffiliateOutfitPreviewComponent, describeAiOutfitPreviewError } from './affiliate-outfit-preview.component';
 
 const previewResult: AiOutfitPreviewResult = {
   generatedAt: 1000,
@@ -318,6 +318,37 @@ describe('AffiliateOutfitPreviewComponent', () => {
     response$.next(structuredClone(previewResult));
     response$.complete();
     expect(component.loading).toBeFalse();
+  });
+
+  it('explains backend editorial 422 codes without leaking unrelated data', () => {
+    service.generateOutfitPreview.and.returnValue(throwError(() => ({
+      status: 422,
+      error: {
+        message: 'La selezione AI non rispetta le regole editoriali. Nessuna immagine è stata generata.',
+        issueCodes: ['MISSING_SHOES', 'MISSING_BASE', 'MISSING_SHOES', 'UNKNOWN_CODE'],
+        catalogProductId: 'private-product-id',
+      },
+    })));
+    component.generate();
+    expect(component.result).toBeNull();
+    expect(component.error).toContain('Mancano scarpe');
+    expect(component.error).toContain('base completa');
+    expect(component.error).toContain('[MISSING_SHOES]');
+    expect(component.error.split('[MISSING_SHOES]').length).toBe(2);
+    expect(component.error).not.toContain('UNKNOWN_CODE');
+    expect(component.error).not.toContain('private-product-id');
+  });
+
+  it('keeps the safe backend message when editorial codes are missing or unknown', () => {
+    expect(describeAiOutfitPreviewError({
+      status: 422, error: { message: 'Messaggio editoriale', issueCodes: ['NOT_RECOGNIZED'] },
+    })).toBe('Messaggio editoriale');
+    expect(describeAiOutfitPreviewError({
+      status: 502, error: { message: 'Provider unavailable', issueCodes: ['MISSING_SHOES'] },
+    })).toBe('Provider unavailable');
+    expect(describeAiOutfitPreviewError({
+      status: 422, error: { issueCodes: ['ROLE_CATEGORY_MISMATCH', 'SEASON_SNOW_BOOTS'] },
+    })).toContain('ruolo incompatibile');
   });
 
   it('surfaces the admin-only response without hiding the authorization problem', () => {
