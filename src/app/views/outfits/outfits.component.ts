@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
+import { GridDataProvider } from '../../core/data-grid/data-grid-provider';
+import { createOutfitsGridProvider } from './outfits-grid.provider';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
@@ -19,6 +21,21 @@ export class OutfitsComponent {
   private readonly taxonomyService = inject(TaxonomyService);
   private readonly formService = inject(FormService);
   readonly router = inject(Router);
+  @ViewChild(DataGridComponent) set outfitGrid(grid: DataGridComponent<outfit> | undefined) {
+    this.grid = grid;
+    if (grid) { grid.pageSize = this.limit; queueMicrotask(() => void grid.renderGrid()); }
+  }
+  private grid?: DataGridComponent<outfit>;
+  readonly dataProvider: GridDataProvider<outfit> = createOutfitsGridProvider(
+    this.outfitService, () => this.appliedFilters, id => this.creatorName(id),
+    (items, append, total) => {
+      this.outfits = append ? [...this.outfits, ...items] : items;
+      this.total = total;
+      this.loading = false;
+    },
+    () => { this.error = 'Impossibile caricare gli outfit.'; this.loading = false; },
+  );
+  private appliedFilters: Record<string, string> = {};
   outfits: outfit[] = [];
   creators: UserProfile[] = [];
   categories: outfitCategories[] = [];
@@ -34,32 +51,45 @@ export class OutfitsComponent {
   filters = { status: '', userId: '', gender: '', category: '', season: '', style: '', color: '', search: '' };
   subtitle = `Elenco outfit creati nell'app`;
   colOutfitsGrid: Colonne[] = [{ itemType: 'group', groupDataField: '', data: [
-    { type:'campo', colVisible:true, allowEditing:false, dataField:'title', colWidth:'280', colCaption:'Titolo', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'id', colWidth:'160', colCaption:'ID', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'description', colWidth:'200', colCaption:'Descrizione', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'gender', colWidth:'90', colCaption:'Genere', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'90', colCaption:'Stile', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'season', colWidth:'90', colCaption:'Stagione', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'outfitCategory', colWidth:'140', colCaption:'Categorie', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'color', colWidth:'110', colCaption:'Colori', edit:false, groupDataField:undefined },
+    { type:'campoNumber', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'likes', colWidth:'90', colCaption:'Like', edit:false, groupDataField:undefined },
+    { type:'campoNumber', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'visits', colWidth:'90', colCaption:'Visite', edit:false, groupDataField:undefined },
+    { type:'campoDateTime', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'updatedAt', colWidth:'110', colCaption:'Aggiornamento', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'title', colWidth:'280', colCaption:'Titolo', edit:false, groupDataField:undefined },
     { type:'campoImg', colVisible:true, allowEditing:false, dataField:'imageUrl', colWidth:'130', colCaption:'Immagine', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, dataField:'userName', colWidth:'160', colCaption:'Creator', edit:false, groupDataField:undefined },
-    { type:'campoDateTime', colVisible:true, allowEditing:false, dataField:'createdAt', colWidth:'110', colCaption:'Creazione', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, dataField:'status', colWidth:'100', colCaption:'Stato', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, dataField:'userId', colWidth:'160', colCaption:'Creator (UID)', edit:false, groupDataField:undefined },
+    { type:'campoDateTime', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'createdAt', colWidth:'110', colCaption:'Creazione', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'status', colWidth:'100', colCaption:'Stato', edit:false, groupDataField:undefined },
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Approva', edit:false, groupDataField:undefined, button:{ text:'', name:'approve', event:'approve', icon:'mdi mdi-check', hint:'Approva' } },
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Rifiuta', edit:false, groupDataField:undefined, button:{ text:'', name:'reject', event:'reject', icon:'mdi mdi-close', hint:'Rifiuta' } },
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'72', colCaption:'Visibilità', edit:false, groupDataField:undefined, button:{ text:'', name:'toggleSuspend', event:'toggleSuspend', icon:'mdi mdi-pause-circle-outline', hint:'Sospendi / Riattiva' } },
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'65', colCaption:'Elimina', edit:false, groupDataField:undefined, button:{ text:'', name:'deleteOutfit', event:'deleteOutfit', icon:'mdi mdi-trash-can-outline', hint:'Elimina outfit' } }
   ] }];
 
-  ngOnInit(): void { this.loadCreators(); this.loadTaxonomies(); void this.loadOutfits(); }
+  ngOnInit(): void { this.loadCreators(); this.loadTaxonomies(); }
   loadCreators(): void { this.usersService.getUsers(100).subscribe({ next: users => this.creators = users, error: () => this.error = 'Impossibile caricare i creator.' }); }
   creatorName(userId: string): string { const user = this.creators.find(item => item.uid === userId); return user?.displayName || user?.email || userId || '—'; }
   async loadOutfits(): Promise<void> {
     this.loading = true; this.error = '';
-    try {
-      this.outfits = await this.outfitService.getAdminOutfits(this.filters, this.page, this.limit);
-      const pagination = this.outfitService.pagination();
-      this.page = pagination.page; this.limit = pagination.limit; this.total = pagination.total;
-      this.outfits.forEach(item => item.userName = this.creatorName(item.userId));
-    } catch { this.error = 'Impossibile caricare gli outfit.'; }
+    this.outfits = []; this.total = 0;
+    try { await this.grid?.renderGrid(); }
     finally { this.loading = false; }
   }
-  applyFilters(): void { this.page = 1; void this.loadOutfits(); }
-  resetFilters(): void { this.filters = { status:'', userId:'', gender:'', category:'', season:'', style:'', color:'', search:'' }; this.applyFilters(); }
+  applyFilters(): void {
+    this.page = 1;
+    this.appliedFilters = { ...this.filters };
+    void this.loadOutfits();
+  }
+  resetFilters(): void {
+    this.filters = { status:'', userId:'', gender:'', category:'', season:'', style:'', color:'', search:'' };
+    this.applyFilters();
+  }
   private loadTaxonomies(): void {
     this.taxonomyService.getColors().subscribe({ next: colors => this.colors = colors, error: () => this.error = 'Impossibile caricare la tassonomia colori.' });
     this.outfitService.getOutFitCategories().subscribe({ next: categories => this.categories = categories, error: () => this.error = 'Impossibile caricare le categorie outfit.' });
@@ -76,8 +106,7 @@ export class OutfitsComponent {
       id: String(item[select.valueExp || 'id']), value: String(item[select.displayExp || 'value'])
     }));
   }
-  previous(): void { if (this.page > 1) { this.page--; void this.loadOutfits(); } }
-  next(): void { if (this.page * this.limit < this.total) { this.page++; void this.loadOutfits(); } }
+  async next(): Promise<void> { if (this.outfits.length < this.total) await this.grid?.loadNextRemotePage(); }
   editOutfit(event: any): void { const value = event?.data || event; if (event?.cancel !== undefined) event.cancel = true; this.router.navigate(['/outfit-detail', value.id]); }
   isBusy(item: outfit): boolean { return this.busyIds.has(String(item.id)); }
 
