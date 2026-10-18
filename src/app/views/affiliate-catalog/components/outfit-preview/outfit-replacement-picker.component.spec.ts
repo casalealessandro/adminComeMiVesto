@@ -4,7 +4,7 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 import {
   OutfitReplacementPickerComponent,
   OutfitReplacementRow,
-  replacementPickerColumns,
+  buildReplacementPickerColumns,
 } from './outfit-replacement-picker.component';
 
 describe('OutfitReplacementPickerComponent', () => {
@@ -12,7 +12,8 @@ describe('OutfitReplacementPickerComponent', () => {
     id: 'new-product', name: 'Jeans neri', brand: 'Brand',
     category: 'P_Pantaloni', subcategory: 'jeans', normalizedColor: 'BN',
     genderTargets: ['D'], active: true, enabledForApp: true,
-    genderLabel: 'Donna', styleLabel: 'Casual, Trendy', colorLabel: 'Blu navy',
+    genderLabel: 'Donna', styleLabel: 'Casual, Trendy',
+    images: ['http://merchant.test/insecure.jpg', 'https://merchant.test/item.jpg'],
     fashionProfile: { styleAffinities: ['CASUAL', 'TRENDY'] },
   } as unknown as OutfitReplacementRow;
 
@@ -38,18 +39,40 @@ describe('OutfitReplacementPickerComponent', () => {
     picker.ngOnInit();
   });
 
-  it('shows only the six requested columns', () => {
-    expect(replacementPickerColumns[0].data.map(x => x.colCaption))
-      .toEqual(['Nome', 'Genere', 'Stile', 'Categoria', 'Sottocategoria', 'Colore']);
+  it('uses the Core grid image column and its native list/text filter metadata', () => {
+    const columns = buildReplacementPickerColumns('P_Pantaloni', 'D', ['jeans', 'jogger'],
+      [{ id: 'BN', value: 'Blu navy' }])[0].data;
+    expect(columns.map(x => x.colCaption)).toEqual(
+      ['Immagine', 'Nome', 'Genere', 'Stile', 'Categoria', 'Sottocategoria', 'Colore'],
+    );
+    expect(columns[0].type).toBe('campoImg');
+    expect(columns[0].allowFiltering).toBeFalse();
+    expect(columns[1].type).toBe('campo');
+    expect(columns[1].allowFiltering).toBeTrue();
+    for (const col of columns.slice(2)) {
+      expect(col.type).toBe('campoLista');
+      expect(col.allowFiltering).toBeTrue();
+    }
+    const style = columns.find(x => x.dataField === 'styleLabel');
+    const gender = columns.find(x => x.dataField === 'genderLabel');
+    const color = columns.find(x => x.dataField === 'normalizedColor');
+    expect(style?.lista?.options).toContain(jasmine.objectContaining({ value: 'SMART_CASUAL', label: 'Smart Casual' }));
+    expect(gender?.lista?.options).toEqual([{ value: 'D', label: 'Donna' }]);
+    expect(color?.lista?.options).toEqual([{ value: 'BN', label: 'Blu navy' }]);
+    expect(picker.columns[0].data.map(x => x.dataField)).toEqual(columns.map(x => x.dataField));
   });
 
-  it('sends global search and exact filters server side with cursor and excludes already used ids', async () => {
-    picker.subcategory = 'jeans';
-    picker.style = 'CASUAL';
-    picker.color = 'BN';
+  it('translates native grid filters and a name search into remote paginated catalog criteria', async () => {
     const page = await picker.loadPage({
       pageSize: 30, continuation: 'cursor-1',
-      search: { value: 'pantaloni', conditions: [] },
+      filters: [
+        { field: 'name', operator: 'contains', value: 'pantaloni' },
+        { field: 'genderLabel', operator: 'eq', value: 'D' },
+        { field: 'category', operator: 'eq', value: 'P_Pantaloni' },
+        { field: 'subcategory', operator: 'eq', value: 'jeans' },
+        { field: 'styleLabel', operator: 'eq', value: 'CASUAL' },
+        { field: 'normalizedColor', operator: 'eq', value: 'BN' },
+      ],
     });
     expect(service.getProducts).toHaveBeenCalledWith({
       limit: 30, cursor: 'cursor-1', q: 'pantaloni',
@@ -58,10 +81,25 @@ describe('OutfitReplacementPickerComponent', () => {
       subcategory: 'jeans', style: 'CASUAL', color: 'BN',
     });
     expect(page.items.map(item => item.id)).toEqual(['new-product']);
+    expect(page.items[0].imagePreview).toBe('https://merchant.test/item.jpg');
     expect(page.items[0].styleLabel).toContain('Trendy');
-    expect(page.items[0].colorLabel).toBe('Blu navy');
     expect(page.continuation).toBe('cursor-2');
     expect(page.hasMore).toBeTrue();
+  });
+
+  it('keeps category and gender fixed and supports Core global search for compatibility', async () => {
+    service.getProducts.calls.reset();
+    const invalid = await picker.loadPage({
+      pageSize: 30,
+      filters: [{ field: 'genderLabel', operator: 'eq', value: 'U' }],
+    });
+    expect(invalid).toEqual({ items: [], hasMore: false });
+    expect(service.getProducts).not.toHaveBeenCalled();
+    await picker.loadPage({ pageSize: 30, search: { value: 'jeans', conditions: [] } });
+    expect(service.getProducts).toHaveBeenCalledWith(jasmine.objectContaining({ q: 'jeans' }));
+    await expectAsync(picker.loadPage({
+      pageSize: 30, filters: [{ field: 'wrong', operator: 'eq', value: 'x' }],
+    })).toBeRejectedWithError(/Filtro della griglia/);
   });
 
   it('chooses an eligible single row and refuses mismatched or already-used products', () => {
