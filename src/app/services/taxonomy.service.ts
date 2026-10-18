@@ -3,6 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface OutfitOccasion { id: string; value: string; order: number; active: boolean; }
+export type OutfitOccasionUpdate = Pick<OutfitOccasion, 'value' | 'order' | 'active'>;
 export interface OutfitColor { id: string; value: string; hex: string; parent: string | null; }
 export interface OutfitStyleImage { imageBase64: string; imageMimeType: string; imageFileName: string; }
 export interface OutfitStyleImages { U?: OutfitStyleImage | null; D?: OutfitStyleImage | null; }
@@ -11,6 +13,11 @@ export type OutfitStyleUpdate = Omit<OutfitStyle, 'id' | 'images'> & { images?: 
 @Injectable({ providedIn: 'root' })
 export class TaxonomyService {
   private http = inject(HttpClient); private base = `${environment.apiBaseUrl}/gen`;
+  getOccasions(): Observable<OutfitOccasion[]> { return this.http.get<OutfitOccasion[]>(`${this.base}/outfitOccasions`); }
+  seedOccasions(): Observable<unknown> { return this.http.post(`${this.base}/outfitOccasions/seed`, {}); }
+  createOccasion(item: OutfitOccasion): Observable<unknown> { return this.http.post(`${this.base}/outfitOccasions`, item); }
+  updateOccasion(id: string, input: OutfitOccasionUpdate): Observable<unknown> { return this.http.put(`${this.base}/outfitOccasions/${encodeURIComponent(id)}`, input); }
+  deleteOccasion(id: string): Observable<unknown> { return this.http.delete(`${this.base}/outfitOccasions/${encodeURIComponent(id)}`); }
   getColors(): Observable<OutfitColor[]> { return this.http.get<any>(`${this.base}/outfitColors`).pipe(map(value => Array.isArray(value) ? value : value.data || [])); }
   createColor(color: OutfitColor): Observable<unknown> { return this.http.post(`${this.base}/outfitColors`, color); }
   updateColor(id: string, color: Omit<OutfitColor, 'id'>): Observable<unknown> { return this.http.put(`${this.base}/outfitColors/${encodeURIComponent(id)}`, { value: color.value, hex: color.hex, parent: color.parent }); }

@@ -67,7 +67,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators', 'getOutfitStyles', 'updateOutfitDraft', 'regenerateOutfitDraftImage', 'getProducts'],
+      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators', 'getOutfitStyles', 'getOutfitOccasions', 'updateOutfitDraft', 'regenerateOutfitDraftImage', 'getProducts'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -84,6 +84,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
       updatedAt: 1,
     }]));
     service.getFeeds.and.returnValue(of([]));
+    service.getOutfitOccasions.and.returnValue(of([{ id: 'EVERYDAY', value: 'Quotidiano', order: 1, active: true }]));
     service.getOutfitStyles.and.returnValue(of([{ id: 'C', value: 'Casual', order: 10 }, { id: 'BOHO', value: 'Boho', order: 20 }]));
     service.discardOutfitDraft.and.returnValue(of(void 0));
     service.getAiCreators.and.returnValue(of([{

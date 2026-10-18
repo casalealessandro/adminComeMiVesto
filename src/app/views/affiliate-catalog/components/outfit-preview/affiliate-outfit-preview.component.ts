@@ -49,15 +49,8 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     { value: 'AUTUMN', label: 'Autunno' },
     { value: 'WINTER', label: 'Inverno' },
   ];
-  readonly occasionOptions: SelectOption<AiOutfitPreviewOccasion>[] = [
-    { value: 'EVERYDAY', label: 'Quotidiano' },
-    { value: 'OFFICE', label: 'Ufficio' },
-    { value: 'APERITIVO', label: 'Aperitivo' },
-    { value: 'CEREMONY', label: 'Cerimonia' },
-    { value: 'EVENING', label: 'Sera' },
-    { value: 'SPORT', label: 'Sport' },
-    { value: 'TRAVEL', label: 'Viaggio' },
-  ];
+  occasionOptions: SelectOption<AiOutfitPreviewOccasion>[] = [];
+  occasionsLoading = false;
   styleOptions: SelectOption<AiOutfitPreviewStyle>[] = [];
   stylesLoading = false;
 
@@ -91,6 +84,20 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   readonly editingDraftIds = new Set<string>();
 
   ngOnInit(): void {
+    this.occasionsLoading = true;
+    this.affiliateCatalogService.getOutfitOccasions()
+      .pipe(finalize(() => this.occasionsLoading = false))
+      .subscribe({
+        next: occasions => {
+          this.occasionOptions = occasions
+            .filter(item => item.active && !!item.value?.trim() && /^[A-Za-z0-9_-]{1,64}$/.test(item.id))
+            .map(item => ({ value: item.id as AiOutfitPreviewOccasion, label: item.value.trim() }));
+          if (!this.occasionOptions.some(item => item.value === this.request.occasion) && this.occasionOptions.length) {
+            this.request.occasion = this.occasionOptions[0].value;
+          }
+        },
+        error: () => this.error = 'Impossibile caricare le occasioni.',
+      });
     this.stylesLoading = true;
     this.affiliateCatalogService.getOutfitStyles()
       .pipe(finalize(() => this.stylesLoading = false))
@@ -208,6 +215,10 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   generate(): void {
     if (this.loading) return;
+    if (this.occasionsLoading || !this.occasionOptions.some(item => item.value === this.request.occasion)) {
+      this.error = 'Attendi il caricamento delle occasioni o seleziona un\'occasione disponibile.';
+      return;
+    }
     if (this.stylesLoading || !this.styleOptions.length || (this.request.style !== 'AUTO' && !this.styleOptions.some((style) => style.value === this.request.style))) {
       this.error = 'Attendi il caricamento degli stili ComeMiVesto o scegli uno stile valido.';
       return;

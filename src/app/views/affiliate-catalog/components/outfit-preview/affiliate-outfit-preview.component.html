@@ -38,7 +38,7 @@
 
     <label>
       <span>Occasione</span>
-      <select name="occasion" [(ngModel)]="request.occasion" [disabled]="loading">
+      <select name="occasion" [(ngModel)]="request.occasion" [disabled]="loading || occasionsLoading || !occasionOptions.length">
         <option *ngFor="let option of occasionOptions" [ngValue]="option.value">{{ option.label }}</option>
       </select>
     </label>
@@ -321,6 +321,7 @@
             [outfit]="outfit"
             [draft]="draftFor(outfit)"
             [occasion]="preview.request.occasion"
+            [occasionOptions]="occasionOptions"
             [styleOptions]="styleOptions"
             (draftUpdated)="onDraftUpdated($event)"
             (editingChange)="setDraftEditing(outfit, $event)">

@@ -10,6 +10,7 @@ import { LoginComponent } from './views/login/login.component';
 import { AccessDeniedComponent } from './views/access-denied/access-denied.component';
 import { ColorsComponent } from './views/colors/colors.component';
 import { StylesComponent } from './views/styles/styles.component';
+import { OccasionsComponent } from './views/occasions/occasions.component';
 import { ReportsComponent } from './views/reports/reports.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { StaticPagesComponent } from './views/static-pages/static-pages.component';
@@ -35,6 +36,7 @@ export const routes:Routes = [
     { path: 'access-denied', component: AccessDeniedComponent},
     { path: 'colors', component: ColorsComponent, canActivate:[authGuard]},
     { path: 'styles', component: StylesComponent, canActivate:[authGuard]},
+    { path: 'occasions', component: OccasionsComponent, canActivate:[authGuard]},
     { path: 'reports', component: ReportsComponent, canActivate:[authGuard]},
     { path: 'notifications', component: NotificationsComponent, canActivate:[authGuard]},
     { path: 'static-pages', component: StaticPagesComponent, canActivate:[authGuard]},

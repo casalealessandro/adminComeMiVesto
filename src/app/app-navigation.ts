@@ -9,6 +9,7 @@ export const comeMiVestoNavigation: readonly NavigationItem[] = [
   { path: 'outfit-category', label:'Lista categorie outfit ',icon:'mdi mdi-wardrobe-outline' },
   { path: 'colors', label:'Colori outfit',icon:'mdi mdi-palette-outline' },
   { path: 'styles', label:'Stili',icon:'mdi mdi-wardrobe-outline' },
+  { path: 'occasions', label:'Occasioni outfit',icon:'mdi mdi-calendar-check-outline' },
   { path: 'reports', label:'Segnalazioni',icon:'mdi mdi-flag-outline' },
   { path: 'notifications', label:'Notifiche',icon:'mdi mdi-bell-outline' },
   { path: 'static-pages', label:'Pagine statiche',icon:'mdi mdi-file-document-outline' },
