@@ -52,7 +52,6 @@ export class OutfitsComponent {
   colOutfitsGrid: Colonne[] = [{ itemType: 'group', groupDataField: '', data: [
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'id', colWidth:'160', colCaption:'ID', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'description', colWidth:'200', colCaption:'Descrizione', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'userId', colWidth:'140', colCaption:'UID creator', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'gender', colWidth:'90', colCaption:'Genere', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'90', colCaption:'Stile', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'season', colWidth:'90', colCaption:'Stagione', edit:false, groupDataField:undefined },
@@ -63,7 +62,7 @@ export class OutfitsComponent {
     { type:'campoDateTime', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'updatedAt', colWidth:'110', colCaption:'Aggiornamento', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'title', colWidth:'280', colCaption:'Titolo', edit:false, groupDataField:undefined },
     { type:'campoImg', colVisible:true, allowEditing:false, dataField:'imageUrl', colWidth:'130', colCaption:'Immagine', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, dataField:'userName', colWidth:'160', colCaption:'Creator', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, dataField:'userId', colWidth:'160', colCaption:'Creator (UID)', edit:false, groupDataField:undefined },
     { type:'campoDateTime', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'createdAt', colWidth:'110', colCaption:'Creazione', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'status', colWidth:'100', colCaption:'Stato', edit:false, groupDataField:undefined },
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Approva', edit:false, groupDataField:undefined, button:{ text:'', name:'approve', event:'approve', icon:'mdi mdi-check', hint:'Approva' } },
@@ -76,7 +75,7 @@ export class OutfitsComponent {
   async loadOutfits(): Promise<void> {
     this.loading = true; this.error = '';
     this.outfits = []; this.total = 0;
-    try { await this.grid?.refresh(); }
+    try { await this.grid?.renderGrid(); }
     finally { this.loading = false; }
   }
   applyFilters(): void {
