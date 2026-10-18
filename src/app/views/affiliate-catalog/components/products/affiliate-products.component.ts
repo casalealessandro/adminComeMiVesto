@@ -316,6 +316,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   bulkVisible = false;
 
   reclassificationPanelOpen = false;
+  reclassificationBackupConfirmed = false;
   reclassificationBusy = false;
   reclassificationPreview: CatalogReclassificationPreview | null = null;
   reclassificationJob: FashionEnrichmentJob | null = null;
@@ -462,6 +463,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     this.reclassificationError = '';
     this.reclassificationNotice = '';
     this.reclassificationPreview = null;
+    this.reclassificationBackupConfirmed = false;
   }
 
   get reclassificationRunning(): boolean {
@@ -507,6 +509,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   previewReclassification(): void {
     if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || this.reclassificationBusy || this.reclassificationRunning) return;
     this.reclassificationPreview = null;
+    this.reclassificationBackupConfirmed = false;
     this.reclassificationError = '';
     this.reclassificationNotice = '';
     this.reclassificationBusy = true;
@@ -520,10 +523,13 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   confirmReclassification(): void {
     const preview = this.reclassificationPreview;
-    if (!this.auth.isAdmin() || !preview || this.reclassificationBusy || this.reclassificationRunning) return;
+    if (!this.auth.isAdmin() || !preview || !this.reclassificationBackupConfirmed
+        || this.reclassificationBusy || this.reclassificationRunning) return;
     confirm(
       'Applicare i dizionari attivi al catalogo completo? L’anteprima riguarda solo i primi '
-      + preview.sampleLimit + ' prodotti. I campi già classificati e le modifiche manuali saranno rispettati. '
+      + preview.sampleLimit + ' prodotti. Si correggeranno anche categorie già valide ma chiaramente errate per collisioni con il brand. '
+      + 'Le classificazioni manuali sono protette e i casi dubbi restano invariati. '
+      + 'Hai confermato la disponibilità di un backup Firestore ripristinabile. '
       + 'Non vengono modificati prezzi, offerte, immagini o disponibilità.',
       'Conferma riclassificazione prodotti',
       (accepted) => { if (accepted) this.launchReclassification(preview.version); },
@@ -532,6 +538,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   private launchReclassification(version: string): void {
     if (this.reclassificationBusy || !this.reclassificationPanelOpen || !this.auth.isAdmin()
+        || !this.reclassificationBackupConfirmed
         || this.reclassificationPreview?.version !== version || this.reclassificationRunning) return;
     this.reclassificationBusy = true;
     this.reclassificationError = '';
@@ -540,6 +547,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (job) => {
           this.reclassificationPreview = null;
+          this.reclassificationBackupConfirmed = false;
           this.reclassificationNotice = 'Riclassificazione avviata. Puoi chiudere la pagina e consultare lo stato in seguito.';
           this.setReclassificationJob(job);
         },
