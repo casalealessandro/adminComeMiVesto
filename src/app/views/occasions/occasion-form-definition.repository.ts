@@ -14,7 +14,7 @@ const editableFields: DynamicFormField[] = [
 ];
 const definitions: FormDefinition[] = [
   { id: OCCASION_CREATE_FORM, nameForm: 'Nuova occasione', json: [
-    { name: 'id', label: 'Codice (tra i sette codici supportati)', type: 'textBox', typeInput: 'text', required: true, maxLength: 64 },
+    { name: 'id', label: 'Codice univoco (lettere, numeri, _ o -)', type: 'textBox', typeInput: 'text', required: true, maxLength: 64 },
     ...editableFields,
   ] },
   { id: OCCASION_EDIT_FORM, nameForm: 'Modifica occasione', json: editableFields },
