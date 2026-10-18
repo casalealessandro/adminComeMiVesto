@@ -495,3 +495,45 @@
   .affiliate-bulk-two-col { grid-template-columns: 1fr; }
   .affiliate-bulk-dialog__footer { flex-wrap: wrap; }
 }
+
+/* Read-only suspect review is part of the existing reclassification panel. */
+.catalog-brand-suspects__list {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 35rem;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.catalog-brand-suspects__item {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.8rem;
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.55rem;
+  min-width: 0;
+}
+
+.catalog-brand-suspects__image {
+  width: 82px;
+  height: 104px;
+  object-fit: contain;
+  flex: 0 0 auto;
+  border-radius: 0.3rem;
+}
+
+.catalog-brand-suspects__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 575px) {
+  .catalog-brand-suspects__image {
+    width: 64px;
+    height: 84px;
+  }
+}

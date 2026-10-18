@@ -65,6 +65,63 @@
       <span *ngIf="reclassificationRunning" class="text-muted">Aggiornamento stato automatico ogni 4 secondi.</span>
     </div>
 
+    <div class="catalog-brand-suspects mt-3">
+      <button type="button" class="btn btn-sm btn-outline-primary" (click)="toggleBrandSuspects()"
+        [attr.aria-expanded]="brandSuspectsOpen" aria-controls="brand-suspects-results">
+        <span class="mdi mdi-magnify" aria-hidden="true"></span>
+        {{ brandSuspectsOpen ? 'Nascondi sospetti' : 'Visualizza sospetti' }}
+      </button>
+
+      <section *ngIf="brandSuspectsOpen" id="brand-suspects-results" class="mt-3" aria-label="Prodotti con classificazione sospetta">
+        <p class="small text-muted">
+          Elenco ricostruito in sola lettura dal catalogo attuale. Il totale potrebbe differire dal contatore
+          dell'ultimo ricalcolo: le correzioni manuali e le sincronizzazioni possono modificare i risultati.
+          Nessun prodotto viene aggiornato da questa analisi.
+        </p>
+        <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="refreshBrandSuspects()"
+            [disabled]="brandSuspectsLoading">
+            <span class="mdi mdi-refresh" aria-hidden="true"></span> Riesamina dall'inizio
+          </button>
+          <span class="small text-muted" *ngIf="brandSuspectsLoaded">
+            {{ brandSuspects.length | number }} sospetti visualizzati su {{ brandSuspectsScanned | number }} prodotti esaminati
+          </span>
+        </div>
+        <div *ngIf="brandSuspectsError" class="alert alert-danger" role="alert">{{ brandSuspectsError }}</div>
+        <p *ngIf="brandSuspectsLoading" class="small text-muted" role="status">
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          Lettura del catalogo in corso…
+        </p>
+
+        <div class="catalog-brand-suspects__list" *ngIf="brandSuspects.length">
+          <article class="catalog-brand-suspects__item" *ngFor="let suspect of brandSuspects; trackBy: trackByBrandSuspectId">
+            <img *ngIf="suspect.image" [src]="suspect.image" [alt]="suspect.name"
+              class="catalog-brand-suspects__image" loading="lazy">
+            <div class="catalog-brand-suspects__details">
+              <strong>{{ suspect.name }}</strong>
+              <span class="small text-muted">{{ suspect.brand || 'Brand non disponibile' }}</span>
+              <span class="small">Categoria attuale: <strong>{{ suspect.category }} / {{ suspect.subcategory }}</strong></span>
+              <span class="small">Motivo: {{ brandSuspectReason(suspect.reason) }}</span>
+              <span *ngIf="suspect.productType" class="small">Tipo da feed: {{ suspect.productType }}</span>
+              <span *ngIf="suspect.merchantCategory" class="small">Categoria commerciante: {{ suspect.merchantCategory }}</span>
+              <p class="small mb-1" *ngIf="suspect.description">{{ suspect.description }}</p>
+              <a [routerLink]="['/affiliate-catalog/products', suspect.id]" class="small">
+                Apri scheda e correggi classificazione
+              </a>
+            </div>
+          </article>
+        </div>
+        <p class="small text-muted" *ngIf="brandSuspectsLoaded && !brandSuspects.length && !brandSuspectsNextCursor">
+          Nessun sospetto rilevato nella scansione del catalogo attuale.
+        </p>
+        <button *ngIf="brandSuspectsNextCursor && brandSuspectsLoaded" type="button"
+          class="btn btn-sm btn-outline-primary mt-2" (click)="loadMoreBrandSuspects()"
+          [disabled]="brandSuspectsLoading">Carica altri sospetti</button>
+        <p *ngIf="brandSuspectsLoaded && !brandSuspectsNextCursor && brandSuspects.length"
+          class="small text-muted mt-2">Scansione completata per il catalogo attuale.</p>
+      </section>
+    </div>
+
     <div *ngIf="reclassificationPreview as preview" class="mt-3">
       <p><strong>Anteprima non modificante su {{ preview.scanned | number }} prodotti</strong>
         (primi {{ preview.sampleLimit }} del catalogo, non una stima del totale).</p>

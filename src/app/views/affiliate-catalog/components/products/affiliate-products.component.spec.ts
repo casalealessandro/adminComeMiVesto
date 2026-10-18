@@ -199,6 +199,7 @@ describe('Affiliate products', () => {
         'getProductSubcategories',
         'getCurationCategories',
         'getUnclassifiedCleanupStatus',
+        'getBrandCategorySuspects',
         'previewUnclassifiedCleanup',
         'confirmUnclassifiedCleanup',
         'stopUnclassifiedCleanup',
@@ -260,6 +261,63 @@ describe('Affiliate products', () => {
       component.closeReclassificationPanel();
       expect(component.reclassificationBackupConfirmed).toBeFalse();
       expect(component.reclassificationPreview).toBeNull();
+    });
+
+    it('shows suspected classifications without triggering the write job', () => {
+      const suspect = {
+        id: 'suspect-1', name: 'Tommy Jeans Essentials', brand: 'Tommy Jeans',
+        category: 'P_Pantaloni', subcategory: 'jeans',
+        description: 'Descrizione', productType: '', merchantCategory: '',
+        reason: 'NO_CLEAR_GARMENT' as const, image: 'https://example.test/a.jpg',
+      };
+      service.getBrandCategorySuspects.and.returnValue(of({
+        items: [suspect], nextCursor: 'next-token', scanned: 200, complete: false,
+      }));
+      component.reclassificationPanelOpen = true;
+      component.toggleBrandSuspects();
+
+      expect(service.getBrandCategorySuspects).toHaveBeenCalledOnceWith(undefined);
+      expect(component.brandSuspects).toEqual([suspect]);
+      expect(component.brandSuspectsNextCursor).toBe('next-token');
+      expect(component.brandSuspectsScanned).toBe(200);
+      expect(component.brandSuspectReason('NO_CLEAR_GARMENT')).toContain('brand');
+    });
+
+    it('appends pages and refreshes after a manual product classification edit', () => {
+      const suspect = {
+        id: 'suspect-1', name: 'Tommy Jeans Essentials', brand: 'Tommy Jeans',
+        category: 'P_Pantaloni', subcategory: 'jeans',
+        description: '', productType: '', merchantCategory: '',
+        reason: 'NO_CLEAR_GARMENT' as const, image: null,
+      };
+      service.getBrandCategorySuspects.and.returnValues(
+        of({ items: [suspect], nextCursor: 'second', scanned: 200, complete: false }),
+        of({ items: [{ ...suspect }, { ...suspect, id: 'suspect-2' }],
+          nextCursor: null, scanned: 35, complete: true }),
+        of({ items: [], nextCursor: null, scanned: 235, complete: true }),
+      );
+      component.reclassificationPanelOpen = true;
+      component.toggleBrandSuspects();
+      component.loadMoreBrandSuspects();
+      expect(component.brandSuspects.map(item => item.id)).toEqual(['suspect-1', 'suspect-2']);
+      expect(component.brandSuspectsScanned).toBe(235);
+      expect(service.getBrandCategorySuspects).toHaveBeenCalledWith('second');
+      component.refreshBrandSuspects();
+      expect(component.brandSuspects).toEqual([]);
+      expect(component.brandSuspectsNextCursor).toBeNull();
+    });
+
+    it('keeps suspect scanning independent of the full reclassification job and discards when closed', () => {
+      service.getBrandCategorySuspects.and.returnValue(of({
+        items: [], nextCursor: null, scanned: 1, complete: true,
+      }));
+      component.reclassificationPanelOpen = true;
+      component.toggleBrandSuspects();
+      expect(component.brandSuspectsLoaded).toBeTrue();
+      component.closeReclassificationPanel();
+      expect(component.brandSuspectsOpen).toBeFalse();
+      expect(component.brandSuspectsLoading).toBeFalse();
+      expect(component.brandSuspectReason('UNKNOWN_TAXONOMY')).toContain('tassonomia');
     });
 
     it('tracks mobile cards by the canonical product id', () => {

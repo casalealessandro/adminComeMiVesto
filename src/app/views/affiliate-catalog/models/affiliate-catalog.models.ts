@@ -279,6 +279,28 @@ export interface FashionProductProfile {
   evidence: { field: string; source: string; matched: string }[];
 }
 
+export type CatalogBrandSuspectReason = 'NO_CLEAR_GARMENT' | 'UNKNOWN_TAXONOMY';
+
+export interface CatalogBrandSuspect {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  subcategory: string;
+  reason: CatalogBrandSuspectReason;
+  description: string;
+  productType: string;
+  merchantCategory: string;
+  image: string | null;
+}
+
+export interface CatalogBrandSuspectsPage {
+  items: CatalogBrandSuspect[];
+  nextCursor: string | null;
+  scanned: number;
+  complete: boolean;
+}
+
 export interface CatalogReclassificationPreview {
   version: string;
   scanned: number;
