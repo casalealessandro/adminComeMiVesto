@@ -90,6 +90,14 @@
         e possono essere riprese in un successivo passaggio. Prima di confermare verifica un backup Firestore ripristinabile.</p>
     </div>
 
+    <div class="form-check mt-3" *ngIf="reclassificationPreview">
+      <input type="checkbox" id="reclassification-backup-verified" class="form-check-input"
+        [(ngModel)]="reclassificationBackupConfirmed"
+        [disabled]="reclassificationBusy || reclassificationRunning">
+      <label for="reclassification-backup-verified" class="form-check-label">
+        Ho verificato un backup Firestore ripristinabile prima di modificare il catalogo.
+      </label>
+    </div>
     <footer class="catalog-cleanup__footer">
       <button type="button" class="btn btn-outline-primary" (click)="previewReclassification()"
         [disabled]="reclassificationBusy || reclassificationRunning">
@@ -97,7 +105,7 @@
         Analizza 100 prodotti
       </button>
       <button type="button" class="btn btn-primary" (click)="confirmReclassification()"
-        [disabled]="!reclassificationPreview || reclassificationBusy || reclassificationRunning">
+        [disabled]="!reclassificationPreview || !reclassificationBackupConfirmed || reclassificationBusy || reclassificationRunning">
         Conferma aggiornamento catalogo
       </button>
       <button type="button" class="btn btn-outline-secondary" (click)="refreshReclassificationStatus()"
