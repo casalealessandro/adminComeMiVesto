@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs/internal/Observable';
-import { lastValueFrom, map } from 'rxjs';
+import { lastValueFrom, map, timeout } from 'rxjs';
 import { UserProfile } from '../interface/app.interface';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 
@@ -111,7 +111,7 @@ export class OutfitsService {
   async getAdminOutfits(filters: Record<string, string> = {}, page = 1, limit = 10): Promise<outfit[]> {
     let params = new HttpParams().set('page', page).set('limit', limit);
     Object.entries(filters).forEach(([key, value]) => { if (value) params = params.set(key, value); });
-    const response = await lastValueFrom(this.httpClient.get<any>(`${this.backendBase}/gen/outfits`, { params }));
+    const response = await lastValueFrom(this.httpClient.get<any>(`${this.backendBase}/gen/outfits`, { params }).pipe(timeout(20000)));
     const results = response.data || [];
     this.pagination.set(response.pagination || { page, limit, total: results.length });
     this.resultsSignal.set(results);
