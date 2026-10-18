@@ -38,7 +38,9 @@
       <div>
         <h3 id="catalog-reclassification-title">Ricalcola classificazioni</h3>
         <p>Rilegge il catalogo Firestore con i dizionari attivi: non richiama Tradedoubler né servizi AI.
-          Conserva le classificazioni già valide e i campi bloccati manualmente.</p>
+          Conserva le classificazioni già valide, salvo errori dimostrabili dovuti al nome del brand
+          (es. Tommy Jeans T-shirt inserita nei jeans), e rispetta i campi bloccati manualmente.
+          I casi incerti rimangono in revisione.</p>
       </div>
       <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeReclassificationPanel()">Chiudi</button>
     </header>
@@ -55,6 +57,10 @@
       <span>Analizzati: {{ job.scanned | number }} · Modificati: {{ job.updated | number }}
         · Invariati: {{ job.unchanged | number }}
         · Saltati per concorrenza: {{ (job.skippedConcurrent || 0) | number }}</span>
+      <span *ngIf="job.mode === 'RECLASSIFY'">
+        Errori brand corretti: {{ (job.brandCorrected || 0) | number }}
+        · Sospetti da verificare: {{ (job.brandNeedsReview || 0) | number }}
+      </span>
       <span *ngIf="job.lastError" class="text-danger">{{ job.lastError }}</span>
       <span *ngIf="reclassificationRunning" class="text-muted">Aggiornamento stato automatico ogni 4 secondi.</span>
     </div>
@@ -65,6 +71,8 @@
       <div class="catalog-cleanup__summary">
         <div><strong>{{ preview.wouldUpdate | number }}</strong><span>da aggiornare nel campione</span></div>
         <div><strong>{{ preview.unchanged | number }}</strong><span>invariati nel campione</span></div>
+        <div><strong>{{ (preview.brandFixesInSample || 0) | number }}</strong><span>errori brand correggibili nel campione</span></div>
+        <div><strong>{{ (preview.brandReviewsInSample || 0) | number }}</strong><span>sospetti da verificare nel campione</span></div>
       </div>
       <details *ngIf="preview.examples.length" class="mt-2">
         <summary>Esamina {{ preview.examples.length }} esempi prima/dopo</summary>
@@ -77,8 +85,9 @@
           </div>
         </div>
       </details>
-      <p class="small text-muted mt-2">Confermando verrà percorso tutto il catalogo a blocchi, anche se il campione
-        non presenta cambiamenti. Le modifiche concorrenti vengono saltate e possono essere riprese in un successivo passaggio.</p>
+      <p class="small text-muted mt-2">Confermando verrà percorso tutto il catalogo a blocchi da 100, anche se il campione
+        non presenta cambiamenti. I casi brand ambigui non vengono modificati. Le modifiche concorrenti vengono saltate
+        e possono essere riprese in un successivo passaggio. Prima di confermare verifica un backup Firestore ripristinabile.</p>
     </div>
 
     <footer class="catalog-cleanup__footer">
