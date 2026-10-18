@@ -90,7 +90,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       .subscribe({
         next: occasions => {
           this.occasionOptions = occasions
-            .filter(item => item.active && !!item.value?.trim())
+            .filter(item => item.active && !!item.value?.trim() && /^[A-Za-z0-9_-]{1,64}$/.test(item.id))
             .map(item => ({ value: item.id as AiOutfitPreviewOccasion, label: item.value.trim() }));
           if (!this.occasionOptions.some(item => item.value === this.request.occasion) && this.occasionOptions.length) {
             this.request.occasion = this.occasionOptions[0].value;
