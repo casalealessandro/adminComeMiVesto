@@ -1,16 +1,44 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from '../../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
 import { outfit, OutfitsService, Tag } from '../../../services/outfit.service';
 import { FotoOutfitPage } from '../foto-outfit/foto-outfit.page';
-import { ActivatedRoute, Router,  } from '@angular/router';
-import { PopUpService } from '../../../services/popup.service';
-import { alert } from '../../../widgets/ui-dialogs';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { UserProfile } from '../../../interface/app.interface';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
+import { FormService } from '../../../services/form.service';
+import { alert } from '../../../widgets/ui-dialogs';
+
+export const EDITABLE_OUTFIT_FIELDS = [
+  'title', 'description', 'gender', 'style', 'season',
+] as const;
+
+/**
+ * The existing REST endpoint accepts only these fields. Derived categories,
+ * colors, brands and product ids are calculated on the server from tags.
+ */
+export function buildOutfitFormPayload(
+  formData: Record<string, unknown>,
+  imageUrl: string,
+  tags: Tag[],
+  originalImageUrl = '',
+): Partial<outfit> {
+  const payload: Record<string, unknown> = {};
+  for (const key of EDITABLE_OUTFIT_FIELDS) {
+    if (formData[key] !== undefined) payload[key] = formData[key];
+  }
+  // FotoOutfit owns image edits; a configured imageUrl form field is supported
+  // when the photo component has not changed the image.
+  const submittedImage = typeof formData['imageUrl'] === 'string' ? formData['imageUrl'] : '';
+  if (imageUrl && imageUrl !== originalImageUrl) payload['imageUrl'] = imageUrl;
+  else if (submittedImage) payload['imageUrl'] = submittedImage;
+  else if (imageUrl) payload['imageUrl'] = imageUrl;
+  payload['tags'] = [...tags];
+  return payload as Partial<outfit>;
+}
 
 @Component({
   selector: 'app-outfit-form',
@@ -20,100 +48,114 @@ import { AuthService } from '../../../services/auth.service';
   styleUrl: './outfit-form.component.scss'
 })
 export class OutfitFormComponent {
-  outfitData = signal<outfit>({} as outfit);
-  private activateRoute = inject(ActivatedRoute);
-  private router = inject(Router);
-  private outFitService = inject(OutfitsService);
-  private popUpService = inject(PopUpService);
-  private userService = inject(UserService);
-  private authService = inject(AuthService);
-  subtitle: string = "";
-  outfitTitle: string = ""
-  outfitId: any;
-  imageUrl = signal("")
+  outfitData = signal<outfit | undefined>(undefined);
+  formReady = signal(false);
+  loading = signal(false);
+  saving = signal(false);
+  error = signal('');
+  missingFormFields = signal<string[]>([]);
+  readonly editableFieldNames = EDITABLE_OUTFIT_FIELDS;
+
+  private readonly activateRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly outFitService = inject(OutfitsService);
+  private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly formService = inject(FormService);
+
+  subtitle = '';
+  outfitTitle = '';
+  outfitId: string | null = null;
+  imageUrl = signal('');
+  private originalImageUrl = '';
   tags = signal<Tag[]>([]);
   targetUsers: UserProfile[] = [];
   targetUserId = '';
 
-
-
-  ngOnInit() {
-    this.fetchDataOutfit(); // Recupera i dati all'avvio
-    this.userService.getUsers(100).subscribe(users => this.targetUsers = this.authService.isAdmin() ? users : users.filter(user => user.role === 'creator'));
+  ngOnInit(): void {
+    this.fetchDataOutfit();
+    this.userService.getUsers(100).subscribe({
+      next: users => this.targetUsers = this.authService.isAdmin()
+        ? users : users.filter(user => user.role === 'creator'),
+      error: () => { /* Creator list is optional when editing an existing outfit. */ },
+    });
+    this.formService.getFormFields('outfitForm').subscribe({
+      next: fields => {
+        const names = new Set(fields.map(field => field.name));
+        this.missingFormFields.set(
+          EDITABLE_OUTFIT_FIELDS.filter(name => !names.has(name)),
+        );
+      },
+      error: () => this.error.set('Impossibile verificare i campi del form outfit.'),
+    });
   }
 
-  fetchDataOutfit() {
+  fetchDataOutfit(): void {
     this.activateRoute.paramMap.subscribe(async params => {
-      this.outfitId = params.get('id');
-      if (this.outfitId) {
-        // Usare il segnale per ottenere il valore quando cambia
-        let resO = await this.outFitService.getAdminOutfitById(this.outfitId)
-        this.outfitData.set(resO[0])
-        this.imageUrl.set(resO[0].imageUrl);
-        this.tags.set(this.outfitData().tags)
+      const id = params.get('id');
+      this.outfitId = id;
+      this.error.set('');
+      this.formReady.set(false);
+      this.loading.set(!!id);
+      this.outfitData.set(undefined);
+      this.imageUrl.set('');
+      this.originalImageUrl = '';
+      this.tags.set([]);
+      this.outfitTitle = id ? 'Modifica outfit' : 'Nuovo outfit';
+      if (!id) {
+        this.formReady.set(true);
+        return;
+      }
+      try {
+        const results = await this.outFitService.getAdminOutfitById(id);
+        const item = results[0];
+        if (!item) throw new Error('Outfit non trovato');
+        this.outfitData.set(item);
+        this.imageUrl.set(item.imageUrl || '');
+        this.originalImageUrl = item.imageUrl || '';
+        this.tags.set(Array.isArray(item.tags) ? [...item.tags] : []);
+        this.outfitTitle = item.title || 'Modifica outfit';
+        this.formReady.set(true);
+      } catch {
+        this.error.set('Impossibile caricare l’outfit. Il form non è stato aperto per evitare modifiche su dati incompleti.');
+      } finally {
+        this.loading.set(false);
       }
     });
-
   }
-  setTags(tagsD: any) {
-    this.tags.set(tagsD.tags)
-  }
-  async submitFormOutfit(event: any) {
 
-    if(event.name == "cancelForm"){
-      this.router.navigate(['/outfit-list']);
-      return 
+  setTags(event: { tags?: Tag[] }): void {
+    if (Array.isArray(event?.tags)) this.tags.set([...event.tags]);
+  }
+
+  async submitFormOutfit(event: { name: string; formData?: Record<string, unknown> }): Promise<void> {
+    if (event.name === 'cancelForm') {
+      await this.router.navigate(['/outfit-list']);
+      return;
     }
+    if (event.name !== 'submitForm' || this.saving()) return;
 
-    const inEdit = event.inEdit;
-    const formData = event.formData;
-
-    let mappedTag: any[] = [...this.tags()];
-
-    mappedTag = mappedTag.reduce(
-      (acc, tag) => {
-        // Se l'elemento non è già presente nell'array, aggiungilo
-        if (!acc.outfitCategory.includes(tag.outfitCategory)) {
-          acc.outfitCategory.push(tag.outfitCategory);
-        }
-        if (!acc.outfitSubCategory.includes(tag.outfitSubCategory)) {
-          acc.outfitSubCategory.push(tag.outfitSubCategory);
-        }
-        if (!acc.color.includes(tag.color)) {
-          acc.color.push(tag.color);
-        }
-        return acc;
-      },
-      { outfitCategory: [], outfitSubCategory: [], color: [] }
-    );
-
-    let dateCreate = new Date();
-    let formOutfit:outfit = formData ;
-    formOutfit.tags = this.tags();
-    formOutfit = { ...formOutfit, ...mappedTag }
-   
-    
-    // Salva o aggiorna il prodotto nel database  
-    if (inEdit) {
-      let awaitRes = await this.outFitService.updateAdminOutfit(formOutfit.id, formOutfit);
-      if(awaitRes){
-        this.router.navigate(['/outfit-list']);
-      }else{
-       alert("Si è verificato un errore durante il salvataggio dell'outfit","Errore durante il salvataggio dell'outfit")
+    const data = event.formData || {};
+    const payload = buildOutfitFormPayload(data, this.imageUrl(), this.tags(), this.originalImageUrl);
+    this.saving.set(true);
+    this.error.set('');
+    try {
+      if (this.outfitId) {
+        await this.outFitService.updateAdminOutfit(this.outfitId, payload);
+      } else {
+        if (this.targetUserId) payload.userId = this.targetUserId;
+        await this.outFitService.createAdminOutfit(payload);
       }
-    } else {
-      if (this.targetUserId) formOutfit.userId = this.targetUserId;
-      let awaitRes =await this.outFitService.createAdminOutfit(formOutfit);
-      if(awaitRes){
-        this.router.navigate(['/outfit-list']);
-      }else{
-       alert("Si è verificato un errore durante il salvataggio dell'outfit","Errore durante il salvataggio dell'outfit")
-      }
+      await this.router.navigate(['/outfit-list']);
+    } catch {
+      this.error.set('Salvataggio outfit non riuscito. I dati rimangono nel form per un nuovo tentativo.');
+      alert(this.error(), 'Errore durante il salvataggio');
+    } finally {
+      this.saving.set(false);
     }
   }
 
-  btnInputEvent(event: any) {
-    console.log('btnInputEvent',event);
-    //this.popUpService()
+  btnInputEvent(_event: unknown): void {
+    // Reserved for future field-specific interactions. No-op for PR2.
   }
 }
