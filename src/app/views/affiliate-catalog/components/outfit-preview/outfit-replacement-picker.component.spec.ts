@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
   OutfitReplacementPickerComponent,
+  OutfitReplacementRow,
   replacementPickerColumns,
 } from './outfit-replacement-picker.component';
 
@@ -12,8 +12,9 @@ describe('OutfitReplacementPickerComponent', () => {
     id: 'new-product', name: 'Jeans neri', brand: 'Brand',
     category: 'P_Pantaloni', subcategory: 'jeans', normalizedColor: 'BN',
     genderTargets: ['D'], active: true, enabledForApp: true,
+    genderLabel: 'Donna', styleLabel: 'Casual, Trendy', colorLabel: 'Blu navy',
     fashionProfile: { styleAffinities: ['CASUAL', 'TRENDY'] },
-  } as unknown as CatalogProduct;
+  } as unknown as OutfitReplacementRow;
 
   let service: jasmine.SpyObj<AffiliateCatalogService>;
   let picker: OutfitReplacementPickerComponent;
