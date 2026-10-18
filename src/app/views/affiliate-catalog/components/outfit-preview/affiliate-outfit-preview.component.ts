@@ -20,6 +20,31 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
 import { AiOutfitDraftEditorComponent } from './ai-outfit-draft-editor.component';
 
+const EDITORIAL_PREVIEW_ISSUES: Readonly<Record<string, string>> = {
+  MISSING_SHOES: 'Mancano scarpe in almeno uno degli outfit.',
+  MISSING_BASE: 'Un outfit non contiene una base completa (parte sopra e sotto, oppure abito).',
+  ROLE_CATEGORY_MISMATCH: 'Un capo è stato assegnato a un ruolo incompatibile con la sua categoria.',
+  OFFICE_SHORTS: 'Per l ufficio è stato scelto un pantalone corto non adatto.',
+  SEASON_SNOW_BOOTS: 'Sono stati selezionati doposci o stivali da neve fuori dall inverno.',
+};
+
+/** The backend returns stable editorial issue codes on HTTP 422. Display only
+ * known safe labels; do not expose candidate IDs, providers or raw server errors.
+ */
+export const describeAiOutfitPreviewError = (response: {
+  status?: unknown;
+  error?: { message?: unknown; issueCodes?: unknown };
+} | null | undefined): string => {
+  const fallback = typeof response?.error?.message === 'string' && response.error.message.trim()
+    ? response.error.message.trim() : 'Impossibile generare la preview AI. Riprova tra poco.';
+  if (response?.status !== 422 || !Array.isArray(response.error?.issueCodes)) return fallback;
+  const reasons = [...new Set(response.error.issueCodes)]
+    .filter((code): code is string => typeof code === 'string' && Object.prototype.hasOwnProperty.call(EDITORIAL_PREVIEW_ISSUES, code))
+    .map(code => `${EDITORIAL_PREVIEW_ISSUES[code]} [${code}]`);
+  if (!reasons.length) return fallback;
+  return `${fallback} Motivi: ${reasons.join(' ')}`;
+};
+
 interface SelectOption<T extends string> {
   value: T;
   label: string;
@@ -269,7 +294,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
             this.error = 'La generazione AI è riservata agli amministratori.';
             return;
           }
-          this.error = error?.error?.message || 'Impossibile generare la preview AI. Riprova tra poco.';
+          this.error = describeAiOutfitPreviewError(error);
         },
       });
   }
