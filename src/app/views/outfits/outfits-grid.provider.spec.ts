@@ -13,6 +13,7 @@ describe('Outfits remote grid provider', () => {
     expect(row.genderLabel).toBe('Donna');
     expect(row.seasonLabel).toBe('Autunno');
     expect(row.occasionLabel).toBe('Ufficio');
+    expect(formatOutfitGridItem(source, () => 'Maria Rossi', () => 'Lavoro').occasionLabel).toBe('Lavoro');
     expect(row.gender).toBe('D');
     expect(row.season).toBe('A');
     expect(row.occasion).toBe('OFFICE');
