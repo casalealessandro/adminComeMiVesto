@@ -116,7 +116,15 @@ export class OutfitReplacementPickerComponent implements OnInit {
   private readonly catalog = inject(AffiliateCatalogService);
   itemData: OutfitReplacementPickerContext = { category: '', gender: 'D', productIdsInOutfit: [] };
   @Output() result = new EventEmitter<OutfitReplacementPickerResult>();
-  @ViewChild(DataGridComponent) grid?: DataGridComponent<OutfitReplacementRow>;
+  grid?: DataGridComponent<OutfitReplacementRow>;
+  @ViewChild(DataGridComponent)
+  set pickerGrid(grid: DataGridComponent<OutfitReplacementRow> | undefined) {
+    this.grid = grid;
+    if (grid && this.provider) {
+      grid.pageSize = 30;
+      queueMicrotask(() => void grid.renderGrid());
+    }
+  }
 
   readonly columns = replacementPickerColumns;
   readonly styles = PICKER_STYLE_OPTIONS;
@@ -146,12 +154,6 @@ export class OutfitReplacementPickerComponent implements OnInit {
         this.colorLabels = new Map(this.colors.map(item => [item.id, item.value]));
         this.provider = { load: (request) => this.loadPage(request) };
         this.loading = false;
-        queueMicrotask(() => {
-          if (this.grid) {
-            this.grid.pageSize = 30;
-            void this.grid.renderGrid();
-          }
-        });
       },
       error: () => { this.loading = false; this.error = 'Impossibile caricare i filtri del catalogo.'; },
     });
