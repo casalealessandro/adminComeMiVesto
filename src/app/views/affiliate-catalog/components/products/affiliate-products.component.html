@@ -102,6 +102,9 @@
               <span class="small text-muted">{{ suspect.brand || 'Brand non disponibile' }}</span>
               <span class="small">Categoria attuale: <strong>{{ suspect.category }} / {{ suspect.subcategory }}</strong></span>
               <span class="small">Motivo: {{ brandSuspectReason(suspect.reason) }}</span>
+              <span *ngIf="suspect.suggestedCategory" class="small">
+                Area riconosciuta (da verificare): <strong>{{ suspect.suggestedCategory }}</strong>
+              </span>
               <span *ngIf="suspect.productType" class="small">Tipo da feed: {{ suspect.productType }}</span>
               <span *ngIf="suspect.merchantCategory" class="small">Categoria commerciante: {{ suspect.merchantCategory }}</span>
               <p class="small mb-1" *ngIf="suspect.description">{{ suspect.description }}</p>
