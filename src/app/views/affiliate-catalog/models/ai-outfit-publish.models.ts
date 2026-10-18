@@ -1,4 +1,4 @@
-import { AiOutfitPreviewOutfit } from './affiliate-catalog-api.models';
+import { AiOutfitPreviewOutfit, AiOutfitPreviewOccasion } from './affiliate-catalog-api.models';
 
 export interface AiOutfitPublishRequest {
   title: string;
@@ -7,6 +7,7 @@ export interface AiOutfitPublishRequest {
   gender: AiOutfitPreviewOutfit['gender'];
   season: AiOutfitPreviewOutfit['season'];
   style: AiOutfitPreviewOutfit['style'];
+  occasion?: AiOutfitPreviewOccasion;
   creatorUid?: string;
   draftId?: string;
   products: Array<{
