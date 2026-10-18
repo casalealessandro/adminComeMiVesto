@@ -242,6 +242,26 @@ describe('Affiliate products', () => {
         .toEqual([{ value: 'Clothing', label: 'Clothing' }]);
     });
 
+    it('requires backup verification before confirming a reclassification and resets on close', () => {
+      component.reclassificationPanelOpen = true;
+      component.reclassificationPreview = {
+        version: 'a'.repeat(64), scanned: 100, sampleLimit: 100,
+        wouldUpdate: 4, unchanged: 96, brandFixesInSample: 2,
+        brandReviewsInSample: 1, examples: [],
+      };
+      const popups = TestBed.inject(PopUpService);
+      const openPopup = spyOn(popups, 'setNewPopUp').and.stub();
+
+      component.confirmReclassification();
+      expect(openPopup).not.toHaveBeenCalled();
+      expect(component.reclassificationBackupConfirmed).toBeFalse();
+
+      component.reclassificationBackupConfirmed = true;
+      component.closeReclassificationPanel();
+      expect(component.reclassificationBackupConfirmed).toBeFalse();
+      expect(component.reclassificationPreview).toBeNull();
+    });
+
     it('tracks mobile cards by the canonical product id', () => {
       expect(component.trackByProductId(0, product)).toBe(product.id);
     });
