@@ -50,7 +50,7 @@
       </label>
       <label>Occasione
         <select name="draftOccasion" [(ngModel)]="edit.occasion" [disabled]="saving">
-          <option *ngFor="let item of occasions" [ngValue]="item.value">{{ item.label }}</option>
+          <option *ngFor="let item of occasionOptions" [ngValue]="item.value">{{ item.label }}</option>
         </select>
       </label>
     </div>
