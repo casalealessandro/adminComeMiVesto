@@ -10,6 +10,7 @@ describe('Outfit DynamicForm payload', () => {
       title: 'Outfit lavoro',
       gender: 'D',
       season: 'I',
+      occasion: 'OFFICE',
       style: 'CL',
       status: 'rifiutato',
       color: ['N'],
@@ -21,11 +22,12 @@ describe('Outfit DynamicForm payload', () => {
       title: 'Outfit lavoro',
       gender: 'D',
       season: 'I',
+      occasion: 'OFFICE',
       style: 'CL',
       imageUrl: 'https://example.org/look.jpg',
       tags: [tag],
     });
-    expect(EDITABLE_OUTFIT_FIELDS).toEqual(['title', 'description', 'gender', 'style', 'season']);
+    expect(EDITABLE_OUTFIT_FIELDS).toEqual(['title', 'description', 'gender', 'style', 'season', 'occasion']);
   });
 
   it('supports imageUrl in a Firebase form when photo editor has not changed the image', () => {
