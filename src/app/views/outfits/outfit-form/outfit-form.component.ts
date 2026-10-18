@@ -13,7 +13,7 @@ import { FormService } from '../../../services/form.service';
 import { alert } from '../../../widgets/ui-dialogs';
 
 export const EDITABLE_OUTFIT_FIELDS = [
-  'title', 'description', 'imageUrl', 'gender', 'style', 'season',
+  'title', 'description', 'gender', 'style', 'season',
 ] as const;
 
 /**
@@ -24,14 +24,18 @@ export function buildOutfitFormPayload(
   formData: Record<string, unknown>,
   imageUrl: string,
   tags: Tag[],
+  originalImageUrl = '',
 ): Partial<outfit> {
   const payload: Record<string, unknown> = {};
   for (const key of EDITABLE_OUTFIT_FIELDS) {
     if (formData[key] !== undefined) payload[key] = formData[key];
   }
-  // The image editor is the owner of imageUrl; the form's imageUrl is a fallback
-  // until an explicit image-editor change is made.
-  if (imageUrl) payload['imageUrl'] = imageUrl;
+  // FotoOutfit owns image edits; a configured imageUrl form field is supported
+  // when the photo component has not changed the image.
+  const submittedImage = typeof formData['imageUrl'] === 'string' ? formData['imageUrl'] : '';
+  if (imageUrl && imageUrl !== originalImageUrl) payload['imageUrl'] = imageUrl;
+  else if (submittedImage) payload['imageUrl'] = submittedImage;
+  else if (imageUrl) payload['imageUrl'] = imageUrl;
   payload['tags'] = [...tags];
   return payload as Partial<outfit>;
 }
@@ -63,6 +67,7 @@ export class OutfitFormComponent {
   outfitTitle = '';
   outfitId: string | null = null;
   imageUrl = signal('');
+  private originalImageUrl = '';
   tags = signal<Tag[]>([]);
   targetUsers: UserProfile[] = [];
   targetUserId = '';
@@ -94,6 +99,7 @@ export class OutfitFormComponent {
       this.loading.set(!!id);
       this.outfitData.set(undefined);
       this.imageUrl.set('');
+      this.originalImageUrl = '';
       this.tags.set([]);
       this.outfitTitle = id ? 'Modifica outfit' : 'Nuovo outfit';
       if (!id) {
@@ -106,6 +112,7 @@ export class OutfitFormComponent {
         if (!item) throw new Error('Outfit non trovato');
         this.outfitData.set(item);
         this.imageUrl.set(item.imageUrl || '');
+        this.originalImageUrl = item.imageUrl || '';
         this.tags.set(Array.isArray(item.tags) ? [...item.tags] : []);
         this.outfitTitle = item.title || 'Modifica outfit';
         this.formReady.set(true);
@@ -129,7 +136,7 @@ export class OutfitFormComponent {
     if (event.name !== 'submitForm' || this.saving()) return;
 
     const data = event.formData || {};
-    const payload = buildOutfitFormPayload(data, this.imageUrl(), this.tags());
+    const payload = buildOutfitFormPayload(data, this.imageUrl(), this.tags(), this.originalImageUrl);
     this.saving.set(true);
     this.error.set('');
     try {
