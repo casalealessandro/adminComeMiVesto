@@ -17,7 +17,7 @@
     [dataProvider]="dataProvider" [remoteOperation]="true"
     [initialRemoteSort]="{field:'createdAt', direction:'desc'}"
     [showFilter]="true" [isEditable]="true" [isEditableEditRow]="true"
-    [isEditableDeleteRow]="false" [showToolbarBottom]="false"
+    [isEditableDeleteRow]="true" [showToolbarBottom]="false"
     [showToolbarTop]="true" [isSearchable]="true"
     (emittendStartEdit)="editOutfit($event)"
     (emittendGridEvent)="gridEvent($event)"
