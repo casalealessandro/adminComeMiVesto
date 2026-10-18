@@ -279,7 +279,7 @@ export interface FashionProductProfile {
   evidence: { field: string; source: string; matched: string }[];
 }
 
-export type CatalogBrandSuspectReason = 'NO_CLEAR_GARMENT' | 'UNKNOWN_TAXONOMY';
+export type CatalogBrandSuspectReason = 'NO_CLEAR_GARMENT' | 'UNKNOWN_TAXONOMY' | 'UNRESOLVED_SUBCATEGORY';
 
 export interface CatalogBrandSuspect {
   id: string;
@@ -288,6 +288,8 @@ export interface CatalogBrandSuspect {
   category: string;
   subcategory: string;
   reason: CatalogBrandSuspectReason;
+  /** Parent recognized from title/merchant signals; never a guessed subcategory. */
+  suggestedCategory?: string;
   description: string;
   productType: string;
   merchantCategory: string;
