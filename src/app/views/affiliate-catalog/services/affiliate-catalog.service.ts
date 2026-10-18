@@ -13,6 +13,7 @@ import {
   FashionEnrichmentBatch,
   FashionEnrichmentJob,
   CatalogReclassificationPreview,
+  CatalogBrandSuspectsPage,
   FashionEnrichmentStatus,
   FashionOverviewResponse,
   FashionOverviewJob,
@@ -124,6 +125,14 @@ export class AffiliateCatalogService {
   previewCatalogReclassification(): Observable<CatalogReclassificationPreview> {
     return this.http.post<AffiliateApiResponse<CatalogReclassificationPreview>>(
       this.baseUrl + '/products/reclassification/preview', {},
+    ).pipe(map(response => response.data));
+  }
+
+  getBrandCategorySuspects(cursor?: string, limit = 25): Observable<CatalogBrandSuspectsPage> {
+    let params = new HttpParams().set('limit', String(limit));
+    if (cursor) params = params.set('cursor', cursor);
+    return this.http.get<AffiliateApiResponse<CatalogBrandSuspectsPage>>(
+      this.baseUrl + '/products/reclassification/suspects', { params },
     ).pipe(map(response => response.data));
   }
 
