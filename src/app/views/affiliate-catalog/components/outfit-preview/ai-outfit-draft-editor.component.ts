@@ -28,6 +28,7 @@ export class AiOutfitDraftEditorComponent {
   @Input() draft?: AiOutfitDraft;
   @Input() occasion: AiOutfitPreviewOccasion = 'EVERYDAY';
   @Input() styleOptions: Array<{ value: string; label: string }> = [];
+  @Input() occasionOptions: Array<{ value: AiOutfitPreviewOccasion; label: string }> = [];
   @Output() draftUpdated = new EventEmitter<AiOutfitDraft>();
   @Output() editingChange = new EventEmitter<boolean>();
 
@@ -35,12 +36,7 @@ export class AiOutfitDraftEditorComponent {
     { value: 'P', label: 'Primavera' }, { value: 'E', label: 'Estate' },
     { value: 'A', label: 'Autunno' }, { value: 'I', label: 'Inverno' },
   ];
-  readonly occasions: Array<{ value: AiOutfitPreviewOccasion; label: string }> = [
-    { value: 'EVERYDAY', label: 'Quotidiano' }, { value: 'OFFICE', label: 'Ufficio' },
-    { value: 'APERITIVO', label: 'Aperitivo' }, { value: 'CEREMONY', label: 'Cerimonia' },
-    { value: 'EVENING', label: 'Sera' }, { value: 'SPORT', label: 'Sport' },
-    { value: 'TRAVEL', label: 'Viaggio' },
-  ];
+
   editing = false;
   saving = false;
   regenerating = false;
