@@ -165,6 +165,29 @@ describe('FotoOutfitPage popup lifecycle', () => {
     expect(emitted).toHaveBeenCalled();
   });
 
+  it('appends a newly inserted tag without removing existing linked products', async () => {
+    const { component } = setup();
+    const first = { id: 'existing', name: 'Jeans', x: .5, y: .6, color: 'blu', outfitCategory: 'BOTTOM' };
+    component.tags.set([first]);
+    component.imageElement = {
+      nativeElement: {
+        getBoundingClientRect: () => ({ left: 10, top: 20, width: 200, height: 400 })
+      }
+    } as any;
+    spyOn(component, 'openModal').and.resolveTo({
+      id: 'new', name: 'Camicia', color: 'bianco', outfitCategory: 'TOP'
+    });
+    const emitted = jasmine.createSpy('tagChanged');
+    component.eventImageTags.subscribe(emitted);
+
+    await component.addTag({ clientX: 110, clientY: 120 });
+
+    expect(component.tags().map(tag => tag.id)).toEqual(['existing', 'new']);
+    expect(component.tags()[1].x).toBe(.5);
+    expect(component.tags()[1].y).toBe(.25);
+    expect(emitted).toHaveBeenCalled();
+  });
+
   it('renders numbered pins next to selectable product cards', () => {
     const { popup } = setup();
     const fixture = TestBed.createComponent(FotoOutfitPage);
