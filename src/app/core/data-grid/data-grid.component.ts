@@ -1052,83 +1052,23 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
   }
 
-  async resizeCols(cols?: any) {
+  async resizeCols(cols?: ColData[]): Promise<void> {
+    const columns = cols ?? this.colsHeader;
+    if (!columns?.length || !Number.isFinite(this.tableWrapWidth) || this.tableWrapWidth <= 0) return;
 
-
-    // Creo una costante larghezza fissa della tabella
-    const larghezzaTabella = this.tableWrapWidth;
-
-    if (!cols) {
-      cols = this.colsHeader
-    }
-
-    cols = cols.map((ress: ColData) => {
-      if (!ress.colWidth) {
-        if (ress.colCaption) {
-          ress.colWidth = ress.colCaption.length;
-        } else if (ress.caption) {
-          ress.colWidth = ress.caption.length;
-        } else {
-          ress.colWidth = 'auto';
-        }
-
-      }
-      return ress
-    })
-
-    const totalWidthCols = cols.reduce((accumulatore: any, col: ColData) => {
-      return accumulatore + Number(col.colWidth);
-    }, 0); // 0 è il valore iniziale di accumulatore
-
-
-    // Creo una costante dimension che le celle fisse occupano 
-
-    const data = ['icon', 'selection', 'editorButtons', 'removeButtons', 'detail', 'campoDesc', 'empty'];
-
-
-    //rimuove dall'oggetto cols le celle di funzione che hanno una dimensione fissa
-    const colonneFisse = cols.filter((col: any) => data.some(d => d == col.type));
-
-    const totalWidthfixCols = colonneFisse.reduce((accumulatore: any, col: ColData) => {
-      return accumulatore + col.colWidth;
-    }, 0); // 0 è il valore iniziale di accumulatore
-
-    //ricalcolo la larghezza della tabella senza le celle fisse.
-    //const totalWidthRestante = larghezzaTabella - totalWidthfixCols
-    //rimuove dall'oggetto cols le celle di funzione che hanno una dimensione fissa
-    const colonneFiltrate = cols.filter((col: any) => !data.some(d => d == col.type));
-
-    const totalWidthFilterCols = colonneFiltrate.reduce((accumulatore: any, col: ColData) => {
-      if (col.colWidth != 'auto')
-        return accumulatore + Number(col.colWidth);
-    }, 0);
-    const diffWidthCols = larghezzaTabella - totalWidthFilterCols;
-    //ricalcolo la larghezza della tabella senza le celle fisse.
-    const totalWidthRestante = diffWidthCols - totalWidthfixCols
-    // Calcola il fattore di scala basato sulla larghezza rimanente e la larghezza totale della tabella
-    const scala: number = totalWidthRestante / colonneFiltrate.length;;
-    for (let i = 0; i < colonneFiltrate.length; i++) {
-
-      if (colonneFiltrate[i].colWidth != 'auto') {
-        const newW = Number(colonneFiltrate[i].colWidth) + scala;
-        const indx = cols.findIndex((col: ColData) => col.dataField == colonneFiltrate[i].dataField);
-
-        cols[indx].colWidth = newW
-      }
-
-    }
-
-    const tt = cols.reduce((accumulatore: any, col: ColData) => {
-      if (col.colWidth != 'auto')
-        return accumulatore + Number(col.colWidth);
-    }, 0);
-
-    console.log('dddd', tt)
-    return
-
+    // Fixed-width columns may overflow horizontally: do not shrink them or
+    // repeatedly mutate their widths on each grid render.
+    const fixedTypes = new Set(['icon', 'selection', 'editorButtons', 'removeButtons', 'detail', 'campoDesc', 'empty']);
+    const widths = columns.map(column => Number(column.colWidth));
+    if (widths.some(width => !Number.isFinite(width) || width <= 0)) return;
+    const totalWidth = widths.reduce((sum, width) => sum + width, 0);
+    const extraWidth = this.tableWrapWidth - totalWidth;
+    if (extraWidth <= 0) return;
+    const flexible = columns.filter(column => !fixedTypes.has(column.type));
+    if (!flexible.length) return;
+    // The browser can distribute unused space without mutating ColData; this
+    // prevents cumulative width growth across repeated renderGrid() calls.
   }
-
-
 
 
 
