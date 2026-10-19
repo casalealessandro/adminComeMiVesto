@@ -72,7 +72,7 @@ describe('Affiliate products', () => {
     lastError: null,
   };
 
-  it('keeps taxonomy visible but non-filterable and exposes only Programma and Visibile app as filters', () => {
+  it('supports exact-match remote filters for category and subcategory without option scans', () => {
     const columns = buildAffiliateProductColumns([program], false)[0].data;
     const actions = columns.filter((column) => column.type === 'campoButton');
     const filterable = columns.filter((column) => column.allowFiltering === true);
@@ -83,12 +83,11 @@ describe('Affiliate products', () => {
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
     expect(columns.some((column) => column.dataField === 'imagePreview' && column.type === 'campoImg')).toBeTrue();
     expect(columns.some((column) => column.dataField === 'sourceFeedCount')).toBeFalse();
-    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'visibleInAppFilter']);
-    expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
+    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']);
     expect(columns.filter((column) => ['category', 'subcategory'].includes(column.dataField))
-      .every((column) => column.allowFiltering === false && column.type === 'campo')).toBeTrue();
+      .every((column) => column.allowFiltering === true && column.type === 'campo' && column.filterOperator === 'eq')).toBeTrue();
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
-    expect(filterable[1].lista?.options).toEqual([
+    expect(filterable[3].lista?.options).toEqual([
       { value: 'true', label: 'Sì' },
       { value: 'false', label: 'No' },
     ]);
@@ -150,6 +149,8 @@ describe('Affiliate products', () => {
       limit: AFFILIATE_PRODUCTS_PAGE_SIZE,
       cursor: 'cursor-2',
       affiliateProgramId: program.id,
+      category: 'Clothing',
+      subcategory: 'Shirts',
       visibleInApp: false,
     });
   });
