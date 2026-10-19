@@ -33,24 +33,21 @@ describe('FotoOutfitPage popup lifecycle', () => {
     await Promise.resolve();
   }
 
-  it('keeps the tag popup listener alive after functionalInputClick and does not resolve the tag promise', async () => {
+  it('does not close the tag popup on an unrelated functional input event', async () => {
     const { component, popup, output } = setup();
-    spyOn(component, 'openOutfitProducts').and.resolveTo();
-
     let settled = false;
     const modalPromise = component.openModal();
     modalPromise.then(() => settled = true);
     const guid = lastGuid(popup);
 
-    expect(output.observers.length).toBe(1);
-
     output.next({ guid, name: 'functionalInputClick', nomeCampo: 'product' });
     await flushPromise();
-
-    expect(component.openOutfitProducts).toHaveBeenCalledTimes(1);
     expect(settled).toBeFalse();
     expect(popup.destroyCurrentOpenPopUpByGuid).not.toHaveBeenCalled();
     expect(output.observers.length).toBe(1);
+
+    output.next({ guid, name: 'cancelForm' });
+    await expectAsync(modalPromise).toBeResolvedTo(false);
   });
 
   it('resolves submitForm for the matching tag popup and releases its listener', async () => {
@@ -109,39 +106,110 @@ describe('FotoOutfitPage popup lifecycle', () => {
     expect(output.observers.length).toBe(0);
   });
 
-  it('keeps nested product popup listener alive on selectProduct and releases it on stochiudendo', () => {
-    const { component, popup, output } = setup();
-
-    component.openOutfitProducts();
-    const guid = lastGuid(popup);
-
-    expect(output.observers.length).toBe(1);
-
-    output.next({ guid, name: 'selectProduct', data: { id: 'product-1' } });
-    expect(output.observers.length).toBe(1);
-
-    output.next({ guid, name: 'stochiudendo' });
-    expect(output.observers.length).toBe(0);
+  it('links pin selection and product card selection by index', () => {
+    const { component } = setup();
+    const stopped = jasmine.createSpy('stopPropagation');
+    component.selectTag(1, { stopPropagation: stopped } as unknown as Event);
+    expect(component.isTagSelected(1)).toBeTrue();
+    expect(component.isTagSelected(0)).toBeFalse();
+    expect(stopped).toHaveBeenCalled();
+    component.selectTag(0);
+    expect(component.isTagSelected(0)).toBeTrue();
   });
 
-  it('keeps simultaneous nested product popups isolated by guid', () => {
-    const { component, popup, output } = setup();
+  it('keeps normalized positions and handles missing positions without inventing pins', () => {
+    const { component } = setup();
+    const original = { id: 'p', name: 'Maglia', x: .3, y: .7, color: 'blu', outfitCategory: 'TOP' };
+    expect(component.hasPinPosition(original)).toBeTrue();
+    expect(component.pinPercent(original.y)).toBe(70);
+    expect(component.hasPinPosition({ ...original, x: 1.1 })).toBeFalse();
+  });
 
-    component.openOutfitProducts();
-    const guidA = lastGuid(popup);
-    component.openOutfitProducts();
-    const guidB = lastGuid(popup);
+  it('emits the remaining tags when one tag is removed', () => {
+    const { component } = setup();
+    const original = [
+      { id: 'p1', name: 'Maglia', x: .3, y: .4, color: 'blu', outfitCategory: 'TOP' },
+      { id: 'p2', name: 'Jeans', x: .4, y: .7, color: 'blu', outfitCategory: 'BOTTOM' }
+    ];
+    component.tags.set(original);
+    component.selectTag(0);
+    const emitted = jasmine.createSpy('tagChanged');
+    component.eventImageTags.subscribe(emitted);
 
-    expect(guidB).not.toBe(guidA);
-    expect(output.observers.length).toBe(2);
+    component.removeTagAt(0);
 
-    output.next({ guid: guidB, name: 'stochiudendo' });
-    expect(output.observers.length).toBe(1);
+    expect(component.tags().map(tag => tag.id)).toEqual(['p2']);
+    expect(component.selectedTagIndex).toBeNull();
+    expect(emitted).toHaveBeenCalledWith({ tags: [original[1]] });
+  });
 
-    output.next({ guid: guidA, name: 'selectProduct', data: { id: 'product-a' } });
-    expect(output.observers.length).toBe(1);
+  it('retains linked catalogProductId and pin position after a tag edit', async () => {
+    const { component } = setup();
+    const original = {
+      id: 'product1', catalogProductId: 'catalog1', name: 'Camicia',
+      x: .25, y: .4, color: 'azzurro', outfitCategory: 'TOP',
+      images: ['https://example.test/camicia.jpg']
+    };
+    component.tags.set([original]);
+    const emitted = jasmine.createSpy('tagChanged');
+    component.eventImageTags.subscribe(emitted);
+    spyOn(component, 'openModal').and.resolveTo({ name: 'Camicia celeste', prezzo: 50 });
 
-    output.next({ guid: guidA, name: 'stochiudendo' });
-    expect(output.observers.length).toBe(0);
+    await component.editTag(original);
+
+    expect(component.tags()[0]).toEqual(jasmine.objectContaining({
+      id: 'product1', catalogProductId: 'catalog1',
+      name: 'Camicia celeste', x: .25, y: .4, prezzo: 50
+    }));
+    expect(component.tags()[0]).not.toBe(original);
+    expect(emitted).toHaveBeenCalled();
+  });
+
+  it('appends a newly inserted tag without removing existing linked products', async () => {
+    const { component } = setup();
+    const first = { id: 'existing', name: 'Jeans', x: .5, y: .6, color: 'blu', outfitCategory: 'BOTTOM' };
+    component.tags.set([first]);
+    component.imageElement = {
+      nativeElement: {
+        getBoundingClientRect: () => ({ left: 10, top: 20, width: 200, height: 400 })
+      }
+    } as any;
+    spyOn(component, 'openModal').and.resolveTo({
+      id: 'new', name: 'Camicia', color: 'bianco', outfitCategory: 'TOP'
+    });
+    const emitted = jasmine.createSpy('tagChanged');
+    component.eventImageTags.subscribe(emitted);
+
+    await component.addTag({ clientX: 110, clientY: 120 });
+
+    expect(component.tags().map(tag => tag.id)).toEqual(['existing', 'new']);
+    expect(component.tags()[1].x).toBe(.5);
+    expect(component.tags()[1].y).toBe(.25);
+    expect(emitted).toHaveBeenCalled();
+  });
+
+  it('renders numbered pins next to selectable product cards', () => {
+    const { popup } = setup();
+    const fixture = TestBed.createComponent(FotoOutfitPage);
+    const component = fixture.componentInstance;
+    component.image.set('https://example.test/outfit.jpg');
+    component.tags.set([
+      { id: 'p1', name: 'Camicia', x: .4, y: .3, color: 'azzurro', outfitCategory: 'TOP' },
+      { id: 'p2', name: 'Scarpe', x: .6, y: .85, color: 'marrone', outfitCategory: 'SHOES' }
+    ]);
+    fixture.detectChanges();
+    const root: HTMLElement = fixture.nativeElement;
+    const pins = root.querySelectorAll<HTMLButtonElement>('button.tag-pin');
+    const cards = root.querySelectorAll<HTMLButtonElement>('button.product-card__select');
+    expect(pins.length).toBe(2);
+    expect(cards.length).toBe(2);
+    pins[1].click();
+    fixture.detectChanges();
+    expect(component.selectedTagIndex).toBe(1);
+    expect(root.querySelectorAll('.product-card--selected').length).toBe(1);
+    cards[0].click();
+    fixture.detectChanges();
+    expect(component.selectedTagIndex).toBe(0);
+    expect(root.querySelectorAll('.tag-pin--selected').length).toBe(1);
   });
 });
