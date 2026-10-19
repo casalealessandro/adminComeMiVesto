@@ -240,10 +240,6 @@ export class OutfitsComponent implements OnDestroy {
     if (name === 'addButton') await this.router.navigate(['/outfit-detail']);
   }
 
-  gridEvent(event: any): void {
-    // Deletion uses the dedicated action button, not the DataGrid local row removal.
-    // Elimina viene gestito esclusivamente dall'azione personalizzata nel menu della riga.
-  }
 
   statusGridEvent(event: any): void {
     const item = event.rowData as outfit;
