@@ -119,6 +119,40 @@ describe('AffiliateCatalogAuditComponent', () => {
     expect(component.hasSeasonDistribution).toBeFalse();
   });
 
+
+  it('uses the selected snapshot scope for style distribution, including multiple styles and legacy reports', () => {
+    fixture.detectChanges();
+    expect(component.hasStyleDistribution).toBeFalse();
+    expect(component.styleDistribution).toEqual([]);
+
+    const selected: CatalogAnalytics = JSON.parse(JSON.stringify(analytics));
+    selected.total.usable.styleCounts = { BUSINESS: 1, CASUAL: 2 };
+    selected.total.usable.withStyles = 2;
+    selected.programs[0].usable.styleCounts = { SPORTY: 3 };
+    selected.feeds[0].usable.styleCounts = { SMART_CASUAL: 1, CASUAL: 2 };
+    selected.feeds[0].all.styleCounts = { ELEGANT: 3 };
+    component.overview = { job: null,
+      snapshot: { version: 2, generatedAt: 1000, analytics: selected } as any };
+
+    expect(component.hasStyleDistribution).toBeTrue();
+    expect(component.styleDistribution.map(({ key, count }) => [key, count]))
+      .toEqual([['CASUAL', 2], ['BUSINESS', 1]]);
+    fixture.detectChanges();
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Distribuzione per stile');
+    expect(text).toContain('Senza stile riconosciuto: 1');
+
+    component.setProgram('a');
+    expect(component.styleDistribution.map(({ key }) => key)).toEqual(['SPORTY']);
+    component.setFeed('f1');
+    expect(component.styleDistribution.map(({ key }) => key)).toEqual(['CASUAL', 'SMART_CASUAL']);
+    component.setScope('all');
+    expect(component.styleDistribution.map(({ key }) => key)).toEqual(['ELEGANT']);
+    component.setFeed('f2');
+    expect(component.hasStyleDistribution).toBeFalse();
+    expect(component.styleDistribution).toEqual([]);
+  });
+
   it('starts an explicitly requested background refresh without OpenAI', () => {
     service.refreshFashionOverview.and.returnValue(of({ runId: 'r1', status: 'QUEUED',
       scanned: 0, startedAt: 1, updatedAt: 1, completedAt: null, lastError: null }));

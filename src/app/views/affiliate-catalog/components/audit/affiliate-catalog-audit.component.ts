@@ -161,6 +161,14 @@ export class AffiliateCatalogAuditComponent implements OnInit {
     return this.counts.seasonCounts !== undefined;
   }
 
+  get hasStyleDistribution(): boolean {
+    return this.counts.styleCounts !== undefined;
+  }
+
+  get styleDistribution(): FashionBreakdownItem[] {
+    return this.fashionItems(this.counts, 'styleCounts');
+  }
+
   seasonCount(season: CatalogSeason): number {
     return this.counts.seasonCounts?.[season] ?? 0;
   }
