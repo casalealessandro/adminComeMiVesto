@@ -121,7 +121,7 @@ describe('AffiliateCatalogAuditComponent', () => {
 
 
   it('uses the selected snapshot scope for style distribution, including multiple styles and legacy reports', () => {
-    component.refresh();
+    fixture.detectChanges();
     expect(component.hasStyleDistribution).toBeFalse();
     expect(component.styleDistribution).toEqual([]);
 
