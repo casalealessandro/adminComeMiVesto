@@ -108,7 +108,7 @@ export class FotoOutfitPage implements OnInit {
   }
 
   async captureImage(event: Event) {
-    if (this.tags.length > 0 && typeof this.image !== 'undefined') {
+    if (this.tags().length > 0 && this.image()) {
       let respo = await this.confirmChangeFoto();
       if (!respo) {
         return;
@@ -203,22 +203,19 @@ export class FotoOutfitPage implements OnInit {
 
 
   async confirmChangeFoto(): Promise<boolean> {
-    return new Promise(async () => {
-      return confirm("Procedendo perderai anche tutti i tag associati e la priorità acquisita nell'elenco", "Attenzione!", (resp => {
-        if (resp) {
-
-          this.tags = signal([]);
-          this.image = signal('');
-
-          let eventtoEmit = {
-            tags: this.tags
+    return new Promise(resolve => {
+      confirm(
+        "Cambiando la foto perderai tutti i tag già associati. Vuoi continuare?",
+        "Attenzione!",
+        yes => {
+          if (yes) {
+            this.tags.set([]);
+            this.selectedTagIndex = null;
+            this.eventImageTags.emit({ tags: [] });
           }
-          this.eventImageTags.emit(eventtoEmit);
+          resolve(yes);
         }
-      }))
-
-
-
+      );
     });
   }
 
@@ -239,8 +236,11 @@ export class FotoOutfitPage implements OnInit {
       prezzo: response.prezzo ?? tag.prezzo,
       outfitCategory: response.outfitCategory ?? tag.outfitCategory,
       outfitSubCategory: response.outfitSubCategory ?? tag.outfitSubCategory,
-      ...(Array.isArray(response.images) ? { images: response.images } : {}),
-      ...(typeof response.imageUrl === 'string' ? { imageUrl: response.imageUrl } : {}),
+      ...(Array.isArray(response.images ?? response.Images)
+        ? { images: response.images ?? response.Images } : {}),
+      ...(typeof response.imageUrl === 'string' ? { imageUrl: response.imageUrl }
+        : typeof response.images === 'string' ? { imageUrl: response.images }
+        : typeof response.Images === 'string' ? { imageUrl: response.Images } : {}),
     };
     this.tags.update(items => items.map((item, i) => i === index ? updated : item));
     this.eventImageTags.emit({ tags: this.tags() });
