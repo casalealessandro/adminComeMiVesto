@@ -10,7 +10,7 @@ describe('FotoOutfitPage popup lifecycle', () => {
     const output = new Subject<any>();
     const popup = jasmine.createSpyObj<PopUpService>(
       'PopUpService',
-      ['setNewPopUp', 'destroyCurrentOpenPopUpByGuid'],
+      ['setNewPopUp', 'destroyCurrentOpenPopUpByGuid', 'getOutputComponent'],
       { outputComponent: output }
     );
 
@@ -186,6 +186,56 @@ describe('FotoOutfitPage popup lifecycle', () => {
     expect(component.tags()[1].x).toBe(.5);
     expect(component.tags()[1].y).toBe(.25);
     expect(emitted).toHaveBeenCalled();
+  });
+
+  it('keeps legacy tags in manual edit mode rather than opening the catalog', () => {
+    const { component, popup } = setup();
+    component.gender = 'D';
+    component.enableCatalogReplacements = true;
+    const manual = { id:'manual', name:'Blazer', x:.3,y:.4,color:'N',outfitCategory:'JACKETS' };
+    expect(component.canReplaceTag(manual)).toBeFalse();
+    component.tags.set([manual]);
+    component.showReplacements(0);
+    expect(popup.setNewPopUp).not.toHaveBeenCalled();
+  });
+
+  it('previews selected replacement without mutating existing tags or the image', async () => {
+    const { component, popup } = setup();
+    const tag = { id:'old', catalogProductId:'old', name:'Top nero', x:.3,y:.4,color:'N',outfitCategory:'TOP' };
+    const product: any = {
+      id:'new', name:'Top bianco', brand:'Marca', category:'TOP', genderTargets:['D'],
+      images:['https://example.test/new.jpg'], active:true, enabledForApp:true
+    };
+    component.enableCatalogReplacements = true;
+    component.gender = 'D';
+    component.image.set('https://example.test/look.jpg');
+    component.tags.set([tag]);
+    const emitted = jasmine.createSpy('replacements');
+    component.eventProductReplacements.subscribe(emitted);
+    popup.getOutputComponent.and.resolveTo({name:'selected',product});
+    component.showReplacements(0);
+    await flushPromise();
+    await flushPromise();
+    expect(component.shownProductImage(tag,0)).toBe('https://example.test/new.jpg');
+    expect(component.tags()[0]).toBe(tag);
+    expect(component.image()).toBe('https://example.test/look.jpg');
+    expect(emitted).toHaveBeenCalledWith([
+      {index:0,expectedId:'old',catalogProductId:'new'}
+    ]);
+    expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalled();
+  });
+
+  it('keeps remaining replacement selection aligned after another tag is deleted', () => {
+    const { component } = setup();
+    const first = {id:'one',catalogProductId:'one',name:'Top',x:.4,y:.3,color:'N',outfitCategory:'TOP'};
+    const second = {id:'two',catalogProductId:'two',name:'Jeans',x:.5,y:.6,color:'B',outfitCategory:'BOTTOM'};
+    component.tags.set([first,second]);
+    component.selectedReplacements.set(1,{id:'new',images:[]} as any);
+    const emitted = jasmine.createSpy('replacements');
+    component.eventProductReplacements.subscribe(emitted);
+    component.removeTagAt(0);
+    expect(component.selectedReplacements.has(0)).toBeTrue();
+    expect(emitted).toHaveBeenCalledWith([{index:0,expectedId:'two',catalogProductId:'new'}]);
   });
 
   it('renders numbered pins next to selectable product cards', () => {
