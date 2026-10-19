@@ -44,6 +44,11 @@
       <span class="product-count">{{ tags().length }}</span>
     </header>
     <p class="panel-help">Seleziona un pin o una scheda per evidenziare il capo corrispondente.</p>
+    <p *ngIf="selectedReplacements.size" class="alert alert-warning py-2" role="status">
+      <strong>Attenzione:</strong> un prodotto sostituito potrebbe non corrispondere alla
+      fotografia. L'immagine non sarà modificata automaticamente.
+      Prezzi e link verranno confermati al salvataggio.
+    </p>
     <p *ngIf="!tags().length" class="empty-products">Nessun prodotto collegato a questa foto.</p>
 
     <div class="product-list" *ngIf="tags().length">
@@ -54,7 +59,7 @@
           [attr.aria-label]="'Seleziona prodotto ' + (i + 1) + ': ' + tag.name"
           (click)="selectTag(i)">
           <span class="product-card__thumbnail">
-            <img *ngIf="tagImage(tag) as photo; else noProductImage"
+            <img *ngIf="shownProductImage(tag, i) as photo; else noProductImage"
               [src]="photo" [alt]="tag.name" loading="lazy">
             <ng-template #noProductImage>
               <span class="mdi mdi-image-off-outline" aria-hidden="true"></span>
@@ -65,18 +70,23 @@
               <span class="product-card__number">{{ i + 1 }}</span>
               {{ tag.outfitCategory || 'Capo outfit' }}
             </span>
-            <strong>{{ tag.brend || 'Marca non indicata' }}</strong>
-            <span class="product-card__name">{{ tag.name }}</span>
-            <span *ngIf="tag.prezzo !== undefined && tag.prezzo !== null"
+            <strong>{{ selectedReplacements.get(i)?.brand || tag.brend || 'Marca non indicata' }}</strong>
+            <span class="product-card__name">{{ selectedReplacements.get(i)?.name || tag.name }}</span>
+            <small *ngIf="selectedReplacements.has(i)" class="text-warning-emphasis">
+              Nuovo prodotto · prezzo e link verificati al salvataggio
+            </small>
+            <span *ngIf="!selectedReplacements.has(i) && tag.prezzo !== undefined && tag.prezzo !== null"
               class="product-card__price">{{ tag.prezzo | currency:'EUR':'symbol':'1.2-2' }}</span>
           </span>
         </button>
         <div class="product-card__actions">
+          <button *ngIf="canReplaceTag(tag)" type="button" class="btn btn-sm btn-primary"
+            [disabled]="replacingIndex !== null" (click)="showReplacements(i)">Sostituisci</button>
           <button type="button" class="btn btn-sm btn-outline-primary"
             [disabled]="!enableSetTagsImage" (click)="editTag(tag)">Modifica tag</button>
           <button type="button" class="btn btn-sm btn-outline-danger"
             [disabled]="!enableSetTagsImage" (click)="removeTagAt(i)">Rimuovi</button>
-          <a *ngIf="tagProductUrl(tag) as url" [href]="url"
+          <a *ngIf="!selectedReplacements.has(i) && tagProductUrl(tag) as url" [href]="url"
             target="_blank" rel="noopener noreferrer"
             class="btn btn-sm btn-outline-secondary">Apri prodotto</a>
         </div>

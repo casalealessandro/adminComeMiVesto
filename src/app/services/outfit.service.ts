@@ -6,6 +6,12 @@ import { lastValueFrom, map, timeout } from 'rxjs';
 import { UserProfile } from '../interface/app.interface';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 
+export interface CatalogReplacementRequest {
+  index: number;
+  expectedId: string;
+  catalogProductId: string;
+}
+
 export interface outfit {
   userName: string;
   genderLabel?: string;
@@ -15,6 +21,10 @@ export interface outfit {
   title: string;
   description?: string;
   imageUrl: string;
+  imageMayNotMatchProducts?: boolean;
+  updatedAt?: number;
+  catalogReplacements?: CatalogReplacementRequest[];
+  expectedUpdatedAt?: number;
   tags: Tag[];
   gender: string; // Assumendo che i valori possibili siano solo "man" o "woman"
   style: string; // Assumendo alcuni stili possibili
@@ -49,6 +59,8 @@ export interface outfitCategories {
 
 export interface Tag {
   id: any;
+  catalogProductId?: string;
+  price?: number;
   name: string;
   x: number;
   y: number;
@@ -151,7 +163,7 @@ export class OutfitsService {
   }
 
   private updateDto(data: any): any {
-    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'occasion', 'color', 'outfitCategory', 'outfitSubCategory', 'status'];
+    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'occasion', 'color', 'outfitCategory', 'outfitSubCategory', 'status', 'catalogReplacements', 'expectedUpdatedAt'];
     return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]));
   }
 

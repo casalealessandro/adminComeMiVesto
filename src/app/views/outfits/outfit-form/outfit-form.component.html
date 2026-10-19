@@ -24,10 +24,19 @@
 <app-foto-outfit
 [image]="imageUrl"
 [tags]="tags"
+[gender]="outfitData()?.gender"
+[enableCatalogReplacements]="!!outfitId"
+(eventProductReplacements)="setCatalogReplacements($event)"
 (eventImageTags)="setTags($event)"
 >
 
 </app-foto-outfit>
+
+<div *ngIf="outfitData()?.imageMayNotMatchProducts || catalogReplacements.length"
+  class="alert alert-warning mt-3" role="status">
+  <strong>Attenzione:</strong> uno o più prodotti collegati potrebbero non corrispondere
+  alla fotografia. L'immagine originale rimane invariata: verifica la coerenza del look.
+</div>
 
 <app-dynamic-form
 *ngIf="formReady()"

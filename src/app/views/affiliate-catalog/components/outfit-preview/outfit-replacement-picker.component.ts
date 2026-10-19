@@ -108,7 +108,7 @@ export const buildReplacementPickerColumns = (
         [tableHeight]="480"
         (emittendSelectionRow)="selectRow($event)">
       </app-data-grid>
-      <p class="small text-muted">Usa il filtro Nome e i menu nelle intestazioni della griglia per cercare nel catalogo. Clicca una riga per scegliere il nuovo prodotto. La sostituzione viene salvata soltanto quando confermi la bozza.</p>
+      <p class="small text-muted">Usa il filtro Nome e i menu nelle intestazioni della griglia per cercare nel catalogo. Clicca una riga per scegliere il nuovo prodotto. La sostituzione viene salvata soltanto quando confermi le modifiche.</p>
       <button type="button" class="btn btn-outline-secondary" (click)="result.emit({ name: 'cancelled' })">Annulla</button>
     </section>
   `,

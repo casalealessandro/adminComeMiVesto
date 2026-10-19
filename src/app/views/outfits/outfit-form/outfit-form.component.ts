@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from '../../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
-import { outfit, OutfitsService, Tag } from '../../../services/outfit.service';
+import { outfit, OutfitsService, Tag, CatalogReplacementRequest } from '../../../services/outfit.service';
 import { FotoOutfitPage } from '../foto-outfit/foto-outfit.page';
 import { UserProfile } from '../../../interface/app.interface';
 import { UserService } from '../../../services/user.service';
@@ -70,6 +70,7 @@ export class OutfitFormComponent {
   imageUrl = signal('');
   private originalImageUrl = '';
   tags = signal<Tag[]>([]);
+  catalogReplacements: CatalogReplacementRequest[] = [];
   targetUsers: UserProfile[] = [];
   targetUserId = '';
 
@@ -102,6 +103,7 @@ export class OutfitFormComponent {
       this.imageUrl.set('');
       this.originalImageUrl = '';
       this.tags.set([]);
+      this.catalogReplacements = [];
       this.outfitTitle = id ? 'Modifica outfit' : 'Nuovo outfit';
       if (!id) {
         this.formReady.set(true);
@@ -129,6 +131,10 @@ export class OutfitFormComponent {
     if (Array.isArray(event?.tags)) this.tags.set([...event.tags]);
   }
 
+  setCatalogReplacements(selections: CatalogReplacementRequest[]): void {
+    this.catalogReplacements = selections;
+  }
+
   async submitFormOutfit(event: { name: string; formData?: Record<string, unknown> }): Promise<void> {
     if (event.name === 'cancelForm') {
       await this.router.navigate(['/outfit-list']);
@@ -138,6 +144,12 @@ export class OutfitFormComponent {
 
     const data = event.formData || {};
     const payload = buildOutfitFormPayload(data, this.imageUrl(), this.tags(), this.originalImageUrl);
+    if (this.outfitId && this.catalogReplacements.length) {
+      payload.catalogReplacements = [...this.catalogReplacements];
+      if (typeof this.outfitData()?.updatedAt === 'number') {
+        payload.expectedUpdatedAt = this.outfitData()!.updatedAt;
+      }
+    }
     this.saving.set(true);
     this.error.set('');
     try {
