@@ -72,8 +72,8 @@ describe('Affiliate products', () => {
     lastError: null,
   };
 
-  it('supports exact-match remote filters for category and subcategory without option scans', () => {
-    const columns = buildAffiliateProductColumns([program], false)[0].data;
+  it('shows only the subcategory dropdown and keeps the remaining existing grid filters', () => {
+    const columns = buildAffiliateProductColumns([program], false, [{ value: 'Shirts', label: 'Camicie' }])[0].data;
     const actions = columns.filter((column) => column.type === 'campoButton');
     const filterable = columns.filter((column) => column.allowFiltering === true);
 
@@ -83,11 +83,12 @@ describe('Affiliate products', () => {
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
     expect(columns.some((column) => column.dataField === 'imagePreview' && column.type === 'campoImg')).toBeTrue();
     expect(columns.some((column) => column.dataField === 'sourceFeedCount')).toBeFalse();
-    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']);
-    expect(columns.filter((column) => ['category', 'subcategory'].includes(column.dataField))
-      .every((column) => column.allowFiltering === true && column.type === 'campo' && column.filterOperator === 'eq')).toBeTrue();
+    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'subcategory', 'visibleInAppFilter']);
+    expect(columns.find(column => column.dataField === 'category')?.allowFiltering).toBeFalse();
+    expect(columns.find(column => column.dataField === 'subcategory')?.type).toBe('campoLista');
+    expect(filterable[1].lista?.options).toEqual([{ value: 'Shirts', label: 'Camicie' }]);
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
-    expect(filterable[3].lista?.options).toEqual([
+    expect(filterable[2].lista?.options).toEqual([
       { value: 'true', label: 'Sì' },
       { value: 'false', label: 'No' },
     ]);
