@@ -5,6 +5,9 @@ import { PopUpService } from '../../../services/popup.service';
 import { CommonModule } from '@angular/common';
 import { Tag } from '../../../services/outfit.service';
 import { FormsModule } from '@angular/forms';
+import { CatalogProduct } from '../../affiliate-catalog/models/affiliate-catalog.models';
+import { OutfitReplacementPickerResult } from '../../affiliate-catalog/components/outfit-preview/outfit-replacement-picker.component';
+import { CatalogReplacementRequest } from '../../../services/outfit.service';
 
 
 interface tagStyle {
@@ -35,6 +38,11 @@ export class FotoOutfitPage implements OnInit {
   @Input() showTag = signal<boolean>(true);
   @Input() tags = signal<Tag[]>([]);
   @Input() enableSetTagsImage: boolean = true
+  @Input() enableCatalogReplacements = false;
+  @Input() gender?: string;
+  @Output() eventProductReplacements = new EventEmitter<CatalogReplacementRequest[]>();
+  readonly selectedReplacements = new Map<number, CatalogProduct>();
+  replacingIndex: number | null = null;
 
 
   @Input() enableNewImagecaptured = signal<boolean>(true);
@@ -131,6 +139,8 @@ export class FotoOutfitPage implements OnInit {
             if (clearPreviousTags) {
               this.tags.set([]);
               this.selectedTagIndex = null;
+              this.selectedReplacements.clear();
+              this.emitReplacements();
               this.eventImageTags.emit({ tags: [] });
             }
             this.image.set(resizedImage.dataUrl);
@@ -367,6 +377,49 @@ if (respo.name === 'submitForm') {
 
   }
 
+  /** Reuse the AI draft product selector, keeping the outfit unchanged until Save. */
+  showReplacements(index: number): void {
+    const tag = this.tags()[index];
+    if (!this.canReplaceTag(tag) || this.replacingIndex !== null) return;
+    const gender = this.gender as 'U' | 'D';
+    const guid = `outfit-replacement-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    this.replacingIndex = index;
+    this.propertiesModal.setNewPopUp(guid, 'OutfitReplacementPickerComponent', {
+      category: tag.outfitCategory,
+      gender,
+      productIdsInOutfit: this.tags().map((item, i) =>
+        this.selectedReplacements.get(i)?.id || item.catalogProductId || String(item.id)),
+    }, 1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true);
+
+    void this.propertiesModal.getOutputComponent(guid).then((result: OutfitReplacementPickerResult) => {
+      this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+      if (result?.name !== 'selected' || !result.product || this.tags()[index] !== tag) return;
+      const product = result.product;
+      if (product.category !== tag.outfitCategory || !product.genderTargets?.includes(gender) ||
+          product.active !== true || product.enabledForApp === false) return;
+      this.selectedReplacements.set(index, product);
+      this.selectedTagIndex = index;
+      this.emitReplacements();
+    }).finally(() => { this.replacingIndex = null; });
+  }
+
+  canReplaceTag(tag: Tag | undefined): boolean {
+    return !!tag && this.enableSetTagsImage && this.enableCatalogReplacements &&
+      (this.gender === 'U' || this.gender === 'D') &&
+      !!tag.catalogProductId && !!tag.outfitCategory;
+  }
+
+  shownProductImage(tag: Tag, index: number): string {
+    return this.selectedReplacements.get(index)?.images?.[0] || this.tagImage(tag);
+  }
+
+  emitReplacements(): void {
+    this.eventProductReplacements.emit([...this.selectedReplacements.entries()].flatMap(([index, product]) => {
+      const originalId = this.tags()[index]?.catalogProductId;
+      return originalId ? [{ index, expectedId: originalId, catalogProductId: product.id }] : [];
+    }));
+  }
+
   /** The photo pins and product cards select the same existing tag. */
   selectTag(index: number, event?: Event): void {
     event?.stopPropagation();
@@ -406,7 +459,14 @@ if (respo.name === 'submitForm') {
   removeTagAt(index: number): void {
     if (index < 0 || index >= this.tags().length) return;
     this.tags.update(items => items.filter((_item, i) => i !== index));
+    const shifted = new Map<number, CatalogProduct>();
+    this.selectedReplacements.forEach((product, position) => {
+      if (position !== index) shifted.set(position > index ? position - 1 : position, product);
+    });
+    this.selectedReplacements.clear();
+    shifted.forEach((product, position) => this.selectedReplacements.set(position, product));
     this.selectedTagIndex = null;
+    this.emitReplacements();
     this.eventImageTags.emit({ tags: this.tags() });
   }
 
