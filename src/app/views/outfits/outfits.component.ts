@@ -44,7 +44,7 @@ export class OutfitsComponent {
   total = 0;
   subtitle = `Elenco outfit creati nell'app`;
   readonly rowActions: NonNullable<import('../../interface/app.interface').ColData['editorbuttons']> = [
-    { id: 'edit', nameEvent: 'onEditEvent', text: 'Modifica', icon: 'mdi mdi-pencil-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' },
+    { id: 'edit', nameEvent: 'editOutfit', text: 'Modifica', icon: 'mdi mdi-pencil-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' },
     { id: 'delete', nameEvent: 'deleteOutfit', text: 'Elimina', icon: 'mdi mdi-trash-can-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' }
   ];
   colOutfitsGrid: Colonne[] = [{ itemType: 'group', groupDataField: '', data: [
@@ -118,7 +118,16 @@ export class OutfitsComponent {
     this.error = '';
     await this.grid.renderGrid();
   }
-  editOutfit(event: any): void { const value = event?.data || event; if (event?.cancel !== undefined) event.cancel = true; this.router.navigate(['/outfit-detail', value.id]); }
+  editOutfit(event: any): void {
+    const item = event?.rowData ?? event?.data ?? event;
+    const id = item?.id;
+    if (id === null || id === undefined || String(id).trim() === '') {
+      this.error = 'Impossibile aprire il dettaglio: ID outfit mancante.';
+      return;
+    }
+    if (event?.cancel !== undefined) event.cancel = true;
+    void this.router.navigate(['/outfit-detail', String(id)]);
+  }
   isBusy(item: outfit): boolean { return this.busyIds.has(String(item.id)); }
 
   async updateStatus(item: outfit, status: outfit['status']): Promise<void> {
@@ -187,6 +196,7 @@ export class OutfitsComponent {
   statusGridEvent(event: any): void {
     const item = event.rowData as outfit;
     if (!item || this.isBusy(item)) return;
+    if (event.name === 'editOutfit') this.editOutfit(item);
     if (event.name === 'approve') void this.updateStatus(item, 'approved');
     if (event.name === 'reject') void this.updateStatus(item, 'rifiutato');
     if (event.name === 'toggleSuspend') this.toggleSuspension(item);
