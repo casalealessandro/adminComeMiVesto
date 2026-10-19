@@ -52,7 +52,7 @@ export class OutfitsComponent {
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'title', colWidth:'260', colCaption:'Titolo', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, dataField:'userName', colWidth:'180', colCaption:'Creator', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'genderLabel', colWidth:'100', colCaption:'Genere', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'100', colCaption:'Stile', edit:false, groupDataField:undefined },
+    { type:'campoLista', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'130', colCaption:'Stile', edit:false, groupDataField:undefined, lista: { multiple:false, remote:false, displayExp:'value', valueExp:'id', options:[], parent:null } },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'seasonLabel', colWidth:'110', colCaption:'Stagione', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'occasionLabel', colWidth:'140', colCaption:'Occasione', edit:false, groupDataField:undefined },
     { type:'campoNumber', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'likes', colWidth:'75', colCaption:'Like', edit:false, groupDataField:undefined },
@@ -64,7 +64,18 @@ export class OutfitsComponent {
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'75', colCaption:'Visibilità', edit:false, groupDataField:undefined, button:{ text:'', name:'toggleSuspend', event:'toggleSuspend', icon:'mdi mdi-pause-circle-outline', hint:'Sospendi / Riattiva' } }
   ] }];
 
-  ngOnInit(): void { this.loadCreators(); void this.loadOccasionLabels(); }
+  ngOnInit(): void { this.loadCreators(); void this.loadOccasionLabels(); void this.loadStyleOptions(); }
+  private async loadStyleOptions(): Promise<void> {
+    try {
+      const response = await this.formService.getData('outfitStyles');
+      const raw: Array<{id:string; value:string}> = Array.isArray(response) ? response : response?.data ?? [];
+      const options = raw.filter(option => option?.id && option?.value);
+      const original = this.colOutfitsGrid[0].data.find(column => column.dataField === 'style');
+      if (original?.lista) original.lista.options = options;
+      const rendered = this.grid?.colsHeader.find(column => column.dataField === 'style');
+      if (rendered?.customizedOptions) rendered.customizedOptions.options = options;
+    } catch { /* Keep the select and allow a later reload if the taxonomy is unavailable. */ }
+  }
   private async loadOccasionLabels(): Promise<void> {
     try {
       const response = await this.formService.getData('outfitOccasions');
