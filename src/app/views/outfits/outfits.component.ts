@@ -44,7 +44,7 @@ export class OutfitsComponent {
   total = 0;
   subtitle = `Elenco outfit creati nell'app`;
   readonly rowActions: NonNullable<import('../../interface/app.interface').ColData['editorbuttons']> = [
-    { id: 'edit', nameEvent: 'onEditEvent', text: 'Modifica', icon: 'mdi mdi-pencil-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' },
+    { id: 'edit', nameEvent: 'editOutfit', text: 'Modifica', icon: 'mdi mdi-pencil-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' },
     { id: 'delete', nameEvent: 'deleteOutfit', text: 'Elimina', icon: 'mdi mdi-trash-can-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' }
   ];
   colOutfitsGrid: Colonne[] = [{ itemType: 'group', groupDataField: '', data: [
@@ -52,7 +52,7 @@ export class OutfitsComponent {
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'title', colWidth:'260', colCaption:'Titolo', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, dataField:'userName', colWidth:'180', colCaption:'Creator', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'genderLabel', colWidth:'100', colCaption:'Genere', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'100', colCaption:'Stile', edit:false, groupDataField:undefined },
+    { type:'campoLista', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'130', colCaption:'Stile', edit:false, groupDataField:undefined, lista: { multiple:false, remote:false, displayExp:'value', valueExp:'id', options:[], parent:null } },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'seasonLabel', colWidth:'110', colCaption:'Stagione', edit:false, groupDataField:undefined },
     { type:'campo', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'occasionLabel', colWidth:'140', colCaption:'Occasione', edit:false, groupDataField:undefined },
     { type:'campoNumber', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'likes', colWidth:'75', colCaption:'Like', edit:false, groupDataField:undefined },
@@ -64,7 +64,18 @@ export class OutfitsComponent {
     { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'75', colCaption:'Visibilità', edit:false, groupDataField:undefined, button:{ text:'', name:'toggleSuspend', event:'toggleSuspend', icon:'mdi mdi-pause-circle-outline', hint:'Sospendi / Riattiva' } }
   ] }];
 
-  ngOnInit(): void { this.loadCreators(); void this.loadOccasionLabels(); }
+  ngOnInit(): void { this.loadCreators(); void this.loadOccasionLabels(); void this.loadStyleOptions(); }
+  private async loadStyleOptions(): Promise<void> {
+    try {
+      const response = await this.formService.getData('outfitStyles');
+      const raw: Array<{id:string; value:string}> = Array.isArray(response) ? response : response?.data ?? [];
+      const options = raw.filter(option => option?.id && option?.value);
+      const original = this.colOutfitsGrid[0].data.find(column => column.dataField === 'style');
+      if (original?.lista) original.lista.options = options;
+      const rendered = this.grid?.colsHeader.find(column => column.dataField === 'style');
+      if (rendered?.customizedOptions) rendered.customizedOptions.options = options;
+    } catch { /* Keep the select and allow a later reload if the taxonomy is unavailable. */ }
+  }
   private async loadOccasionLabels(): Promise<void> {
     try {
       const response = await this.formService.getData('outfitOccasions');
@@ -118,7 +129,16 @@ export class OutfitsComponent {
     this.error = '';
     await this.grid.renderGrid();
   }
-  editOutfit(event: any): void { const value = event?.data || event; if (event?.cancel !== undefined) event.cancel = true; this.router.navigate(['/outfit-detail', value.id]); }
+  editOutfit(event: any): void {
+    const item = event?.rowData ?? event?.data ?? event;
+    const id = item?.id;
+    if (id === null || id === undefined || String(id).trim() === '') {
+      this.error = 'Impossibile aprire il dettaglio: ID outfit mancante.';
+      return;
+    }
+    if (event?.cancel !== undefined) event.cancel = true;
+    void this.router.navigate(['/outfit-detail', String(id)]);
+  }
   isBusy(item: outfit): boolean { return this.busyIds.has(String(item.id)); }
 
   async updateStatus(item: outfit, status: outfit['status']): Promise<void> {
@@ -187,6 +207,7 @@ export class OutfitsComponent {
   statusGridEvent(event: any): void {
     const item = event.rowData as outfit;
     if (!item || this.isBusy(item)) return;
+    if (event.name === 'editOutfit') this.editOutfit(item);
     if (event.name === 'approve') void this.updateStatus(item, 'approved');
     if (event.name === 'reject') void this.updateStatus(item, 'rifiutato');
     if (event.name === 'toggleSuspend') this.toggleSuspension(item);
