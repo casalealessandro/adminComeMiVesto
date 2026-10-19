@@ -1,47 +1,86 @@
-<div #imageContainer class="image-container">
-  <!-- Loader che viene mostrato durante il caricamento dell'immagine -->
-  <span *ngIf="imageLoading()" ></span>
+<section class="outfit-photo-editor" aria-label="Editor visivo outfit">
+  <div class="photo-panel">
+    <header class="panel-heading">
+      <h3>Foto outfit</h3>
+      <button *ngIf="tags().length" class="btn btn-sm btn-outline-secondary"
+        type="button" (click)="toggleTags()">
+        {{ showTag() ? 'Nascondi pin' : 'Mostra pin' }}
+      </button>
+    </header>
 
-  <img *ngIf="image" #imageElement [src]="image()"  class="outfit-pin-image"  [ngClass]="{'darken': showTag()}"
-
-    (click)="addTag($event)" />
- 
-  
-  <ng-container *ngIf="showTag()">
-    <div *ngFor="let tag of tags()" class="tag" [ngStyle]="tagStyle[tag.id]" (click)="editTag(tag)">
-
-      <div class="card-tag-content">
-        
-          <div class="item-title">{{ tag.name  }}</div>
-          <div class="item-brend">{{ tag.brend }}</div>
-          <div class="item-price">{{ tag.prezzo }}</div>
-       
+    <div #imageContainer class="image-container">
+      <div *ngIf="image(); else emptyPhoto" class="image-stage">
+        <img #imageElement class="outfit-pin-image" [src]="image()" alt="Foto dell'outfit"
+          (load)="onImageLoad($event)" (click)="addTag($event)" />
+        <ng-container *ngIf="showTag()">
+          <ng-container *ngFor="let tag of tags(); let i = index">
+            <button *ngIf="hasPinPosition(tag)" type="button" class="tag-pin"
+              [class.tag-pin--selected]="isTagSelected(i)"
+              [style.left.%]="pinPercent(tag.x)" [style.top.%]="pinPercent(tag.y)"
+              [attr.aria-label]="'Seleziona pin ' + (i + 1) + ': ' + tag.name"
+              [attr.aria-pressed]="isTagSelected(i)"
+              [title]="tag.name"
+              (click)="selectTag(i, $event)">{{ i + 1 }}</button>
+          </ng-container>
+        </ng-container>
       </div>
-
+      <ng-template #emptyPhoto>
+        <div class="image-placeholder">Nessuna immagine selezionata</div>
+      </ng-template>
     </div>
-  </ng-container>
-  <input #fileInput type="file" (change)="captureImage($event)" hidden name="file" accept="image/jpeg,image/png,image/gif">
-  <button class="btn button tag-toggle-button" *ngIf="tags().length>0" (click)="toggleTags()" id="toggle-button"
-    [ngStyle]="tagToggleButton" >
-    <i class="pricetags-outline"></i>
-    {{ showTag() ? 'Nascondi Tags' : 'Mostra Tags' }}
 
-  </button>
-  <button *ngIf="enableNewImagecaptured"  class="btn button select-photo" (click)="chooseFile()">
+    <input #fileInput type="file" (change)="captureImage($event)" hidden name="file"
+      accept="image/jpeg,image/png,image/gif">
+    <div class="photo-actions">
+      <button *ngIf="enableNewImagecaptured()" type="button" class="btn btn-sm btn-outline-primary"
+        (click)="chooseFile()">Seleziona foto</button>
+      <small *ngIf="enableSetTagsImage && image()">Clicca sulla foto per aggiungere un tag.</small>
+    </div>
+  </div>
 
-    Seleziona foto
+  <section class="products-panel" aria-label="Prodotti collegati all'outfit">
+    <header class="panel-heading">
+      <h3>Prodotti collegati</h3>
+      <span class="product-count">{{ tags().length }}</span>
+    </header>
+    <p class="panel-help">Seleziona un pin o una scheda per evidenziare il capo corrispondente.</p>
+    <p *ngIf="!tags().length" class="empty-products">Nessun prodotto collegato a questa foto.</p>
 
-  </button>
-
- 
-</div>
-<section class="chips">
-  <span *ngFor="let tag of tags()" (click)="editTag(tag)" class="chips-itm shadow-sm" >
-   
-    <label>{{tag.name}}</label> 
-    <button class="tag-btn"  class="btn button"  (click)="removeTag(tag.id)">
-      <i class="close-circle">X</i>
-    </button>
-  </span>
+    <div class="product-list" *ngIf="tags().length">
+      <article *ngFor="let tag of tags(); let i = index"
+        class="product-card" [class.product-card--selected]="isTagSelected(i)">
+        <button type="button" class="product-card__select"
+          [attr.aria-pressed]="isTagSelected(i)"
+          [attr.aria-label]="'Seleziona prodotto ' + (i + 1) + ': ' + tag.name"
+          (click)="selectTag(i)">
+          <span class="product-card__thumbnail">
+            <img *ngIf="tagImage(tag) as photo; else noProductImage"
+              [src]="photo" [alt]="tag.name" loading="lazy">
+            <ng-template #noProductImage>
+              <span class="mdi mdi-image-off-outline" aria-hidden="true"></span>
+            </ng-template>
+          </span>
+          <span class="product-card__info">
+            <span class="product-card__label">
+              <span class="product-card__number">{{ i + 1 }}</span>
+              {{ tag.outfitCategory || 'Capo outfit' }}
+            </span>
+            <strong>{{ tag.brend || 'Marca non indicata' }}</strong>
+            <span class="product-card__name">{{ tag.name }}</span>
+            <span *ngIf="tag.prezzo !== undefined && tag.prezzo !== null"
+              class="product-card__price">{{ tag.prezzo | currency:'EUR':'symbol':'1.2-2' }}</span>
+          </span>
+        </button>
+        <div class="product-card__actions">
+          <button type="button" class="btn btn-sm btn-outline-primary"
+            [disabled]="!enableSetTagsImage" (click)="editTag(tag)">Modifica tag</button>
+          <button type="button" class="btn btn-sm btn-outline-danger"
+            [disabled]="!enableSetTagsImage" (click)="removeTagAt(i)">Rimuovi</button>
+          <a *ngIf="tagProductUrl(tag) as url" [href]="url"
+            target="_blank" rel="noopener noreferrer"
+            class="btn btn-sm btn-outline-secondary">Apri prodotto</a>
+        </div>
+      </article>
+    </div>
+  </section>
 </section>
-
