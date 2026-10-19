@@ -32,7 +32,7 @@ export class FotoOutfitPage implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   @Input() image = signal<string>('');
-  @Input() showTag = signal<boolean>(false);
+  @Input() showTag = signal<boolean>(true);
   @Input() tags = signal<Tag[]>([]);
   @Input() enableSetTagsImage: boolean = true
 
@@ -49,6 +49,7 @@ export class FotoOutfitPage implements OnInit {
 
 
   tagStyle: any = {}
+  selectedTagIndex: number | null = null;
   imageLoading = signal(true)
   tagToggleButton: any = {};
   blobImg: any;
@@ -221,42 +222,28 @@ export class FotoOutfitPage implements OnInit {
     });
   }
 
-  async editTag(tag: Tag) {
-    const modalResponse = await this.openModal(tag)
-    if (Object.keys(modalResponse).length > 0) {
+  /** Keep the existing tag form, preserving catalog identity and untouched data. */
+  async editTag(tag: Tag): Promise<void> {
+    const response = await this.openModal(tag);
+    if (!response || typeof response !== 'object' || !Object.keys(response).length) return;
 
+    const index = this.tags().indexOf(tag);
+    if (index < 0) return;
 
-      const tags = this.tags()
-      let indexTag = tags.findIndex(r => r.id == tag.id)
-      let link = !modalResponse.link ? '#' : modalResponse.link
-      let images = !modalResponse.Images ? '' : modalResponse.Images
-      images = modalResponse.images ? modalResponse.images : images
-      images = modalResponse.imageUrl ? modalResponse.imageUrl : images
-      tags[indexTag] =
-      {
-        id: tag.id,
-        name: modalResponse.name,
-        x: tag.x,
-        y: tag.y,
-        link: link,
-        color: modalResponse.color,
-        brend: modalResponse.brend,
-        images: images,
-        prezzo: modalResponse.prezzo,
-        outfitCategory: modalResponse.outfitCategory,
-        outfitSubCategory: modalResponse.outfitSubCategory
-
-      }
-
-      this.tags.set(tags);
-
-
-      let eventtoEmit = {
-        tags: this.tags()
-      }
-      this.eventImageTags.emit(eventtoEmit)
-    }
-
+    const updated: Tag = {
+      ...tag,
+      name: response.name ?? tag.name,
+      link: response.link || tag.link || '#',
+      color: response.color ?? tag.color,
+      brend: response.brend ?? tag.brend,
+      prezzo: response.prezzo ?? tag.prezzo,
+      outfitCategory: response.outfitCategory ?? tag.outfitCategory,
+      outfitSubCategory: response.outfitSubCategory ?? tag.outfitSubCategory,
+      ...(Array.isArray(response.images) ? { images: response.images } : {}),
+      ...(typeof response.imageUrl === 'string' ? { imageUrl: response.imageUrl } : {}),
+    };
+    this.tags.update(items => items.map((item, i) => i === index ? updated : item));
+    this.eventImageTags.emit({ tags: this.tags() });
   }
 
   async addTag(event: any) {
@@ -271,7 +258,7 @@ export class FotoOutfitPage implements OnInit {
     let link = ''
 
     let result: any = await this.openModal();
-    if (Object.keys(result).length > 0) {
+    if (result && Object.keys(result).length > 0) {
       const image = this.imageElement?.nativeElement as HTMLElement;
       const rect = image.getBoundingClientRect();
       const x = (event.clientX - rect.left) / rect.width;
@@ -302,7 +289,7 @@ export class FotoOutfitPage implements OnInit {
 
       );
 
-      this.tags.set(tags);
+      this.tags.update(items => [...items, ...tags]);
       this.setDisplayTag(rect)
       this.setDisplayButtonTag(rect);
 
@@ -386,9 +373,47 @@ if (respo.name === 'submitForm') {
 
   }
 
-  removeTag(tagId: any) {
-    const newTags = this.tags().filter(tag => tag.id !== tagId);
-    this.tags.set(newTags);
+  /** The photo pins and product cards select the same existing tag. */
+  selectTag(index: number, event?: Event): void {
+    event?.stopPropagation();
+    this.selectedTagIndex = index;
+  }
+
+  isTagSelected(index: number): boolean {
+    return this.selectedTagIndex === index;
+  }
+
+  hasPinPosition(tag: Tag): boolean {
+    return Number.isFinite(tag.x) && Number.isFinite(tag.y)
+      && tag.x >= 0 && tag.x <= 1 && tag.y >= 0 && tag.y <= 1;
+  }
+
+  pinPercent(value: number): number {
+    return value * 100;
+  }
+
+  tagImage(tag: Tag): string {
+    if (typeof tag.imageUrl === 'string' && tag.imageUrl.trim()) return tag.imageUrl;
+    return Array.isArray(tag.images)
+      ? tag.images.find(image => typeof image === 'string' && image.trim()) || ''
+      : '';
+  }
+
+  tagProductUrl(tag: Tag): string | null {
+    return typeof tag.link === 'string' && /^https?:\/\//i.test(tag.link.trim())
+      ? tag.link.trim() : null;
+  }
+
+  removeTag(tagId: any): void {
+    const index = this.tags().findIndex(tag => tag.id === tagId);
+    if (index >= 0) this.removeTagAt(index);
+  }
+
+  removeTagAt(index: number): void {
+    if (index < 0 || index >= this.tags().length) return;
+    this.tags.update(items => items.filter((_item, i) => i !== index));
+    this.selectedTagIndex = null;
+    this.eventImageTags.emit({ tags: this.tags() });
   }
 
   /**utility**/
