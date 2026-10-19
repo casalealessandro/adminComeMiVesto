@@ -1,14 +1,18 @@
 <app-anagrafica-wrapper [caption]="'Elenco Outfit caricati dagli utenti'" [subTitle]="subtitle" [addButtonShow]="true" [showSpinner]="false" (emittEventButton)="eventToolbarOutfit($event)">
   <div *ngIf="error" class="alert alert-danger">{{error}}</div>
-  <div class="desktop-grid"><app-data-grid [colonne]="colOutfitsGrid" [idTable]="2"
+  <div *ngIf="!gridReady && !error" class="text-muted" aria-live="polite">Caricamento tassonomie…</div>
+  <button *ngIf="!gridReady && error" type="button" class="btn btn-outline-primary" (click)="initializeTaxonomyColumns()">Riprova</button>
+  <div class="desktop-grid" *ngIf="gridReady"><app-data-grid
+    #outfitsGrid [colonne]="colOutfitsGrid" [idTable]="2"
     [dataProvider]="dataProvider" [remoteOperation]="true"
     [initialRemoteSort]="{field:'createdAt', direction:'desc'}"
     [showFilter]="true" [isEditable]="true" [isEditableEditRow]="true"
+    [isEditableNewRow]="false"
     [rowContextActions]="rowActions"
     [isEditableDeleteRow]="false" [showToolbarBottom]="false"
     [showToolbarTop]="true" [isSearchable]="true"
     (emittendStartEdit)="editOutfit($event)"
-    (emittendGridEvent)="gridEvent($event)"
+    (emittendDblRowClick)="editOutfit($event)"
     (emittendButtonCellClick)="statusGridEvent($event)"></app-data-grid></div>
   <div class="mobile-cards"><article *ngFor="let item of outfits"><img [src]="item.imageUrl" [alt]="item.title"><div class="card-body"><h2>{{item.title}}</h2><p>{{item.userName || creatorName(item.userId)}}</p><span class="badge" [class.text-bg-success]="item.status==='approved'" [class.text-bg-warning]="item.status==='pending'" [class.text-bg-danger]="item.status==='rifiutato'" [class.text-bg-secondary]="item.status==='suspended'">{{item.status}}</span><small>{{item.createdAt|date:'short'}}</small><div class="actions"><button class="btn btn-sm btn-primary" (click)="editOutfit(item)">Dettaglio</button><button *ngIf="item.status!=='approved' && item.status!=='suspended'" class="btn btn-sm btn-outline-success" [disabled]="isBusy(item)" (click)="updateStatus(item,'approved')">Approva</button><button *ngIf="item.status!=='rifiutato' && item.status!=='suspended'" class="btn btn-sm btn-outline-warning" [disabled]="isBusy(item)" (click)="updateStatus(item,'rifiutato')">Rifiuta</button><button class="btn btn-sm btn-outline-secondary" [disabled]="isBusy(item)" (click)="toggleSuspension(item)">{{item.status==='suspended' ? 'Riattiva' : 'Sospendi'}}</button><button class="btn btn-sm btn-outline-danger" [disabled]="isBusy(item)" (click)="removeOutfit(item)">Elimina</button></div></div></article></div>
 </app-anagrafica-wrapper>
