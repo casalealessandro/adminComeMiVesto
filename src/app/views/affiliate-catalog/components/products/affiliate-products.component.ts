@@ -141,10 +141,9 @@ export function buildAffiliateProductColumns(
       allowFiltering: true,
       lista: listOptions(programOptions, 'id', 'name'),
     },
-    // Temporarily display taxonomy without filters: loading the distinct options
-    // currently scans the entire catalog twice and can exhaust the API memory.
-    baseColumn('category', 'Categoria', 150),
-    baseColumn('subcategory', 'Sottocategoria', 150),
+    // Exact-match filters avoid expensive full-catalog distinct-option scans.
+    { ...baseColumn('category', 'Categoria', 150), allowFiltering: true, filterOperator: 'eq' },
+    { ...baseColumn('subcategory', 'Sottocategoria', 150), allowFiltering: true, filterOperator: 'eq' },
     baseColumn('normalizedColor', 'Colore', 110),
     baseColumn('genderLabel', 'Target', 150),
     baseColumn('seasonLabel', 'Stagioni', 190),
@@ -199,6 +198,8 @@ export function buildAffiliateProductRemoteRequest(request: GridLoadRequest, sea
     ? request.continuation
     : undefined;
   const q = request.search?.value?.trim() || undefined;
+  const category = exactFilter('category');
+  const subcategory = exactFilter('subcategory');
   const affiliateProgramId = exactFilter('affiliateProgramId');
   const visibleInAppFilter = exactFilter('visibleInAppFilter');
   const visibleInApp = visibleInAppFilter === 'true'
@@ -211,6 +212,8 @@ export function buildAffiliateProductRemoteRequest(request: GridLoadRequest, sea
     limit: request.pageSize,
     ...(cursor ? { cursor } : {}),
     ...(q ? { q } : {}),
+    ...(category ? { category } : {}),
+    ...(subcategory ? { subcategory } : {}),
     ...(season ? { season } : {}),
     ...(affiliateProgramId ? { affiliateProgramId } : {}),
     ...(visibleInApp !== undefined ? { visibleInApp } : {}),
@@ -360,12 +363,16 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const affiliateProgramId = this.route.snapshot.queryParamMap.get('affiliateProgramId')?.trim();
+    const category = this.route.snapshot.queryParamMap.get('category')?.trim();
+    const subcategory = this.route.snapshot.queryParamMap.get('subcategory')?.trim();
     const visibleInApp = this.route.snapshot.queryParamMap.get('visibleInApp')?.trim();
     const season = this.route.snapshot.queryParamMap.get('season')?.trim();
     this.selectedSeason = CATALOG_SEASON_OPTIONS.find((item) => item.id === season)?.id ?? '';
 
     this.restoredFilters = {
       ...(affiliateProgramId ? { affiliateProgramId } : {}),
+      ...(category ? { category } : {}),
+      ...(subcategory ? { subcategory } : {}),
       ...(visibleInApp === 'true' || visibleInApp === 'false'
         ? { visibleInAppFilter: visibleInApp }
         : {}),
@@ -384,7 +391,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     const next = CATALOG_SEASON_OPTIONS.find((item) => item.id === value)?.id ?? '';
     if (this.selectedSeason === next) return;
     // Preserve existing grid-side remote filters when recreating the provider.
-    for (const field of ['affiliateProgramId', 'visibleInAppFilter']) {
+    for (const field of ['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']) {
       const current = this.dataGrid?.providerFilterValue(field);
       if (typeof current === 'string' && current) this.restoredFilters[field] = current;
       else delete this.restoredFilters[field];
@@ -817,9 +824,8 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
     const queryParams = {
       affiliateProgramId: this.dataGrid?.providerFilterValue('affiliateProgramId') || null,
-      // Remove any legacy taxonomy URL filters when returning from the detail page.
-      category: null,
-      subcategory: null,
+      category: this.dataGrid?.providerFilterValue('category') || null,
+      subcategory: this.dataGrid?.providerFilterValue('subcategory') || null,
       visibleInApp: this.dataGrid?.providerFilterValue('visibleInAppFilter') || null,
       ...(this.selectedSeason ? { season: this.selectedSeason } : {}),
     };
@@ -958,7 +964,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     this.bulkSaving = false;
     this.bulkOpen = false;
     const filters: Record<string, string> = {};
-    for (const field of ['affiliateProgramId', 'visibleInAppFilter']) {
+    for (const field of ['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']) {
       const value = this.dataGrid?.providerFilterValue(field);
       if (typeof value === 'string' && value) filters[field] = value;
     }
@@ -1029,7 +1035,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       if (result?.name !== 'saved') return;
       // Preserve only scalar remote filter values; providerFilterValue returns unknown.
       const filters: Record<string, string> = {};
-      for (const field of ['affiliateProgramId', 'visibleInAppFilter']) {
+      for (const field of ['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']) {
         const value = this.dataGrid?.providerFilterValue(field);
         if (typeof value === 'string' && value) filters[field] = value;
       }
