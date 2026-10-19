@@ -107,6 +107,8 @@ export class DataGridComponent<T = any> implements OnDestroy {
   @Input() isEditable: boolean = false
   /** Optional domain actions in the existing row context menu. */
   @Input() rowContextActions?: ColData['editorbuttons'];
+  /** Optional explicit action columns can replace the generated trailing menu. */
+  @Input() showRowContextMenu = true;
 
   @Input() modeEdit: string = 'row';
 
@@ -777,6 +779,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
         this.colsHeader.push({
           type: resColH.type,
+          editorbuttons: resColH.editorbuttons,
 
           search: typeof this.showFilter != 'undefined' ? this.showFilter : resColH.allowFiltering,
           id: resColH.dataField,
@@ -813,7 +816,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
     })
 
 
-    this.colsHeader.push(
+    if (this.showRowContextMenu) this.colsHeader.push(
       {
         type: 'editorButtons',
         id: 'editorButtons',

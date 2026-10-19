@@ -1,19 +1,57 @@
-<app-anagrafica-wrapper [caption]="'Elenco Outfit caricati dagli utenti'" [subTitle]="subtitle" [addButtonShow]="true" [showSpinner]="loading" (emittEventButton)="eventToolbarOutfit($event)">
-  <div *ngIf="error" class="alert alert-danger">{{error}}</div>
-  <button class="btn btn-outline-primary mobile-filter-toggle" (click)="filtersOpen=!filtersOpen">{{filtersOpen?'Chiudi filtri':'Filtri'}}</button>
-  <form class="filters" [class.open]="filtersOpen" (ngSubmit)="applyFilters()">
-    <label>Stato<select class="form-select" name="status" [(ngModel)]="filters.status"><option value="">Tutti</option><option value="pending">pending</option><option value="approved">approved</option><option value="rifiutato">rifiutato</option><option value="suspended">suspended</option></select></label>
-    <label>Creator<select class="form-select" name="userId" [(ngModel)]="filters.userId"><option value="">Tutti</option><option *ngFor="let user of creators" [value]="user.uid">{{user.displayName||user.email}}</option></select></label>
-    <label>Gender<select class="form-select" name="gender" [(ngModel)]="filters.gender"><option value="">Tutti</option><option *ngFor="let option of taxonomyOptions.gender" [value]="option.id">{{option.value}}</option></select></label>
-    <label>Categoria<select class="form-select" name="category" [(ngModel)]="filters.category"><option value="">Tutte</option><option *ngFor="let category of categories" [value]="category.id">{{category.categoryName}}</option></select></label>
-    <label>Stagione<select class="form-select" name="season" [(ngModel)]="filters.season"><option value="">Tutte</option><option *ngFor="let option of taxonomyOptions.season" [value]="option.id">{{option.value}}</option></select></label>
-    <label>Stile<select class="form-select" name="style" [(ngModel)]="filters.style"><option value="">Tutti</option><option *ngFor="let option of taxonomyOptions.style" [value]="option.id">{{option.value}}</option></select></label>
-    <label>Colore<select class="form-select" name="color" [(ngModel)]="filters.color"><option value="">Tutti</option><option *ngFor="let color of colors" [value]="color.id">{{color.value}}</option></select></label>
-    <label class="search">Ricerca<input class="form-control" name="search" [(ngModel)]="filters.search"></label>
-    <div class="filter-actions"><button class="btn btn-primary" [disabled]="loading">Applica</button><button type="button" class="btn btn-outline-secondary" (click)="resetFilters()">Azzera</button></div>
-  </form>
-  <p *ngIf="!loading&&!outfits.length" class="empty">Nessun outfit trovato.</p>
-  <div class="desktop-grid"><app-data-grid *ngIf="!loading&&outfits.length" [colonne]="colOutfitsGrid" [idTable]="2" [dataSource]="outfits" [remoteOperation]="false" [isEditable]="true" [isEditableEditRow]="true" [isEditableDeleteRow]="false" [showToolbarBottom]="false" [showToolbarTop]="false" [isSearchable]="false" (emittendStartEdit)="editOutfit($event)" (emittendGridEvent)="gridEvent($event)" (emittendButtonCellClick)="statusGridEvent($event)"></app-data-grid></div>
-  <div class="mobile-cards"><article *ngFor="let item of outfits"><img [src]="item.imageUrl" [alt]="item.title"><div class="card-body"><h2>{{item.title}}</h2><p>{{item.userName||creatorName(item.userId)}}</p><span class="badge" [class.text-bg-success]="item.status==='approved'" [class.text-bg-warning]="item.status==='pending'" [class.text-bg-danger]="item.status==='rifiutato'" [class.text-bg-secondary]="item.status==='suspended'">{{item.status}}</span><small>{{item.createdAt|date:'short'}}</small><div class="actions"><button class="btn btn-sm btn-primary" (click)="editOutfit(item)">Dettaglio</button><button *ngIf="item.status!=='approved' && item.status!=='suspended'" class="btn btn-sm btn-outline-success" [disabled]="isBusy(item)" (click)="updateStatus(item,'approved')">Approva</button><button *ngIf="item.status!=='rifiutato' && item.status!=='suspended'" class="btn btn-sm btn-outline-warning" [disabled]="isBusy(item)" (click)="updateStatus(item,'rifiutato')">Rifiuta</button><button class="btn btn-sm btn-outline-secondary" [disabled]="isBusy(item)" (click)="toggleSuspension(item)">{{item.status==='suspended' ? 'Riattiva' : 'Sospendi'}}</button><button class="btn btn-sm btn-outline-danger" [disabled]="isBusy(item)" (click)="removeOutfit(item)">Elimina</button></div></div></article></div>
-  <nav class="pagination-bar" *ngIf="total"><button class="btn btn-outline-primary" (click)="previous()" [disabled]="page===1||loading">Precedente</button><span>Pagina {{page}} · {{total}} totali</span><button class="btn btn-outline-primary" (click)="next()" [disabled]="page*limit>=total||loading">Successiva</button></nav>
+<app-anagrafica-wrapper [caption]="'Elenco Outfit caricati dagli utenti'" [subTitle]="subtitle"
+  [addButtonShow]="true" [showSpinner]="false" (emittEventButton)="eventToolbarOutfit($event)">
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <p *ngIf="!gridReady && !error" aria-live="polite">Caricamento tassonomie…</p>
+  <button *ngIf="!gridReady && error" type="button" class="btn btn-outline-primary"
+    (click)="initializeTaxonomies()">Riprova</button>
+
+  <div *ngIf="gridReady" class="desktop-grid">
+    <app-data-grid #outfitsGrid
+      [colonne]="columns" [idTable]="'outfits-grid'"
+      [dataProvider]="dataProvider" [remoteOperation]="true"
+      [initialRemoteSort]="{ field: 'createdAt', direction: 'desc' }"
+      [selectionRowMode]="'multiple'"
+      [rowContextActions]="menuActions" [showRowContextMenu]="false"
+      [isEditable]="true" [isEditableEditRow]="false" [isEditableNewRow]="false"
+      [isEditableDeleteRow]="false" [showFilter]="true"
+      [showToolbarTop]="true" [showToolbarBottom]="false"
+      [isSearchable]="true"
+      (emittendButtonCellClick)="gridAction($event)">
+    </app-data-grid>
+  </div>
+
+  <div *ngIf="gridReady" class="mobile-only">
+    <label class="search">Cerca outfit
+      <input class="form-control" [(ngModel)]="search" (ngModelChange)="onMobileSearchChange()"
+        placeholder="Titolo, stile, occasione o utente" />
+    </label>
+  </div>
+  <p *ngIf="gridReady && !loading && !outfits.length" class="empty mobile-only">Nessun outfit trovato.</p>
+  <div *ngIf="gridReady" class="mobile-cards">
+    <article *ngFor="let item of outfits; trackBy: trackById">
+      <img [src]="item.imageUrl" [alt]="item.title">
+      <div class="card-body">
+        <h2>{{ item.title }}</h2>
+        <p>{{ item.userName }}</p>
+        <p>{{ item.style }} · {{ item.occasion || 'Occasione non specificata' }}</p>
+        <span class="badge" [class.text-bg-success]="item.status === 'approved'"
+          [class.text-bg-warning]="item.status === 'pending'"
+          [class.text-bg-danger]="item.status === 'rifiutato'"
+          [class.text-bg-secondary]="item.status === 'suspended'">{{ item.status }}</span>
+        <small>{{ item.createdAt | date:'short' }}</small>
+        <div class="actions">
+          <button class="btn btn-sm btn-primary" (click)="editOutfit(item)">Modifica</button>
+          <button *ngIf="item.status !== 'approved'" class="btn btn-sm btn-outline-success"
+            [disabled]="isBusy(item)" (click)="updateStatus(item,'approved')">Approva</button>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="isBusy(item)"
+            (click)="toggleSuspension(item)">{{ item.status === 'suspended' ? 'Riabilita' : 'Disabilita' }}</button>
+          <button class="btn btn-sm btn-outline-danger" [disabled]="isBusy(item)"
+            (click)="removeOutfit(item)">Elimina</button>
+        </div>
+      </div>
+    </article>
+  </div>
+  <button *ngIf="gridReady && hasMore" class="btn btn-outline-primary mobile-only more"
+    [disabled]="loading || loadingMore" (click)="loadMore()">Carica altri</button>
+  <p *ngIf="loading || loadingMore" class="mobile-only" aria-live="polite">Caricamento…</p>
 </app-anagrafica-wrapper>
