@@ -72,24 +72,23 @@ describe('Affiliate products', () => {
     lastError: null,
   };
 
-  it('keeps the products grid read-only and exposes Programma, Categoria, Sottocategoria and Visibile app as filters', () => {
-    const columns = buildAffiliateProductColumns([program], ['Clothing', 'Shoes'], false, ['Shirts', 'Jeans'])[0].data;
+  it('keeps taxonomy visible but non-filterable and exposes only Programma and Visibile app as filters', () => {
+    const columns = buildAffiliateProductColumns([program], false)[0].data;
     const actions = columns.filter((column) => column.type === 'campoButton');
     const filterable = columns.filter((column) => column.allowFiltering === true);
 
     expect(actions.map((column) => column.button?.name)).toEqual([]);
-    expect(buildAffiliateProductColumns([program], ['Clothing'], true)[0].data.filter((column) => column.type === 'campoButton')
+    expect(buildAffiliateProductColumns([program], true)[0].data.filter((column) => column.type === 'campoButton')
       .map((column) => column.button?.name)).toEqual(['edit']);
     expect(columns.every((column) => column.allowEditing === false)).toBeTrue();
     expect(columns.some((column) => column.dataField === 'imagePreview' && column.type === 'campoImg')).toBeTrue();
     expect(columns.some((column) => column.dataField === 'sourceFeedCount')).toBeFalse();
-    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']);
+    expect(filterable.map((column) => column.dataField)).toEqual(['affiliateProgramId', 'visibleInAppFilter']);
     expect(filterable.every((column) => column.type === 'campoLista')).toBeTrue();
+    expect(columns.filter((column) => ['category', 'subcategory'].includes(column.dataField))
+      .every((column) => column.allowFiltering === false && column.type === 'campo')).toBeTrue();
     expect(filterable[0].lista?.options).toEqual([{ id: program.id, name: program.name }]);
-    expect(filterable[2].lista?.options).toEqual([
-      { value: 'Jeans', label: 'Jeans' }, { value: 'Shirts', label: 'Shirts' },
-    ]);
-    expect(filterable[3].lista?.options).toEqual([
+    expect(filterable[1].lista?.options).toEqual([
       { value: 'true', label: 'Sì' },
       { value: 'false', label: 'No' },
     ]);
@@ -135,7 +134,7 @@ describe('Affiliate products', () => {
     expect(rows[0].programName).toBe(program.id);
   });
 
-  it('translates DataGrid continuation and exact column filters into the products API contract', () => {
+  it('ignores disabled taxonomy filters but preserves supported remote filters', () => {
     const request: GridLoadRequest = {
       pageSize: AFFILIATE_PRODUCTS_PAGE_SIZE,
       continuation: 'cursor-2',
@@ -151,8 +150,6 @@ describe('Affiliate products', () => {
       limit: AFFILIATE_PRODUCTS_PAGE_SIZE,
       cursor: 'cursor-2',
       affiliateProgramId: program.id,
-      category: 'Clothing',
-      subcategory: 'Shirts',
       visibleInApp: false,
     });
   });
@@ -232,15 +229,16 @@ describe('Affiliate products', () => {
       router = TestBed.inject(Router);
     });
 
-    it('loads reusable filter metadata without preloading a product page in the component', () => {
+    it('loads only program filters without scanning catalog taxonomy or preloading products', () => {
       component.refresh();
 
       expect(service.getPrograms).toHaveBeenCalledTimes(1);
-      expect(service.getProductCategories).toHaveBeenCalledTimes(1);
+      expect(service.getProductCategories).not.toHaveBeenCalled();
+      expect(service.getProductSubcategories).not.toHaveBeenCalled();
       expect(service.getProducts).not.toHaveBeenCalled();
       expect(component.dataProvider).toBeDefined();
-      expect(component.columns[0].data.find((column) => column.dataField === 'category')?.lista?.options)
-        .toEqual([{ value: 'Clothing', label: 'Clothing' }]);
+      expect(component.columns[0].data.find((column) => column.dataField === 'category')?.allowFiltering).toBeFalse();
+      expect(component.columns[0].data.find((column) => column.dataField === 'subcategory')?.allowFiltering).toBeFalse();
     });
 
     it('requires backup verification before confirming a reclassification and resets on close', () => {
@@ -421,7 +419,7 @@ describe('Affiliate products', () => {
       expect(component.cleanupBackupConfirmed).toBeFalse();
     });
 
-    it('preserves active filters when navigating to the product detail', async () => {
+    it('preserves supported filters and clears legacy taxonomy URL filters in detail navigation', async () => {
       const navigate = spyOn(router, 'navigate').and.resolveTo(true);
       (component as any).dataGrid = {
         providerFilterValue: (field: string) => {
@@ -438,8 +436,8 @@ describe('Affiliate products', () => {
       expect(navigate.calls.argsFor(0)[1]).toEqual(jasmine.objectContaining({
         queryParams: {
           affiliateProgramId: program.id,
-          category: 'Clothing',
-          subcategory: 'Shirts',
+          category: null,
+          subcategory: null,
           visibleInApp: 'false',
         },
         queryParamsHandling: 'merge',
