@@ -124,7 +124,7 @@ export interface AffiliateProductsProviderCallbacks {
 export function buildAffiliateProductColumns(
   programs: AffiliateProgram[] = [],
   canEdit = false,
-  subcategories: ReadonlyArray<{ value: string; label: string }> = [],
+  subcategories: Array<{ value: string; label: string }> = [],
 ): Colonne[] {
   const programOptions = [...programs]
     .sort((a, b) => a.name.localeCompare(b.name))
