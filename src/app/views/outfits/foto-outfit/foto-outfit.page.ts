@@ -108,18 +108,14 @@ export class FotoOutfitPage implements OnInit {
   }
 
   async captureImage(event: Event) {
-    if (this.tags().length > 0 && this.image()) {
-      let respo = await this.confirmChangeFoto();
-      if (!respo) {
-        return;
-      }
-    }
-
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
 
       if (this.validateFile(file)) {
+        const clearPreviousTags = this.tags().length > 0 && !!this.image();
+        if (clearPreviousTags && !(await this.confirmChangeFoto())) return;
+
         const reader = new FileReader();
         this.imageLoading.set(true)
         reader.onload = async (e: ProgressEvent<FileReader>) => {
@@ -131,7 +127,12 @@ export class FotoOutfitPage implements OnInit {
             const type = file.type.replace('image/', '')
             const resizedImage = await this.resizeImage(dataUrl, maxWidth, 600); // Puoi cambiare 'jpeg' con il formato desiderato e 800 con la larghezza massima desiderata
 
-            // Assegna il valore ridimensionato
+            // Preserve existing tags until the replacement photo is ready.
+            if (clearPreviousTags) {
+              this.tags.set([]);
+              this.selectedTagIndex = null;
+              this.eventImageTags.emit({ tags: [] });
+            }
             this.image.set(resizedImage.dataUrl);
             this.imageLoading.set(false);
 
@@ -207,14 +208,7 @@ export class FotoOutfitPage implements OnInit {
       confirm(
         "Cambiando la foto perderai tutti i tag già associati. Vuoi continuare?",
         "Attenzione!",
-        yes => {
-          if (yes) {
-            this.tags.set([]);
-            this.selectedTagIndex = null;
-            this.eventImageTags.emit({ tags: [] });
-          }
-          resolve(yes);
-        }
+        yes => resolve(yes)
       );
     });
   }
