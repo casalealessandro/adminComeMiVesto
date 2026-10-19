@@ -40,6 +40,7 @@ export interface ColData {
   id?: any;
   colCaption: any;
   allowFiltering?: any;
+  filterOperator?: 'eq' | 'contains' | 'startsWith' | 'endsWith' | 'sameDay';
   dataField: string;
   type: 'campoHidden' | 'campo' | 'campoNumber' | 'campoTesto' | 'campoDateTime' | 'campoData' | 'campoImg' | 'icon' | 'campoBoolean' | 'campoLista' | 'selection' | 'editorButtons' | 'campoButton' | 'removeButtons' | 'detail' | 'campoDesc' | 'empty';
   caption?: string;
