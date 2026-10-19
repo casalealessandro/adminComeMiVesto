@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { firstValueFrom, finalize, Subscription, timer, exhaustMap } from 'rxjs';
+import { firstValueFrom, finalize, Subscription, timer, exhaustMap, forkJoin, switchMap, catchError, of, map } from 'rxjs';
 import {
   ColData,
   Colonne,
@@ -124,6 +124,7 @@ export interface AffiliateProductsProviderCallbacks {
 export function buildAffiliateProductColumns(
   programs: AffiliateProgram[] = [],
   canEdit = false,
+  subcategories: ReadonlyArray<{ value: string; label: string }> = [],
 ): Colonne[] {
   const programOptions = [...programs]
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -142,8 +143,12 @@ export function buildAffiliateProductColumns(
       lista: listOptions(programOptions, 'id', 'name'),
     },
     // Exact-match filters avoid expensive full-catalog distinct-option scans.
-    { ...baseColumn('category', 'Categoria', 150), allowFiltering: true, filterOperator: 'eq' },
-    { ...baseColumn('subcategory', 'Sottocategoria', 150), allowFiltering: true, filterOperator: 'eq' },
+    baseColumn('category', 'Categoria', 150),
+    {
+      ...baseColumn('subcategory', 'Sottocategoria', 150, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(subcategories, 'value', 'label'),
+    },
     baseColumn('normalizedColor', 'Colore', 110),
     baseColumn('genderLabel', 'Target', 150),
     baseColumn('seasonLabel', 'Stagioni', 190),
@@ -329,6 +334,8 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   hasMore = false;
 
   private programNames = new Map<string, string>();
+  private readonly taxonomySubcategoryLabels = new Map<string, string>();
+  private readonly seenSubcategories = new Set<string>();
   private restoredFilters: Record<string, string> = {};
 
   @ViewChild(DataGridComponent)
@@ -362,8 +369,8 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadSubcategoryTaxonomy();
     const affiliateProgramId = this.route.snapshot.queryParamMap.get('affiliateProgramId')?.trim();
-    const category = this.route.snapshot.queryParamMap.get('category')?.trim();
     const subcategory = this.route.snapshot.queryParamMap.get('subcategory')?.trim();
     const visibleInApp = this.route.snapshot.queryParamMap.get('visibleInApp')?.trim();
     const season = this.route.snapshot.queryParamMap.get('season')?.trim();
@@ -371,7 +378,6 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
     this.restoredFilters = {
       ...(affiliateProgramId ? { affiliateProgramId } : {}),
-      ...(category ? { category } : {}),
       ...(subcategory ? { subcategory } : {}),
       ...(visibleInApp === 'true' || visibleInApp === 'false'
         ? { visibleInAppFilter: visibleInApp }
@@ -391,7 +397,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     const next = CATALOG_SEASON_OPTIONS.find((item) => item.id === value)?.id ?? '';
     if (this.selectedSeason === next) return;
     // Preserve existing grid-side remote filters when recreating the provider.
-    for (const field of ['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']) {
+    for (const field of ['affiliateProgramId', 'subcategory', 'visibleInAppFilter']) {
       const current = this.dataGrid?.providerFilterValue(field);
       if (typeof current === 'string' && current) this.restoredFilters[field] = current;
       else delete this.restoredFilters[field];
@@ -419,7 +425,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (programs) => {
           this.programNames = new Map(programs.map((program) => [program.id, program.name]));
-          this.columns = buildAffiliateProductColumns(programs, this.auth.isAdmin());
+          this.columns = buildAffiliateProductColumns(programs, this.auth.isAdmin(), this.subcategorySelectOptions());
           this.dataProvider = createAffiliateProductsProvider(
             this.affiliateCatalogService,
             this.programNames,
@@ -824,7 +830,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
 
     const queryParams = {
       affiliateProgramId: this.dataGrid?.providerFilterValue('affiliateProgramId') || null,
-      category: this.dataGrid?.providerFilterValue('category') || null,
+      category: null,
       subcategory: this.dataGrid?.providerFilterValue('subcategory') || null,
       visibleInApp: this.dataGrid?.providerFilterValue('visibleInAppFilter') || null,
       ...(this.selectedSeason ? { season: this.selectedSeason } : {}),
@@ -964,7 +970,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     this.bulkSaving = false;
     this.bulkOpen = false;
     const filters: Record<string, string> = {};
-    for (const field of ['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']) {
+    for (const field of ['affiliateProgramId', 'subcategory', 'visibleInAppFilter']) {
       const value = this.dataGrid?.providerFilterValue(field);
       if (typeof value === 'string' && value) filters[field] = value;
     }
@@ -1035,7 +1041,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
       if (result?.name !== 'saved') return;
       // Preserve only scalar remote filter values; providerFilterValue returns unknown.
       const filters: Record<string, string> = {};
-      for (const field of ['affiliateProgramId', 'category', 'subcategory', 'visibleInAppFilter']) {
+      for (const field of ['affiliateProgramId', 'subcategory', 'visibleInAppFilter']) {
         const value = this.dataGrid?.providerFilterValue(field);
         if (typeof value === 'string' && value) filters[field] = value;
       }
@@ -1074,10 +1080,52 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     this.productsLoading = false;
   }
 
+  private loadSubcategoryTaxonomy(): void {
+    // Read the small curated taxonomy, never the entire affiliate product collection.
+    this.affiliateCatalogService.getCurationCategories().pipe(
+      switchMap(roots => roots.length
+        ? forkJoin(roots.map(root =>
+            this.affiliateCatalogService.getCurationCategories(root.id).pipe(catchError(() => of([])))
+          ))
+        : of([] as Array<Array<{ id: string; categoryName: string }>>)),
+      map(groups => groups.flat()),
+      catchError(() => of([] as Array<{ id: string; categoryName: string }>)),
+    ).subscribe(subcategories => {
+      for (const item of subcategories) {
+        if (item.id && item.categoryName) {
+          this.taxonomySubcategoryLabels.set(item.id, item.categoryName);
+        }
+      }
+      this.updateSubcategorySelectOptions();
+    });
+  }
+
+  private subcategorySelectOptions(): Array<{ value: string; label: string }> {
+    const values = new Set([...this.taxonomySubcategoryLabels.keys(), ...this.seenSubcategories]);
+    // Preserve previously selected values from a deep-link when not in the taxonomy.
+    const selected = this.restoredFilters['subcategory'];
+    if (selected) values.add(selected);
+    return [...values].map(value => ({
+      value,
+      label: this.taxonomySubcategoryLabels.get(value) || value,
+    })).sort((left, right) => left.label.localeCompare(right.label, 'it'));
+  }
+
+  private updateSubcategorySelectOptions(): void {
+    const column = this.columns[0]?.data.find(item => item.dataField === 'subcategory');
+    if (column?.lista) column.lista.options = this.subcategorySelectOptions();
+  }
+
   private applyProviderPage(items: CatalogProduct[], append: boolean, hasMore: boolean): void {
     const combined = append ? [...this.products, ...items] : [...items];
     this.products = Array.from(new Map(combined.map((product) => [product.id, product])).values());
     this.hasMore = hasMore;
     this.gridRows = buildAffiliateProductGridRows(this.products, this.programNames);
+    for (const product of items) {
+      if (typeof product.subcategory === 'string' && product.subcategory.trim()) {
+        this.seenSubcategories.add(product.subcategory.trim());
+      }
+    }
+    this.updateSubcategorySelectOptions();
   }
 }
