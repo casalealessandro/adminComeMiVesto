@@ -240,6 +240,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
   private hasExplicitTableWidth = false;
   private readonly zone = inject(NgZone);
   private remoteLoadVersion = 0;
+  private readonly baseColumnWidths = new WeakMap<ColData, number>();
 
   get remoteContinuation(): unknown {
     return this.gridEngine.remoteContinuation;
@@ -1056,18 +1057,27 @@ export class DataGridComponent<T = any> implements OnDestroy {
     const columns = cols ?? this.colsHeader;
     if (!columns?.length || !Number.isFinite(this.tableWrapWidth) || this.tableWrapWidth <= 0) return;
 
-    // Fixed-width columns may overflow horizontally: do not shrink them or
-    // repeatedly mutate their widths on each grid render.
     const fixedTypes = new Set(['icon', 'selection', 'editorButtons', 'removeButtons', 'detail', 'campoDesc', 'empty']);
-    const widths = columns.map(column => Number(column.colWidth));
-    if (widths.some(width => !Number.isFinite(width) || width <= 0)) return;
-    const totalWidth = widths.reduce((sum, width) => sum + width, 0);
-    const extraWidth = this.tableWrapWidth - totalWidth;
-    if (extraWidth <= 0) return;
-    const flexible = columns.filter(column => !fixedTypes.has(column.type));
-    if (!flexible.length) return;
-    // The browser can distribute unused space without mutating ColData; this
-    // prevents cumulative width growth across repeated renderGrid() calls.
+    const baseline = columns.map(column => {
+      let width = this.baseColumnWidths.get(column);
+      if (width === undefined) {
+        const requested = Number(column.colWidth);
+        width = Number.isFinite(requested) && requested > 0 ? requested : 0;
+        if (width > 0) this.baseColumnWidths.set(column, width);
+      }
+      return width;
+    });
+    if (baseline.some(width => width <= 0)) return;
+
+    const baselineTotal = baseline.reduce((sum, width) => sum + width, 0);
+    const flexibleIndexes = columns.flatMap((column, index) => fixedTypes.has(column.type) ? [] : [index]);
+    const extra = Math.max(0, this.tableWrapWidth - baselineTotal);
+    const perColumn = flexibleIndexes.length ? extra / flexibleIndexes.length : 0;
+
+    // Always calculate from original widths, never from previous renders.
+    columns.forEach((column, index) => {
+      column.colWidth = baseline[index] + (flexibleIndexes.includes(index) ? perColumn : 0);
+    });
   }
 
 
