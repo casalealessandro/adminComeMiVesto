@@ -20,7 +20,7 @@
 
     </div>
   </ng-container>
-  <input #fileInput type="file" (change)="captureImage($event)" hidden name="file" [(ngModel)]="image">
+  <input #fileInput type="file" (change)="captureImage($event)" hidden name="file" accept="image/jpeg,image/png,image/gif">
   <button class="btn button tag-toggle-button" *ngIf="tags().length>0" (click)="toggleTags()" id="toggle-button"
     [ngStyle]="tagToggleButton" >
     <i class="pricetags-outline"></i>
