@@ -341,10 +341,10 @@
       [isEditableEditRow]="false"
       [isEditableDeleteRow]="false"
       [selectionRowMode]="auth.isAdmin() ? 'multiple' : 'single'"
-      [showToolbarTop]="false"
+      [showToolbarTop]="true"
       [showToolbarBottom]="false"
       [showFilter]="true"
-      [isSearchable]="false"
+      [isSearchable]="true"
       [tableHeight]="560"
       (emittendButtonCellClick)="gridAction($event)">
     </app-data-grid>
