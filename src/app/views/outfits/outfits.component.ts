@@ -1,185 +1,84 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, ViewChild, inject } from '@angular/core';
-import { GridDataProvider, GridLoadRequest, GridPage } from '../../core/data-grid/data-grid-provider';
-import { createOutfitsGridProvider } from './outfits-grid.provider';
+import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from '../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { DataGridComponent } from '../../components/data-grid/data-grid.component';
 import { Colonne, UserProfile } from '../../interface/app.interface';
-import { outfit, OutfitsService } from '../../services/outfit.service';
+import { outfit, outfitCategories, OutfitsService } from '../../services/outfit.service';
 import { UserService } from '../../services/user.service';
+import { OutfitColor, TaxonomyService } from '../../services/taxonomy.service';
 import { FormService } from '../../services/form.service';
+import { DynamicFormField } from '../../interface/dynamic-form-field';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 
-@Component({ selector: 'app-outfits', standalone: true, imports: [CommonModule, DataGridComponent, AnagraficaWrapperComponent], templateUrl: './outfits.component.html', styleUrl: './outfits.component.scss' })
-export class OutfitsComponent implements OnDestroy {
+@Component({ selector: 'app-outfits', standalone: true, imports: [CommonModule, FormsModule, DataGridComponent, AnagraficaWrapperComponent], templateUrl: './outfits.component.html', styleUrl: './outfits.component.scss' })
+export class OutfitsComponent {
   private readonly outfitService = inject(OutfitsService);
   private readonly usersService = inject(UserService);
+  private readonly taxonomyService = inject(TaxonomyService);
   private readonly formService = inject(FormService);
   readonly router = inject(Router);
-  @ViewChild('outfitsGrid') set outfitGrid(grid: DataGridComponent<outfit> | undefined) {
-    this.grid = grid;
-    if (grid) {
-      grid.pageSize = 20;
-      grid.providerScrollLoadDelay = 0;
-      queueMicrotask(() => { if (this.grid === grid) void grid.renderGrid(); });
-    }
-  }
-  private grid?: DataGridComponent<outfit>;
-  private requestVersion = 0;
-  gridReady = false;
-  loadingMore = false;
-  hasMore = false;
-  private readonly remoteProvider = createOutfitsGridProvider(
-    this.outfitService, () => ({}), id => this.creatorName(id),
-    () => {}, () => {},
-  );
-  readonly dataProvider: GridDataProvider<outfit> = {
-    load: async (request: GridLoadRequest): Promise<GridPage<outfit>> => {
-      const append = request.continuation !== undefined;
-      const version = append ? this.requestVersion : ++this.requestVersion;
-      if (append) this.loadingMore = true;
-      else { this.loading = true; this.error = ''; }
-
-      try {
-        const page = await this.remoteProvider.load(request);
-        if (version === this.requestVersion) {
-          const combined = append ? [...this.outfits, ...page.items] : [...page.items];
-          this.outfits = Array.from(new Map(combined.map(item => [String(item.id), item])).values());
-          this.total = page.totalCount ?? this.outfits.length;
-          this.hasMore = !!page.hasMore;
-          this.resolveMissingCreators(page.items);
-        }
-        return page;
-      } catch (error) {
-        if (version === this.requestVersion) this.error = 'Impossibile caricare gli outfit.';
-        throw error;
-      } finally {
-        if (version === this.requestVersion) {
-          if (append) this.loadingMore = false;
-          else this.loading = false;
-        }
-      }
-    },
-  };
   outfits: outfit[] = [];
   creators: UserProfile[] = [];
+  categories: outfitCategories[] = [];
+  colors: OutfitColor[] = [];
+  taxonomyOptions: Record<'gender' | 'season' | 'style', Array<{ id: string; value: string }>> = { gender: [], season: [], style: [] };
   loading = false;
   error = '';
   private readonly busyIds = new Set<string>();
-  private readonly requestedCreatorIds = new Set<string>();
+  filtersOpen = false;
+  page = 1;
+  limit = 10;
   total = 0;
+  filters = { status: '', userId: '', gender: '', category: '', season: '', style: '', color: '', search: '' };
   subtitle = `Elenco outfit creati nell'app`;
-  readonly rowActions: NonNullable<import('../../interface/app.interface').ColData['editorbuttons']> = [
-    { id: 'edit', nameEvent: 'onEditEvent', text: 'Modifica', icon: 'mdi mdi-pencil-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' },
-    { id: 'delete', nameEvent: 'deleteOutfit', text: 'Elimina', icon: 'mdi mdi-trash-can-outline', disabled: false, visible: true, cssClass: null, widget: 'button', position: 'left' }
-  ];
   colOutfitsGrid: Colonne[] = [{ itemType: 'group', groupDataField: '', data: [
-    { type:'campoImg', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'imageUrl', colWidth:'100', colCaption:'Immagine', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'title', colWidth:'260', colCaption:'Titolo', edit:false, groupDataField:undefined },
-    { type:'campo', colVisible:true, allowEditing:false, allowFiltering:false, dataField:'userName', colWidth:'180', colCaption:'Creator', edit:false, groupDataField:undefined },
-    { type:'campoLista', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'gender', colWidth:'100', colCaption:'Genere', edit:false, groupDataField:undefined, lista: { multiple:false, remote:false, displayExp:'value', valueExp:'id', options:[{id:'U',value:'Uomo'},{id:'D',value:'Donna'}], parent:null } },
-    { type:'campoLista', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'style', colWidth:'130', colCaption:'Stile', edit:false, groupDataField:undefined, lista: { multiple:false, remote:false, displayExp:'value', valueExp:'id', options:[], parent:null } },
-    { type:'campoLista', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'season', colWidth:'110', colCaption:'Stagione', edit:false, groupDataField:undefined, lista: { multiple:false, remote:false, displayExp:'value', valueExp:'id', options:[{id:'P',value:'Primavera'},{id:'E',value:'Estate'},{id:'A',value:'Autunno'},{id:'I',value:'Inverno'}], parent:null } },
-    { type:'campoLista', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'occasion', colWidth:'140', colCaption:'Occasione', edit:false, groupDataField:undefined, lista: { multiple:false, remote:false, displayExp:'value', valueExp:'id', options:[], parent:null } },
-    { type:'campoNumber', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'likes', colWidth:'75', colCaption:'Like', edit:false, groupDataField:undefined },
-    { type:'campoNumber', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'visits', colWidth:'75', colCaption:'Visite', edit:false, groupDataField:undefined },
-    { type:'campoDateTime', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'createdAt', colWidth:'120', colCaption:'Creazione', edit:false, groupDataField:undefined },
-    { type:'campoLista', colVisible:true, allowEditing:false, allowFiltering:true, dataField:'status', colWidth:'105', colCaption:'Stato', edit:false, groupDataField:undefined, lista: { multiple:false, remote:false, displayExp:'value', valueExp:'id', options:[{id:'approved',value:'Approvato'},{id:'pending',value:'In attesa'},{id:'rifiutato',value:'Rifiutato'},{id:'suspended',value:'Sospeso'}], parent:null } },
-    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'55', colCaption:'Approva', edit:false, groupDataField:undefined, button:{ text:'', name:'approve', event:'approve', icon:'mdi mdi-check', hint:'Approva' } },
-    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'55', colCaption:'Rifiuta', edit:false, groupDataField:undefined, button:{ text:'', name:'reject', event:'reject', icon:'mdi mdi-close', hint:'Rifiuta' } },
-    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'75', colCaption:'Visibilità', edit:false, groupDataField:undefined, button:{ text:'', name:'toggleSuspend', event:'toggleSuspend', icon:'mdi mdi-pause-circle-outline', hint:'Sospendi / Riattiva' } }
+    { type:'campo', colVisible:true, allowEditing:false, dataField:'title', colWidth:'280', colCaption:'Titolo', edit:false, groupDataField:undefined },
+    { type:'campoImg', colVisible:true, allowEditing:false, dataField:'imageUrl', colWidth:'130', colCaption:'Immagine', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, dataField:'userName', colWidth:'160', colCaption:'Creator', edit:false, groupDataField:undefined },
+    { type:'campoDateTime', colVisible:true, allowEditing:false, dataField:'createdAt', colWidth:'110', colCaption:'Creazione', edit:false, groupDataField:undefined },
+    { type:'campo', colVisible:true, allowEditing:false, dataField:'status', colWidth:'100', colCaption:'Stato', edit:false, groupDataField:undefined },
+    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Approva', edit:false, groupDataField:undefined, button:{ text:'', name:'approve', event:'approve', icon:'mdi mdi-check', hint:'Approva' } },
+    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'60', colCaption:'Rifiuta', edit:false, groupDataField:undefined, button:{ text:'', name:'reject', event:'reject', icon:'mdi mdi-close', hint:'Rifiuta' } },
+    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'72', colCaption:'Visibilità', edit:false, groupDataField:undefined, button:{ text:'', name:'toggleSuspend', event:'toggleSuspend', icon:'mdi mdi-pause-circle-outline', hint:'Sospendi / Riattiva' } },
+    { type:'campoButton', colVisible:true, allowEditing:false, dataField:'', colWidth:'65', colCaption:'Elimina', edit:false, groupDataField:undefined, button:{ text:'', name:'deleteOutfit', event:'deleteOutfit', icon:'mdi mdi-trash-can-outline', hint:'Elimina outfit' } }
   ] }];
 
-  ngOnInit(): void {
-    this.loadCreators();
-    void this.initializeTaxonomyColumns();
-  }
-
-  ngOnDestroy(): void {
-    this.requestVersion++;
-  }
-
-  /** The DataGrid renders list cell labels once; load the taxonomies before mounting it. */
-  async initializeTaxonomyColumns(): Promise<void> {
-    this.gridReady = false;
-    this.error = '';
+  ngOnInit(): void { this.loadCreators(); this.loadTaxonomies(); void this.loadOutfits(); }
+  loadCreators(): void { this.usersService.getUsers(100).subscribe({ next: users => this.creators = users, error: () => this.error = 'Impossibile caricare i creator.' }); }
+  creatorName(userId: string): string { const user = this.creators.find(item => item.uid === userId); return user?.displayName || user?.email || userId || '—'; }
+  async loadOutfits(): Promise<void> {
+    this.loading = true; this.error = '';
     try {
-      const [stylesResponse, occasionsResponse] = await Promise.all([
-        this.formService.getData('outfitStyles'),
-        this.formService.getData('outfitOccasions'),
-      ]);
-      const optionsFrom = (response: any): Array<{ id: string; value: string }> => {
-        const values = Array.isArray(response) ? response : response?.data;
-        if (!Array.isArray(values)) throw new Error('Risposta tassonomia non valida');
-        return values.filter(option => typeof option?.id === 'string' && typeof option?.value === 'string');
-      };
-      const styles = optionsFrom(stylesResponse);
-      const occasions = optionsFrom(occasionsResponse);
-      if (!styles.length || !occasions.length) throw new Error('Tassonomie senza opzioni');
-
-      for (const [field, options] of [['style', styles], ['occasion', occasions]] as const) {
-        const column = this.colOutfitsGrid[0].data.find(item => item.dataField === field);
-        if (column?.lista) column.lista.options = options;
-      }
-      this.gridReady = true;
-    } catch {
-      this.error = 'Impossibile caricare le tassonomie Stile/Occasione. Riprova per visualizzare la griglia correttamente.';
-    }
+      this.outfits = await this.outfitService.getAdminOutfits(this.filters, this.page, this.limit);
+      const pagination = this.outfitService.pagination();
+      this.page = pagination.page; this.limit = pagination.limit; this.total = pagination.total;
+      this.outfits.forEach(item => item.userName = this.creatorName(item.userId));
+    } catch { this.error = 'Impossibile caricare gli outfit.'; }
+    finally { this.loading = false; }
   }
-
-  loadCreators(): void {
-    this.usersService.getUsers(100).subscribe({
-      next: users => {
-        this.creators = users;
-        this.refreshCreatorNames();
-        this.resolveMissingCreators(this.outfits);
-      },
-      error: () => { this.error = 'Impossibile caricare i nomi dei creator.'; }
+  applyFilters(): void { this.page = 1; void this.loadOutfits(); }
+  resetFilters(): void { this.filters = { status:'', userId:'', gender:'', category:'', season:'', style:'', color:'', search:'' }; this.applyFilters(); }
+  private loadTaxonomies(): void {
+    this.taxonomyService.getColors().subscribe({ next: colors => this.colors = colors, error: () => this.error = 'Impossibile caricare la tassonomia colori.' });
+    this.outfitService.getOutFitCategories().subscribe({ next: categories => this.categories = categories, error: () => this.error = 'Impossibile caricare le categorie outfit.' });
+    this.formService.getFormFields('outfitForm').subscribe({
+      next: fields => void Promise.all((['gender', 'season', 'style'] as const).map(name => this.loadFieldOptions(fields, name))),
+      error: () => this.error = 'Impossibile caricare le tassonomie del form outfit.'
     });
   }
-  creatorName(userId: string): string {
-    const user = this.creators.find(item => item.uid === userId);
-    const alias = user?.displayName?.trim();
-    const fullName = [user?.nome?.trim(), user?.cognome?.trim()].filter(Boolean).join(' ');
-    return alias || fullName || user?.name?.trim() || user?.email || 'Utente non disponibile';
+  private async loadFieldOptions(fields: DynamicFormField[], name: 'gender' | 'season' | 'style'): Promise<void> {
+    const select = fields.find(field => field.name === name)?.selectOptions;
+    if (!select) return;
+    const values = select.remote && select.api ? await this.formService.getData(select.api) : (select.options || []);
+    this.taxonomyOptions[name] = (Array.isArray(values) ? values : values?.data || []).map((item: any) => ({
+      id: String(item[select.valueExp || 'id']), value: String(item[select.displayExp || 'value'])
+    }));
   }
-  private resolveMissingCreators(items: outfit[]): void {
-    const known = new Set(this.creators.map(user => user.uid));
-    for (const uid of new Set(items.map(item => String(item.userId ?? '')).filter(Boolean))) {
-      if (known.has(uid) || this.requestedCreatorIds.has(uid)) continue;
-      this.requestedCreatorIds.add(uid);
-      this.usersService.getUserProfile(uid).subscribe({
-        next: user => {
-          if (!user?.uid) return;
-          this.creators = [...this.creators.filter(item => item.uid !== user.uid), user];
-          this.refreshCreatorNames();
-        },
-        error: () => { /* Keep a readable fallback instead of exposing the UID. */ }
-      });
-    }
-  }
-  private refreshCreatorNames(): void {
-    this.outfits = this.outfits.map(item => ({ ...item, userName: this.creatorName(String(item.userId ?? '')) }));
-    this.grid?.rowsData.update(rows => rows.map(item => ({
-      ...item, userName: this.creatorName(String(item.userId ?? ''))
-    })));
-  }
-  loadOutfits(): void {
-    if (!this.grid || this.loading || this.loadingMore) return;
-    this.error = '';
-    this.grid.refresh();
-  }
-  editOutfit(event: any): void {
-    const item = event?.rowData ?? event?.data ?? event;
-    const id = item?.id;
-    if (id === null || id === undefined || String(id).trim() === '') {
-      this.error = 'Impossibile aprire il dettaglio: ID outfit mancante.';
-      return;
-    }
-    if (event?.cancel !== undefined) event.cancel = true;
-    void this.router.navigate(['/outfit-detail', String(id)]);
-  }
+  previous(): void { if (this.page > 1) { this.page--; void this.loadOutfits(); } }
+  next(): void { if (this.page * this.limit < this.total) { this.page++; void this.loadOutfits(); } }
+  editOutfit(event: any): void { const value = event?.data || event; if (event?.cancel !== undefined) event.cancel = true; this.router.navigate(['/outfit-detail', value.id]); }
   isBusy(item: outfit): boolean { return this.busyIds.has(String(item.id)); }
 
   async updateStatus(item: outfit, status: outfit['status']): Promise<void> {
@@ -225,7 +124,7 @@ export class OutfitsComponent implements OnDestroy {
     this.error = '';
     try {
       await this.outfitService.deleteAdminOutfit(id);
-
+      if (this.outfits.length === 1 && this.page > 1) this.page--;
       await this.loadOutfits();
       alert('Outfit eliminato.', 'Operazione completata');
     } catch {
@@ -240,6 +139,10 @@ export class OutfitsComponent implements OnDestroy {
     if (name === 'addButton') await this.router.navigate(['/outfit-detail']);
   }
 
+  gridEvent(event: any): void {
+    // Deletion uses the dedicated action button, not the DataGrid local row removal.
+    if (event.name === 'delRows') this.removeOutfit(event.rowData);
+  }
 
   statusGridEvent(event: any): void {
     const item = event.rowData as outfit;
