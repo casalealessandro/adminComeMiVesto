@@ -420,7 +420,7 @@ describe('Affiliate products', () => {
       expect(component.cleanupBackupConfirmed).toBeFalse();
     });
 
-    it('preserves supported filters and clears legacy taxonomy URL filters in detail navigation', async () => {
+    it('preserves taxonomy and other active filters in detail navigation', async () => {
       const navigate = spyOn(router, 'navigate').and.resolveTo(true);
       (component as any).dataGrid = {
         providerFilterValue: (field: string) => {
@@ -437,8 +437,8 @@ describe('Affiliate products', () => {
       expect(navigate.calls.argsFor(0)[1]).toEqual(jasmine.objectContaining({
         queryParams: {
           affiliateProgramId: program.id,
-          category: null,
-          subcategory: null,
+          category: 'Clothing',
+          subcategory: 'Shirts',
           visibleInApp: 'false',
         },
         queryParamsHandling: 'merge',
