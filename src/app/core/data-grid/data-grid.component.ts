@@ -240,6 +240,7 @@ export class DataGridComponent<T = any> implements OnDestroy {
   private hasExplicitTableWidth = false;
   private readonly zone = inject(NgZone);
   private remoteLoadVersion = 0;
+  private readonly baseColumnWidths = new WeakMap<ColData, number>();
 
   get remoteContinuation(): unknown {
     return this.gridEngine.remoteContinuation;
@@ -1052,83 +1053,32 @@ export class DataGridComponent<T = any> implements OnDestroy {
 
   }
 
-  async resizeCols(cols?: any) {
+  async resizeCols(cols?: ColData[]): Promise<void> {
+    const columns = cols ?? this.colsHeader;
+    if (!columns?.length || !Number.isFinite(this.tableWrapWidth) || this.tableWrapWidth <= 0) return;
 
-
-    // Creo una costante larghezza fissa della tabella
-    const larghezzaTabella = this.tableWrapWidth;
-
-    if (!cols) {
-      cols = this.colsHeader
-    }
-
-    cols = cols.map((ress: ColData) => {
-      if (!ress.colWidth) {
-        if (ress.colCaption) {
-          ress.colWidth = ress.colCaption.length;
-        } else if (ress.caption) {
-          ress.colWidth = ress.caption.length;
-        } else {
-          ress.colWidth = 'auto';
-        }
-
+    const fixedTypes = new Set(['icon', 'selection', 'editorButtons', 'removeButtons', 'detail', 'campoDesc', 'empty']);
+    const baseline = columns.map(column => {
+      let width = this.baseColumnWidths.get(column);
+      if (width === undefined) {
+        const requested = Number(column.colWidth);
+        width = Number.isFinite(requested) && requested > 0 ? requested : 0;
+        if (width > 0) this.baseColumnWidths.set(column, width);
       }
-      return ress
-    })
+      return width;
+    });
+    if (baseline.some(width => width <= 0)) return;
 
-    const totalWidthCols = cols.reduce((accumulatore: any, col: ColData) => {
-      return accumulatore + Number(col.colWidth);
-    }, 0); // 0 è il valore iniziale di accumulatore
+    const baselineTotal = baseline.reduce((sum, width) => sum + width, 0);
+    const flexibleIndexes = columns.flatMap((column, index) => fixedTypes.has(column.type) ? [] : [index]);
+    const extra = Math.max(0, this.tableWrapWidth - baselineTotal);
+    const perColumn = flexibleIndexes.length ? extra / flexibleIndexes.length : 0;
 
-
-    // Creo una costante dimension che le celle fisse occupano 
-
-    const data = ['icon', 'selection', 'editorButtons', 'removeButtons', 'detail', 'campoDesc', 'empty'];
-
-
-    //rimuove dall'oggetto cols le celle di funzione che hanno una dimensione fissa
-    const colonneFisse = cols.filter((col: any) => data.some(d => d == col.type));
-
-    const totalWidthfixCols = colonneFisse.reduce((accumulatore: any, col: ColData) => {
-      return accumulatore + col.colWidth;
-    }, 0); // 0 è il valore iniziale di accumulatore
-
-    //ricalcolo la larghezza della tabella senza le celle fisse.
-    //const totalWidthRestante = larghezzaTabella - totalWidthfixCols
-    //rimuove dall'oggetto cols le celle di funzione che hanno una dimensione fissa
-    const colonneFiltrate = cols.filter((col: any) => !data.some(d => d == col.type));
-
-    const totalWidthFilterCols = colonneFiltrate.reduce((accumulatore: any, col: ColData) => {
-      if (col.colWidth != 'auto')
-        return accumulatore + Number(col.colWidth);
-    }, 0);
-    const diffWidthCols = larghezzaTabella - totalWidthFilterCols;
-    //ricalcolo la larghezza della tabella senza le celle fisse.
-    const totalWidthRestante = diffWidthCols - totalWidthfixCols
-    // Calcola il fattore di scala basato sulla larghezza rimanente e la larghezza totale della tabella
-    const scala: number = totalWidthRestante / colonneFiltrate.length;;
-    for (let i = 0; i < colonneFiltrate.length; i++) {
-
-      if (colonneFiltrate[i].colWidth != 'auto') {
-        const newW = Number(colonneFiltrate[i].colWidth) + scala;
-        const indx = cols.findIndex((col: ColData) => col.dataField == colonneFiltrate[i].dataField);
-
-        cols[indx].colWidth = newW
-      }
-
-    }
-
-    const tt = cols.reduce((accumulatore: any, col: ColData) => {
-      if (col.colWidth != 'auto')
-        return accumulatore + Number(col.colWidth);
-    }, 0);
-
-    console.log('dddd', tt)
-    return
-
+    // Always calculate from original widths, never from previous renders.
+    columns.forEach((column, index) => {
+      column.colWidth = baseline[index] + (flexibleIndexes.includes(index) ? perColumn : 0);
+    });
   }
-
-
 
 
 
