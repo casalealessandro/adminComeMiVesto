@@ -26,6 +26,7 @@
 [tags]="tags"
 [gender]="outfitData()?.gender"
 [enableCatalogReplacements]="!!outfitId"
+[enableOuterwearAddition]="outfitData()?.aiGenerated === true && !!outfitData()?.aiOutfitDraftId"
 (eventProductReplacements)="setCatalogReplacements($event)"
 (eventProductAdditions)="setCatalogAdditions($event)"
 (eventImageTags)="setTags($event)"
