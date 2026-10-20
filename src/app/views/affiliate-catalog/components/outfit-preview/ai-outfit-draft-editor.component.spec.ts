@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AiOutfitPreviewOutfit } from '../../models/affiliate-catalog-api.models';
@@ -16,7 +17,9 @@ describe('AI outfit draft replacement via Core popup', () => {
     popup.getOutputComponent.and.returnValue(new Promise(resolve => { resolvePicker = resolve; }));
     TestBed.configureTestingModule({
       providers: [
-        { provide: AffiliateCatalogService, useValue: {} },
+        { provide: AffiliateCatalogService, useValue: {
+          getProductCategories: () => of(['scarpe', 'cappotti', 'ABC_Completi', 'P_Pantaloni', 'M_Maglieria', 'camicie']),
+        } },
         { provide: PopUpService, useValue: popup },
       ],
     });
@@ -47,6 +50,28 @@ describe('AI outfit draft replacement via Core popup', () => {
     expect(component.replacementLabel(0)).toContain('Jeans alternativi');
     expect(component.replacementIndex).toBeNull();
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalled();
+  });
+
+  it('adds a new jacket slot after existing products, without generating an image', async () => {
+    component.addRole = 'OUTERWEAR';
+    component.addCategory = 'cappotti';
+    expect(component.availableCategories).toContain('cappotti');
+    expect(component.availableCategories).not.toContain('scarpe');
+    component.addProduct();
+    expect(popup.setNewPopUp).toHaveBeenCalledWith(
+      jasmine.any(String), 'OutfitReplacementPickerComponent',
+      { category: 'cappotti', gender: 'D', productIdsInOutfit: ['p1', 'p2'] },
+      1180, undefined, undefined, false, true, 'Aggiungi prodotto', 'center', true,
+    );
+    const jacket = {
+      id:'jacket3', category:'cappotti', subcategory:'piumino',
+      brand:'Marca', name:'Giacca', genderTargets:['D'], images:['https://example.test/jacket.jpg'],
+    } as CatalogProduct;
+    resolvePicker({name:'selected', product:jacket});
+    await Promise.resolve();
+    expect(component.form?.products.map(p => p.catalogProductId)).toEqual(['p1','p2','jacket3']);
+    expect(component.form?.products[2].role).toBe('OUTERWEAR');
+    expect(component.addingProduct).toBeFalse();
   });
 
   it('keeps the draft intact when the popup is closed without choosing a product', async () => {
