@@ -45,6 +45,42 @@ export class AiOutfitDraftEditorComponent {
   form: AiOutfitDraftEditRequest | null = null;
   replacementIndex: number | null = null;
   readonly selectedReplacements = new Map<number, CatalogProduct>();
+  additionalCategory: 'cappotti' | 'ABC_Completi' | 'B_Blazer' = 'cappotti';
+  pendingOuterwear?: CatalogProduct;
+  addingOuterwear = false;
+
+  get canAddOuterwear(): boolean {
+    return !!this.form && this.form.products.length < 8 &&
+      !this.form.products.some(item => item.role === 'OUTERWEAR');
+  }
+
+  /** One additional jacket at a time; existing picker retains paging and filters. */
+  addOuterwear(): void {
+    if (!this.canAddOuterwear || this.saving || this.addingOuterwear || this.replacementIndex !== null) return;
+    const edit = this.form!;
+    const guid = `outfit-add-outerwear-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    this.addingOuterwear = true;
+    this.popupService.setNewPopUp(
+      guid, 'OutfitReplacementPickerComponent', {
+        category: this.additionalCategory, gender: edit.gender,
+        productIdsInOutfit: edit.products.map(p => p.catalogProductId),
+      }, 1180, undefined, undefined, false, true, 'Aggiungi capospalla', 'center', true,
+    );
+    void this.popupService.getOutputComponent(guid).then((result: OutfitReplacementPickerResult) => {
+      this.popupService.destroyCurrentOpenPopUpByGuid(guid);
+      const product = result?.name === 'selected' ? result.product : undefined;
+      if (!product || !this.canAddOuterwear || product.category !== this.additionalCategory ||
+          !product.genderTargets.includes(edit.gender)) return;
+      const valid = product.category === 'cappotti' ||
+        (product.category === 'ABC_Completi' && product.subcategory === 'blazer') ||
+        (product.category === 'B_Blazer' && ['Gilet','CompletiEleganti'].includes(product.subcategory ?? ''));
+      if (!valid) { this.error = 'Seleziona una giacca o un capospalla valido.'; return; }
+      edit.products.push({ catalogProductId: product.id, role: 'OUTERWEAR', x: .48, y: .3 });
+      this.pendingOuterwear = product;
+      this.error = '';
+    }).finally(() => { this.addingOuterwear = false; });
+  }
+
 
   startEditing(): void {
     if (!this.outfit.draftId || this.saving || this.regenerating) return;
@@ -66,6 +102,7 @@ export class AiOutfitDraftEditorComponent {
     this.error = '';
     this.replacementIndex = null;
     this.selectedReplacements.clear();
+    this.pendingOuterwear = undefined;
     this.editing = true;
     this.editingChange.emit(true);
   }
@@ -76,6 +113,7 @@ export class AiOutfitDraftEditorComponent {
     this.form = null;
     this.replacementIndex = null;
     this.selectedReplacements.clear();
+    this.pendingOuterwear = undefined;
     this.editingChange.emit(false);
   }
 
@@ -120,6 +158,9 @@ export class AiOutfitDraftEditorComponent {
 
   replacementLabel(index: number): string {
     if (!this.form) return '';
+    if (index >= this.outfit.products.length && this.pendingOuterwear) {
+      return `${this.pendingOuterwear.brand} · ${this.pendingOuterwear.name}`;
+    }
     const newId = this.form.products[index]?.catalogProductId;
     const replacement = this.selectedReplacements.get(index);
     return newId === replacement?.id

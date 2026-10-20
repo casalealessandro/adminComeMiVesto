@@ -7,7 +7,7 @@ import { Tag } from '../../../services/outfit.service';
 import { FormsModule } from '@angular/forms';
 import { CatalogProduct } from '../../affiliate-catalog/models/affiliate-catalog.models';
 import { OutfitReplacementPickerResult } from '../../affiliate-catalog/components/outfit-preview/outfit-replacement-picker.component';
-import { CatalogReplacementRequest } from '../../../services/outfit.service';
+import { CatalogReplacementRequest, CatalogAdditionRequest } from '../../../services/outfit.service';
 
 
 interface tagStyle {
@@ -39,9 +39,45 @@ export class FotoOutfitPage implements OnInit {
   @Input() tags = signal<Tag[]>([]);
   @Input() enableSetTagsImage: boolean = true
   @Input() enableCatalogReplacements = false;
+  @Input() enableOuterwearAddition = false;
   @Input() gender?: string;
   @Output() eventProductReplacements = new EventEmitter<CatalogReplacementRequest[]>();
+  @Output() eventProductAdditions = new EventEmitter<CatalogAdditionRequest[]>();
   readonly selectedReplacements = new Map<number, CatalogProduct>();
+  additionalCategory: 'cappotti' | 'ABC_Completi' | 'B_Blazer' = 'cappotti';
+  pendingAddedOuterwear?: CatalogProduct;
+  addingOuterwear = false;
+  get canAddOuterwear(): boolean {
+    return this.enableSetTagsImage && this.enableCatalogReplacements && this.enableOuterwearAddition &&
+      ['U','D'].includes(this.gender ?? '') && this.tags().length < 8 &&
+      !this.tags().some(tag => tag.outfitCategory === 'cappotti' ||
+        (tag.outfitCategory === 'ABC_Completi' && tag.outfitSubCategory === 'blazer')) &&
+      !this.pendingAddedOuterwear;
+  }
+  addOuterwear(): void {
+    if (!this.canAddOuterwear || this.replacingIndex !== null || this.addingOuterwear) return;
+    const guid = `published-outfit-add-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    this.addingOuterwear = true;
+    this.propertiesModal.setNewPopUp(guid, 'OutfitReplacementPickerComponent', {
+      category: this.additionalCategory, gender: this.gender,
+      productIdsInOutfit: this.tags().map(tag => tag.catalogProductId ?? String(tag.id)),
+    }, 1180, undefined, undefined, false, true, 'Aggiungi capospalla', 'center', true);
+    void this.propertiesModal.getOutputComponent(guid).then((result: OutfitReplacementPickerResult) => {
+      this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+      const p = result?.name === 'selected' ? result.product : undefined;
+      if (!p || !this.canAddOuterwear || p.category !== this.additionalCategory ||
+          !p.genderTargets.includes(this.gender as 'U'|'D')) return;
+      if (!(p.category === 'cappotti' ||
+          (p.category === 'ABC_Completi' && p.subcategory === 'blazer') ||
+          (p.category === 'B_Blazer' && ['Gilet','CompletiEleganti'].includes(p.subcategory ?? '')))) return;
+      this.pendingAddedOuterwear = p;
+      this.eventProductAdditions.emit([{role: 'OUTERWEAR',catalogProductId:p.id}]);
+    }).finally(() => { this.addingOuterwear = false; });
+  }
+  cancelOuterwear(): void {
+    this.pendingAddedOuterwear = undefined;
+    this.eventProductAdditions.emit([]);
+  }
   replacingIndex: number | null = null;
 
 
@@ -141,6 +177,7 @@ export class FotoOutfitPage implements OnInit {
               this.selectedTagIndex = null;
               this.selectedReplacements.clear();
               this.emitReplacements();
+              this.cancelOuterwear();
               this.eventImageTags.emit({ tags: [] });
             }
             this.image.set(resizedImage.dataUrl);

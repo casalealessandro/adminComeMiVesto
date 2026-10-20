@@ -49,6 +49,26 @@
       fotografia. L'immagine non sarà modificata automaticamente.
       Prezzi e link verranno confermati al salvataggio.
     </p>
+    <div *ngIf="canAddOuterwear" class="product-card p-2 my-2">
+      <label class="d-block mb-2">Tipo di capospalla
+        <select class="form-select form-select-sm" [(ngModel)]="additionalCategory"
+          [disabled]="addingOuterwear">
+          <option value="cappotti">Giacche e cappotti</option>
+          <option value="ABC_Completi">Blazer</option>
+          <option value="B_Blazer">Completi e gilet</option>
+        </select>
+      </label>
+      <button type="button" class="btn btn-sm btn-outline-primary"
+        [disabled]="addingOuterwear" (click)="addOuterwear()">
+        Aggiungi capospalla
+      </button>
+    </div>
+    <div *ngIf="pendingAddedOuterwear as added" class="product-card p-2 my-2" role="status">
+      <strong>Capospalla selezionato · {{ added.brand }}</strong>
+      <p class="mb-1">{{ added.name }}</p>
+      <small class="d-block mb-2">Salva la modifica, poi rigenera l'immagine manualmente.</small>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelOuterwear()">Annulla aggiunta</button>
+    </div>
     <p *ngIf="!tags().length" class="empty-products">Nessun prodotto collegato a questa foto.</p>
 
     <div class="product-list" *ngIf="tags().length">
