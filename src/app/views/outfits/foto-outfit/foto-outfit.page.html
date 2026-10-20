@@ -92,5 +92,44 @@
         </div>
       </article>
     </div>
+    <div *ngIf="enableCatalogReplacements && enableSetTagsImage" class="mt-3">
+      <button type="button" class="btn btn-sm btn-outline-primary"
+        (click)="toggleAddProduct()" [disabled]="tags().length + selectedAdditions.length >= 8">
+        {{ addProductEnabled ? 'Chiudi aggiunta' : 'Aggiungi prodotto' }}
+      </button>
+      <div *ngIf="addProductEnabled" class="mt-2">
+        <p class="panel-help">Scegli ruolo e categoria, poi un prodotto reale dal catalogo.
+          Potrai rigenerare l'immagine dopo aver salvato.</p>
+        <label class="me-2">Ruolo
+          <select class="form-select" [(ngModel)]="addRole">
+            <option value="">Seleziona ruolo</option>
+            <option *ngFor="let role of addRoles" [value]="role">{{ role }}</option>
+          </select>
+        </label>
+        <label class="me-2">Categoria
+          <select class="form-select" [(ngModel)]="addCategory" [disabled]="categoriesLoading">
+            <option value="">Seleziona categoria</option>
+            <option *ngFor="let category of availableAddCategories" [value]="category">{{ category }}</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-sm btn-primary mt-2"
+          (click)="addProductFromCatalog()"
+          [disabled]="!addRole || !addCategory || replacingIndex !== null || tags().length + selectedAdditions.length >= 8">
+          Scegli prodotto
+        </button>
+      </div>
+      <div *ngIf="selectedAdditions.length" class="alert alert-warning mt-2" role="status">
+        <strong>Prodotti da aggiungere</strong>
+        <p>Le nuove schede e i pin diventeranno definitivi solo dopo Salva modifiche.
+          La fotografia potrebbe non corrispondere ai nuovi capi.</p>
+        <div *ngFor="let item of selectedAdditions; let i=index" class="d-flex align-items-center gap-2 mb-2">
+          <img *ngIf="item.product.images?.[0]" [src]="item.product.images[0]"
+            [alt]="item.product.name" width="52" height="65" style="object-fit:contain">
+          <span>{{ item.role }} · {{ item.product.brand }} · {{ item.product.name }}</span>
+          <button type="button" class="btn btn-sm btn-outline-danger"
+            (click)="removePendingAddition(i)">Rimuovi</button>
+        </div>
+      </div>
+    </div>
   </section>
 </section>
