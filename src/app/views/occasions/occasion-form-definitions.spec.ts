@@ -1,53 +1,48 @@
 import { StoredForm } from '../../services/form.service';
 import {
-  OCCASION_CREATE_FORM, OCCASION_EDIT_FORM, hasOccasionImageFileBox,
-  isOccasionFormReady, missingOccasionFormFields, occasionFormDefinitions,
+  OCCASION_FORM, hasOccasionImageFileBox,
+  isOccasionFormReady, missingOccasionFormFields, occasionFormDefinition,
 } from './occasion-form-definitions';
 
-describe('Occasion forms persisted in Firestore', () => {
-  it('defines distinct create/edit forms with image FileBox', () => {
-    expect(occasionFormDefinitions.map(form => form.id))
-      .toEqual([OCCASION_CREATE_FORM, OCCASION_EDIT_FORM]);
-    for (const form of occasionFormDefinitions) {
-      const image = form.json.find(field => field.name === 'image');
-      expect(image?.type).toBe('fileBox');
-      expect(image?.fileBoxOptions?.maxWidth).toBe(512);
-      expect(image?.fileBoxOptions?.maxHeight).toBe(512);
-      expect(image?.required).toBeFalse();
-    }
-    expect(occasionFormDefinitions[0].json.some(field => field.name === 'id')).toBeTrue();
-    expect(occasionFormDefinitions[1].json.some(field => field.name === 'id')).toBeFalse();
+describe('Single Firestore occasion form for create and edit', () => {
+  it('uses one document with the entire schema, including id and image', () => {
+    expect(occasionFormDefinition.id).toBe(OCCASION_FORM);
+    expect(occasionFormDefinition.json.map(field => field.name))
+      .toEqual(['id', 'value', 'order', 'active', 'image']);
+    const image = occasionFormDefinition.json.find(field => field.name === 'image');
+    expect(image?.type).toBe('fileBox');
+    expect(image?.fileBoxOptions).toEqual({ maxWidth: 512, maxHeight: 512, maxSize: 4 });
+    expect(image?.required).toBeFalse();
+    expect(occasionFormDefinition.json.find(field => field.name === 'id')?.required).toBeTrue();
   });
 
-  it('initializes all fields only for missing forms', () => {
-    const target = occasionFormDefinitions[0];
-    expect(missingOccasionFormFields(undefined, target)).toEqual(target.json);
+  it('initializes the single form only if absent', () => {
+    expect(missingOccasionFormFields(undefined)).toEqual(occasionFormDefinition.json);
+    expect(isOccasionFormReady([])).toBeFalse();
+    expect(isOccasionFormReady([occasionFormDefinition])).toBeTrue();
   });
 
-  it('adds only missing image field, preserving customized names and order', () => {
-    const target = occasionFormDefinitions[1];
+  it('only adds missing image, retaining custom labels and order', () => {
     const customized: StoredForm = {
-      id: target.id,
+      id: OCCASION_FORM,
       nameForm: 'Mio form',
-      json: target.json.filter(field => field.name !== 'image')
+      json: occasionFormDefinition.json.filter(field => field.name !== 'image')
         .map(field => field.name === 'value' ? { ...field, label: 'Il mio titolo' } : field),
     };
-    expect(missingOccasionFormFields(customized, target).map(field => field.name)).toEqual(['image']);
+    expect(missingOccasionFormFields(customized).map(field => field.name)).toEqual(['image']);
     expect(customized.json.find(field => field.name === 'value')?.label).toBe('Il mio titolo');
   });
 
-  it('does not duplicate the field on repeated setup', () => {
-    const target = occasionFormDefinitions[0];
-    expect(missingOccasionFormFields(target, target)).toEqual([]);
+  it('repeated setup never adds a duplicate field', () => {
+    expect(missingOccasionFormFields(occasionFormDefinition)).toEqual([]);
   });
 
-  it('requires real FileBox fields, not a textBox named image', () => {
-    const configured = occasionFormDefinitions.map(form => ({ ...form, json: [...form.json] }));
-    expect(isOccasionFormReady(configured)).toBeTrue();
-    const invalid = [{ ...configured[0], json: configured[0].json.map(field =>
-      field.name === 'image' ? { ...field, type: 'textBox' as const } : field),
-    }, configured[1]];
-    expect(hasOccasionImageFileBox(invalid[0])).toBeFalse();
-    expect(isOccasionFormReady(invalid)).toBeFalse();
+  it('rejects a text field named image rather than a real FileBox', () => {
+    const invalid: StoredForm = { ...occasionFormDefinition,
+      json: occasionFormDefinition.json.map(field =>
+        field.name === 'image' ? { ...field, type: 'textBox' } : field),
+    };
+    expect(hasOccasionImageFileBox(invalid)).toBeFalse();
+    expect(isOccasionFormReady([invalid])).toBeFalse();
   });
 });
