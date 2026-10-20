@@ -549,4 +549,44 @@ describe('AffiliateCatalogService release contract', () => {
     expect(request.request.params.keys()).toEqual([]);
     request.flush({ data: [], pagination: { nextCursor: null, hasMore: false } });
   });
+  it('keeps category vision preview free until explicit confirmation, including pagination', () => {
+    service.getFashionVisionCategory('ABC_Completi').subscribe();
+    let req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi');
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: null });
+
+    service.previewFashionVisionCategory('ABC_Completi', 10, 0.10).subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi/preview');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ maxProducts: 10, maxBudgetUsd: 0.10 });
+    req.flush({ data: { runId: 'pilot', rows: [] } });
+
+    service.previewFashionVisionCategory('ABC_Completi', 50, 0.25, 'next_cursor').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi/preview');
+    expect(req.request.body).toEqual({ maxProducts: 50, maxBudgetUsd: 0.25, after: 'next_cursor' });
+    req.flush({ data: { runId: 'pilot2', rows: [] } });
+  });
+
+  it('confirms category AI billing only with runId and the approved budget', () => {
+    service.confirmFashionVisionCategory('ABC_Completi', 'run-123', 0.10).subscribe();
+    const req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi/confirm');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ runId: 'run-123', acknowledgedBudgetUsd: 0.10 });
+    req.flush({ data: { runId: 'run-123', rows: [] } });
+  });
+
+  it('sends explicit product review with edited style set and subcategory, never updates catalog directly', () => {
+    service.reviewFashionVisionProduct('ABC_Completi', {
+      runId: 'run-123', productId: 'prod-1', action: 'APPROVE',
+      subcategory: 'blazer', styles: ['ELEGANT', 'SMART_CASUAL'],
+    }).subscribe();
+    const req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi/review');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({
+      runId: 'run-123', productId: 'prod-1', action: 'APPROVE',
+      subcategory: 'blazer', styles: ['ELEGANT', 'SMART_CASUAL'],
+    });
+    req.flush({ data: { runId: 'run-123', rows: [] } });
+  });
+
 });

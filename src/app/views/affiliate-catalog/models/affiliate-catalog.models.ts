@@ -86,6 +86,59 @@ export interface AffiliateFeedCleanupJob {
   lastError: string | null;
 }
 
+export type FashionVisionStatus = 'PREVIEW_READY' | 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'STOPPED_BUDGET';
+export type FashionVisionRowStatus = 'PREVIEW' | 'READY' | 'SKIPPED' | 'CONFLICT' | 'APPROVED' | 'REJECTED';
+export interface FashionVisionMirror {
+  category: string;
+  subcategory: string;
+  styles: string[];
+  seasons: string[];
+  fit: string;
+  visualWeight: string;
+}
+export interface FashionVisionReviewRow {
+  productId: string;
+  name: string;
+  brand: string;
+  image: string;
+  updatedAt: number;
+  before: FashionVisionMirror;
+  after: FashionVisionMirror | null;
+  detectedType: string;
+  insideCategory: boolean | null;
+  confidence: string;
+  explanation: string;
+  status: FashionVisionRowStatus;
+  costUsd: number;
+}
+export interface FashionVisionCategoryJob {
+  runId: string;
+  categoryId: string;
+  categoryName: string;
+  status: FashionVisionStatus;
+  createdAt: number;
+  previewAt: number;
+  updatedAt: number;
+  maxProducts: number;
+  maxBudgetUsd: number;
+  model: string;
+  priceCheckedAt: string;
+  estimatedCostUsd: number;
+  estimatedGuardUsd: number;
+  scanned: number;
+  nextCursor: string | null;
+  rows: FashionVisionReviewRow[];
+  nextIndex: number;
+  pendingNext: boolean;
+  completed: number;
+  skipped: number;
+  uncertainCalls: number;
+  costUsd: number;
+  inputTokens: number;
+  outputTokens: number;
+  lastError: string | null;
+}
+
 export interface FashionAiPilotProductResult {
   productId: string;
   name: string;

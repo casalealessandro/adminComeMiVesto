@@ -7,7 +7,7 @@ import { confirm } from '../../../../core/dialogs/ui-dialogs';
 import { AuthService } from '../../../../services/auth.service';
 import {
   FashionCatalogOverview, FashionCoverage, FashionCatalogExample, FashionMerchantOverview, FashionOverviewJob,
-  FashionAiPilotJob, AffiliateFeed, AffiliateProgram,
+  FashionAiPilotJob, AffiliateFeed, AffiliateProgram, FashionVisionCategoryJob, FashionVisionReviewRow,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -44,6 +44,165 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   readonly aiSizes = [5, 10, 20, 50];
   readonly aiBudgets = [0.10, 0.25, 0.50, 1, 2];
 
+  // New visual review is independent of the legacy feed text-only pilot.
+  visionCategories: Array<{ id: string; categoryName: string }> = [];
+  visionSubcategories: Array<{ id: string; categoryName: string }> = [];
+  selectedVisionCategoryId = '';
+  visionCount = 10;
+  visionBudget = 0.10;
+  visionJob: FashionVisionCategoryJob | null = null;
+  visionAccepted = false;
+  visionBusy = false;
+  visionError = '';
+  visionNotice = '';
+  visionFilter: 'all' | 'changed' | 'pending' | 'reviewed' = 'all';
+  visionStyleEdits: Record<string, string[]> = {};
+  visionSubcategoryEdits: Record<string, string> = {};
+  readonly visionStyles = [
+    'CASUAL', 'BUSINESS', 'SPORTY', 'SMART_CASUAL', 'ELEGANT',
+    'ALTERNATIVE', 'FESTIVAL', 'CLASSIC', 'TRENDY', 'STREETWEAR',
+  ];
+  readonly visionSizes = [5, 10, 20, 50];
+
+  get visionRunning(): boolean {
+    return this.visionJob?.status === 'QUEUED' || this.visionJob?.status === 'RUNNING';
+  }
+  get visionPreviewReady(): boolean {
+    return this.visionJob?.status === 'PREVIEW_READY' &&
+      Date.now() - this.visionJob.previewAt <= 15 * 60 * 1000;
+  }
+  get visibleVisionRows(): FashionVisionReviewRow[] {
+    return (this.visionJob?.rows || []).filter(row => {
+      if (this.visionFilter === 'all') return true;
+      if (this.visionFilter === 'reviewed') return row.status === 'APPROVED' || row.status === 'REJECTED';
+      if (this.visionFilter === 'pending') return row.status === 'READY';
+      return !!row.after && (row.before.subcategory !== row.after.subcategory ||
+        JSON.stringify(row.before.styles) !== JSON.stringify(row.after.styles));
+    });
+  }
+  visionStyleLabel(style: string): string {
+    const labels: Record<string, string> = {
+      CASUAL: 'Casual', BUSINESS: 'Business', SPORTY: 'Sportivo',
+      SMART_CASUAL: 'Smart Casual', ELEGANT: 'Elegante', ALTERNATIVE: 'Alternativo',
+      FESTIVAL: 'Festival', CLASSIC: 'Classico', TRENDY: 'Trendy', STREETWEAR: 'Streetwear',
+    };
+    return labels[style] || style;
+  }
+  visionStatusLabel(status: FashionVisionCategoryJob['status']): string {
+    return {
+      PREVIEW_READY: 'Anteprima gratuita', QUEUED: 'In coda', RUNNING: 'In analisi',
+      SUCCESS: 'Completata', FAILED: 'Interrotta', STOPPED_BUDGET: 'Sospesa per budget',
+    }[status];
+  }
+
+  private acceptVisionJob(job: FashionVisionCategoryJob | null): void {
+    if (job && this.visionJob?.runId !== job.runId) {
+      this.visionStyleEdits = {};
+      this.visionSubcategoryEdits = {};
+    }
+    this.visionJob = job;
+    for (const row of job?.rows || []) {
+      if (!row.after) continue;
+      if (!(row.productId in this.visionStyleEdits)) this.visionStyleEdits[row.productId] = [...row.after.styles];
+      if (!(row.productId in this.visionSubcategoryEdits)) this.visionSubcategoryEdits[row.productId] = row.after.subcategory;
+    }
+  }
+
+  onVisionCategoryChanged(): void {
+    this.visionJob = null;
+    this.visionAccepted = false;
+    this.visionError = '';
+    this.visionNotice = '';
+    this.visionStyleEdits = {};
+    this.visionSubcategoryEdits = {};
+    this.visionSubcategories = [];
+    const category = this.selectedVisionCategoryId;
+    if (!category) return;
+    this.service.getCurationCategories(category).subscribe({
+      next: (children) => { if (this.selectedVisionCategoryId === category) this.visionSubcategories = children; },
+      error: () => { this.visionError = 'Impossibile caricare le sottocategorie disponibili.'; },
+    });
+    this.refreshVision();
+  }
+
+  refreshVision(): void {
+    const category = this.selectedVisionCategoryId;
+    if (!category || this.visionBusy) return;
+    this.visionBusy = true;
+    this.service.getFashionVisionCategory(category).pipe(finalize(() => this.visionBusy = false)).subscribe({
+      next: (job) => { if (category === this.selectedVisionCategoryId) this.acceptVisionJob(job); },
+      error: () => { this.visionError = 'Impossibile caricare la revisione visiva.'; },
+    });
+  }
+
+  previewVision(next = false): void {
+    const category = this.selectedVisionCategoryId;
+    if (!this.canManageAi || !category || this.visionBusy || this.visionRunning) return;
+    const after = next ? this.visionJob?.nextCursor || undefined : undefined;
+    if (next && !after) return;
+    this.visionBusy = true;
+    this.visionAccepted = false;
+    this.visionError = '';
+    this.visionNotice = '';
+    this.service.previewFashionVisionCategory(category, Number(this.visionCount), Number(this.visionBudget), after)
+      .pipe(finalize(() => this.visionBusy = false)).subscribe({
+        next: (job) => {
+          if (category !== this.selectedVisionCategoryId) return;
+          this.acceptVisionJob(job);
+          this.visionNotice = job.rows.length
+            ? 'Campione pronto. Guarda gli articoli e il costo stimato prima di autorizzare le immagini.'
+            : 'Nessun prodotto idoneo nel campione esplorato. Nessun costo AI.';
+        },
+        error: (err: { status?: number; error?: { message?: string } }) => {
+          this.visionError = err.error?.message || 'Impossibile creare l’anteprima visiva.';
+        },
+      });
+  }
+
+  confirmVision(): void {
+    const job = this.visionJob;
+    if (!job || !this.canManageAi || !this.visionAccepted || !this.visionPreviewReady ||
+      !job.rows.length || this.visionBusy || job.categoryId !== this.selectedVisionCategoryId) return;
+    confirm([
+      'Autorizzi l’analisi delle immagini di ' + job.rows.length + ' prodotti della categoria «' + job.categoryName + '»?',
+      'Budget preventivo USD ' + job.maxBudgetUsd.toFixed(2) + '.',
+      'La spesa reale può superare la stima se una chiamata fallisce o il provider fattura diversamente.',
+      'Le immagini dei merchant saranno inviate al servizio AI. Nessun prodotto viene riclassificato senza revisione.',
+    ].join('\n'), 'Conferma analisi visiva e spesa', (yes: boolean) => {
+      if (!yes || this.visionBusy || this.selectedVisionCategoryId !== job.categoryId) return;
+      this.visionBusy = true;
+      this.visionError = '';
+      this.service.confirmFashionVisionCategory(job.categoryId, job.runId, job.maxBudgetUsd)
+        .pipe(finalize(() => this.visionBusy = false)).subscribe({
+          next: (updated) => { this.acceptVisionJob(updated); this.visionAccepted = false; this.visionNotice = 'Analisi in corso. Aggiorna lo stato per vedere le proposte.'; },
+          error: (err: { error?: { message?: string } }) => { this.visionError = err.error?.message || 'Impossibile avviare analisi.'; },
+        });
+    });
+  }
+
+  reviewVision(row: FashionVisionReviewRow, action: 'APPROVE' | 'REJECT'): void {
+    const job = this.visionJob;
+    if (!job || !this.canManageAi || row.status !== 'READY' || this.visionBusy) return;
+    const submit = () => {
+      this.visionBusy = true;
+      this.visionError = '';
+      this.service.reviewFashionVisionProduct(job.categoryId, {
+        runId: job.runId, productId: row.productId, action,
+        ...(action === 'APPROVE' ? {
+          styles: this.visionStyleEdits[row.productId] ?? row.after?.styles ?? [],
+          subcategory: this.visionSubcategoryEdits[row.productId] ?? row.after?.subcategory ?? '',
+        } : {}),
+      }).pipe(finalize(() => this.visionBusy = false)).subscribe({
+        next: updated => { this.acceptVisionJob(updated); this.visionNotice = action === 'APPROVE' ? 'Correzione approvata e registrata.' : 'Proposta rifiutata.'; },
+        error: (err: { error?: { message?: string } }) => { this.visionError = err.error?.message || 'Prodotto cambiato o revisione non riuscita. Aggiorna lo stato.'; },
+      });
+    };
+    if (action === 'REJECT') { submit(); return; }
+    confirm('Applichi SOLO a questo prodotto la sottocategoria e gli stili visualizzati nella proposta? Le modifiche vengono bloccate rispetto alle successive sincronizzazioni.', 'Approva classificazione', (approved: boolean) => {
+      if (approved) submit();
+    });
+  }
+
   get canManageAi(): boolean { return this.auth.isAdmin(); }
   get aiRunning(): boolean {
     return this.aiJob?.status === 'QUEUED' || this.aiJob?.status === 'RUNNING';
@@ -55,6 +214,10 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
 
   ngOnInit(): void {
     this.refresh();
+    this.service.getCurationCategories().subscribe({
+      next: roots => { this.visionCategories = roots; },
+      error: () => { this.visionError = 'Impossibile caricare le categorie principali.'; },
+    });
     forkJoin({ feeds: this.service.getFeeds(), programs: this.service.getPrograms() }).subscribe({
       next: ({ feeds, programs }) => {
         const activePrograms = new Set(programs.filter((p: AffiliateProgram) =>
