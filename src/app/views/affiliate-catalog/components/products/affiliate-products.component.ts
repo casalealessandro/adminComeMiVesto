@@ -532,10 +532,10 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
     // Explicit IDs only: never run a delete against the entire catalog or unseen pages.
     const visible = this.brandSuspects.slice(0, 50);
     const productIds = visible.map(item => item.id);
-    const examples = visible.slice(0, 5).map(item => '- ' + item.name).join('\\n');
+    const examples = visible.slice(0, 5).map(item => '- ' + item.name).join('\n');
     confirm(
-      `Anteprima: ${productIds.length} prodotti sospetti attualmente visualizzati.\\n` +
-      `${examples}${visible.length > 5 ? '\\n- …' : ''}\\n\\n` +
+      `Anteprima: ${productIds.length} prodotti sospetti attualmente visualizzati.\n` +
+      `${examples}${visible.length > 5 ? '\n- …' : ''}\n\n` +
       'Verranno cancellati definitivamente solo quelli ancora sospetti e non protetti da outfit o altri feed, ' +
       'insieme alle relative varianti e offerte. Gli altri rimarranno nel catalogo. ' +
       'Verifica di avere un backup Firestore ripristinabile. L’operazione è irreversibile.',
