@@ -181,6 +181,8 @@ export interface AiOutfitPreviewRequest {
   maxTotalPrice?: number;
   /** Empty or omitted means all eligible feeds. */
   sourceFeedIds?: string[];
+  /** Up to two mandatory base catalog items for a single generated outfit. */
+  anchorProductIds?: string[];
 }
 
 export interface AiOutfitTokenUsage {
