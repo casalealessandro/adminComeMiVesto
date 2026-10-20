@@ -210,7 +210,7 @@ export class OccasionsComponent {
   }
 
   hasImageSelected(): boolean {
-    return !!this.dynamicForm?.form.get('image')?.value && !this.imageRemoved;
+    return !!this.dynamicForm?.form.get('image')?.value;
   }
 
   /** The standard FileBox emits a data URL; the taxonomy API stores a validated JPEG object. */
