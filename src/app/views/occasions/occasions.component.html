@@ -8,7 +8,7 @@
   </p>
   <div *ngIf="formsError" class="alert alert-warning" role="alert">{{ formsError }}</div>
   <div *ngIf="!formsReady" class="alert alert-info" role="status">
-    I form di creazione e modifica delle occasioni devono essere presenti nella collection <code>forms</code>.
+    Un unico form Occasioni, valido sia per la creazione sia per la modifica, deve essere presente nella collection <code>forms</code>.
     <button type="button" class="btn btn-outline-primary btn-sm ms-2" (click)="initializeForms()"
       [disabled]="formsLoading">{{ formsLoading ? 'Verifica in corso…' : 'Inizializza / completa form' }}</button>
   </div>
