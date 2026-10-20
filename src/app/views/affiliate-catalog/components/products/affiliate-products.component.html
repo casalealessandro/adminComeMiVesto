@@ -76,12 +76,19 @@
         <p class="small text-muted">
           Elenco ricostruito in sola lettura dal catalogo attuale. Il totale potrebbe differire dal contatore
           dell'ultimo ricalcolo: le correzioni manuali e le sincronizzazioni possono modificare i risultati.
-          Nessun prodotto viene aggiornato da questa analisi.
+          L'analisi non modifica i dati. Puoi eliminare solo i sospetti visualizzati, massimo 50 per conferma;
+          il server ricontrolla ogni prodotto e conserva quelli protetti dagli outfit o condivisi tra feed.
         </p>
         <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
           <button type="button" class="btn btn-sm btn-outline-secondary" (click)="refreshBrandSuspects()"
-            [disabled]="brandSuspectsLoading">
+            [disabled]="brandSuspectsLoading || deletingBrandSuspects">
             <span class="mdi mdi-refresh" aria-hidden="true"></span> Riesamina dall'inizio
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="confirmDeleteBrandSuspects()"
+            [disabled]="brandSuspectsLoading || deletingBrandSuspects || !brandSuspectsLoaded || !visibleBrandSuspectsDeleteCount">
+            <span *ngIf="deletingBrandSuspects" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span *ngIf="!deletingBrandSuspects" class="mdi mdi-delete-outline" aria-hidden="true"></span>
+            Elimina sospetti visualizzati ({{ visibleBrandSuspectsDeleteCount }})
           </button>
           <span class="small text-muted" *ngIf="brandSuspectsLoaded">
             {{ brandSuspects.length | number }} sospetti visualizzati su {{ brandSuspectsScanned | number }} prodotti esaminati
@@ -116,7 +123,7 @@
         </p>
         <button *ngIf="brandSuspectsNextCursor && brandSuspectsLoaded" type="button"
           class="btn btn-sm btn-outline-primary mt-2" (click)="loadMoreBrandSuspects()"
-          [disabled]="brandSuspectsLoading">Carica altri sospetti</button>
+          [disabled]="brandSuspectsLoading || deletingBrandSuspects">Carica altri sospetti</button>
         <p *ngIf="brandSuspectsLoaded && !brandSuspectsNextCursor && brandSuspects.length"
           class="small text-muted mt-2">Scansione completata per il catalogo attuale.</p>
       </section>
