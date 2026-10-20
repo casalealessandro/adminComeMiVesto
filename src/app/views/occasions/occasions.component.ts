@@ -6,7 +6,7 @@ import { ColData, Colonne } from '../../core/data-grid/models/data-grid.models';
 import { DynamicFormComponent } from '../../core/forms/dynamic-form/dynamic-form.component';
 import { AnagraficaWrapperComponent } from '../../core/layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { OutfitOccasion, OutfitOccasionUpdate, OutfitStyleImage, TaxonomyService } from '../../services/taxonomy.service';
-import { FormService, StoredForm } from '../../services/form.service';
+import { FormService } from '../../services/form.service';
 import { confirm } from '../../widgets/ui-dialogs';
 import { OCCASION_CREATE_FORM, OCCASION_EDIT_FORM, hasOccasionImageFileBox, isOccasionFormReady, missingOccasionFormFields, occasionFormDefinitions } from './occasion-form-definitions';
 
