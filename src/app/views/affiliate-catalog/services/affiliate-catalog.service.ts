@@ -17,7 +17,7 @@ import {
   FashionEnrichmentStatus,
   FashionOverviewResponse,
   FashionOverviewJob,
-  FashionAiPilotJob, FashionVisionCategoryJob,
+  FashionAiPilotJob, FashionVisionCategoryJob, FashionKeywordPage,
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
@@ -96,12 +96,21 @@ export class AffiliateCatalogService {
     ).pipe(map(response => response.data));
   }
 
+  searchFashionKeywords(keyword: string, categoryId?: string, cursor?: string): Observable<FashionKeywordPage> {
+    let params = new HttpParams().set('keyword', keyword);
+    if (categoryId) params = params.set('categoryId', categoryId);
+    if (cursor) params = params.set('cursor', cursor);
+    return this.http.get<AffiliateApiResponse<FashionKeywordPage>>(
+      this.baseUrl + '/fashion-ai/product-search', { params },
+    ).pipe(map(response => response.data));
+  }
+
   previewFashionVisionCategory(
-    categoryId: string, maxProducts: number, maxBudgetUsd: number, after?: string,
+    categoryId: string, maxProducts: number, maxBudgetUsd: number, after?: string, keyword?: string,
   ): Observable<FashionVisionCategoryJob> {
     return this.http.post<AffiliateApiResponse<FashionVisionCategoryJob>>(
       this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/preview',
-      { maxProducts, maxBudgetUsd, ...(after ? { after } : {}) },
+      { maxProducts, maxBudgetUsd, ...(after ? { after } : {}), ...(keyword ? { keyword } : {}) },
     ).pipe(map(response => response.data));
   }
 
