@@ -589,4 +589,28 @@ describe('AffiliateCatalogService release contract', () => {
     req.flush({ data: { runId: 'run-123', rows: [] } });
   });
 
+  it('searches title OR description via a safe read-only catalog discovery endpoint', () => {
+    service.searchFashionKeywords('giacca').subscribe();
+    let req = http.expectOne(request => request.url === baseUrl + '/fashion-ai/product-search');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('keyword')).toBe('giacca');
+    expect(req.request.params.has('categoryId')).toBeFalse();
+    req.flush({ data: { keyword: 'giacca', categoryId: null, scanned: 2000, items: [], nextCursor: 'cursor', complete: false } });
+
+    service.searchFashionKeywords('giacca', 'ABC_Completi', 'next_id').subscribe();
+    req = http.expectOne(request => request.url === baseUrl + '/fashion-ai/product-search');
+    expect(req.request.params.get('keyword')).toBe('giacca');
+    expect(req.request.params.get('categoryId')).toBe('ABC_Completi');
+    expect(req.request.params.get('cursor')).toBe('next_id');
+    req.flush({ data: { keyword: 'giacca', categoryId: 'ABC_Completi', scanned: 10, items: [], nextCursor: null, complete: true } });
+  });
+
+  it('adds optional keyword without changing the explicit admin budget confirmation', () => {
+    service.previewFashionVisionCategory('ABC_Completi', 20, 0.25, undefined, 'giacca').subscribe();
+    const req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi/preview');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ maxProducts: 20, maxBudgetUsd: 0.25, keyword: 'giacca' });
+    req.flush({ data: { runId: 'safe-preview', rows: [] } });
+  });
+
 });
