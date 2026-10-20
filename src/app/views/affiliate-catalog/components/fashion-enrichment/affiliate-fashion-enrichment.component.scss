@@ -203,3 +203,22 @@
 }
 .fashion-overview__vision-fields select { min-width: 0; font-size: .8rem; }
 .fashion-overview__vision-actions { min-width: 110px; }
+
+
+/* Read-only discovery search: reuse existing editorial panel styling. */
+.fashion-overview__keyword-search {
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: .65rem;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+}
+.fashion-overview__keyword-results { max-height: 520px; overflow-y: auto; }
+.fashion-overview__keyword-image {
+  width: 70px;
+  height: 90px;
+  object-fit: contain;
+  border-radius: .35rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  background: var(--bs-body-bg, #fff);
+}
+.fashion-overview__keyword-results td { overflow-wrap: anywhere; }
