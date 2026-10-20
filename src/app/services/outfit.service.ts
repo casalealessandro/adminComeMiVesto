@@ -6,6 +6,10 @@ import { lastValueFrom, map, timeout } from 'rxjs';
 import { UserProfile } from '../interface/app.interface';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 
+export interface CatalogAdditionRequest {
+  role: 'OUTERWEAR';
+  catalogProductId: string;
+}
 export interface CatalogReplacementRequest {
   index: number;
   expectedId: string;
@@ -32,6 +36,7 @@ export interface outfit {
   lastImageRegenerationUsage?: { totalTokens: number };
   updatedAt?: number;
   catalogReplacements?: CatalogReplacementRequest[];
+  catalogAdditions?: CatalogAdditionRequest[];
   expectedUpdatedAt?: number;
   tags: Tag[];
   gender: string; // Assumendo che i valori possibili siano solo "man" o "woman"
@@ -181,7 +186,7 @@ export class OutfitsService {
   }
 
   private updateDto(data: any): any {
-    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'occasion', 'color', 'outfitCategory', 'outfitSubCategory', 'status', 'catalogReplacements', 'expectedUpdatedAt'];
+    const allowed = ['title', 'description', 'imageUrl', 'tags', 'gender', 'style', 'season', 'occasion', 'color', 'outfitCategory', 'outfitSubCategory', 'status', 'catalogReplacements', 'catalogAdditions', 'expectedUpdatedAt'];
     return Object.fromEntries(allowed.filter(key => data[key] !== undefined).map(key => [key, data[key]]));
   }
 
