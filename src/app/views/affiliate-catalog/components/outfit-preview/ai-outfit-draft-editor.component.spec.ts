@@ -71,6 +71,7 @@ describe('AI outfit draft replacement via Core popup', () => {
     await Promise.resolve();
     expect(component.form?.products.map(p => p.catalogProductId)).toEqual(['p1','p2','jacket3']);
     expect(component.form?.products[2].role).toBe('OUTERWEAR');
+    await Promise.resolve();
     expect(component.addingProduct).toBeFalse();
   });
 
