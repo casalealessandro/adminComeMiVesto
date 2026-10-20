@@ -14,7 +14,9 @@ import {
   AiOutfitPreviewGender,
 } from '../../models/affiliate-catalog-api.models';
 import { AiOutfitPublishRequest } from '../../models/ai-outfit-publish.models';
-import { AffiliateFeed } from '../../models/affiliate-catalog.models';
+import { AffiliateFeed, CatalogProduct } from '../../models/affiliate-catalog.models';
+import { PopUpService } from '../../../../core/popup/popup.service';
+import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
@@ -59,6 +61,7 @@ interface SelectOption<T extends string> {
 })
 export class AffiliateOutfitPreviewComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
+  private readonly popupService = inject(PopUpService);
 
   readonly minOutfitCount = 1;
   readonly maxOutfitCount = 6;
@@ -87,6 +90,76 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   };
   outfitCount = 3;
   maxTotalPrice: number | null = null;
+
+  anchorMode = false;
+  anchorCategory = '';
+  anchorRole = '';
+  anchorCategories: string[] = [];
+  anchorsLoading = false;
+  anchorPickerOpen = false;
+  readonly selectedAnchors: Array<{ product: CatalogProduct; role: string }> = [];
+  readonly anchorRoles = ['TOP', 'BOTTOM', 'DRESS', 'SHOES', 'OUTERWEAR'];
+  readonly categoryByRole: Record<string, string[]> = {
+    TOP: ['camicie', 'M_Maglieria', 'ABC_Completi'],
+    BOTTOM: ['P_Pantaloni', 'conna'],
+    DRESS: ['ABC_Completi', 'tute'],
+    SHOES: ['scarpe'],
+    OUTERWEAR: ['cappotti', 'ABC_Completi', 'M_Maglieria'],
+  };
+
+  get availableAnchorRoles(): string[] {
+    const used = new Set(this.selectedAnchors.map(item => item.role));
+    return this.anchorRoles.filter(role => !used.has(role));
+  }
+  get availableAnchorCategories(): string[] {
+    return this.anchorCategories.filter(x => (this.categoryByRole[this.anchorRole] ?? []).includes(x));
+  }
+  toggleAnchorMode(): void {
+    if (this.loading) return;
+    this.anchorMode = !this.anchorMode;
+    this.selectedAnchors.splice(0);
+    this.anchorRole = '';
+    this.anchorCategory = '';
+    if (this.anchorMode) {
+      this.outfitCount = 1;
+      this.anchorsLoading = true;
+      this.affiliateCatalogService.getProductCategories()
+        .pipe(finalize(() => this.anchorsLoading = false))
+        .subscribe({
+          next: values => this.anchorCategories = values,
+          error: () => this.error = 'Impossibile caricare le categorie del catalogo.',
+        });
+    }
+  }
+  addAnchor(): void {
+    if (!this.anchorMode || this.loading || this.anchorPickerOpen ||
+        this.selectedAnchors.length >= 3 || !this.availableAnchorRoles.includes(this.anchorRole) ||
+        !this.availableAnchorCategories.includes(this.anchorCategory)) return;
+    const category = this.anchorCategory;
+    const role = this.anchorRole;
+    const guid = `outfit-generator-anchor-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    this.anchorPickerOpen = true;
+    this.popupService.setNewPopUp(guid, 'OutfitReplacementPickerComponent', {
+      category, gender: this.request.gender === 'WOMAN' ? 'D' : 'U',
+      productIdsInOutfit: this.selectedAnchors.map(item => item.product.id),
+    }, 1180, undefined, undefined, false, true, 'Scegli capo base', 'center', true);
+    void this.popupService.getOutputComponent(guid)
+      .then((result: OutfitReplacementPickerResult) => {
+        this.popupService.destroyCurrentOpenPopUpByGuid(guid);
+        if (result?.name !== 'selected' || !result.product || !this.anchorMode) return;
+        if (result.product.category !== category ||
+            !result.product.genderTargets?.includes(this.request.gender === 'WOMAN' ? 'D' : 'U')) return;
+        if (this.selectedAnchors.some(a => a.role === role || a.product.id === result.product!.id)) return;
+        this.selectedAnchors.push({product:result.product,role});
+        this.anchorRole = '';
+        this.anchorCategory = '';
+      })
+      .catch(() => this.error = 'Errore durante la scelta del capo base.')
+      .finally(() => this.anchorPickerOpen = false);
+  }
+  removeAnchor(index: number): void {
+    if (!this.loading && !this.anchorPickerOpen) this.selectedAnchors.splice(index, 1);
+  }
 
   result: AiOutfitPreviewResult | null = null;
   loading = false;
@@ -229,6 +302,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   onGenderChange(gender: AiOutfitPreviewGender): void {
     this.request.gender = gender;
+    this.selectedAnchors.splice(0);
     if (this.request.creatorUid && !this.availableCreators().some((creator) => creator.uid === this.request.creatorUid)) {
       this.request.creatorUid = undefined;
     }
@@ -248,7 +322,11 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       this.error = 'Attendi il caricamento degli stili ComeMiVesto o scegli uno stile valido.';
       return;
     }
-    const count = Number(this.outfitCount);
+    const count = this.anchorMode ? 1 : Number(this.outfitCount);
+    if (this.anchorMode && !this.selectedAnchors.length) {
+      this.error = 'Seleziona almeno un prodotto reale da cui partire.';
+      return;
+    }
     if (!Number.isInteger(count) || count < this.minOutfitCount || count > this.maxOutfitCount) {
       this.error = `Il numero di outfit deve essere un intero tra ${this.minOutfitCount} e ${this.maxOutfitCount}.`;
       return;
@@ -273,6 +351,9 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       ...this.request,
       ...(this.selectedFeedIds.length ? { sourceFeedIds: [...this.selectedFeedIds] } : {}),
       count,
+      ...(this.anchorMode ? { anchorProducts: this.selectedAnchors.map(item => ({
+        catalogProductId: item.product.id, role: item.role,
+      })) } : {}),
       ...(maxTotalPrice !== undefined ? { maxTotalPrice: Math.round(maxTotalPrice * 100) / 100 } : {}),
     };
     if (maxTotalPrice === undefined) delete request.maxTotalPrice;
