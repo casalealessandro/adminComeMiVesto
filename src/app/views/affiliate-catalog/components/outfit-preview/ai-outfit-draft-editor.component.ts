@@ -49,7 +49,19 @@ export class AiOutfitDraftEditorComponent {
   productCategories: string[] = [];
   loadingCategories = false;
   addingProduct = false;
-  readonly additionalRoles = ['OUTERWEAR', 'BAG', 'ACCESSORY', 'HEADWEAR', 'DRESS', 'TOP', 'BOTTOM', 'SHOES'] as const;
+  // Shared semantics with the backend composition slot roots.
+  readonly additionalRoles = ['OUTERWEAR', 'DRESS', 'TOP', 'BOTTOM', 'SHOES'] as const;
+  readonly categoriesByRole: Record<string, string[]> = {
+    OUTERWEAR: ['cappotti', 'ABC_Completi', 'M_Maglieria'],
+    DRESS: ['ABC_Completi', 'tute'],
+    TOP: ['camicie', 'M_Maglieria', 'ABC_Completi'],
+    BOTTOM: ['P_Pantaloni', 'conna'],
+    SHOES: ['scarpe'],
+  };
+  get availableCategories(): string[] {
+    const accepted = this.categoriesByRole[this.addRole] ?? [];
+    return this.productCategories.filter(category => accepted.includes(category));
+  }
 
   get availableRoles(): string[] {
     const used = new Set(this.form?.products.map(product => product.role) ?? []);
@@ -108,7 +120,7 @@ export class AiOutfitDraftEditorComponent {
   addProduct(): void {
     if (!this.form || this.saving || this.addingProduct || this.replacementIndex !== null ||
         this.form.products.length >= 8 || !this.addRole || !this.availableRoles.includes(this.addRole) ||
-        !this.productCategories.includes(this.addCategory)) return;
+        !this.availableCategories.includes(this.addCategory)) return;
     this.addingProduct = true;
     const role = this.addRole;
     const category = this.addCategory;
