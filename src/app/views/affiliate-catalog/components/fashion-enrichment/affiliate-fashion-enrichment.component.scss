@@ -163,3 +163,43 @@
   .fashion-overview__ai-controls { grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(140px, 1fr)); }
   .fashion-overview__ai-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+
+/* Category vision review: keep the two complete snapshots readable without a redesign. */
+.fashion-overview__vision-grid {
+  max-width: 100%;
+  margin-top: .5rem;
+}
+.fashion-overview__vision-grid table { min-width: 960px; table-layout: fixed; }
+.fashion-overview__vision-grid th:nth-child(1) { width: 19%; }
+.fashion-overview__vision-grid th:nth-child(2) { width: 23%; }
+.fashion-overview__vision-grid th:nth-child(3) { width: 43%; }
+.fashion-overview__vision-grid th:nth-child(4) { width: 15%; }
+.fashion-overview__vision-grid td { padding: .75rem; vertical-align: top; overflow-wrap: anywhere; }
+.fashion-overview__vision-image {
+  width: 108px;
+  height: 138px;
+  object-fit: contain;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: .5rem;
+  background: var(--bs-body-bg, #fff);
+}
+.fashion-overview__vision-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .15rem;
+  font-size: .78rem;
+  margin: 0;
+}
+.fashion-overview__vision-fields dt {
+  margin-top: .4rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: .72rem;
+  font-weight: 500;
+}
+.fashion-overview__vision-fields dd {
+  margin: 0;
+  font-weight: 500;
+}
+.fashion-overview__vision-fields select { min-width: 0; font-size: .8rem; }
+.fashion-overview__vision-actions { min-width: 110px; }
