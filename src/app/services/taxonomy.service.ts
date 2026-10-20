@@ -3,8 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface OutfitOccasion { id: string; value: string; order: number; active: boolean; }
-export type OutfitOccasionUpdate = Pick<OutfitOccasion, 'value' | 'order' | 'active'>;
+export interface OutfitOccasion { id: string; value: string; order: number; active: boolean; image?: OutfitStyleImage | null; }
+export type OutfitOccasionUpdate = Pick<OutfitOccasion, 'value' | 'order' | 'active'> & { image?: OutfitStyleImage | null };
 export interface OutfitColor { id: string; value: string; hex: string; parent: string | null; }
 export interface OutfitStyleImage { imageBase64: string; imageMimeType: string; imageFileName: string; }
 export interface OutfitStyleImages { U?: OutfitStyleImage | null; D?: OutfitStyleImage | null; }

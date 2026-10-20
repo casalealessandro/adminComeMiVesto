@@ -14,8 +14,24 @@
     <h2>{{ editingOriginalId ? 'Modifica occasione' : 'Nuova occasione' }}</h2>
     <p *ngIf="editingOriginalId">Codice: <strong>{{ editingOriginalId }}</strong> (non modificabile)</p>
     <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-    <app-dynamic-form *ngIf="formVisible" [service]="formId" [editData]="editing" [loading]="loading"
+    <app-dynamic-form *ngIf="formVisible" [service]="formId" [editData]="editing" [loading]="loading || processingImage"
       inputBtnLeftName="Annulla" inputBtnRightName="Salva" (submitFormEvent)="handleForm($event)"></app-dynamic-form>
-    <button class="btn btn-outline-secondary mt-2" type="button" (click)="close()" [disabled]="loading">Chiudi</button>
+
+    <section class="occasion-image-editor" aria-label="Immagine occasione">
+      <h3>Icona occasione</h3>
+      <img *ngIf="imageUrl(editing.image) as url; else withoutImage" [src]="url" [alt]="'Anteprima ' + editing.value">
+      <ng-template #withoutImage><div class="image-placeholder">Nessuna immagine</div></ng-template>
+      <div class="image-actions">
+        <label class="btn btn-outline-primary" [class.disabled]="loading || processingImage">
+          {{ editing.image ? 'Sostituisci immagine' : 'Carica immagine' }}
+          <input type="file" accept="image/jpeg,image/png,image/webp" [disabled]="loading || processingImage"
+            (change)="selectImage($event)" hidden>
+        </label>
+        <button *ngIf="editing.image" type="button" class="btn btn-outline-danger"
+          [disabled]="loading || processingImage" (click)="removeImage()">Rimuovi</button>
+      </div>
+      <small>JPG, PNG o WebP. Una sola immagine unisex per occasione, convertita in JPG.</small>
+    </section>
+    <button class="btn btn-outline-secondary mt-2" type="button" (click)="close()" [disabled]="loading || processingImage">Chiudi</button>
   </section>
 </div>
