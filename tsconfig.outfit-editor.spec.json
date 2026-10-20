@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/outfit-editor-spec",
+    "types": ["jasmine", "@angular/localize"]
+  },
+  "include": [
+    "src/app/views/outfits/outfit-form/outfit-form.regeneration.spec.ts",
+    "src/app/views/outfits/outfit-form/outfit-form.payload.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

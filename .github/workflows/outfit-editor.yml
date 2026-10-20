@@ -1,0 +1,32 @@
+name: Outfit Editor
+
+on:
+  pull_request:
+    paths:
+      - 'src/app/views/outfits/**'
+      - 'src/app/services/outfit.service.ts'
+      - 'tsconfig.outfit-editor.spec.json'
+      - '.github/workflows/outfit-editor.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.20.2
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Run outfit editor tests
+        run: >-
+          npx ng test --watch=false --browsers=ChromeHeadless
+          --ts-config=tsconfig.outfit-editor.spec.json
+          --include=src/app/views/outfits/outfit-form/outfit-form.regeneration.spec.ts
+          --include=src/app/views/outfits/outfit-form/outfit-form.payload.spec.ts
+      - name: Build application
+        run: npm run build -- --configuration development
