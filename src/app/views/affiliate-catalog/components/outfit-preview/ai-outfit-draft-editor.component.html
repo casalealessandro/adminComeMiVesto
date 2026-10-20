@@ -58,16 +58,30 @@
     <div class="draft-editor__products">
       <strong>Prodotti del look</strong>
       <p>Puoi sostituire ciascun capo con un prodotto della stessa categoria. Il prezzo e i link saranno ricontrollati dal backend.</p>
-      <div *ngFor="let product of outfit.products; let i = index" class="draft-editor__product">
-        <img *ngIf="product.images?.[0]" [src]="product.images[0]" [alt]="product.name" loading="lazy">
+      <div *ngFor="let product of edit.products; let i = index" class="draft-editor__product">
+        <img *ngIf="(selectedReplacements.get(i)?.images?.[0] || (i >= outfit.products.length ? pendingOuterwear?.images?.[0] : outfit.products[i]?.images?.[0])) as photo"
+          [src]="photo" [alt]="replacementLabel(i)" loading="lazy">
         <div>
           <small>{{ product.role }}</small>
           <span>{{ replacementLabel(i) }}</span>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showReplacements(i)" [disabled]="saving">
-          Sostituisci
-        </button>
+        <button *ngIf="i < outfit.products.length" type="button" class="btn btn-sm btn-outline-secondary"
+          (click)="showReplacements(i)" [disabled]="saving">Sostituisci</button>
       </div>
+      <div *ngIf="canAddOuterwear" class="draft-editor__product">
+        <label>Categoria capospalla
+          <select [(ngModel)]="additionalCategory" name="additionalCategory" [disabled]="addingOuterwear || saving">
+            <option value="cappotti">Giacche e cappotti</option>
+            <option value="ABC_Completi">Blazer</option>
+            <option value="B_Blazer">Completi e gilet</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addOuterwear()"
+          [disabled]="addingOuterwear || saving">Aggiungi capospalla</button>
+      </div>
+      <p *ngIf="pendingOuterwear" class="draft-editor__hint">
+        Capospalla aggiunto alla bozza: l'immagine dovrà essere rigenerata prima della pubblicazione.
+      </p>
     </div>
 
     <p class="draft-editor__hint">Premi «Sostituisci» per aprire il catalogo con ricerca e filtri. Seleziona una riga per scegliere il nuovo prodotto. Modificare titolo, descrizione, genere, stagione, stile, occasione o posizione dei pin non richiede una nuova immagine. Se sostituisci un prodotto, dovrai rigenerare la fotografia prima della pubblicazione.</p>
