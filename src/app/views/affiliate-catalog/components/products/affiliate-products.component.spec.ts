@@ -241,7 +241,7 @@ describe('Affiliate products', () => {
       expect(service.getProducts).not.toHaveBeenCalled();
       expect(component.dataProvider).toBeDefined();
       expect(component.columns[0].data.find((column) => column.dataField === 'category')?.allowFiltering).toBeFalse();
-      expect(component.columns[0].data.find((column) => column.dataField === 'subcategory')?.allowFiltering).toBeFalse();
+      expect(component.columns[0].data.find((column) => column.dataField === 'subcategory')?.allowFiltering).toBeTrue();
     });
 
     it('requires backup verification before confirming a reclassification and resets on close', () => {
@@ -465,7 +465,7 @@ describe('Affiliate products', () => {
       expect(component.cleanupBackupConfirmed).toBeFalse();
     });
 
-    it('preserves taxonomy and other active filters in detail navigation', async () => {
+    it('preserves supported active filters in detail navigation and clears obsolete category', async () => {
       const navigate = spyOn(router, 'navigate').and.resolveTo(true);
       (component as any).dataGrid = {
         providerFilterValue: (field: string) => {
@@ -482,7 +482,7 @@ describe('Affiliate products', () => {
       expect(navigate.calls.argsFor(0)[1]).toEqual(jasmine.objectContaining({
         queryParams: {
           affiliateProgramId: program.id,
-          category: 'Clothing',
+          category: null,
           subcategory: 'Shirts',
           visibleInApp: 'false',
         },
