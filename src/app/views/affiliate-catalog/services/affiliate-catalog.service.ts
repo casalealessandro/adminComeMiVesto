@@ -21,6 +21,7 @@ import {
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
+  AffiliateProductDeleteResult,
   AffiliateCursorPage,
   AffiliateCursorRequest,
   AffiliateFeedCreateInput,
@@ -134,6 +135,13 @@ export class AffiliateCatalogService {
     if (cursor) params = params.set('cursor', cursor);
     return this.http.get<AffiliateApiResponse<CatalogBrandSuspectsPage>>(
       this.baseUrl + '/products/reclassification/suspects', { params },
+    ).pipe(map(response => response.data));
+  }
+
+  /** A dedicated endpoint revalidates REVIEW eligibility at deletion time. */
+  deleteSelectedBrandSuspects(productIds: string[]): Observable<AffiliateProductDeleteResult> {
+    return this.http.post<AffiliateApiResponse<AffiliateProductDeleteResult>>(
+      this.baseUrl + '/products/reclassification/suspects/delete-selected', { productIds },
     ).pipe(map(response => response.data));
   }
 
@@ -400,15 +408,10 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
-  deleteSelectedProducts(productIds: string[]): Observable<{
-    requested: number; deleted: number; protectedByOutfits: number;
-    sharedAcrossFeeds: number; notFound: number; deletedOffers: number; deletedVariants: number;
-  }> {
-    return this.http.post<AffiliateApiResponse<{
-      requested: number; deleted: number; protectedByOutfits: number;
-      sharedAcrossFeeds: number; notFound: number; deletedOffers: number; deletedVariants: number;
-    }>>(`${this.baseUrl}/products/delete-selected`, { productIds })
-      .pipe(map((response) => response.data));
+  deleteSelectedProducts(productIds: string[]): Observable<AffiliateProductDeleteResult> {
+    return this.http.post<AffiliateApiResponse<AffiliateProductDeleteResult>>(
+      `${this.baseUrl}/products/delete-selected`, { productIds },
+    ).pipe(map(response => response.data));
   }
 
   getProduct(id: string): Observable<CatalogProduct> {
