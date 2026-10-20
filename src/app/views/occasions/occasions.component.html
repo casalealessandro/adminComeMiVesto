@@ -3,7 +3,15 @@
   [addButtonShow]="true" [showSpinner]="loading && !rows.length"
   (emittEventButton)="toolbarAction($event)">
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  <p>Prima configurazione: <button type="button" class="btn btn-outline-primary btn-sm" (click)="seed()" [disabled]="loading">Inizializza occasioni predefinite</button></p>
+  <p>Prima configurazione:
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="seed()" [disabled]="loading">Inizializza occasioni predefinite</button>
+  </p>
+  <div *ngIf="formsError" class="alert alert-warning" role="alert">{{ formsError }}</div>
+  <div *ngIf="!formsReady" class="alert alert-info" role="status">
+    I form di creazione e modifica delle occasioni devono essere presenti nella collection <code>forms</code>.
+    <button type="button" class="btn btn-outline-primary btn-sm ms-2" (click)="initializeForms()"
+      [disabled]="formsLoading">{{ formsLoading ? 'Verifica in corso…' : 'Inizializza / completa form' }}</button>
+  </div>
   <app-data-grid [idTable]="'outfit-occasions-grid'" [colonne]="columns" [dataSource]="rows" [remoteOperation]="false"
     [isEditable]="false" [isEditableNewRow]="false" [isEditableEditRow]="false" [isEditableDeleteRow]="false"
     [showToolbarTop]="false" [showToolbarBottom]="false" [isSearchable]="false" [tableHeight]="500"
@@ -14,23 +22,14 @@
     <h2>{{ editingOriginalId ? 'Modifica occasione' : 'Nuova occasione' }}</h2>
     <p *ngIf="editingOriginalId">Codice: <strong>{{ editingOriginalId }}</strong> (non modificabile)</p>
     <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-    <app-dynamic-form *ngIf="formVisible" [service]="formId" [editData]="editing" [loading]="loading || processingImage"
+    <app-dynamic-form *ngIf="formVisible" [service]="formId" [editData]="formEditData" [loading]="loading || processingImage"
       inputBtnLeftName="Annulla" inputBtnRightName="Salva" (submitFormEvent)="handleForm($event)"></app-dynamic-form>
 
-    <section class="occasion-image-editor" aria-label="Immagine occasione">
-      <h3>Icona occasione</h3>
-      <img *ngIf="imageUrl(editing.image) as url; else withoutImage" [src]="url" [alt]="'Anteprima ' + editing.value">
-      <ng-template #withoutImage><div class="image-placeholder">Nessuna immagine</div></ng-template>
-      <div class="image-actions">
-        <label class="btn btn-outline-primary" [class.disabled]="loading || processingImage">
-          {{ editing.image ? 'Sostituisci immagine' : 'Carica immagine' }}
-          <input type="file" accept="image/jpeg,image/png,image/webp" [disabled]="loading || processingImage"
-            (change)="selectImage($event)" hidden>
-        </label>
-        <button *ngIf="editing.image" type="button" class="btn btn-outline-danger"
-          [disabled]="loading || processingImage" (click)="removeImage()">Rimuovi</button>
-      </div>
-      <small>JPG, PNG o WebP. Una sola immagine unisex per occasione, convertita in JPG.</small>
+    <section class="occasion-image-editor" aria-label="Opzioni immagine occasione">
+      <p>La fotografia viene selezionata direttamente nel campo <strong>Immagine occasione</strong> del form.
+        Il salvataggio la converte in JPG, fino a 512 px, e la associa a questa occasione.</p>
+      <button type="button" class="btn btn-outline-danger btn-sm"
+        (click)="removeImage()" [disabled]="loading || processingImage || !hasImageSelected()">Rimuovi immagine</button>
     </section>
     <button class="btn btn-outline-secondary mt-2" type="button" (click)="close()" [disabled]="loading || processingImage">Chiudi</button>
   </section>
