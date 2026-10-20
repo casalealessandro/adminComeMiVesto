@@ -530,6 +530,27 @@ describe('ProviderDataGridComponent remote loading', () => {
     expect(scrollTarget.scrollTop).toBe(80);
   });
 
+  it('loads the next remote page at the bottom even when fewer than pageSize rows are displayed', async () => {
+    component.pageSize = 30;
+    component.remoteOperation = true;
+    component.remoteHasMore = true;
+    component.rowsData.set([{ id: 1 }, { id: 2 }, { id: 3 }]);
+    component.dataProvider = {
+      load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
+    };
+    spyOn(component, 'loadNextRemotePage').and.resolveTo(true);
+
+    const scrollTarget = {
+      scrollTop: 80,
+      scrollHeight: 100,
+      clientHeight: 20,
+    } as HTMLElement;
+
+    await component.onScroll({ target: scrollTarget } as unknown as Event);
+
+    expect(component.loadNextRemotePage).toHaveBeenCalledTimes(1);
+  });
+
   it('should keep the native scrollbar position unchanged while a page is loading', async () => {
     component.dataProvider = {
       load: jasmine.createSpy('load').and.resolveTo({ items: [], hasMore: false }),
