@@ -7,7 +7,7 @@ import { confirm } from '../../../../core/dialogs/ui-dialogs';
 import { AuthService } from '../../../../services/auth.service';
 import {
   FashionCatalogOverview, FashionCoverage, FashionCatalogExample, FashionMerchantOverview, FashionOverviewJob,
-  FashionAiPilotJob, AffiliateFeed, AffiliateProgram, FashionVisionCategoryJob, FashionVisionReviewRow,
+  FashionAiPilotJob, AffiliateFeed, AffiliateProgram, FashionVisionCategoryJob, FashionVisionReviewRow, FashionKeywordHit,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -63,6 +63,75 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     'ALTERNATIVE', 'FESTIVAL', 'CLASSIC', 'TRENDY', 'STREETWEAR',
   ];
   readonly visionSizes = [5, 10, 20, 50];
+
+  /** Keyword discovery is 100% read-only; it reads actual title OR description (not only searchTokens). */
+  visionKeyword = '';
+  visionKeywordGlobal = true;
+  visionSearchBusy = false;
+  visionSearchComplete = false;
+  visionSearchError = '';
+  visionSearchTerm = '';
+  visionSearchScope = '';
+  visionSearchScanned = 0;
+  visionSearchItems: FashionKeywordHit[] = [];
+  visionSearchShown = 100;
+  private visionSearchGeneration = 0;
+
+  get visibleVisionSearchItems(): FashionKeywordHit[] {
+    return this.visionSearchItems.slice(0, this.visionSearchShown);
+  }
+  get canSearchVisionKeyword(): boolean {
+    const value = this.visionKeyword.trim();
+    return value.length >= 2 && value.length <= 70;
+  }
+
+  startVisionKeywordSearch(): void {
+    if (!this.canManageAi || !this.canSearchVisionKeyword) return;
+    this.cancelVisionKeywordSearch();
+    const generation = this.visionSearchGeneration;
+    const keyword = this.visionKeyword.trim();
+    const categoryId = this.visionKeywordGlobal ? undefined : this.selectedVisionCategoryId || undefined;
+    this.visionSearchBusy = true;
+    this.visionSearchComplete = false;
+    this.visionSearchError = '';
+    this.visionSearchTerm = keyword;
+    this.visionSearchScope = categoryId || '';
+    this.visionSearchItems = [];
+    this.visionSearchShown = 100;
+    this.visionSearchScanned = 0;
+    this.fetchVisionKeywordPage(keyword, categoryId, generation);
+  }
+
+  cancelVisionKeywordSearch(): void {
+    this.visionSearchGeneration += 1;
+    this.visionSearchBusy = false;
+  }
+
+  private fetchVisionKeywordPage(keyword: string, categoryId: string | undefined, generation: number,
+    cursor?: string): void {
+    this.service.searchFashionKeywords(keyword, categoryId, cursor).subscribe({
+      next: (page) => {
+        if (generation !== this.visionSearchGeneration) return;
+        this.visionSearchScanned += page.scanned;
+        this.visionSearchItems.push(...page.items);
+        if (page.complete || !page.nextCursor) {
+          this.visionSearchBusy = false;
+          this.visionSearchComplete = true;
+          return;
+        }
+        // Next HTTP page is asynchronous; each backend request scans at most 2,000 docs.
+        this.fetchVisionKeywordPage(keyword, categoryId, generation, page.nextCursor);
+      },
+      error: (err: { error?: { message?: string } }) => {
+        if (generation !== this.visionSearchGeneration) return;
+        this.visionSearchBusy = false;
+        this.visionSearchComplete = false;
+        this.visionSearchError = err.error?.message ||
+          'La ricerca è stata interrotta. I risultati mostrati sono parziali.';
+      },
+    });
+  }
+
 
   get visionRunning(): boolean {
     return this.visionJob?.status === 'QUEUED' || this.visionJob?.status === 'RUNNING';
@@ -144,14 +213,16 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.visionAccepted = false;
     this.visionError = '';
     this.visionNotice = '';
-    this.service.previewFashionVisionCategory(category, Number(this.visionCount), Number(this.visionBudget), after)
+    this.service.previewFashionVisionCategory(category, Number(this.visionCount), Number(this.visionBudget), after, this.visionKeyword.trim() || undefined)
       .pipe(finalize(() => this.visionBusy = false)).subscribe({
         next: (job) => {
           if (category !== this.selectedVisionCategoryId) return;
           this.acceptVisionJob(job);
           this.visionNotice = job.rows.length
             ? 'Campione pronto. Guarda gli articoli e il costo stimato prima di autorizzare le immagini.'
-            : 'Nessun prodotto idoneo nel campione esplorato. Nessun costo AI.';
+            : job.keyword && job.nextCursor
+              ? 'Nessun prodotto corrispondente nei documenti finora esaminati: premi Campione successivo per proseguire. Nessun costo AI.'
+              : 'Nessun prodotto idoneo trovato nel segmento esplorato. Nessun costo AI.';
         },
         error: (err: { status?: number; error?: { message?: string } }) => {
           this.visionError = err.error?.message || 'Impossibile creare l’anteprima visiva.';
