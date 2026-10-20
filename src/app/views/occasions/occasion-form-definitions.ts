@@ -1,44 +1,32 @@
 import { DynamicFormField } from '../../core/forms/models/dynamic-form-field';
 import { StoredForm } from '../../services/form.service';
 
-export const OCCASION_CREATE_FORM = 'outfit-occasion-create';
-export const OCCASION_EDIT_FORM = 'outfit-occasion-edit';
+/**
+ * Una sola definizione nella collection forms, riutilizzata per creazione e modifica.
+ * Il controllo ID viene disabilitato nel componente soltanto durante la modifica.
+ */
+export const OCCASION_FORM = 'outfit-occasion';
 
-const imageField: DynamicFormField = {
-  name: 'image',
-  label: 'Immagine occasione (unisex)',
-  type: 'fileBox',
-  typeInput: 'file',
-  required: false,
-  fileBoxOptions: { maxWidth: 512, maxHeight: 512, maxSize: 4 },
+export const occasionFormDefinition: StoredForm = {
+  id: OCCASION_FORM,
+  nameForm: 'Occasione outfit',
+  json: [
+    { name: 'id', label: 'Codice univoco (lettere, numeri, _ o -)', type: 'textBox', typeInput: 'text', required: true, maxLength: 64 },
+    { name: 'value', label: 'Nome occasione', type: 'textBox', typeInput: 'text', required: true, maxLength: 100 },
+    { name: 'order', label: 'Ordine', type: 'textBox', typeInput: 'number', required: true },
+    { name: 'active', label: 'Attiva', type: 'selectBox', typeInput: 'text', required: true,
+      selectOptions: { displayExp: 'label', valueExp: 'value', multiple: false, remote: false, parent: null,
+        options: [{ label: 'Sì', value: true }, { label: 'No', value: false }] } },
+    { name: 'image', label: 'Immagine occasione (unisex)', type: 'fileBox', typeInput: 'file',
+      required: false, fileBoxOptions: { maxWidth: 512, maxHeight: 512, maxSize: 4 } },
+  ],
 };
 
-const baseFields: DynamicFormField[] = [
-  { name: 'value', label: 'Nome occasione', type: 'textBox', typeInput: 'text', required: true, maxLength: 100 },
-  { name: 'order', label: 'Ordine', type: 'textBox', typeInput: 'number', required: true },
-  { name: 'active', label: 'Attiva', type: 'selectBox', typeInput: 'text', required: true,
-    selectOptions: { displayExp: 'label', valueExp: 'value', multiple: false, remote: false, parent: null,
-      options: [{ label: 'Sì', value: true }, { label: 'No', value: false }] } },
-];
-
-export const occasionFormDefinitions: readonly StoredForm[] = [
-  {
-    id: OCCASION_CREATE_FORM,
-    nameForm: 'Nuova occasione',
-    json: [
-      { name: 'id', label: 'Codice univoco (lettere, numeri, _ o -)', type: 'textBox', typeInput: 'text', required: true, maxLength: 64 },
-      ...baseFields,
-      imageField,
-    ],
-  },
-  { id: OCCASION_EDIT_FORM, nameForm: 'Modifica occasione', json: [...baseFields, imageField] },
-];
-
-/** Migrate only absent metadata. Existing Form Builder customizations are preserved. */
-export function missingOccasionFormFields(stored: StoredForm | undefined, template: StoredForm): DynamicFormField[] {
-  if (!stored) return [...template.json];
-  const current = new Set(stored.json.map(field => field.name));
-  return template.json.filter(field => !current.has(field.name));
+/** Integra solo i campi mancanti, mantenendo configurazione e ordine personalizzati. */
+export function missingOccasionFormFields(stored: StoredForm | undefined): DynamicFormField[] {
+  if (!stored) return [...occasionFormDefinition.json];
+  const known = new Set(stored.json.map(field => field.name));
+  return occasionFormDefinition.json.filter(field => !known.has(field.name));
 }
 
 export function hasOccasionImageFileBox(form: StoredForm | undefined): boolean {
@@ -46,9 +34,7 @@ export function hasOccasionImageFileBox(form: StoredForm | undefined): boolean {
 }
 
 export function isOccasionFormReady(forms: StoredForm[]): boolean {
-  return occasionFormDefinitions.every(template => {
-    const stored = forms.find(form => form.id === template.id);
-    return !!stored && hasOccasionImageFileBox(stored) &&
-      template.json.every(field => stored.json.some(existing => existing.name === field.name));
-  });
+  const stored = forms.find(form => form.id === OCCASION_FORM);
+  return !!stored && hasOccasionImageFileBox(stored) &&
+    occasionFormDefinition.json.every(field => stored.json.some(existing => existing.name === field.name));
 }
