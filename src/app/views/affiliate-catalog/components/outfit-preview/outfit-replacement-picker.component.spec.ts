@@ -40,10 +40,10 @@ describe('OutfitReplacementPickerComponent', () => {
   });
 
   it('uses the Core grid image column and its native list/text filter metadata', () => {
-    const columns = buildReplacementPickerColumns('P_Pantaloni', 'D', ['jeans', 'jogger'],
+    const columns = buildReplacementPickerColumns(['jeans', 'jogger'],
       [{ id: 'BN', value: 'Blu navy' }])[0].data;
     expect(columns.map(x => x.colCaption)).toEqual(
-      ['Immagine', 'Nome', 'Genere', 'Stile', 'Categoria', 'Sottocategoria', 'Colore'],
+      ['Immagine', 'Nome', 'Stile', 'Sottocategoria', 'Colore'],
     );
     expect(columns[0].type).toBe('campoImg');
     expect(columns[0].allowFiltering).toBeFalse();
@@ -54,10 +54,8 @@ describe('OutfitReplacementPickerComponent', () => {
       expect(col.allowFiltering).toBeTrue();
     }
     const style = columns.find(x => x.dataField === 'styleLabel');
-    const gender = columns.find(x => x.dataField === 'genderLabel');
     const color = columns.find(x => x.dataField === 'normalizedColor');
     expect(style?.lista?.options).toContain(jasmine.objectContaining({ value: 'SMART_CASUAL', label: 'Smart Casual' }));
-    expect(gender?.lista?.options).toEqual([{ value: 'D', label: 'Donna' }]);
     expect(color?.lista?.options).toEqual([{ value: 'BN', label: 'Blu navy' }]);
     expect(picker.columns[0].data.map(x => x.dataField)).toEqual(columns.map(x => x.dataField));
   });
@@ -67,8 +65,6 @@ describe('OutfitReplacementPickerComponent', () => {
       pageSize: 30, continuation: 'cursor-1',
       filters: [
         { field: 'name', operator: 'contains', value: 'pantaloni' },
-        { field: 'genderLabel', operator: 'eq', value: 'D' },
-        { field: 'category', operator: 'eq', value: 'P_Pantaloni' },
         { field: 'subcategory', operator: 'eq', value: 'jeans' },
         { field: 'styleLabel', operator: 'eq', value: 'CASUAL' },
         { field: 'normalizedColor', operator: 'eq', value: 'BN' },
@@ -87,19 +83,49 @@ describe('OutfitReplacementPickerComponent', () => {
     expect(page.hasMore).toBeTrue();
   });
 
-  it('keeps category and gender fixed and supports Core global search for compatibility', async () => {
+  it('keeps category and gender fixed in the request, not as grid filters', async () => {
     service.getProducts.calls.reset();
-    const invalid = await picker.loadPage({
+    await expectAsync(picker.loadPage({
       pageSize: 30,
       filters: [{ field: 'genderLabel', operator: 'eq', value: 'U' }],
-    });
-    expect(invalid).toEqual({ items: [], hasMore: false });
+    })).toBeRejectedWithError(/Filtro della griglia/);
+    await expectAsync(picker.loadPage({
+      pageSize: 30,
+      filters: [{ field: 'category', operator: 'eq', value: 'P_Pantaloni' }],
+    })).toBeRejectedWithError(/Filtro della griglia/);
     expect(service.getProducts).not.toHaveBeenCalled();
     await picker.loadPage({ pageSize: 30, search: { value: 'jeans', conditions: [] } });
-    expect(service.getProducts).toHaveBeenCalledWith(jasmine.objectContaining({ q: 'jeans' }));
+    expect(service.getProducts).toHaveBeenCalledWith(jasmine.objectContaining({
+      q: 'jeans', category: 'P_Pantaloni', gender: 'D',
+    }));
     await expectAsync(picker.loadPage({
       pageSize: 30, filters: [{ field: 'wrong', operator: 'eq', value: 'x' }],
     })).toBeRejectedWithError(/Filtro della griglia/);
+  });
+
+  it('loads another page explicitly even if excluded products make current page short', async () => {
+    const fetchMore = jasmine.createSpy('loadNextRemotePage').and.resolveTo(true);
+    picker.grid = {
+      remoteHasMore: true, isLoading: false, loadNextRemotePage: fetchMore,
+    } as any;
+    await picker.loadMore();
+    expect(fetchMore).toHaveBeenCalledTimes(1);
+    (picker.grid as any).isLoading = true;
+    await picker.loadMore();
+    expect(fetchMore).toHaveBeenCalledTimes(1);
+    (picker.grid as any).isLoading = false;
+    (picker.grid as any).remoteHasMore = false;
+    await picker.loadMore();
+    expect(fetchMore).toHaveBeenCalledTimes(1);
+  });
+
+  it('surfaces a failed explicit continuation request', async () => {
+    const fetchMore = jasmine.createSpy('loadNextRemotePage').and.resolveTo(false);
+    picker.grid = {
+      remoteHasMore: true, isLoading: false, loadNextRemotePage: fetchMore,
+    } as any;
+    await picker.loadMore();
+    expect(picker.error).toContain('Impossibile caricare');
   });
 
   it('chooses an eligible single row and refuses mismatched or already-used products', () => {
