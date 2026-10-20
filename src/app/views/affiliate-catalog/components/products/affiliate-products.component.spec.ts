@@ -199,6 +199,7 @@ describe('Affiliate products', () => {
         'getCurationCategories',
         'getUnclassifiedCleanupStatus',
         'getBrandCategorySuspects',
+        'deleteSelectedBrandSuspects',
         'previewUnclassifiedCleanup',
         'confirmUnclassifiedCleanup',
         'stopUnclassifiedCleanup',
@@ -318,6 +319,49 @@ describe('Affiliate products', () => {
       expect(component.brandSuspectsOpen).toBeFalse();
       expect(component.brandSuspectsLoading).toBeFalse();
       expect(component.brandSuspectReason('UNKNOWN_TAXONOMY')).toContain('tassonomia');
+    });
+
+    it('never deletes unseen suspects and only targets up to 50 currently visible IDs', () => {
+      const makeSuspect = (id: string) => ({
+        id, name: 'Tommy Jeans Giacca di transizione', brand: 'Tommy Jeans',
+        category: 'P_Pantaloni', subcategory: 'jeans',
+        description: '', productType: '', merchantCategory: '',
+        reason: 'NO_CLEAR_GARMENT' as const, image: null,
+      });
+      component.reclassificationPanelOpen = true;
+      component.brandSuspectsOpen = true;
+      component.brandSuspectsLoaded = true;
+      component.brandSuspects = Array.from({ length: 65 }, (_, i) => makeSuspect('s-' + i));
+      expect(component.visibleBrandSuspectsDeleteCount).toBe(50);
+
+      (component as any).executeDeleteBrandSuspects(['unknown']);
+      (component as any).executeDeleteBrandSuspects(component.brandSuspects.map(item => item.id));
+      expect(service.deleteSelectedBrandSuspects).not.toHaveBeenCalled();
+
+      component.brandSuspectsOpen = false;
+      (component as any).executeDeleteBrandSuspects(['s-0']);
+      expect(service.deleteSelectedBrandSuspects).not.toHaveBeenCalled();
+    });
+
+    it('reports a missing backend endpoint without deleting other catalog items', () => {
+      const suspect = {
+        id: 'suspect-1', name: 'Tommy Jeans Giacca di transizione', brand: 'Tommy Jeans',
+        category: 'P_Pantaloni', subcategory: 'jeans',
+        description: '', productType: '', merchantCategory: '',
+        reason: 'NO_CLEAR_GARMENT' as const, image: null,
+      };
+      component.reclassificationPanelOpen = true;
+      component.brandSuspectsOpen = true;
+      component.brandSuspectsLoaded = true;
+      component.brandSuspects = [suspect];
+      service.deleteSelectedBrandSuspects.and.returnValue(throwError(() => ({ status: 404 })));
+
+      (component as any).executeDeleteBrandSuspects([suspect.id]);
+
+      expect(service.deleteSelectedBrandSuspects).toHaveBeenCalledOnceWith(['suspect-1']);
+      expect(component.brandSuspectsError).toContain('backend distribuito');
+      expect(component.deletingBrandSuspects).toBeFalse();
+      expect(component.brandSuspects).toEqual([suspect]);
     });
 
     it('tracks mobile cards by the canonical product id', () => {
