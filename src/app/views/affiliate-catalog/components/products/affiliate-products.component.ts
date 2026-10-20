@@ -319,6 +319,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   brandSuspectsNextCursor: string | null = null;
   brandSuspectsScanned = 0;
   brandSuspectsError = '';
+  deletingBrandSuspects = false;
   private brandSuspectsRequestId = 0;
   private reclassificationPolling?: Subscription;
   cleanupPanelOpen = false;
@@ -467,6 +468,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   toggleBrandSuspects(): void {
     if (!this.auth.isAdmin() || !this.reclassificationPanelOpen) return;
     if (this.brandSuspectsOpen) {
+      if (this.deletingBrandSuspects) return;
       this.brandSuspectsOpen = false;
       this.brandSuspectsRequestId++;
       this.brandSuspectsLoading = false;
@@ -477,7 +479,7 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
   }
 
   refreshBrandSuspects(): void {
-    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || !this.brandSuspectsOpen) return;
+    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || !this.brandSuspectsOpen || this.deletingBrandSuspects) return;
     this.brandSuspectsRequestId++;
     this.brandSuspects = [];
     this.brandSuspectsNextCursor = null;
@@ -514,6 +516,70 @@ export class AffiliateProductsComponent implements OnInit, OnDestroy {
           if (requestId === this.brandSuspectsRequestId) {
             this.brandSuspectsError = 'Impossibile caricare i prodotti sospetti. Riprova.';
           }
+        },
+      });
+  }
+
+  get visibleBrandSuspectsDeleteCount(): number {
+    return Math.min(this.brandSuspects.length, 50);
+  }
+
+  confirmDeleteBrandSuspects(): void {
+    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || !this.brandSuspectsOpen ||
+      this.brandSuspectsLoading || !this.brandSuspectsLoaded || this.deletingBrandSuspects ||
+      !this.visibleBrandSuspectsDeleteCount) return;
+
+    // Explicit IDs only: never run a delete against the entire catalog or unseen pages.
+    const visible = this.brandSuspects.slice(0, 50);
+    const productIds = visible.map(item => item.id);
+    const examples = visible.slice(0, 5).map(item => '- ' + item.name).join('\\n');
+    confirm(
+      `Anteprima: ${productIds.length} prodotti sospetti attualmente visualizzati.\\n` +
+      `${examples}${visible.length > 5 ? '\\n- …' : ''}\\n\\n` +
+      'Verranno cancellati definitivamente solo quelli ancora sospetti e non protetti da outfit o altri feed, ' +
+      'insieme alle relative varianti e offerte. Gli altri rimarranno nel catalogo. ' +
+      'Verifica di avere un backup Firestore ripristinabile. L’operazione è irreversibile.',
+      'Conferma eliminazione sospetti',
+      accepted => { if (accepted) this.executeDeleteBrandSuspects(productIds); },
+    );
+  }
+
+  private executeDeleteBrandSuspects(productIds: string[]): void {
+    if (!this.auth.isAdmin() || !this.reclassificationPanelOpen || !this.brandSuspectsOpen ||
+      this.deletingBrandSuspects || !productIds.length || productIds.length > 50) return;
+    const currentIds = new Set(this.brandSuspects.map(item => item.id));
+    if (productIds.some(id => !currentIds.has(id))) return;
+
+    this.deletingBrandSuspects = true;
+    this.brandSuspectsError = '';
+    this.affiliateCatalogService.deleteSelectedBrandSuspects(productIds)
+      .pipe(finalize(() => this.deletingBrandSuspects = false))
+      .subscribe({
+        next: result => {
+          alert(
+            `Eliminati: ${result.deleted} su ${result.requested}. ` +
+            `Protetti dagli outfit: ${result.protectedByOutfits}. ` +
+            `Condivisi tra feed: ${result.sharedAcrossFeeds}. ` +
+            `Non più sospetti: ${result.notEligible}. Non trovati: ${result.notFound}. ` +
+            `Varianti eliminate: ${result.deletedVariants}. Offerte eliminate: ${result.deletedOffers}.`,
+            'Eliminazione sospetti completata',
+          );
+          this.refresh();
+          this.brandSuspectsRequestId++;
+          this.brandSuspects = [];
+          this.brandSuspectsNextCursor = null;
+          this.brandSuspectsLoaded = false;
+          this.brandSuspectsScanned = 0;
+          // Reload after finalize releases the in-flight guard.
+          this.deletingBrandSuspects = false;
+          if (this.brandSuspectsOpen && this.reclassificationPanelOpen) this.refreshBrandSuspects();
+        },
+        error: (error: { status?: number }) => {
+          this.brandSuspectsError = error?.status === 404
+            ? 'La cancellazione dei sospetti non è ancora disponibile sul backend distribuito.'
+            : error?.status === 409
+              ? 'Un feed è in sincronizzazione o pulizia: attendi e riprova.'
+              : 'Impossibile eliminare i sospetti. Nessuna cancellazione ulteriore verrà avviata.';
         },
       });
   }
