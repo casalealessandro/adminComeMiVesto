@@ -14,7 +14,9 @@ import {
   AiOutfitPreviewGender,
 } from '../../models/affiliate-catalog-api.models';
 import { AiOutfitPublishRequest } from '../../models/ai-outfit-publish.models';
-import { AffiliateFeed } from '../../models/affiliate-catalog.models';
+import { AffiliateFeed, CatalogProduct } from '../../models/affiliate-catalog.models';
+import { PopUpService } from '../../../../core/popup/popup.service';
+import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
@@ -59,6 +61,36 @@ interface SelectOption<T extends string> {
 })
 export class AffiliateOutfitPreviewComponent implements OnInit {
   private readonly affiliateCatalogService = inject(AffiliateCatalogService);
+  private readonly popupService = inject(PopUpService);
+  productCategories: string[] = [];
+  baseCategory = '';
+  readonly anchorProducts: CatalogProduct[] = [];
+  pickingAnchor = false;
+
+  pickBaseProduct(): void {
+    if (!this.baseCategory || this.anchorProducts.length >= 2 || this.pickingAnchor || this.loading) return;
+    const guid = `outfit-anchor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    this.pickingAnchor = true;
+    const requestedCategory = this.baseCategory;
+    this.popupService.setNewPopUp(guid, 'OutfitReplacementPickerComponent', {
+      category: requestedCategory, gender: this.request.gender === 'WOMAN' ? 'D' : 'U',
+      productIdsInOutfit: this.anchorProducts.map(item => item.id),
+    }, 1180, undefined, undefined, false, true, 'Scegli capo di partenza', 'center', true);
+    void this.popupService.getOutputComponent(guid).then((result: OutfitReplacementPickerResult) => {
+      this.popupService.destroyCurrentOpenPopUpByGuid(guid);
+      const product = result?.name === 'selected' ? result.product : undefined;
+      if (!product || product.category !== requestedCategory ||
+          this.anchorProducts.some(p => p.id === product.id)) return;
+      this.anchorProducts.push(product);
+      this.outfitCount = 1;
+    }).finally(() => { this.pickingAnchor = false; });
+  }
+
+  removeBaseProduct(id: string): void {
+    const index = this.anchorProducts.findIndex(item => item.id === id);
+    if (index >= 0) this.anchorProducts.splice(index, 1);
+  }
+
 
   readonly minOutfitCount = 1;
   readonly maxOutfitCount = 6;
@@ -109,6 +141,10 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   readonly editingDraftIds = new Set<string>();
 
   ngOnInit(): void {
+    this.affiliateCatalogService.getProductCategories().subscribe({
+      next: categories => this.productCategories = categories.filter(Boolean).sort(),
+      error: () => { this.error = 'Impossibile caricare le categorie prodotti.'; },
+    });
     this.occasionsLoading = true;
     this.affiliateCatalogService.getOutfitOccasions()
       .pipe(finalize(() => this.occasionsLoading = false))
@@ -229,6 +265,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   onGenderChange(gender: AiOutfitPreviewGender): void {
     this.request.gender = gender;
+    this.anchorProducts.splice(0);
     if (this.request.creatorUid && !this.availableCreators().some((creator) => creator.uid === this.request.creatorUid)) {
       this.request.creatorUid = undefined;
     }
@@ -248,7 +285,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       this.error = 'Attendi il caricamento degli stili ComeMiVesto o scegli uno stile valido.';
       return;
     }
-    const count = Number(this.outfitCount);
+    const count = this.anchorProducts.length ? 1 : Number(this.outfitCount);
     if (!Number.isInteger(count) || count < this.minOutfitCount || count > this.maxOutfitCount) {
       this.error = `Il numero di outfit deve essere un intero tra ${this.minOutfitCount} e ${this.maxOutfitCount}.`;
       return;
@@ -273,6 +310,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       ...this.request,
       ...(this.selectedFeedIds.length ? { sourceFeedIds: [...this.selectedFeedIds] } : {}),
       count,
+      ...(this.anchorProducts.length ? { anchorProductIds: this.anchorProducts.map(p => p.id) } : {}),
       ...(maxTotalPrice !== undefined ? { maxTotalPrice: Math.round(maxTotalPrice * 100) / 100 } : {}),
     };
     if (maxTotalPrice === undefined) delete request.maxTotalPrice;
