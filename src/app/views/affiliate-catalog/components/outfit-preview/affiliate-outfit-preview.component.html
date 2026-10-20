@@ -104,6 +104,10 @@
         {{ anchorMode ? 'Torna alla generazione libera' : 'Genera a partire da prodotti' }}
       </button>
       <ng-container *ngIf="anchorMode">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="toggleGenericMode()">
+          {{ genericMode ? 'Scegli prodotti specifici' : 'Parti da categoria / sottocategoria / colore' }}
+        </button>
+        <ng-container *ngIf="!genericMode">
         <p class="ai-preview__control-help">Seleziona fino a tre capi reali. Verrà generato un outfit che li comprende obbligatoriamente; gli altri capi saranno scelti dal catalogo.</p>
         <div class="ai-preview__anchor-options">
           <label>Ruolo
@@ -130,7 +134,45 @@
             <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeAnchor(i)">Rimuovi</button>
           </li>
         </ul>
-        <small>Con capi obbligatori il primo test genera un solo outfit. Il costo AI parte solo premendo Genera.</small>
+        </ng-container>
+        <ng-container *ngIf="genericMode">
+          <p class="ai-preview__control-help">Descrivi fino a tre capi desiderati: il backend cercherà prodotti reali del catalogo e completerà l'outfit.</p>
+          <div class="ai-preview__anchor-options">
+            <label>Categoria
+              <select name="genericCategory" [ngModel]="genericCategory"
+                (ngModelChange)="onGenericCategoryChange($event)">
+                <option value="">Seleziona categoria</option>
+                <option *ngFor="let category of anchorCategories" [value]="category">{{ category }}</option>
+              </select>
+            </label>
+            <label>Sottocategoria
+              <select name="genericSubcategory" [(ngModel)]="genericSubcategory"
+                [disabled]="genericSubcategoriesLoading || !genericCategory">
+                <option value="">Seleziona sottocategoria</option>
+                <option *ngFor="let item of genericSubcategories" [value]="item.id">{{ item.categoryName }}</option>
+              </select>
+            </label>
+            <label>Colore (opzionale)
+              <select name="genericColor" [(ngModel)]="genericColor">
+                <option value="">Qualsiasi colore</option>
+                <option *ngFor="let item of genericColors" [value]="item.id">{{ item.value }}</option>
+              </select>
+            </label>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addGenericAnchor()"
+            [disabled]="!genericCategory || !genericSubcategory || genericAnchors.length >= 3">
+            Aggiungi criterio
+          </button>
+          <ul *ngIf="genericAnchors.length" class="ai-preview__anchors">
+            <li *ngFor="let item of genericAnchors; let i = index">
+              <strong>{{ item.role }}:</strong>
+              {{ item.category }} / {{ item.subcategory }}{{ item.color ? ' / ' + item.color : '' }}
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeGenericAnchor(i)">Rimuovi</button>
+            </li>
+          </ul>
+          <small>Se non ci sono prodotti idonei, la richiesta termina senza creare immagini AI.</small>
+        </ng-container>
+        <small>La generazione AI è a pagamento e parte soltanto premendo Genera.</small>
       </ng-container>
     </fieldset>
 
