@@ -17,7 +17,7 @@ import {
   FashionEnrichmentStatus,
   FashionOverviewResponse,
   FashionOverviewJob,
-  FashionAiPilotJob,
+  FashionAiPilotJob, FashionVisionCategoryJob,
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
@@ -88,6 +88,40 @@ export class AffiliateCatalogService {
 
   disableMappingRule(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/mapping-rules/${encodeURIComponent(id)}`);
+  }
+
+  getFashionVisionCategory(categoryId: string): Observable<FashionVisionCategoryJob | null> {
+    return this.http.get<AffiliateApiResponse<FashionVisionCategoryJob | null>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId),
+    ).pipe(map(response => response.data));
+  }
+
+  previewFashionVisionCategory(
+    categoryId: string, maxProducts: number, maxBudgetUsd: number, after?: string,
+  ): Observable<FashionVisionCategoryJob> {
+    return this.http.post<AffiliateApiResponse<FashionVisionCategoryJob>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/preview',
+      { maxProducts, maxBudgetUsd, ...(after ? { after } : {}) },
+    ).pipe(map(response => response.data));
+  }
+
+  confirmFashionVisionCategory(
+    categoryId: string, runId: string, acknowledgedBudgetUsd: number,
+  ): Observable<FashionVisionCategoryJob> {
+    return this.http.post<AffiliateApiResponse<FashionVisionCategoryJob>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/confirm',
+      { runId, acknowledgedBudgetUsd },
+    ).pipe(map(response => response.data));
+  }
+
+  reviewFashionVisionProduct(
+    categoryId: string,
+    input: { runId: string; productId: string; action: 'APPROVE' | 'REJECT'; styles?: string[]; subcategory?: string },
+  ): Observable<FashionVisionCategoryJob> {
+    return this.http.post<AffiliateApiResponse<FashionVisionCategoryJob>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/review',
+      input,
+    ).pipe(map(response => response.data));
   }
 
   getFashionAiFeedPilot(feedId: string): Observable<FashionAiPilotJob | null> {
