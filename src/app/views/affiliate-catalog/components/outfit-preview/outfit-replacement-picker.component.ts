@@ -44,8 +44,6 @@ const listOptions = (options: Array<{ value: string; label: string }>): NonNulla
  * normalized filter fields to the existing paged products API.
  */
 export const buildReplacementPickerColumns = (
-  category: string,
-  gender: 'U' | 'D',
   subcategories: readonly string[],
   colors: ReadonlyArray<{ id: string; value: string }>,
 ): Colonne[] => [{
@@ -53,18 +51,9 @@ export const buildReplacementPickerColumns = (
     { ...column('imagePreview', 'Immagine', 84, 'campoImg'), search: false },
     { ...column('name', 'Nome', 270), allowFiltering: true },
     {
-      ...column('genderLabel', 'Genere', 110, 'campoLista'),
-      allowFiltering: true,
-      lista: listOptions([{ value: gender, label: gender === 'D' ? 'Donna' : 'Uomo' }]),
-    },
-    {
       ...column('styleLabel', 'Stile', 170, 'campoLista'),
       allowFiltering: true,
       lista: listOptions(PICKER_STYLE_OPTIONS.map(option => ({ ...option }))),
-    },
-    {
-      ...column('category', 'Categoria', 165, 'campoLista'),
-      allowFiltering: true, lista: listOptions([{ value: category, label: category }]),
     },
     {
       ...column('subcategory', 'Sottocategoria', 175, 'campoLista'),
@@ -108,6 +97,14 @@ export const buildReplacementPickerColumns = (
         [tableHeight]="480"
         (emittendSelectionRow)="selectRow($event)">
       </app-data-grid>
+      <div *ngIf="grid as list" class="outfit-product-picker__paging" aria-live="polite">
+        <span>{{ list.rowsData().length }} prodotti caricati</span>
+        <button *ngIf="list.remoteHasMore" type="button" class="btn btn-sm btn-outline-primary"
+          [disabled]="list.isLoading" (click)="loadMore()">
+          {{ list.isLoading ? 'Caricamento...' : 'Carica altri prodotti' }}
+        </button>
+        <span *ngIf="!list.remoteHasMore && list.rowsData().length">Fine risultati</span>
+      </div>
       <p class="small text-muted">Usa il filtro Nome e i menu nelle intestazioni della griglia per cercare nel catalogo. Clicca una riga per scegliere il nuovo prodotto. La sostituzione viene salvata soltanto quando confermi le modifiche.</p>
       <button type="button" class="btn btn-outline-secondary" (click)="result.emit({ name: 'cancelled' })">Annulla</button>
     </section>
@@ -117,6 +114,11 @@ export const buildReplacementPickerColumns = (
     .outfit-product-picker { display: grid; gap: .75rem; padding: .6rem; min-width: 0; }
     .outfit-product-picker p { margin: 0; }
     .outfit-product-picker > button { justify-self: start; }
+    .outfit-product-picker__paging {
+      display: flex; flex-wrap: wrap; align-items: center;
+      justify-content: space-between; gap: .5rem;
+      font-size: .8rem; color: var(--bs-secondary-color, #6c757d);
+    }
   `],
 })
 export class OutfitReplacementPickerComponent implements OnInit {
@@ -154,14 +156,21 @@ export class OutfitReplacementPickerComponent implements OnInit {
           .sort((a, b) => a.localeCompare(b));
         const validColors = colors.filter(item => item.id && item.value)
           .sort((a, b) => a.value.localeCompare(b.value));
-        this.columns = buildReplacementPickerColumns(
-          this.itemData.category, this.itemData.gender, validSubcategories, validColors,
-        );
+        this.columns = buildReplacementPickerColumns(validSubcategories, validColors);
         this.provider = { load: (request) => this.loadPage(request) };
         this.loading = false;
       },
       error: () => { this.loading = false; this.error = 'Impossibile caricare i filtri del catalogo.'; },
     });
+  }
+
+  /** Explicit pagination also works when excluded in-use products leave a partial page. */
+  async loadMore(): Promise<void> {
+    const grid = this.grid;
+    if (!grid || !grid.remoteHasMore || grid.isLoading) return;
+    this.error = '';
+    const loaded = await grid.loadNextRemotePage();
+    if (!loaded) this.error = 'Impossibile caricare altri prodotti. Riprova.';
   }
 
   async loadPage(request: GridLoadRequest): Promise<{ items: OutfitReplacementRow[]; continuation?: string; hasMore: boolean }> {
@@ -170,8 +179,8 @@ export class OutfitReplacementPickerComponent implements OnInit {
     }
 
     const permittedFilters: Record<string, string> = {
-      name: 'contains', genderLabel: 'eq', styleLabel: 'eq',
-      category: 'eq', subcategory: 'eq', normalizedColor: 'eq',
+      name: 'contains', styleLabel: 'eq',
+      subcategory: 'eq', normalizedColor: 'eq',
     };
     const filters = request.filters ?? [];
     if (filters.some(filter => permittedFilters[filter.field] !== filter.operator ||
@@ -183,15 +192,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
       return typeof value === 'string' ? value.trim() || undefined : undefined;
     };
 
-    // The outfit slot already determines category and gender. Grid filters may
-    // narrow this scope, never broaden it to incompatible replacement products.
-    const chosenGender = filterValue('genderLabel');
-    const chosenCategory = filterValue('category');
-    if ((chosenGender && chosenGender !== this.itemData.gender) ||
-        (chosenCategory && chosenCategory !== this.itemData.category)) {
-      return { items: [], hasMore: false };
-    }
-
+    // Category and gender are fixed by the outfit slot, not editable grid filters.
     const nameFilter = filterValue('name');
     const globalQuery = request.search?.value?.trim();
     if (nameFilter && globalQuery && nameFilter !== globalQuery) {

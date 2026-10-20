@@ -1129,7 +1129,8 @@ export class DataGridComponent<T = any> implements OnDestroy {
     }
 
     if (!this.remoteOperation || !this.remoteHasMore) return;
-    if (this.rowsData().length < this.pageSize) return;
+    // A provider may filter out already-used products after reading a full page;
+    // remoteHasMore, not the visible row count, controls continuation.
     if (!this.isProviderScrollingNearBottom(element)) return;
 
     await this.loadNextRemotePage();
