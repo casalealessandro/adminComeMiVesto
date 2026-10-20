@@ -8,7 +8,7 @@ import { AnagraficaWrapperComponent } from '../../core/layout/anagrafica-wrapper
 import { OutfitOccasion, OutfitOccasionUpdate, OutfitStyleImage, TaxonomyService } from '../../services/taxonomy.service';
 import { FormService } from '../../services/form.service';
 import { confirm } from '../../widgets/ui-dialogs';
-import { OCCASION_CREATE_FORM, OCCASION_EDIT_FORM, hasOccasionImageFileBox, isOccasionFormReady, missingOccasionFormFields, occasionFormDefinitions } from './occasion-form-definitions';
+import { OCCASION_FORM, hasOccasionImageFileBox, isOccasionFormReady, missingOccasionFormFields, occasionFormDefinition } from './occasion-form-definitions';
 
 export const MAX_OCCASION_IMAGE_BASE64_LENGTH = 350000;
 export function occasionImageDataUrl(image?: OutfitStyleImage | null): string {
@@ -55,7 +55,7 @@ export class OccasionsComponent {
   formsReady = false;
   formsLoading = false;
   formsError = '';
-  get formId(): string { return this.editingOriginalId ? OCCASION_EDIT_FORM : OCCASION_CREATE_FORM; }
+  readonly formId = OCCASION_FORM;
   ngOnInit(): void { this.load(); void this.checkForms(); }
 
   async checkForms(): Promise<void> {
@@ -73,7 +73,7 @@ export class OccasionsComponent {
 
   initializeForms(): void {
     if (this.formsLoading) return;
-    confirm('Creare i form mancanti e aggiungere il campo immagine ai form esistenti? Gli altri campi non saranno sovrascritti.',
+    confirm('Creare il form Occasioni se assente oppure completare i campi mancanti? I campi esistenti non saranno sovrascritti.',
       'Configura form Occasioni', yes => { if (yes) void this.ensureForms(); });
   }
 
@@ -82,20 +82,22 @@ export class OccasionsComponent {
     this.formsError = '';
     try {
       const stored = await firstValueFrom(this.forms.getForms());
-      for (const template of occasionFormDefinitions) {
-        const current = stored.find(form => form.id === template.id);
-        if (current && current.json.some(field => field.name === 'image') && !hasOccasionImageFileBox(current)) {
-          throw new Error(`Il campo image del form ${template.id} ha un tipo incompatibile. Correggilo nel Form Builder.`);
-        }
-        if (!current) {
-          await this.forms.saveForm('new', { ...template, json: [...template.json] });
-        } else {
-          const additions = missingOccasionFormFields(current, template);
-          if (additions.length) {
-            await this.forms.saveForm(current.id, {
-              id: current.id, nameForm: current.nameForm, json: [...current.json, ...additions],
-            });
-          }
+      const current = stored.find(form => form.id === OCCASION_FORM);
+      if (current && current.json.some(field => field.name === 'image') && !hasOccasionImageFileBox(current)) {
+        throw new Error('Il campo image del form Occasioni non è FileBox. Correggilo nel Form Builder.');
+      }
+      if (!current) {
+        await this.forms.saveForm('new', {
+          ...occasionFormDefinition,
+          json: [...occasionFormDefinition.json],
+        });
+      } else {
+        const additions = missingOccasionFormFields(current);
+        if (additions.length) {
+          await this.forms.saveForm(current.id, {
+            id: current.id, nameForm: current.nameForm,
+            json: [...current.json, ...additions],
+          });
         }
       }
       this.formsReady = true;
@@ -132,8 +134,23 @@ export class OccasionsComponent {
     this.imageRemoved = false;
     this.editorOpen = true;
     this.formVisible = false;
-    setTimeout(() => this.formVisible = true);
+    setTimeout(() => {
+      this.formVisible = true;
+      if (this.editingOriginalId) this.disableEditingId();
+    });
   }
+  /** Il codice esiste nello stesso form ma è di sola lettura in modifica. */
+  private disableEditingId(attempt = 0): void {
+    const control = this.dynamicForm?.form.get('id');
+    if (control) {
+      control.disable();
+      return;
+    }
+    if (attempt < 20 && this.editorOpen) {
+      setTimeout(() => this.disableEditingId(attempt + 1), 50);
+    }
+  }
+
   close(): void {
     if (this.loading || this.processingImage) return;
     this.editorOpen = false;
