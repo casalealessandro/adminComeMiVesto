@@ -17,20 +17,13 @@
     [showToolbarTop]="false" [showToolbarBottom]="false" [isSearchable]="false" [tableHeight]="500"
     (emittendButtonCellClick)="gridAction($event)"></app-data-grid>
 </app-anagrafica-wrapper>
-<div *ngIf="editorOpen" class="occasion-editor-backdrop" style="position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:rgb(15 23 42 / .45);padding:1rem">
-  <section role="dialog" aria-modal="true" aria-label="Modifica occasione" style="background:var(--cmv-color-surface,#fff);border-radius:.75rem;padding:1.5rem;width:min(560px,100%);max-height:90vh;overflow:auto">
+<div *ngIf="editorOpen" class="occasion-editor-backdrop">
+  <section class="occasion-editor-dialog" role="dialog" aria-modal="true" aria-label="Modifica occasione">
     <h2>{{ editingOriginalId ? 'Modifica occasione' : 'Nuova occasione' }}</h2>
     <p *ngIf="editingOriginalId">Codice: <strong>{{ editingOriginalId }}</strong> (non modificabile)</p>
     <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
     <app-dynamic-form *ngIf="formVisible" [service]="formId" [editData]="formEditData" [loading]="loading || processingImage"
       inputBtnLeftName="Annulla" inputBtnRightName="Salva" (submitFormEvent)="handleForm($event)"></app-dynamic-form>
 
-    <section class="occasion-image-editor" aria-label="Opzioni immagine occasione">
-      <p>La fotografia viene selezionata direttamente nel campo <strong>Immagine occasione</strong> del form.
-        Il salvataggio la converte in JPG, fino a 512 px, e la associa a questa occasione.</p>
-      <button type="button" class="btn btn-outline-danger btn-sm"
-        (click)="removeImage()" [disabled]="loading || processingImage || !hasImageSelected()">Rimuovi immagine</button>
-    </section>
-    <button class="btn btn-outline-secondary mt-2" type="button" (click)="close()" [disabled]="loading || processingImage">Chiudi</button>
   </section>
 </div>
