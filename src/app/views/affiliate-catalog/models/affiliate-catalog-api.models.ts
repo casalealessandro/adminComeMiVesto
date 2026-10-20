@@ -12,6 +12,17 @@ export interface AffiliateApiError {
   message: string;
 }
 
+export interface AffiliateProductDeleteResult {
+  requested: number;
+  deleted: number;
+  protectedByOutfits: number;
+  sharedAcrossFeeds: number;
+  notFound: number;
+  notEligible: number;
+  deletedOffers: number;
+  deletedVariants: number;
+}
+
 export interface AffiliateCursorRequest {
   limit?: number;
   cursor?: string;
