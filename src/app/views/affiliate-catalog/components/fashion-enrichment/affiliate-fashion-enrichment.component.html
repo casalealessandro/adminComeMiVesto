@@ -196,6 +196,214 @@
     </section>
   </ng-template>
 
+    <section class="fashion-overview__section" aria-labelledby="fashion-vision-title">
+      <div class="fashion-overview__section-heading">
+        <div>
+          <h3 id="fashion-vision-title" class="h5 mb-1">Analisi visiva per categoria</h3>
+          <p class="text-muted small mb-0">
+            Seleziona una categoria principale, non una sottocategoria. L'AI propone tipo di capo,
+            sottocategoria e stili multipli. Nessun dato del catalogo viene cambiato senza la tua approvazione.
+          </p>
+        </div>
+        <span class="badge bg-secondary align-self-start">Revisione assistita</span>
+      </div>
+
+      <div *ngIf="visionError" class="alert alert-danger small" role="alert">{{ visionError }}</div>
+      <div *ngIf="visionNotice" class="alert alert-info small" role="status">{{ visionNotice }}</div>
+
+      <div class="fashion-overview__ai-controls">
+        <div>
+          <label for="fashion-vision-category" class="form-label small">Categoria principale</label>
+          <select id="fashion-vision-category" class="form-select"
+            [(ngModel)]="selectedVisionCategoryId" (ngModelChange)="onVisionCategoryChanged()" [disabled]="visionBusy">
+            <option value="">Seleziona una categoria</option>
+            <option *ngFor="let category of visionCategories" [value]="category.id">{{ category.categoryName }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="fashion-vision-count" class="form-label small">Dimensione del campione</label>
+          <select id="fashion-vision-count" class="form-select" [(ngModel)]="visionCount" [disabled]="visionBusy || visionRunning">
+            <option *ngFor="let size of visionSizes" [ngValue]="size">{{ size }} prodotti</option>
+          </select>
+        </div>
+        <div>
+          <label for="fashion-vision-budget" class="form-label small">Soglia preventiva</label>
+          <select id="fashion-vision-budget" class="form-select" [(ngModel)]="visionBudget" [disabled]="visionBusy || visionRunning">
+            <option *ngFor="let value of aiBudgets" [ngValue]="value">{{ value | currency:'USD':'symbol':'1.2-2' }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="fashion-overview__actions mt-3">
+        <button class="btn btn-outline-primary" type="button"
+          (click)="previewVision()" [disabled]="!canManageAi || !selectedVisionCategoryId || visionBusy || visionRunning">
+          <span class="mdi mdi-image-search-outline" aria-hidden="true"></span>
+          Anteprima prodotti e costo (gratis)
+        </button>
+        <button class="btn btn-outline-secondary" type="button"
+          (click)="refreshVision()" [disabled]="!selectedVisionCategoryId || visionBusy">
+          <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna risultati
+        </button>
+        <button class="btn btn-outline-secondary" type="button" *ngIf="visionJob?.nextCursor && !visionRunning"
+          (click)="previewVision(true)" [disabled]="!canManageAi || visionBusy">
+          Campione successivo
+        </button>
+      </div>
+      <p class="small text-muted mt-2 mb-0">
+        Le fotografie originali dei merchant vengono inviate all'AI solo dopo conferma esplicita.
+        Stima API basata su token previsti: non è una garanzia di spesa. Sono esclusi i costi Firebase.
+        Le proposte non diventano automaticamente nuovi dizionari.
+      </p>
+
+      <article *ngIf="visionJob as vision" class="fashion-overview__ai-job mt-3" aria-live="polite">
+        <div class="fashion-overview__merchant-title">
+          <div>
+            <strong>{{ vision.categoryName }} · {{ visionStatusLabel(vision.status) }}</strong>
+            <div class="text-muted small">Inizio {{ vision.createdAt | date:'dd/MM/yyyy HH:mm' }} ·
+              {{ vision.scanned | number }} documenti esplorati (max 2.000 per anteprima)</div>
+          </div>
+          <span class="badge bg-secondary">{{ vision.model }}</span>
+        </div>
+        <div class="fashion-overview__ai-stats">
+          <div><span>Prodotti selezionati</span><strong>{{ vision.rows.length }}</strong></div>
+          <div><span>Stima AI</span><strong>{{ vision.estimatedCostUsd | currency:'USD':'symbol':'1.4-6' }}</strong></div>
+          <div><span>Budget autorizzabile</span><strong>{{ vision.maxBudgetUsd | currency:'USD':'symbol':'1.2-2' }}</strong></div>
+          <div><span>Spesa da usage</span><strong>{{ vision.costUsd | currency:'USD':'symbol':'1.4-6' }}</strong></div>
+        </div>
+        <div *ngIf="vision.status !== 'PREVIEW_READY'" class="mt-2 small text-muted">
+          Analizzati {{ vision.completed }} / {{ vision.rows.length }} · Saltati {{ vision.skipped }} ·
+          Chiamate dal costo incerto {{ vision.uncertainCalls }}.
+        </div>
+        <p *ngIf="vision.lastError" class="small text-danger mt-2">{{ vision.lastError }}</p>
+        <div *ngIf="visionRunning && vision.rows.length" class="progress mt-2">
+          <div class="progress-bar" role="progressbar" [style.width.%]="percentage(vision.nextIndex, vision.rows.length)"
+            [attr.aria-valuenow]="vision.nextIndex" aria-valuemin="0" [attr.aria-valuemax]="vision.rows.length"></div>
+        </div>
+
+        <div *ngIf="visionPreviewReady && vision.rows.length && canManageAi" class="mt-3">
+          <label class="form-check">
+            <input type="checkbox" class="form-check-input" [(ngModel)]="visionAccepted"/>
+            <span class="form-check-label small">
+              Autorizzo l'invio delle immagini di questo campione al provider AI e una soglia preventiva di
+              {{ vision.maxBudgetUsd | currency:'USD':'symbol':'1.2-2' }}. So che richieste fallite o fatturazione
+              diversa dalla stima possono generare costi non misurati dal sistema.
+            </span>
+          </label>
+          <button class="btn btn-danger mt-2" type="button" (click)="confirmVision()"
+            [disabled]="visionBusy || !visionAccepted">Conferma e avvia analisi immagini</button>
+        </div>
+        <p *ngIf="vision.status === 'PREVIEW_READY' && !visionPreviewReady" class="small text-warning mt-2">
+          Anteprima scaduta. Devi rigenerarla prima di avviare un'analisi a pagamento.
+        </p>
+
+        <div class="d-flex flex-wrap align-items-end gap-2 mt-4 mb-2">
+          <div>
+            <label class="form-label small mb-1" for="fashion-vision-filter">Filtra la revisione</label>
+            <select class="form-select form-select-sm" id="fashion-vision-filter" [(ngModel)]="visionFilter">
+              <option value="all">Tutti</option>
+              <option value="changed">Solo differenze</option>
+              <option value="pending">Da revisionare</option>
+              <option value="reviewed">Approvati / rifiutati</option>
+            </select>
+          </div>
+          <span class="small text-muted">{{ visibleVisionRows.length }} righe visibili su {{ vision.rows.length }}</span>
+        </div>
+
+        <div class="table-responsive fashion-overview__vision-grid">
+          <table class="table table-sm table-bordered align-middle">
+            <thead>
+              <tr>
+                <th scope="col">Prodotto e fotografia originale</th>
+                <th scope="col">Specchio attuale (Firebase)</th>
+                <th scope="col">Specchio aggiornato (proposta AI)</th>
+                <th scope="col">Revisione</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of visibleVisionRows">
+                <td>
+                  <a [href]="row.image" target="_blank" rel="noopener noreferrer"
+                    [attr.aria-label]="'Ingrandisci foto ' + row.name">
+                    <img [src]="row.image" [alt]="row.name" loading="lazy"
+                      class="fashion-overview__vision-image"/>
+                  </a>
+                  <div class="small fw-semibold mt-2">{{ row.name }}</div>
+                  <div class="text-muted small">{{ row.brand }}</div>
+                  <div class="text-muted small">ID: {{ row.productId }}</div>
+                </td>
+                <td>
+                  <dl class="fashion-overview__vision-fields">
+                    <dt>Categoria</dt><dd>{{ row.before.category }}</dd>
+                    <dt>Sottocategoria</dt><dd>{{ row.before.subcategory || 'Non assegnata' }}</dd>
+                    <dt>Stili</dt><dd>{{ row.before.styles.length ? row.before.styles.join(', ') : 'Non assegnati' }}</dd>
+                    <dt>Stagioni</dt><dd>{{ row.before.seasons.length ? row.before.seasons.join(', ') : 'Non assegnate' }}</dd>
+                    <dt>Vestibilità</dt><dd>{{ row.before.fit }}</dd>
+                    <dt>Peso visivo</dt><dd>{{ row.before.visualWeight }}</dd>
+                  </dl>
+                </td>
+                <td>
+                  <ng-container *ngIf="row.after as proposed; else visionWaiting">
+                    <dl class="fashion-overview__vision-fields">
+                      <dt>Categoria</dt><dd>{{ proposed.category }}</dd>
+                      <dt>Sottocategoria</dt>
+                      <dd>
+                        <select class="form-select form-select-sm"
+                          [(ngModel)]="visionSubcategoryEdits[row.productId]"
+                          [disabled]="row.status !== 'READY' || !canManageAi"
+                          [attr.aria-label]="'Correggi sottocategoria ' + row.name">
+                          <option value="">Non assegnata</option>
+                          <option *ngFor="let child of visionSubcategories" [value]="child.id">{{ child.categoryName }}</option>
+                        </select>
+                        <small *ngIf="row.before.subcategory !== proposed.subcategory" class="text-primary">Modifica suggerita</small>
+                      </dd>
+                      <dt>Stili</dt>
+                      <dd>
+                        <select class="form-select form-select-sm" multiple size="5"
+                          [(ngModel)]="visionStyleEdits[row.productId]"
+                          [disabled]="row.status !== 'READY' || !canManageAi"
+                          [attr.aria-label]="'Correggi gli stili di ' + row.name">
+                          <option *ngFor="let style of visionStyles" [ngValue]="style">{{ visionStyleLabel(style) }}</option>
+                        </select>
+                        <small class="text-muted">Puoi selezionare più stili.</small>
+                      </dd>
+                      <dt>Stagioni</dt><dd>{{ proposed.seasons.length ? proposed.seasons.join(', ') : 'Non assegnate' }} <small class="text-muted">(immutate)</small></dd>
+                      <dt>Vestibilità</dt><dd>{{ proposed.fit }} <small class="text-muted">(immutata)</small></dd>
+                      <dt>Peso visivo</dt><dd>{{ proposed.visualWeight }} <small class="text-muted">(immutato)</small></dd>
+                    </dl>
+                    <div class="small text-muted mt-2"><strong>Capo:</strong> {{ row.detectedType }}</div>
+                    <div class="small" *ngIf="row.insideCategory === false">
+                      <span class="text-warning">Possibile categoria principale errata: da correggere separatamente.</span>
+                    </div>
+                    <div class="small mt-1"><strong>Confidenza:</strong> {{ row.confidence }}</div>
+                    <div class="small text-muted">{{ row.explanation }}</div>
+                  </ng-container>
+                  <ng-template #visionWaiting><span class="text-muted small">In attesa dell'analisi AI.</span></ng-template>
+                </td>
+                <td class="fashion-overview__vision-actions">
+                  <span class="badge bg-secondary mb-2">{{ row.status }}</span>
+                  <div *ngIf="row.status === 'READY' && canManageAi" class="d-grid gap-1">
+                    <button class="btn btn-sm btn-success" type="button"
+                      (click)="reviewVision(row, 'APPROVE')" [disabled]="visionBusy">Approva</button>
+                    <button class="btn btn-sm btn-outline-danger" type="button"
+                      (click)="reviewVision(row, 'REJECT')" [disabled]="visionBusy">Rifiuta</button>
+                  </div>
+                  <small class="text-muted d-block mt-2" *ngIf="row.costUsd">
+                    {{ row.costUsd | currency:'USD':'symbol':'1.4-6' }} API
+                  </small>
+                </td>
+              </tr>
+              <tr *ngIf="!visibleVisionRows.length"><td colspan="4" class="text-muted small text-center py-3">
+                Nessun prodotto per questo filtro o campione ancora vuoto.
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small text-muted mb-0">Le approvazioni vengono registrate singolarmente e solo sui campi modificati
+          (sottocategoria e stili). Gli altri valori sono riportati nello specchio per il confronto,
+          ma non vengono sovrascritti. Le classificazioni approvate vengono protette dai successivi sync.
+        </p>
+      </article>
+    </section>
+
     <section class="fashion-overview__section" aria-labelledby="fashion-ai-title">
       <div class="fashion-overview__section-heading">
         <div>
