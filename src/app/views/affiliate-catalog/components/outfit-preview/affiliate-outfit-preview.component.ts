@@ -117,6 +117,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   toggleAnchorMode(): void {
     if (this.loading) return;
     this.anchorMode = !this.anchorMode;
+    delete this.request.anchorProducts;
     this.selectedAnchors.splice(0);
     this.anchorRole = '';
     this.anchorCategory = '';
@@ -358,6 +359,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     };
     if (maxTotalPrice === undefined) delete request.maxTotalPrice;
     if (!this.selectedFeedIds.length) delete request.sourceFeedIds;
+    if (!this.anchorMode) delete request.anchorProducts;
     // Keep the normalized request available to the UI/tests and aligned with the backend response.
     this.request = request;
 
