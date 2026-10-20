@@ -39,6 +39,7 @@ export class FotoOutfitPage implements OnInit {
   @Input() tags = signal<Tag[]>([]);
   @Input() enableSetTagsImage: boolean = true
   @Input() enableCatalogReplacements = false;
+  @Input() enableOuterwearAddition = false;
   @Input() gender?: string;
   @Output() eventProductReplacements = new EventEmitter<CatalogReplacementRequest[]>();
   @Output() eventProductAdditions = new EventEmitter<CatalogAdditionRequest[]>();
@@ -47,7 +48,7 @@ export class FotoOutfitPage implements OnInit {
   pendingAddedOuterwear?: CatalogProduct;
   addingOuterwear = false;
   get canAddOuterwear(): boolean {
-    return this.enableSetTagsImage && this.enableCatalogReplacements &&
+    return this.enableSetTagsImage && this.enableCatalogReplacements && this.enableOuterwearAddition &&
       ['U','D'].includes(this.gender ?? '') && this.tags().length < 8 &&
       !this.tags().some(tag => tag.outfitCategory === 'cappotti' ||
         (tag.outfitCategory === 'ABC_Completi' && tag.outfitSubCategory === 'blazer')) &&
