@@ -66,19 +66,24 @@ export class OutfitsComponent implements OnDestroy {
    * Reuses the grid's existing confirmation and atomic bulk-delete path.
    * The backend accepts at most 100 distinct outfit IDs per request.
    */
+  private readonly bulkDeleteAction: ToolbarButton = {
+    id: 'bulkDeleteOutfits',
+    name: 'bulkDeleteOutfits',
+    text: 'Elimina selezionati (0)',
+    icon: 'mdi mdi-trash-can-outline',
+    disabled: true,
+    visible: true,
+    cssClass: 'btn-outline-danger',
+    widget: 'button',
+  };
+  private readonly deleteToolbarButtons: ToolbarButton[] = [this.bulkDeleteAction];
+
   get bulkDeleteToolbarButtons(): ToolbarButton[] {
     const selected = this.grid?.getSelectedRows().length ?? 0;
-    const ready = !!this.grid && !this.grid.isLoading && selected > 0 && selected <= 100;
-    return [{
-      id: 'bulkDeleteOutfits',
-      name: 'bulkDeleteOutfits',
-      text: `Elimina selezionati (${selected})`,
-      icon: 'mdi mdi-trash-can-outline',
-      disabled: !ready,
-      visible: true,
-      cssClass: 'btn-outline-danger',
-      widget: 'button',
-    }];
+    this.bulkDeleteAction.text = `Elimina selezionati (${selected})`;
+    this.bulkDeleteAction.disabled = !this.grid || this.grid.isLoading || selected === 0 || selected > 100;
+    // Stable array reference prevents Angular recreating toolbar controls each change detection.
+    return this.deleteToolbarButtons;
   }
 
   readonly menuActions: NonNullable<ColData['editorbuttons']> = [
