@@ -62,7 +62,7 @@
         <img *ngIf="selectedReplacements.get(i)?.images?.[0] || outfit.products[i]?.images?.[0]"
           [src]="selectedReplacements.get(i)?.images?.[0] || outfit.products[i]?.images?.[0]" [alt]="replacementLabel(i)" loading="lazy">
         <div>
-          <small>{{ product.role }}</small>
+          <small>{{ roleLabel(product.role) }}</small>
           <span>{{ replacementLabel(i) }}</span>
         </div>
         <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showReplacements(i)" [disabled]="saving" *ngIf="i < outfit.products.length">
@@ -78,7 +78,7 @@
         <label>Ruolo
           <select name="additionalProductRole" [(ngModel)]="addRole" [disabled]="saving || addingProduct">
             <option value="">Seleziona ruolo</option>
-            <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
+            <option *ngFor="let role of availableRoles" [value]="role">{{ roleLabel(role) }}</option>
           </select>
         </label>
         <label>Categoria

@@ -19,7 +19,7 @@ describe('FotoOutfitPage popup lifecycle', () => {
       providers: [
         { provide: PopUpService, useValue: popup },
         { provide: AffiliateCatalogService, useValue: {
-          getProductCategories: () => of(['cappotti','scarpe','ABC_Completi']),
+          getProductCategories: () => of(['cappotti','scarpe','ABC_Completi','A_Accessori']),
         } }
       ]
     });
@@ -133,6 +133,17 @@ describe('FotoOutfitPage popup lifecycle', () => {
     expect(component.tags().map(item => item.id)).toEqual(['shirt']);
     expect(component.selectedAdditions.map(item => item.product.id)).toEqual(['jacket']);
     expect(selected).toHaveBeenCalledWith([{catalogProductId:'jacket',role:'OUTERWEAR'}]);
+  });
+
+  it('offers accessory taxonomy and never mislabels a belt as a bag', () => {
+    const {component} = setup();
+    component.enableCatalogReplacements = true;
+    component.toggleAddProduct();
+    expect(component.addRoles).toContain('BAG');
+    expect(component.addRoles).toContain('ACCESSORY');
+    expect(component.addRoles).toContain('HEADWEAR');
+    component.addRole = 'ACCESSORY';
+    expect(component.availableAddCategories).toEqual(['A_Accessori']);
   });
 
   it('links pin selection and product card selection by index', () => {

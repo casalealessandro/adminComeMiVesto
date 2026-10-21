@@ -19,6 +19,7 @@ import { PopUpService } from '../../../../core/popup/popup.service';
 import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, accessoryRoleFromTaxonomy, isAllowedAccessoryProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
 import { AiOutfitDraftEditorComponent } from './ai-outfit-draft-editor.component';
 
@@ -106,13 +107,17 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   genericSubcategoriesLoading = false;
   readonly genericAnchors: Array<{role:string;category:string;subcategory:string;color?:string}> = [];
   readonly selectedAnchors: Array<{ product: CatalogProduct; role: string }> = [];
-  readonly anchorRoles = ['TOP', 'BOTTOM', 'DRESS', 'SHOES', 'OUTERWEAR'];
+  readonly roleLabel = outfitRoleLabel;
+  readonly anchorRoles = ['TOP', 'BOTTOM', 'DRESS', 'SHOES', 'OUTERWEAR', ...ACCESSORY_ROLES];
   readonly categoryByRole: Record<string, string[]> = {
     TOP: ['camicie', 'M_Maglieria', 'ABC_Completi'],
     BOTTOM: ['P_Pantaloni', 'conna'],
     DRESS: ['ABC_Completi', 'tute'],
     SHOES: ['scarpe'],
     OUTERWEAR: ['cappotti', 'ABC_Completi', 'M_Maglieria'],
+    BAG: [ACCESSORY_CATEGORY],
+    ACCESSORY: [ACCESSORY_CATEGORY],
+    HEADWEAR: [ACCESSORY_CATEGORY],
   };
 
   get availableAnchorRoles(): string[] {
@@ -174,6 +179,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   }
 
   genericRole(category: string, subcategory: string): string | null {
+    if (category === ACCESSORY_CATEGORY) return accessoryRoleFromTaxonomy(category, subcategory);
     if (category === 'scarpe') return 'SHOES';
     if (category === 'P_Pantaloni' || category === 'conna') return 'BOTTOM';
     if (category === 'camicie') return 'TOP';
@@ -231,6 +237,10 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
         if (result?.name !== 'selected' || !result.product || !this.anchorMode) return;
         if (result.product.category !== category ||
             !result.product.genderTargets?.includes(this.request.gender === 'WOMAN' ? 'D' : 'U')) return;
+        if (!isAllowedAccessoryProduct(role, result.product.category, result.product.subcategory ?? '')) {
+          this.error = 'Sottocategoria incompatibile con il ruolo scelto.';
+          return;
+        }
         if (this.selectedAnchors.some(a => a.role === role || a.product.id === result.product!.id)) return;
         this.selectedAnchors.push({product:result.product,role});
         this.anchorRole = '';

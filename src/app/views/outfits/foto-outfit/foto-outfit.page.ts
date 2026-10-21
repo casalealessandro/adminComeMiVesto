@@ -7,6 +7,7 @@ import { Tag } from '../../../services/outfit.service';
 import { FormsModule } from '@angular/forms';
 import { CatalogProduct } from '../../affiliate-catalog/models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../affiliate-catalog/services/affiliate-catalog.service';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, outfitRoleLabel } from '../../affiliate-catalog/models/outfit-accessory-roles';
 import { OutfitReplacementPickerResult } from '../../affiliate-catalog/components/outfit-preview/outfit-replacement-picker.component';
 import { CatalogReplacementRequest, CatalogAdditionRequest } from '../../../services/outfit.service';
 
@@ -49,13 +50,17 @@ export class FotoOutfitPage implements OnInit {
   addCategory = '';
   addCategories: string[] = [];
   categoriesLoading = false;
-  readonly addRoles = ['TOP','BOTTOM','DRESS','SHOES','OUTERWEAR'];
+  readonly roleLabel = outfitRoleLabel;
+  readonly addRoles = ['TOP','BOTTOM','DRESS','SHOES','OUTERWEAR',...ACCESSORY_ROLES];
   readonly categoriesByRole: Record<string,string[]> = {
     TOP:['camicie','M_Maglieria','ABC_Completi'],
     BOTTOM:['P_Pantaloni','conna'],
     DRESS:['ABC_Completi','tute'],
     SHOES:['scarpe'],
     OUTERWEAR:['cappotti','ABC_Completi','M_Maglieria'],
+    BAG:[ACCESSORY_CATEGORY],
+    ACCESSORY:[ACCESSORY_CATEGORY],
+    HEADWEAR:[ACCESSORY_CATEGORY],
   };
   get availableAddCategories():string[] {
     return this.addCategories.filter(category => (this.categoriesByRole[this.addRole] || []).includes(category));
@@ -433,6 +438,10 @@ if (respo.name === 'submitForm') {
       this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
       if(result?.name!=='selected'||!result.product||result.product.category!==category||
           !result.product.genderTargets?.includes(this.gender as 'U'|'D'))return;
+      if (!isAllowedAccessoryProduct(role, result.product.category, result.product.subcategory ?? '')) {
+        void alert('Sottocategoria incompatibile con il ruolo scelto. Seleziona un altro prodotto.', 'Attenzione');
+        return;
+      }
       this.selectedAdditions.push({product:result.product,role});
       this.emitAdditions();
       this.addRole='';
