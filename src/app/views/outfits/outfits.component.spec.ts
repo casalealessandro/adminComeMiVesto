@@ -48,7 +48,7 @@ describe('OutfitsComponent', () => {
       confirmDeleteSelectedRows: jasmine.createSpy('confirmDeleteSelectedRows'),
       renderGrid: jasmine.createSpy('renderGrid'),
     };
-    component.outfitsGridView(grid as any);
+    component.outfitsGridView = grid as any;
     const action = component.bulkDeleteToolbarButtons[0];
     expect(action.text).toBe('Elimina selezionati (2)');
     expect(action.disabled).toBeFalse();
@@ -65,7 +65,7 @@ describe('OutfitsComponent', () => {
       confirmDeleteSelectedRows: jasmine.createSpy('confirmDeleteSelectedRows'),
       renderGrid: jasmine.createSpy('renderGrid'),
     };
-    component.outfitsGridView(grid as any);
+    component.outfitsGridView = grid as any;
     expect(component.bulkDeleteToolbarButtons[0].disabled).toBeTrue();
     component.eventToolbarOutfit({ id: 'bulkDeleteOutfits' });
     expect(grid.confirmDeleteSelectedRows).not.toHaveBeenCalled();
