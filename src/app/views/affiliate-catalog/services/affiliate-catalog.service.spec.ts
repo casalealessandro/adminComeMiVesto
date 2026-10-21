@@ -575,16 +575,16 @@ describe('AffiliateCatalogService release contract', () => {
     req.flush({ data: { runId: 'run-123', rows: [] } });
   });
 
-  it('sends explicit product review with edited style set and subcategory, never updates catalog directly', () => {
+  it('sends explicit product review with edited styles, subcategory and seasons, never updates catalog directly', () => {
     service.reviewFashionVisionProduct('ABC_Completi', {
       runId: 'run-123', productId: 'prod-1', action: 'APPROVE',
-      subcategory: 'blazer', styles: ['ELEGANT', 'SMART_CASUAL'],
+      subcategory: 'blazer', styles: ['ELEGANT', 'SMART_CASUAL'], seasons: ['SPRING', 'AUTUMN'],
     }).subscribe();
     const req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi/review');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
       runId: 'run-123', productId: 'prod-1', action: 'APPROVE',
-      subcategory: 'blazer', styles: ['ELEGANT', 'SMART_CASUAL'],
+      subcategory: 'blazer', styles: ['ELEGANT', 'SMART_CASUAL'], seasons: ['SPRING', 'AUTUMN'],
     });
     req.flush({ data: { runId: 'run-123', rows: [] } });
   });

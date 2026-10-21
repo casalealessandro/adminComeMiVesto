@@ -57,10 +57,15 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   visionNotice = '';
   visionFilter: 'all' | 'changed' | 'pending' | 'reviewed' = 'all';
   visionStyleEdits: Record<string, string[]> = {};
+  visionSeasonEdits: Record<string, string[]> = {};
   visionSubcategoryEdits: Record<string, string> = {};
   readonly visionStyles = [
     'CASUAL', 'BUSINESS', 'SPORTY', 'SMART_CASUAL', 'ELEGANT',
     'ALTERNATIVE', 'FESTIVAL', 'CLASSIC', 'TRENDY', 'STREETWEAR',
+  ];
+  readonly visionSeasons = [
+    { id: 'SPRING', label: 'Primavera' }, { id: 'SUMMER', label: 'Estate' },
+    { id: 'AUTUMN', label: 'Autunno' }, { id: 'WINTER', label: 'Inverno' },
   ];
   readonly visionSizes = [5, 10, 20, 50];
 
@@ -76,8 +81,11 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       if (this.visionFilter === 'all') return true;
       if (this.visionFilter === 'reviewed') return row.status === 'APPROVED' || row.status === 'REJECTED';
       if (this.visionFilter === 'pending') return row.status === 'READY';
-      return !!row.after && (row.before.subcategory !== row.after.subcategory ||
-        JSON.stringify(row.before.styles) !== JSON.stringify(row.after.styles));
+      return !!row.after && (
+        row.before.subcategory !== (this.visionSubcategoryEdits[row.productId] ?? row.after.subcategory) ||
+        JSON.stringify(row.before.styles) !== JSON.stringify(this.visionStyleEdits[row.productId] ?? row.after.styles) ||
+        JSON.stringify(row.before.seasons) !== JSON.stringify(this.visionSeasonEdits[row.productId] ?? row.after.seasons)
+      );
     });
   }
   visionStyleLabel(style: string): string {
@@ -98,12 +106,14 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   private acceptVisionJob(job: FashionVisionCategoryJob | null): void {
     if (job && this.visionJob?.runId !== job.runId) {
       this.visionStyleEdits = {};
+      this.visionSeasonEdits = {};
       this.visionSubcategoryEdits = {};
     }
     this.visionJob = job;
     for (const row of job?.rows || []) {
       if (!row.after) continue;
       if (!(row.productId in this.visionStyleEdits)) this.visionStyleEdits[row.productId] = [...row.after.styles];
+      if (!(row.productId in this.visionSeasonEdits)) this.visionSeasonEdits[row.productId] = [...row.after.seasons];
       if (!(row.productId in this.visionSubcategoryEdits)) this.visionSubcategoryEdits[row.productId] = row.after.subcategory;
     }
   }
@@ -114,6 +124,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.visionError = '';
     this.visionNotice = '';
     this.visionStyleEdits = {};
+    this.visionSeasonEdits = {};
     this.visionSubcategoryEdits = {};
     this.visionSubcategories = [];
     const category = this.selectedVisionCategoryId;
@@ -190,6 +201,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
         runId: job.runId, productId: row.productId, action,
         ...(action === 'APPROVE' ? {
           styles: this.visionStyleEdits[row.productId] ?? row.after?.styles ?? [],
+          seasons: this.visionSeasonEdits[row.productId] ?? row.after?.seasons ?? [],
           subcategory: this.visionSubcategoryEdits[row.productId] ?? row.after?.subcategory ?? '',
         } : {}),
       }).pipe(finalize(() => this.visionBusy = false)).subscribe({
@@ -198,7 +210,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       });
     };
     if (action === 'REJECT') { submit(); return; }
-    confirm('Applichi SOLO a questo prodotto la sottocategoria e gli stili visualizzati nella proposta? Le modifiche vengono bloccate rispetto alle successive sincronizzazioni.', 'Approva classificazione', (approved: boolean) => {
+    confirm('Applichi SOLO a questo prodotto la sottocategoria, gli stili e le stagioni selezionati? Le modifiche vengono bloccate rispetto alle successive sincronizzazioni.', 'Approva classificazione', (approved: boolean) => {
       if (approved) submit();
     });
   }

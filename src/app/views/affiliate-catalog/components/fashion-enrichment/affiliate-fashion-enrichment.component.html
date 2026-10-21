@@ -365,7 +365,16 @@
                         </select>
                         <small class="text-muted">Puoi selezionare più stili.</small>
                       </dd>
-                      <dt>Stagioni</dt><dd>{{ proposed.seasons.length ? proposed.seasons.join(', ') : 'Non assegnate' }} <small class="text-muted">(immutate)</small></dd>
+                      <dt>Stagioni</dt>
+                      <dd>
+                        <select class="form-select form-select-sm" multiple size="4"
+                          [(ngModel)]="visionSeasonEdits[row.productId]"
+                          [disabled]="row.status !== 'READY' || !canManageAi"
+                          [attr.aria-label]="'Correggi le stagioni di ' + row.name">
+                          <option *ngFor="let season of visionSeasons" [ngValue]="season.id">{{ season.label }}</option>
+                        </select>
+                        <small class="text-muted">Puoi selezionare più stagioni. Nessuna selezione = non determinata.</small>
+                      </dd>
                       <dt>Vestibilità</dt><dd>{{ proposed.fit }} <small class="text-muted">(immutata)</small></dd>
                       <dt>Peso visivo</dt><dd>{{ proposed.visualWeight }} <small class="text-muted">(immutato)</small></dd>
                     </dl>
