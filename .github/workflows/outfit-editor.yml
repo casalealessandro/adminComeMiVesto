@@ -28,5 +28,6 @@ jobs:
           --ts-config=tsconfig.outfit-editor.spec.json
           --include=src/app/views/outfits/outfit-form/outfit-form.regeneration.spec.ts
           --include=src/app/views/outfits/outfit-form/outfit-form.payload.spec.ts
+          --include=src/app/views/outfits/outfits.component.spec.ts
       - name: Build application
         run: npm run build -- --configuration development
