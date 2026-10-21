@@ -439,7 +439,7 @@ if (respo.name === 'submitForm') {
       if(result?.name!=='selected'||!result.product||result.product.category!==category||
           !result.product.genderTargets?.includes(this.gender as 'U'|'D'))return;
       if (!isAllowedAccessoryProduct(role, result.product.category, result.product.subcategory ?? '')) {
-        void alert('Sottocategoria incompatibile con il ruolo scelto. Seleziona un altro prodotto.');
+        void alert('Sottocategoria incompatibile con il ruolo scelto. Seleziona un altro prodotto.', 'Attenzione');
         return;
       }
       this.selectedAdditions.push({product:result.product,role});
