@@ -97,6 +97,14 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   anchorCategories: string[] = [];
   anchorsLoading = false;
   anchorPickerOpen = false;
+  genericMode = false;
+  genericCategory = '';
+  genericSubcategory = '';
+  genericColor = '';
+  genericSubcategories: Array<{id: string; categoryName: string}> = [];
+  genericColors: Array<{id: string; value: string}> = [];
+  genericSubcategoriesLoading = false;
+  readonly genericAnchors: Array<{role:string;category:string;subcategory:string;color?:string}> = [];
   readonly selectedAnchors: Array<{ product: CatalogProduct; role: string }> = [];
   readonly anchorRoles = ['TOP', 'BOTTOM', 'DRESS', 'SHOES', 'OUTERWEAR'];
   readonly categoryByRole: Record<string, string[]> = {
@@ -117,6 +125,9 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   toggleAnchorMode(): void {
     if (this.loading) return;
     this.anchorMode = !this.anchorMode;
+    this.genericMode = false;
+    this.genericAnchors.splice(0);
+    delete this.request.anchorConstraints;
     delete this.request.anchorProducts;
     this.selectedAnchors.splice(0);
     this.anchorRole = '';
@@ -132,6 +143,76 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
         });
     }
   }
+  toggleGenericMode(): void {
+    if (this.loading || !this.anchorMode) return;
+    this.genericMode = !this.genericMode;
+    this.selectedAnchors.splice(0);
+    this.genericAnchors.splice(0);
+    this.genericCategory = '';
+    this.genericSubcategory = '';
+    this.genericColor = '';
+    if (this.genericMode && !this.genericColors.length) {
+      this.affiliateCatalogService.getOutfitColors().subscribe({
+        next: values => this.genericColors = values,
+        error: () => this.error = 'Impossibile caricare i colori dell’outfit.',
+      });
+    }
+  }
+
+  onGenericCategoryChange(value: string): void {
+    this.genericCategory = value;
+    this.genericSubcategory = '';
+    this.genericSubcategories = [];
+    if (!value) return;
+    this.genericSubcategoriesLoading = true;
+    this.affiliateCatalogService.getCurationCategories(value)
+      .pipe(finalize(() => this.genericSubcategoriesLoading = false))
+      .subscribe({
+        next: values => this.genericSubcategories = values,
+        error: () => this.error = 'Impossibile caricare le sottocategorie.',
+      });
+  }
+
+  genericRole(category: string, subcategory: string): string | null {
+    if (category === 'scarpe') return 'SHOES';
+    if (category === 'P_Pantaloni' || category === 'conna') return 'BOTTOM';
+    if (category === 'camicie') return 'TOP';
+    if (category === 'cappotti') return 'OUTERWEAR';
+    if (category === 'M_Maglieria') {
+      if (subcategory === 'cardigan') return 'OUTERWEAR';
+      if (['tshirt','top','polo','pullover','dolcevita','felpe'].includes(subcategory)) return 'TOP';
+    }
+    if (category === 'ABC_Completi') {
+      if (subcategory === 'blazer') return 'OUTERWEAR';
+      if (subcategory === 'body') return 'TOP';
+      if (['vestito_corto','vestito_midi','vestito_helter','tutine'].includes(subcategory)) return 'DRESS';
+    }
+    if (category === 'tute' && subcategory === 'tute_intere') return 'DRESS';
+    return null;
+  }
+
+  addGenericAnchor(): void {
+    if (this.loading || !this.genericMode || this.genericAnchors.length >= 3 ||
+        !this.genericSubcategories.some(item => item.id === this.genericSubcategory)) return;
+    const role = this.genericRole(this.genericCategory, this.genericSubcategory);
+    if (!role || this.genericAnchors.some(item => item.role === role)) {
+      this.error = 'Scegli una sottocategoria riconosciuta per un ruolo ancora libero.';
+      return;
+    }
+    this.genericAnchors.push({
+      role, category:this.genericCategory, subcategory:this.genericSubcategory,
+      ...(this.genericColor ? {color:this.genericColor} : {}),
+    });
+    this.genericCategory = '';
+    this.genericSubcategory = '';
+    this.genericColor = '';
+    this.error = '';
+  }
+
+  removeGenericAnchor(index: number): void {
+    if (!this.loading) this.genericAnchors.splice(index,1);
+  }
+
   addAnchor(): void {
     if (!this.anchorMode || this.loading || this.anchorPickerOpen ||
         this.selectedAnchors.length >= 3 || !this.availableAnchorRoles.includes(this.anchorRole) ||
@@ -324,8 +405,8 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       return;
     }
     const count = this.anchorMode ? 1 : Number(this.outfitCount);
-    if (this.anchorMode && !this.selectedAnchors.length) {
-      this.error = 'Seleziona almeno un prodotto reale da cui partire.';
+    if (this.anchorMode && !(this.genericMode ? this.genericAnchors.length : this.selectedAnchors.length)) {
+      this.error = 'Seleziona almeno un capo di partenza.';
       return;
     }
     if (!Number.isInteger(count) || count < this.minOutfitCount || count > this.maxOutfitCount) {
@@ -352,14 +433,16 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
       ...this.request,
       ...(this.selectedFeedIds.length ? { sourceFeedIds: [...this.selectedFeedIds] } : {}),
       count,
-      ...(this.anchorMode ? { anchorProducts: this.selectedAnchors.map(item => ({
+      ...(this.anchorMode && !this.genericMode ? { anchorProducts: this.selectedAnchors.map(item => ({
         catalogProductId: item.product.id, role: item.role,
       })) } : {}),
+      ...(this.anchorMode && this.genericMode ? { anchorConstraints: this.genericAnchors.map(item => ({...item})) } : {}),
       ...(maxTotalPrice !== undefined ? { maxTotalPrice: Math.round(maxTotalPrice * 100) / 100 } : {}),
     };
     if (maxTotalPrice === undefined) delete request.maxTotalPrice;
     if (!this.selectedFeedIds.length) delete request.sourceFeedIds;
-    if (!this.anchorMode) delete request.anchorProducts;
+    if (!this.anchorMode || this.genericMode) delete request.anchorProducts;
+    if (!this.anchorMode || !this.genericMode) delete request.anchorConstraints;
     // Keep the normalized request available to the UI/tests and aligned with the backend response.
     this.request = request;
 

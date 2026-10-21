@@ -177,6 +177,8 @@ export interface AiOutfitPreviewRequest {
   count?: number;
   /** Required catalog products. Initial version supports one outfit at a time. */
   anchorProducts?: Array<{catalogProductId: string;role: string}>;
+  /** Resolve catalog product(s) by taxonomy/color on the backend before generating. */
+  anchorConstraints?: Array<{role:string;category:string;subcategory:string;color?:string}>;
   /** Real Firebase UID of the managed AI creator selected for this batch. */
   creatorUid?: string;
   /** Optional maximum total price in EUR for each generated outfit. */
