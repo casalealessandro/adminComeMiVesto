@@ -339,6 +339,19 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(component.error).not.toContain('private-product-id');
   });
 
+  it('exposes Fashion accessory roles for real-product and generic outfit generation', () => {
+    expect(component.anchorRoles).toContain('BAG');
+    expect(component.anchorRoles).toContain('ACCESSORY');
+    expect(component.anchorRoles).toContain('HEADWEAR');
+    expect(component.genericRole('A_Accessori', 'cinture')).toBe('ACCESSORY');
+    expect(component.genericRole('A_Accessori', 'Borse_tracolla')).toBe('BAG');
+    expect(component.genericRole('A_Accessori', 'cappelli')).toBe('HEADWEAR');
+    expect(component.genericRole('A_Accessori', 'unknown')).toBeNull();
+    component.anchorRole = 'BAG';
+    component.anchorCategories = ['A_Accessori', 'scarpe'];
+    expect(component.availableAnchorCategories).toEqual(['A_Accessori']);
+  });
+
   it('keeps the safe backend message when editorial codes are missing or unknown', () => {
     expect(describeAiOutfitPreviewError({
       status: 422, error: { message: 'Messaggio editoriale', issueCodes: ['NOT_RECOGNIZED'] },

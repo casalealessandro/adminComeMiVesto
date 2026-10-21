@@ -18,7 +18,7 @@ describe('AI outfit draft replacement via Core popup', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AffiliateCatalogService, useValue: {
-          getProductCategories: () => of(['scarpe', 'cappotti', 'ABC_Completi', 'P_Pantaloni', 'M_Maglieria', 'camicie']),
+          getProductCategories: () => of(['scarpe', 'cappotti', 'ABC_Completi', 'P_Pantaloni', 'M_Maglieria', 'camicie', 'A_Accessori']),
         } },
         { provide: PopUpService, useValue: popup },
       ],
@@ -72,6 +72,21 @@ describe('AI outfit draft replacement via Core popup', () => {
     expect(component.form?.products.map(p => p.catalogProductId)).toEqual(['p1','p2','jacket3']);
     expect(component.form?.products[2].role).toBe('OUTERWEAR');
 
+  });
+
+  it('allows a classified belt in the accessory slot, not as a bag', async () => {
+    expect(component.availableRoles).toContain('ACCESSORY');
+    component.addRole = 'ACCESSORY';
+    expect(component.availableCategories).toEqual(['A_Accessori']);
+    component.addCategory = 'A_Accessori';
+    component.addProduct();
+    const belt = {
+      id: 'belt-1', category: 'A_Accessori', subcategory: 'cinture',
+      genderTargets: ['D'], name: 'Cintura beige', brand: 'Marca', images: ['https://example.test/belt.jpg'],
+    } as CatalogProduct;
+    resolvePicker({name:'selected',product:belt});
+    await Promise.resolve();
+    expect(component.form?.products.at(-1)).toEqual({catalogProductId:'belt-1',role:'ACCESSORY'});
   });
 
   it('keeps the draft intact when the popup is closed without choosing a product', async () => {
