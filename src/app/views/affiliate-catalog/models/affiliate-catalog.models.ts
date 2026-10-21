@@ -86,6 +86,26 @@ export interface AffiliateFeedCleanupJob {
   lastError: string | null;
 }
 
+export interface FashionKeywordHit {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  subcategory: string;
+  image: string | null;
+  active: boolean;
+  genderTargets: string[];
+  foundIn: ('TITLE' | 'DESCRIPTION')[];
+}
+export interface FashionKeywordPage {
+  keyword: string;
+  categoryId: string | null;
+  scanned: number;
+  items: FashionKeywordHit[];
+  nextCursor: string | null;
+  complete: boolean;
+}
+
 export type FashionVisionStatus = 'PREVIEW_READY' | 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'STOPPED_BUDGET';
 export type FashionVisionRowStatus = 'PREVIEW' | 'READY' | 'SKIPPED' | 'CONFLICT' | 'APPROVED' | 'REJECTED';
 export interface FashionVisionMirror {
@@ -124,6 +144,7 @@ export interface FashionVisionCategoryJob {
   runId: string;
   categoryId: string;
   categoryName: string;
+  keyword?: string;
   status: FashionVisionStatus;
   createdAt: number;
   previewAt: number;

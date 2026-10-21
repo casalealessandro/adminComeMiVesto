@@ -233,9 +233,102 @@
           </select>
         </div>
       </div>
+      <div class="fashion-overview__keyword-search mt-3">
+        <h4 class="h6 mb-2">Ricerca nel catalogo per parola chiave</h4>
+        <p class="small text-muted mb-2">
+          Cerca nel titolo <strong>oppure</strong> nella descrizione dei prodotti già importati.
+          La ricerca non usa OpenAI: legge i documenti Firebase in modo progressivo e può avere costi di lettura.
+          Puoi usarla anche per scoprire articoli assegnati a categorie sbagliate.
+        </p>
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-5">
+            <label for="fashion-vision-keyword" class="form-label small">Parola chiave (es. giacca)</label>
+            <input id="fashion-vision-keyword" class="form-control" type="search"
+              [(ngModel)]="visionKeyword" maxlength="70" placeholder="giacca"
+              (keyup.enter)="startVisionKeywordSearch()"
+              aria-describedby="fashion-vision-keyword-hint"/>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-check mb-1">
+              <input type="checkbox" class="form-check-input" [(ngModel)]="visionKeywordGlobal"/>
+              <span class="form-check-label small">Cerca in tutte le categorie</span>
+            </label>
+            <div id="fashion-vision-keyword-hint" class="small text-muted">
+              Se disattivato, cerca soltanto nella categoria principale selezionata.
+              Per il campione AI la categoria resta obbligatoria.
+            </div>
+          </div>
+          <div class="col-12 col-md-3 d-flex gap-2">
+            <button type="button" class="btn btn-outline-primary btn-sm"
+              (click)="startVisionKeywordSearch()"
+              [disabled]="!canManageAi || !canSearchVisionKeyword || (visionSearchBusy && !visionSearchComplete) || (!visionKeywordGlobal && !selectedVisionCategoryId)">
+              Cerca prodotti
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" *ngIf="visionSearchBusy"
+              (click)="cancelVisionKeywordSearch()">Ferma</button>
+          </div>
+        </div>
+        <div *ngIf="visionSearchError" class="alert alert-warning small mt-2" role="alert">{{ visionSearchError }}</div>
+        <div *ngIf="visionSearchBusy || visionSearchComplete || visionSearchItems.length" class="mt-3">
+          <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+            <div class="small">
+              <strong>{{ visionSearchItems.length | number }} prodotti trovati</strong>
+              · {{ visionSearchScanned | number }} prodotti esaminati
+              · <span *ngIf="visionSearchComplete" class="text-success">ricerca completata</span>
+              <span *ngIf="!visionSearchComplete" class="text-warning">
+                {{ visionSearchBusy ? 'ricerca in corso' : 'risultati parziali' }}
+              </span>
+              <span class="text-muted">
+                · termine: «{{ visionSearchTerm }}»
+                · {{ visionSearchScope || 'tutte le categorie' }}
+              </span>
+            </div>
+            <div class="small text-muted" *ngIf="visionSearchBusy">Lettura Firestore in corso, nessun costo OpenAI.</div>
+          </div>
+          <div class="table-responsive fashion-overview__keyword-results" *ngIf="visionSearchItems.length">
+            <table class="table table-sm table-hover align-middle">
+              <thead>
+                <tr>
+                  <th scope="col">Foto</th><th scope="col">Prodotto</th>
+                  <th scope="col">Categoria attuale</th><th scope="col">Corrispondenza</th>
+                  <th scope="col">Attivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of visibleVisionSearchItems">
+                  <td>
+                    <a *ngIf="item.image" [href]="item.image" target="_blank" rel="noopener noreferrer"
+                      [attr.aria-label]="'Ingrandisci foto ' + item.name">
+                      <img class="fashion-overview__keyword-image" [src]="item.image" [alt]="item.name" loading="lazy"/>
+                    </a>
+                    <span *ngIf="!item.image" class="text-muted small">Senza foto</span>
+                  </td>
+                  <td><strong class="small">{{ item.name }}</strong>
+                    <div class="small text-muted">{{ item.brand }} · {{ item.genderTargets.join(', ') || 'Genere non indicato' }}</div>
+                    <div class="small text-muted">ID: {{ item.id }}</div>
+                  </td>
+                  <td><span class="small">{{ item.category || 'Non assegnata' }}</span>
+                    <div class="small text-muted">{{ item.subcategory || 'Sottocategoria assente' }}</div>
+                  </td>
+                  <td><span class="small">{{ item.foundIn.includes('TITLE') ? 'Titolo' : '' }}
+                    {{ item.foundIn.includes('TITLE') && item.foundIn.includes('DESCRIPTION') ? '+ ' : '' }}
+                    {{ item.foundIn.includes('DESCRIPTION') ? 'Descrizione' : '' }}</span></td>
+                  <td class="small">{{ item.active ? 'Sì' : 'No' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-2"
+            *ngIf="visibleVisionSearchItems.length < visionSearchItems.length"
+            (click)="visionSearchShown = visionSearchShown + 100">
+            Mostra altri 100 risultati
+          </button>
+        </div>
+      </div>
+
       <div class="fashion-overview__actions mt-3">
         <button class="btn btn-outline-primary" type="button"
-          (click)="previewVision()" [disabled]="!canManageAi || !selectedVisionCategoryId || visionBusy || visionRunning">
+          (click)="previewVision()" [disabled]="!canManageAi || !selectedVisionCategoryId || visionBusy || visionRunning || (visionKeyword.trim().length === 1) || visionKeyword.length > 70">
           <span class="mdi mdi-image-search-outline" aria-hidden="true"></span>
           Anteprima prodotti e costo (gratis)
         </button>
@@ -244,7 +337,8 @@
           <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna risultati
         </button>
         <button class="btn btn-outline-secondary" type="button" *ngIf="visionJob?.nextCursor && !visionRunning"
-          (click)="previewVision(true)" [disabled]="!canManageAi || visionBusy">
+          (click)="previewVision(true)"
+          [disabled]="!canManageAi || visionBusy || (visionJob?.keyword || '') !== visionKeyword.trim().toLowerCase()">
           Campione successivo
         </button>
       </div>
@@ -258,6 +352,7 @@
         <div class="fashion-overview__merchant-title">
           <div>
             <strong>{{ vision.categoryName }} · {{ visionStatusLabel(vision.status) }}</strong>
+            <div *ngIf="vision.keyword" class="small text-muted">Filtro campione: «{{ vision.keyword }}» (titolo o descrizione)</div>
             <div class="text-muted small">Inizio {{ vision.createdAt | date:'dd/MM/yyyy HH:mm' }} ·
               {{ vision.scanned | number }} documenti esplorati (max 2.000 per anteprima)</div>
           </div>
