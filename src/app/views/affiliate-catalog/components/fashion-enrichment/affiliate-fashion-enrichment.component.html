@@ -393,6 +393,31 @@
                           <option *ngFor="let season of visionSeasons" [ngValue]="season.id">{{ season.label }}</option>
                         </select>
                         <small class="text-muted">Puoi selezionare più stagioni. Nessuna selezione = non determinata.</small>
+                        <div class="fashion-overview__style-reasons mt-2" *ngIf="row.seasonality as seasonality">
+                          <div class="small fw-semibold">Valutazione AI della stagionalità d'uso</div>
+                          <div class="small">
+                            <span *ngFor="let season of seasonality.seasons; let last = last">
+                              {{ visionSeasonLabel(season) }}{{ last ? '' : ', ' }}
+                            </span>
+                            <span *ngIf="!seasonality.seasons.length" class="text-muted">Non determinabile</span>
+                          </div>
+                          <div class="small text-muted">
+                            {{ visionSeasonBasisLabel(seasonality.basis) }}
+                            · Affidabilità stagionale {{ seasonality.confidence }}
+                          </div>
+                          <p class="small mb-1">{{ seasonality.reason }}</p>
+                          <p *ngIf="row.before.seasons.length && seasonality.seasons.length &&
+                            row.before.seasons.join(',') !== seasonality.seasons.join(',')"
+                            class="small text-warning mb-1">
+                            Le stagioni Firebase esistenti sono state preservate. Controlla le differenze prima di applicare la proposta.
+                          </p>
+                          <button type="button" class="btn btn-sm btn-outline-primary"
+                            *ngIf="seasonality.seasons.length && row.status === 'READY' && canManageAi"
+                            (click)="useVisionSeasonSuggestion(row)">Usa stagioni suggerite dall'AI</button>
+                        </div>
+                        <div *ngIf="!row.seasonPolicyVersion" class="small text-muted mt-2">
+                          Analisi precedente: suggerimento stagionale motivato non disponibile.
+                        </div>
                       </dd>
                       <dt>Vestibilità</dt><dd>{{ proposed.fit }} <small class="text-muted">(immutata)</small></dd>
                       <dt>Peso visivo</dt><dd>{{ proposed.visualWeight }} <small class="text-muted">(immutato)</small></dd>
