@@ -113,7 +113,7 @@
           <label>Ruolo
             <select name="anchorRole" [(ngModel)]="anchorRole" [disabled]="anchorPickerOpen">
               <option value="">Seleziona ruolo</option>
-              <option *ngFor="let role of availableAnchorRoles" [value]="role">{{ role }}</option>
+              <option *ngFor="let role of availableAnchorRoles" [value]="role">{{ roleLabel(role) }}</option>
             </select>
           </label>
           <label>Categoria
@@ -130,7 +130,7 @@
         </button>
         <ul *ngIf="selectedAnchors.length" class="ai-preview__anchors">
           <li *ngFor="let anchor of selectedAnchors; let i = index">
-            <strong>{{ anchor.role }}:</strong> {{ anchor.product.brand }} · {{ anchor.product.name }}
+            <strong>{{ roleLabel(anchor.role) }}:</strong> {{ anchor.product.brand }} · {{ anchor.product.name }}
             <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeAnchor(i)">Rimuovi</button>
           </li>
         </ul>
@@ -165,7 +165,7 @@
           </button>
           <ul *ngIf="genericAnchors.length" class="ai-preview__anchors">
             <li *ngFor="let item of genericAnchors; let i = index">
-              <strong>{{ item.role }}:</strong>
+              <strong>{{ roleLabel(item.role) }}:</strong>
               {{ item.category }} / {{ item.subcategory }}{{ item.color ? ' / ' + item.color : '' }}
               <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeGenericAnchor(i)">Rimuovi</button>
             </li>
