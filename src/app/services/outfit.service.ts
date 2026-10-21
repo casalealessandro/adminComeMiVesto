@@ -22,6 +22,14 @@ export interface outfit {
   description?: string;
   imageUrl: string;
   imageMayNotMatchProducts?: boolean;
+  aiGenerated?: boolean;
+  aiOutfitDraftId?: string;
+  imageRegenerationStatus?: 'processing' | 'completed' | 'failed';
+  imageRegenerationError?: string;
+  imageRegenerationRequestedAt?: number;
+  imageRegenerationCompletedAt?: number;
+  imageRegenerationCount?: number;
+  lastImageRegenerationUsage?: { totalTokens: number };
   updatedAt?: number;
   catalogReplacements?: CatalogReplacementRequest[];
   expectedUpdatedAt?: number;
@@ -150,6 +158,16 @@ export class OutfitsService {
     const body = this.updateDto(data);
     await lastValueFrom(this.httpClient.put(`${this.backendBase}/gen/outfits/${encodeURIComponent(id)}`, body));
     return true;
+  }
+
+  /** Only a click on Rigenera immagine calls the paid backend route. */
+  async regeneratePublishedOutfitImage(id: string): Promise<outfit> {
+    const response = await lastValueFrom(
+      this.httpClient.post<{ data: outfit }>(
+        `${this.backendBase}/admin/outfits/${encodeURIComponent(id)}/regenerate-image`, {},
+      ).pipe(timeout(220000)),
+    );
+    return response.data;
   }
 
   async deleteAdminOutfit(id: string): Promise<boolean> {

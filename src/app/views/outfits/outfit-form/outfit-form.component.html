@@ -36,7 +36,37 @@
   class="alert alert-warning mt-3" role="status">
   <strong>Attenzione:</strong> uno o più prodotti collegati potrebbero non corrispondere
   alla fotografia. L'immagine originale rimane invariata: verifica la coerenza del look.
+  <p *ngIf="catalogReplacements.length" class="mb-0 mt-2">
+    Salva prima le sostituzioni; poi potrai rigenerare la fotografia, se lo desideri.
+  </p>
+  <div *ngIf="canRegenerateImage()" class="mt-2">
+    <button type="button" class="btn btn-sm btn-outline-primary"
+      [disabled]="saving() || regeneratingImage() || outfitData()?.imageRegenerationStatus === 'processing'"
+      (click)="regenerateImage()">
+      {{ regeneratingImage() ? 'Rigenerazione in corso…' : 'Rigenera immagine (AI a pagamento)' }}
+    </button>
+    <small class="d-block mt-1">La rigenerazione non parte automaticamente al salvataggio.</small>
+  </div>
+  <small *ngIf="outfitData()?.imageMayNotMatchProducts && !outfitData()?.aiOutfitDraftId"
+    class="d-block mt-2">Outfit senza bozza AI originale: modifica manualmente la foto.</small>
 </div>
+<div *ngIf="regeneratingImage() || outfitData()?.imageRegenerationStatus === 'processing'"
+  class="alert alert-info mt-2" role="status">
+  Rigenerazione immagine in corso. Attendi prima di modificare l'outfit.
+</div>
+<div *ngIf="outfitData()?.imageRegenerationStatus === 'failed' && !regeneratingImage()"
+  class="alert alert-secondary mt-2" role="status">
+  L'ultima rigenerazione è fallita: la fotografia precedente è stata conservata.
+</div>
+<div *ngIf="regenerationError()" class="alert alert-danger mt-2" role="alert">
+  {{ regenerationError() }}
+</div>
+<small *ngIf="outfitData()?.imageRegenerationCount" class="d-block mb-2">
+  Rigenerazioni effettuate: {{ outfitData()?.imageRegenerationCount }}.
+  <ng-container *ngIf="outfitData()?.lastImageRegenerationUsage as usage">
+    Ultima richiesta: {{ usage.totalTokens }} token misurati; costo monetario immagine non disponibile.
+  </ng-container>
+</small>
 
 <app-dynamic-form
 *ngIf="formReady()"
