@@ -103,7 +103,7 @@
         <label class="me-2">Ruolo
           <select class="form-select" [(ngModel)]="addRole">
             <option value="">Seleziona ruolo</option>
-            <option *ngFor="let role of addRoles" [value]="role">{{ role }}</option>
+            <option *ngFor="let role of addRoles" [value]="role">{{ roleLabel(role) }}</option>
           </select>
         </label>
         <label class="me-2">Categoria
@@ -125,7 +125,7 @@
         <div *ngFor="let item of selectedAdditions; let i=index" class="d-flex align-items-center gap-2 mb-2">
           <img *ngIf="item.product.images?.[0]" [src]="item.product.images[0]"
             [alt]="item.product.name" width="52" height="65" style="object-fit:contain">
-          <span>{{ item.role }} · {{ item.product.brand }} · {{ item.product.name }}</span>
+          <span>{{ roleLabel(item.role) }} · {{ item.product.brand }} · {{ item.product.name }}</span>
           <button type="button" class="btn btn-sm btn-outline-danger"
             (click)="removePendingAddition(i)">Rimuovi</button>
         </div>
