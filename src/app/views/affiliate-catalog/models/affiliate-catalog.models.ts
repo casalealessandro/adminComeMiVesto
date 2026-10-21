@@ -102,6 +102,13 @@ export interface FashionVisionStyleEvidence {
   cue: string;
 }
 
+export interface FashionVisionSeasonality {
+  seasons: string[];
+  basis: 'PRODUCT_DECLARATION' | 'GARMENT_CONSTRUCTION' | 'INSUFFICIENT';
+  confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+  reason: string;
+}
+
 export interface FashionVisionReviewRow {
   productId: string;
   name: string;
@@ -117,6 +124,8 @@ export interface FashionVisionReviewRow {
   primaryStyle?: string;
   styleEvidence?: FashionVisionStyleEvidence[];
   stylePolicyVersion?: string;
+  seasonality?: FashionVisionSeasonality;
+  seasonPolicyVersion?: string;
   status: FashionVisionRowStatus;
   costUsd: number;
 }
