@@ -12,6 +12,7 @@ import {
 } from '../../models/affiliate-catalog-api.models';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct } from '../../models/outfit-accessory-roles';
 
 @Component({
   selector: 'app-ai-outfit-draft-editor',
@@ -50,13 +51,16 @@ export class AiOutfitDraftEditorComponent {
   loadingCategories = false;
   addingProduct = false;
   // Shared semantics with the backend composition slot roots.
-  readonly additionalRoles = ['OUTERWEAR', 'DRESS', 'TOP', 'BOTTOM', 'SHOES'] as const;
+  readonly additionalRoles = ['OUTERWEAR', 'DRESS', 'TOP', 'BOTTOM', 'SHOES', ...ACCESSORY_ROLES] as const;
   readonly categoriesByRole: Record<string, string[]> = {
     OUTERWEAR: ['cappotti', 'ABC_Completi', 'M_Maglieria'],
     DRESS: ['ABC_Completi', 'tute'],
     TOP: ['camicie', 'M_Maglieria', 'ABC_Completi'],
     BOTTOM: ['P_Pantaloni', 'conna'],
     SHOES: ['scarpe'],
+    BAG: [ACCESSORY_CATEGORY],
+    ACCESSORY: [ACCESSORY_CATEGORY],
+    HEADWEAR: [ACCESSORY_CATEGORY],
   };
   get availableCategories(): string[] {
     const accepted = this.categoriesByRole[this.addRole] ?? [];
@@ -136,6 +140,10 @@ export class AiOutfitDraftEditorComponent {
         if (result?.name !== 'selected' || !result.product || !this.form ||
             this.form.products.length >= 8 || this.form.products.some(p => p.role === role)) return;
         if (result.product.category !== category || !result.product.genderTargets.includes(this.form.gender)) return;
+        if (!isAllowedAccessoryProduct(role, result.product.category, result.product.subcategory ?? '')) {
+          this.error = 'Sottocategoria incompatibile con il ruolo richiesto.';
+          return;
+        }
         this.form.products.push({ catalogProductId: result.product.id, role });
         this.selectedReplacements.set(this.form.products.length - 1, result.product);
         this.addRole = '';
