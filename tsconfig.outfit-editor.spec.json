@@ -7,6 +7,7 @@
   "include": [
     "src/app/views/outfits/outfit-form/outfit-form.regeneration.spec.ts",
     "src/app/views/outfits/outfit-form/outfit-form.payload.spec.ts",
+    "src/app/views/outfits/outfits.component.spec.ts",
     "src/**/*.d.ts"
   ]
 }

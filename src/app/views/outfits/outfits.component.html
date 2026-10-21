@@ -1,5 +1,6 @@
 <app-anagrafica-wrapper [caption]="'Elenco Outfit caricati dagli utenti'" [subTitle]="subtitle"
-  [addButtonShow]="true" [showSpinner]="false" (emittEventButton)="eventToolbarOutfit($event)">
+  [addButtonShow]="true" [showSpinner]="false" [customToolbarButtons]="bulkDeleteToolbarButtons"
+  (emittEventButton)="eventToolbarOutfit($event)">
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
   <p *ngIf="!gridReady && !error" aria-live="polite">Caricamento tassonomie…</p>
   <button *ngIf="!gridReady && error" type="button" class="btn btn-outline-primary"
@@ -10,7 +11,7 @@
       [colonne]="columns" [idTable]="'outfits-grid'"
       [dataProvider]="dataProvider" [remoteOperation]="true"
       [initialRemoteSort]="{ field: 'createdAt', direction: 'desc' }"
-      [selectionRowMode]="'multiple'"
+      [selectionRowMode]="'multiple'" [showBuiltInBulkDelete]="false"
       [rowContextActions]="menuActions" [showRowContextMenu]="false"
       [isEditable]="true" [isEditableEditRow]="false" [isEditableNewRow]="false"
       [isEditableDeleteRow]="false" [showFilter]="true"

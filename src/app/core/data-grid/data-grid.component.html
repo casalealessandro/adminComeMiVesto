@@ -17,7 +17,7 @@
 
          <div class="-data-grid-toolbar-actions">
             <button
-               *ngIf="canDeleteSelectedRows()"
+               *ngIf="showBuiltInBulkDelete && canDeleteSelectedRows()"
                type="button"
                class="btn btn-outline-danger"
                [disabled]="isLoading"

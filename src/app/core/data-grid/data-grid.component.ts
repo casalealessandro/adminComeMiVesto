@@ -115,6 +115,8 @@ export class DataGridComponent<T = any> implements OnDestroy {
   @Input() selectionRowMode: string = 'single' //signle, multiple o detail, se detail e la griglia ha una riga di dettaglio seleziona solo le righe di dettaglio ;
   @Input() showFilter: boolean = false;
   @Input() showToolbarTop: boolean = false;
+  /** Disable the built-in bulk delete button if a page exposes it in its own caption toolbar. */
+  @Input() showBuiltInBulkDelete: boolean = true;
   @Input() showToolbarBottom: boolean = false;
   @Input() rowAlternate: boolean = true;
   @Input() isEditableNewRow: boolean = true;
