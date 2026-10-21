@@ -116,7 +116,7 @@ export class AffiliateCatalogService {
 
   reviewFashionVisionProduct(
     categoryId: string,
-    input: { runId: string; productId: string; action: 'APPROVE' | 'REJECT'; styles?: string[]; subcategory?: string },
+    input: { runId: string; productId: string; action: 'APPROVE' | 'REJECT'; styles?: string[]; subcategory?: string; seasons?: string[] },
   ): Observable<FashionVisionCategoryJob> {
     return this.http.post<AffiliateApiResponse<FashionVisionCategoryJob>>(
       this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/review',
