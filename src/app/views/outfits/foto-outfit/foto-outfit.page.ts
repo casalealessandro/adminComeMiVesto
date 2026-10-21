@@ -7,7 +7,7 @@ import { Tag } from '../../../services/outfit.service';
 import { FormsModule } from '@angular/forms';
 import { CatalogProduct } from '../../affiliate-catalog/models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../affiliate-catalog/services/affiliate-catalog.service';
-import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct } from '../../affiliate-catalog/models/outfit-accessory-roles';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, outfitRoleLabel } from '../../affiliate-catalog/models/outfit-accessory-roles';
 import { OutfitReplacementPickerResult } from '../../affiliate-catalog/components/outfit-preview/outfit-replacement-picker.component';
 import { CatalogReplacementRequest, CatalogAdditionRequest } from '../../../services/outfit.service';
 
@@ -50,6 +50,7 @@ export class FotoOutfitPage implements OnInit {
   addCategory = '';
   addCategories: string[] = [];
   categoriesLoading = false;
+  readonly roleLabel = outfitRoleLabel;
   readonly addRoles = ['TOP','BOTTOM','DRESS','SHOES','OUTERWEAR',...ACCESSORY_ROLES];
   readonly categoriesByRole: Record<string,string[]> = {
     TOP:['camicie','M_Maglieria','ABC_Completi'],
