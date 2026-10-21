@@ -88,6 +88,23 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       );
     });
   }
+  visionSeasonLabel(season: string): string {
+    return this.visionSeasons.find(value => value.id === season)?.label || season;
+  }
+
+  visionSeasonBasisLabel(basis: string): string {
+    return ({
+      PRODUCT_DECLARATION: 'Dichiarazione relativa al prodotto',
+      GARMENT_CONSTRUCTION: 'Costruzione e caratteristiche del capo',
+      INSUFFICIENT: 'Elementi insufficienti',
+    } as Record<string, string>)[basis] || basis;
+  }
+
+  useVisionSeasonSuggestion(row: FashionVisionReviewRow): void {
+    if (!this.canManageAi || row.status !== 'READY' || !row.seasonality?.seasons.length) return;
+    this.visionSeasonEdits[row.productId] = [...row.seasonality.seasons];
+  }
+
   visionStyleLabel(style: string): string {
     const labels: Record<string, string> = {
       CASUAL: 'Casual', BUSINESS: 'Business', SPORTY: 'Sportivo',
