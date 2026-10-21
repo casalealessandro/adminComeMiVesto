@@ -16,3 +16,15 @@ export const accessoryRoleFromTaxonomy = (category: string, subcategory: string)
   category === ACCESSORY_CATEGORY
     ? (ACCESSORY_ROLES.find(role => ACCESSORY_SUBCATEGORIES[role].includes(subcategory)) ?? null)
     : null;
+
+export const OUTFIT_ROLE_LABELS: Readonly<Record<string,string>> = {
+  TOP: 'Parte superiore',
+  BOTTOM: 'Pantaloni e gonne',
+  DRESS: 'Abito o tuta intera',
+  SHOES: 'Scarpe',
+  OUTERWEAR: 'Giacche e capispalla',
+  BAG: 'Borse',
+  ACCESSORY: 'Cinture e accessori',
+  HEADWEAR: 'Cappelli e occhiali',
+};
+export const outfitRoleLabel = (role: string): string => OUTFIT_ROLE_LABELS[role] ?? role;
