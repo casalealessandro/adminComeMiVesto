@@ -19,7 +19,7 @@ import { PopUpService } from '../../../../core/popup/popup.service';
 import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, accessoryRoleFromTaxonomy, isAllowedAccessoryProduct } from '../../models/outfit-accessory-roles';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, accessoryRoleFromTaxonomy, isAllowedAccessoryProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
 import { AiOutfitDraftEditorComponent } from './ai-outfit-draft-editor.component';
 
@@ -107,6 +107,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   genericSubcategoriesLoading = false;
   readonly genericAnchors: Array<{role:string;category:string;subcategory:string;color?:string}> = [];
   readonly selectedAnchors: Array<{ product: CatalogProduct; role: string }> = [];
+  readonly roleLabel = outfitRoleLabel;
   readonly anchorRoles = ['TOP', 'BOTTOM', 'DRESS', 'SHOES', 'OUTERWEAR', ...ACCESSORY_ROLES];
   readonly categoryByRole: Record<string, string[]> = {
     TOP: ['camicie', 'M_Maglieria', 'ABC_Completi'],
