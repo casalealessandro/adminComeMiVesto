@@ -96,6 +96,12 @@ export interface FashionVisionMirror {
   fit: string;
   visualWeight: string;
 }
+/** AI-only explanation: styles still saved in the existing fashionProfile.styleAffinities array. */
+export interface FashionVisionStyleEvidence {
+  style: string;
+  cue: string;
+}
+
 export interface FashionVisionReviewRow {
   productId: string;
   name: string;
@@ -108,6 +114,9 @@ export interface FashionVisionReviewRow {
   insideCategory: boolean | null;
   confidence: string;
   explanation: string;
+  primaryStyle?: string;
+  styleEvidence?: FashionVisionStyleEvidence[];
+  stylePolicyVersion?: string;
   status: FashionVisionRowStatus;
   costUsd: number;
 }

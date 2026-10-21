@@ -363,7 +363,26 @@
                           [attr.aria-label]="'Correggi gli stili di ' + row.name">
                           <option *ngFor="let style of visionStyles" [ngValue]="style">{{ visionStyleLabel(style) }}</option>
                         </select>
-                        <small class="text-muted">Puoi selezionare più stili.</small>
+                        <small class="text-muted">Puoi selezionare più stili. La revisione manuale resta sempre necessaria.</small>
+                        <div *ngIf="row.stylePolicyVersion" class="fashion-overview__style-reasons mt-2">
+                          <div class="small fw-semibold">
+                            Stile principale suggerito: {{ row.primaryStyle && row.primaryStyle !== 'UNKNOWN'
+                              ? visionStyleLabel(row.primaryStyle) : 'Non determinabile' }}
+                          </div>
+                          <div class="small text-muted" *ngIf="!row.styleEvidence?.length">
+                            Nessun indizio sufficiente per proporre nuovi stili; i valori precedenti sono conservati.
+                          </div>
+                          <ul class="small mb-1 ps-3" *ngIf="row.styleEvidence?.length">
+                            <li *ngFor="let evidence of row.styleEvidence">
+                              <strong>{{ visionStyleLabel(evidence.style) }}:</strong> {{ evidence.cue }}
+                            </li>
+                          </ul>
+                          <div class="text-muted small">Queste motivazioni descrivono la proposta AI originale,
+                            non eventuali modifiche manuali degli stili.</div>
+                        </div>
+                        <div *ngIf="!row.stylePolicyVersion" class="text-muted small mt-1">
+                          Analisi precedente: motivazioni per singolo stile non disponibili.
+                        </div>
                       </dd>
                       <dt>Stagioni</dt>
                       <dd>
