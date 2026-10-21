@@ -12,7 +12,7 @@ import {
 } from '../../models/affiliate-catalog-api.models';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct } from '../../models/outfit-accessory-roles';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 
 @Component({
   selector: 'app-ai-outfit-draft-editor',
@@ -51,6 +51,7 @@ export class AiOutfitDraftEditorComponent {
   loadingCategories = false;
   addingProduct = false;
   // Shared semantics with the backend composition slot roots.
+  readonly roleLabel = outfitRoleLabel;
   readonly additionalRoles = ['OUTERWEAR', 'DRESS', 'TOP', 'BOTTOM', 'SHOES', ...ACCESSORY_ROLES] as const;
   readonly categoriesByRole: Record<string, string[]> = {
     OUTERWEAR: ['cappotti', 'ABC_Completi', 'M_Maglieria'],
