@@ -58,16 +58,45 @@
     <div class="draft-editor__products">
       <strong>Prodotti del look</strong>
       <p>Puoi sostituire ciascun capo con un prodotto della stessa categoria. Il prezzo e i link saranno ricontrollati dal backend.</p>
-      <div *ngFor="let product of outfit.products; let i = index" class="draft-editor__product">
-        <img *ngIf="product.images?.[0]" [src]="product.images[0]" [alt]="product.name" loading="lazy">
+      <div *ngFor="let product of edit.products; let i = index" class="draft-editor__product">
+        <img *ngIf="selectedReplacements.get(i)?.images?.[0] || outfit.products[i]?.images?.[0]"
+          [src]="selectedReplacements.get(i)?.images?.[0] || outfit.products[i]?.images?.[0]" [alt]="replacementLabel(i)" loading="lazy">
         <div>
           <small>{{ product.role }}</small>
           <span>{{ replacementLabel(i) }}</span>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showReplacements(i)" [disabled]="saving">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showReplacements(i)" [disabled]="saving" *ngIf="i < outfit.products.length">
           Sostituisci
         </button>
       </div>
+    </div>
+
+    <div class="draft-editor__add" *ngIf="edit.products.length < 8 && availableRoles.length">
+      <strong>Aggiungi un capo</strong>
+      <p>Seleziona prima il ruolo e la categoria; poi scegli un prodotto del catalogo.</p>
+      <div class="draft-editor__fields">
+        <label>Ruolo
+          <select name="additionalProductRole" [(ngModel)]="addRole" [disabled]="saving || addingProduct">
+            <option value="">Seleziona ruolo</option>
+            <option *ngFor="let role of availableRoles" [value]="role">{{ role }}</option>
+          </select>
+        </label>
+        <label>Categoria
+          <select name="additionalProductCategory" [(ngModel)]="addCategory"
+            [disabled]="saving || addingProduct || loadingCategories">
+            <option value="">Seleziona categoria</option>
+            <option *ngFor="let category of availableCategories" [value]="category">{{ category }}</option>
+          </select>
+        </label>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-primary" (click)="addProduct()"
+        [disabled]="saving || addingProduct || !addRole || !addCategory || !availableRoles.includes(addRole)">
+        {{ addingProduct ? 'Selezione in corso…' : 'Aggiungi prodotto dal catalogo' }}
+      </button>
+      <p class="draft-editor__hint">
+        L'aggiunta cambia la composizione: dopo aver salvato, rigenera la fotografia prima di pubblicare.
+        Nessuna generazione AI viene avviata automaticamente.
+      </p>
     </div>
 
     <p class="draft-editor__hint">Premi «Sostituisci» per aprire il catalogo con ricerca e filtri. Seleziona una riga per scegliere il nuovo prodotto. Modificare titolo, descrizione, genere, stagione, stile, occasione o posizione dei pin non richiede una nuova immagine. Se sostituisci un prodotto, dovrai rigenerare la fotografia prima della pubblicazione.</p>

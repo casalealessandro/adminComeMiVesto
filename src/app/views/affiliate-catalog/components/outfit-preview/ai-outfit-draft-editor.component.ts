@@ -44,6 +44,29 @@ export class AiOutfitDraftEditorComponent {
   regenerationError = '';
   form: AiOutfitDraftEditRequest | null = null;
   replacementIndex: number | null = null;
+  addCategory = '';
+  addRole = '';
+  productCategories: string[] = [];
+  loadingCategories = false;
+  addingProduct = false;
+  // Shared semantics with the backend composition slot roots.
+  readonly additionalRoles = ['OUTERWEAR', 'DRESS', 'TOP', 'BOTTOM', 'SHOES'] as const;
+  readonly categoriesByRole: Record<string, string[]> = {
+    OUTERWEAR: ['cappotti', 'ABC_Completi', 'M_Maglieria'],
+    DRESS: ['ABC_Completi', 'tute'],
+    TOP: ['camicie', 'M_Maglieria', 'ABC_Completi'],
+    BOTTOM: ['P_Pantaloni', 'conna'],
+    SHOES: ['scarpe'],
+  };
+  get availableCategories(): string[] {
+    const accepted = this.categoriesByRole[this.addRole] ?? [];
+    return this.productCategories.filter(category => accepted.includes(category));
+  }
+
+  get availableRoles(): string[] {
+    const used = new Set(this.form?.products.map(product => product.role) ?? []);
+    return this.additionalRoles.filter(role => !used.has(role));
+  }
   readonly selectedReplacements = new Map<number, CatalogProduct>();
 
   startEditing(): void {
@@ -66,6 +89,9 @@ export class AiOutfitDraftEditorComponent {
     this.error = '';
     this.replacementIndex = null;
     this.selectedReplacements.clear();
+    this.addCategory = '';
+    this.addRole = '';
+    this.loadCatalogCategories();
     this.editing = true;
     this.editingChange.emit(true);
   }
@@ -76,7 +102,47 @@ export class AiOutfitDraftEditorComponent {
     this.form = null;
     this.replacementIndex = null;
     this.selectedReplacements.clear();
+    this.addingProduct = false;
     this.editingChange.emit(false);
+  }
+
+  private loadCatalogCategories(): void {
+    this.loadingCategories = true;
+    this.catalogService.getProductCategories()
+      .pipe(finalize(() => this.loadingCategories = false))
+      .subscribe({
+        next: categories => this.productCategories = [...categories].sort((a,b)=>a.localeCompare(b)),
+        error: () => this.error = 'Impossibile caricare le categorie del catalogo.',
+      });
+  }
+
+  /** Reuses the remote replacement picker for selecting an additional catalog product. */
+  addProduct(): void {
+    if (!this.form || this.saving || this.addingProduct || this.replacementIndex !== null ||
+        this.form.products.length >= 8 || !this.addRole || !this.availableRoles.includes(this.addRole) ||
+        !this.availableCategories.includes(this.addCategory)) return;
+    this.addingProduct = true;
+    const role = this.addRole;
+    const category = this.addCategory;
+    const guid = `outfit-add-product-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    this.popupService.setNewPopUp(guid, 'OutfitReplacementPickerComponent', {
+      category,
+      gender: this.form.gender,
+      productIdsInOutfit: this.form.products.map(item => item.catalogProductId),
+    }, 1180, undefined, undefined, false, true, 'Aggiungi prodotto', 'center', true);
+    void this.popupService.getOutputComponent(guid)
+      .then((result: OutfitReplacementPickerResult) => {
+        this.popupService.destroyCurrentOpenPopUpByGuid(guid);
+        if (result?.name !== 'selected' || !result.product || !this.form ||
+            this.form.products.length >= 8 || this.form.products.some(p => p.role === role)) return;
+        if (result.product.category !== category || !result.product.genderTargets.includes(this.form.gender)) return;
+        this.form.products.push({ catalogProductId: result.product.id, role });
+        this.selectedReplacements.set(this.form.products.length - 1, result.product);
+        this.addRole = '';
+        this.addCategory = '';
+      })
+      .catch(() => this.error = 'Non è stato possibile scegliere il nuovo prodotto.')
+      .finally(() => { this.addingProduct = false; });
   }
 
   showReplacements(index: number): void {
