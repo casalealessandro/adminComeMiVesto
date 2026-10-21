@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { Subject } from 'rxjs';
+import { Subject, of } from 'rxjs';
+import { AffiliateCatalogService } from '../../affiliate-catalog/services/affiliate-catalog.service';
 import { PopUpService } from '../../../services/popup.service';
 import { FotoOutfitPage } from './foto-outfit.page';
 
@@ -16,7 +17,10 @@ describe('FotoOutfitPage popup lifecycle', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: PopUpService, useValue: popup }
+        { provide: PopUpService, useValue: popup },
+        { provide: AffiliateCatalogService, useValue: {
+          getProductCategories: () => of(['cappotti','scarpe','ABC_Completi']),
+        } }
       ]
     });
 
@@ -104,6 +108,31 @@ describe('FotoOutfitPage popup lifecycle', () => {
     output.next({ guid: guidA, name: 'cancelForm' });
     await expectAsync(promiseA).toBeResolvedTo(false);
     expect(output.observers.length).toBe(0);
+  });
+
+  it('previews a new jacket without mutating saved tags or invoking AI', async () => {
+    const {component,popup} = setup();
+    component.enableCatalogReplacements = true;
+    component.gender = 'D';
+    component.tags.set([{id:'shirt',catalogProductId:'shirt',name:'Camicia',
+      x:.4,y:.4,color:'W',outfitCategory:'camicie'}]);
+    component.toggleAddProduct();
+    expect(component.availableAddCategories).toContain('cappotti');
+    component.addRole = 'OUTERWEAR';
+    component.addCategory = 'cappotti';
+    const selected = jasmine.createSpy('catalogAdditions');
+    component.eventCatalogAdditions.subscribe(selected);
+    popup.getOutputComponent.and.resolveTo({
+      name:'selected',product:{
+        id:'jacket',category:'cappotti',genderTargets:['D'],
+        name:'Giacca',brand:'Brand',images:['https://example.test/jacket.png'],
+      },
+    } as any);
+    component.addProductFromCatalog();
+    await flushPromise();
+    expect(component.tags().map(item => item.id)).toEqual(['shirt']);
+    expect(component.selectedAdditions.map(item => item.product.id)).toEqual(['jacket']);
+    expect(selected).toHaveBeenCalledWith([{catalogProductId:'jacket',role:'OUTERWEAR'}]);
   });
 
   it('links pin selection and product card selection by index', () => {

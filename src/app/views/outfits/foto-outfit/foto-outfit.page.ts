@@ -6,8 +6,9 @@ import { CommonModule } from '@angular/common';
 import { Tag } from '../../../services/outfit.service';
 import { FormsModule } from '@angular/forms';
 import { CatalogProduct } from '../../affiliate-catalog/models/affiliate-catalog.models';
+import { AffiliateCatalogService } from '../../affiliate-catalog/services/affiliate-catalog.service';
 import { OutfitReplacementPickerResult } from '../../affiliate-catalog/components/outfit-preview/outfit-replacement-picker.component';
-import { CatalogReplacementRequest } from '../../../services/outfit.service';
+import { CatalogReplacementRequest, CatalogAdditionRequest } from '../../../services/outfit.service';
 
 
 interface tagStyle {
@@ -41,6 +42,25 @@ export class FotoOutfitPage implements OnInit {
   @Input() enableCatalogReplacements = false;
   @Input() gender?: string;
   @Output() eventProductReplacements = new EventEmitter<CatalogReplacementRequest[]>();
+  @Output() eventCatalogAdditions = new EventEmitter<CatalogAdditionRequest[]>();
+  readonly selectedAdditions: Array<{product: CatalogProduct; role:string}> = [];
+  addProductEnabled = false;
+  addRole = '';
+  addCategory = '';
+  addCategories: string[] = [];
+  categoriesLoading = false;
+  readonly addRoles = ['TOP','BOTTOM','DRESS','SHOES','OUTERWEAR'];
+  readonly categoriesByRole: Record<string,string[]> = {
+    TOP:['camicie','M_Maglieria','ABC_Completi'],
+    BOTTOM:['P_Pantaloni','conna'],
+    DRESS:['ABC_Completi','tute'],
+    SHOES:['scarpe'],
+    OUTERWEAR:['cappotti','ABC_Completi','M_Maglieria'],
+  };
+  get availableAddCategories():string[] {
+    return this.addCategories.filter(category => (this.categoriesByRole[this.addRole] || []).includes(category));
+  }
+  private readonly catalogService = inject(AffiliateCatalogService);
   readonly selectedReplacements = new Map<number, CatalogProduct>();
   replacingIndex: number | null = null;
 
@@ -140,6 +160,8 @@ export class FotoOutfitPage implements OnInit {
               this.tags.set([]);
               this.selectedTagIndex = null;
               this.selectedReplacements.clear();
+              this.selectedAdditions.splice(0);
+              this.emitAdditions();
               this.emitReplacements();
               this.eventImageTags.emit({ tags: [] });
             }
@@ -375,6 +397,58 @@ if (respo.name === 'submitForm') {
     return this.propertiesModal.getOutputComponent(guid)
 
 
+  }
+
+  toggleAddProduct(): void {
+    if (!this.enableCatalogReplacements || !this.enableSetTagsImage) return;
+    this.addProductEnabled = !this.addProductEnabled;
+    if (this.addProductEnabled && !this.addCategories.length) {
+      this.categoriesLoading = true;
+      this.catalogService.getProductCategories()
+        .subscribe({
+          next: values => { this.addCategories = values; this.categoriesLoading = false; },
+          error: () => { this.categoriesLoading = false; },
+        });
+    }
+  }
+
+  addProductFromCatalog(): void {
+    if (!this.addProductEnabled || !this.enableCatalogReplacements || this.replacingIndex !== null ||
+        !this.addRoles.includes(this.addRole) ||
+        !this.availableAddCategories.includes(this.addCategory) ||
+        this.tags().length + this.selectedAdditions.length >= 8 ||
+        this.selectedAdditions.some(item => item.role === this.addRole)) return;
+    const category = this.addCategory;
+    const role = this.addRole;
+    const guid = `published-outfit-add-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    this.replacingIndex = -1;
+    this.propertiesModal.setNewPopUp(guid, 'OutfitReplacementPickerComponent', {
+      category, gender:this.gender as 'U'|'D',
+      productIdsInOutfit:[
+        ...this.tags().map((t,i)=>this.selectedReplacements.get(i)?.id || t.catalogProductId || String(t.id)),
+        ...this.selectedAdditions.map(a=>a.product.id),
+      ],
+    },1180,undefined,undefined,false,true,'Aggiungi prodotto','center',true);
+    void this.propertiesModal.getOutputComponent(guid).then((result:OutfitReplacementPickerResult)=>{
+      this.propertiesModal.destroyCurrentOpenPopUpByGuid(guid);
+      if(result?.name!=='selected'||!result.product||result.product.category!==category||
+          !result.product.genderTargets?.includes(this.gender as 'U'|'D'))return;
+      this.selectedAdditions.push({product:result.product,role});
+      this.emitAdditions();
+      this.addRole='';
+      this.addCategory='';
+    }).finally(()=>this.replacingIndex=null);
+  }
+
+  removePendingAddition(index:number):void {
+    this.selectedAdditions.splice(index,1);
+    this.emitAdditions();
+  }
+
+  emitAdditions():void {
+    this.eventCatalogAdditions.emit(this.selectedAdditions.map(item=>({
+      catalogProductId:item.product.id,role:item.role,
+    })));
   }
 
   /** Reuse the AI draft product selector, keeping the outfit unchanged until Save. */

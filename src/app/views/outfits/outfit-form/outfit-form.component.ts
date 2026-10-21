@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnagraficaWrapperComponent } from '../../../layout/anagrafica-wrapper/anagrafica-wrapper.component';
 import { DynamicFormComponent } from '../../../components/dynamic-form/dynamic-form.component';
-import { outfit, OutfitsService, Tag, CatalogReplacementRequest } from '../../../services/outfit.service';
+import { outfit, OutfitsService, Tag, CatalogReplacementRequest, CatalogAdditionRequest } from '../../../services/outfit.service';
 import { FotoOutfitPage } from '../foto-outfit/foto-outfit.page';
 import { UserProfile } from '../../../interface/app.interface';
 import { UserService } from '../../../services/user.service';
@@ -74,6 +74,7 @@ export class OutfitFormComponent {
   private originalImageUrl = '';
   tags = signal<Tag[]>([]);
   catalogReplacements: CatalogReplacementRequest[] = [];
+  catalogAdditions: CatalogAdditionRequest[] = [];
   targetUsers: UserProfile[] = [];
   targetUserId = '';
 
@@ -107,6 +108,7 @@ export class OutfitFormComponent {
       this.originalImageUrl = '';
       this.tags.set([]);
       this.catalogReplacements = [];
+      this.catalogAdditions = [];
       this.regenerationError.set('');
       this.outfitTitle = id ? 'Modifica outfit' : 'Nuovo outfit';
       if (!id) {
@@ -134,11 +136,14 @@ export class OutfitFormComponent {
   setCatalogReplacements(selections: CatalogReplacementRequest[]): void {
     this.catalogReplacements = selections;
   }
+  setCatalogAdditions(selections: CatalogAdditionRequest[]): void {
+    this.catalogAdditions = selections;
+  }
 
   canRegenerateImage(): boolean {
     const item = this.outfitData();
     return !!this.outfitId && item?.aiGenerated === true && !!item.aiOutfitDraftId &&
-      item.imageMayNotMatchProducts === true && this.catalogReplacements.length === 0;
+      item.imageMayNotMatchProducts === true && this.catalogReplacements.length === 0 && this.catalogAdditions.length === 0;
   }
 
   /** Uses the shared AI image backend only after saving and explicitly confirming. */
@@ -186,13 +191,14 @@ export class OutfitFormComponent {
 
     const data = event.formData || {};
     const payload = buildOutfitFormPayload(data, this.imageUrl(), this.tags(), this.originalImageUrl);
-    if (this.outfitId && this.catalogReplacements.length) {
-      payload.catalogReplacements = [...this.catalogReplacements];
+    if (this.outfitId && (this.catalogReplacements.length || this.catalogAdditions.length)) {
+      if (this.catalogReplacements.length) payload.catalogReplacements = [...this.catalogReplacements];
+      if (this.catalogAdditions.length) payload.catalogAdditions = [...this.catalogAdditions];
       if (typeof this.outfitData()?.updatedAt === 'number') {
         payload.expectedUpdatedAt = this.outfitData()!.updatedAt;
       }
     }
-    const replaced = !!this.outfitId && this.catalogReplacements.length > 0;
+    const replaced = !!this.outfitId && (this.catalogReplacements.length > 0 || this.catalogAdditions.length > 0);
     this.saving.set(true);
     this.error.set('');
     try {
@@ -205,6 +211,9 @@ export class OutfitFormComponent {
       if (replaced && this.outfitId) {
         // Do not send the user to the list: show the manual image action after save.
         this.catalogReplacements = [];
+        this.catalogAdditions = [];
+        this.photoPage?.selectedAdditions.splice(0);
+        this.photoPage?.emitAdditions();
         this.photoPage?.selectedReplacements.clear();
         this.photoPage?.emitReplacements();
         try {
