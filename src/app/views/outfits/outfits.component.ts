@@ -10,6 +10,7 @@ import { outfit, OutfitsService } from '../../services/outfit.service';
 import { FormService } from '../../services/form.service';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { OutfitsGridProvider } from './outfits-grid.provider';
+import { ToolbarButton } from '../../core/ui/caption/toolbar-button';
 
 type Option = { id: string; value: string };
 const statuses: Option[] = [
@@ -60,6 +61,25 @@ export class OutfitsComponent implements OnDestroy {
   error = '';
   search = '';
   subtitle = `Elenco outfit creati nell'app`;
+
+  /** Visible in the page toolbar even before any row is selected.
+   * Reuses the grid's existing confirmation and atomic bulk-delete path.
+   * The backend accepts at most 100 distinct outfit IDs per request.
+   */
+  get bulkDeleteToolbarButtons(): ToolbarButton[] {
+    const selected = this.grid?.getSelectedRows().length ?? 0;
+    const ready = !!this.grid && !this.grid.isLoading && selected > 0 && selected <= 100;
+    return [{
+      id: 'bulkDeleteOutfits',
+      name: 'bulkDeleteOutfits',
+      text: `Elimina selezionati (${selected})`,
+      icon: 'mdi mdi-trash-can-outline',
+      disabled: !ready,
+      visible: true,
+      cssClass: 'btn-outline-danger',
+      widget: 'button',
+    }];
+  }
 
   readonly menuActions: NonNullable<ColData['editorbuttons']> = [
     { id: 'approve', nameEvent: 'approve', text: 'Approva', icon: 'mdi mdi-check',
@@ -219,7 +239,18 @@ export class OutfitsComponent implements OnDestroy {
   }
 
   eventToolbarOutfit(event: any): void {
-    if ((event.name || event.id) === 'addButton') void this.router.navigate(['/outfit-detail']);
+    const action = event?.name || event?.id;
+    if (action === 'addButton') {
+      void this.router.navigate(['/outfit-detail']);
+    } else if (action === 'bulkDeleteOutfits') {
+      if (!this.grid || this.grid.isLoading) return;
+      const count = this.grid.getSelectedRows().length;
+      if (count > 100) {
+        this.error = 'Seleziona al massimo 100 outfit per ogni eliminazione.';
+        return;
+      }
+      this.grid.confirmDeleteSelectedRows();
+    }
   }
   gridAction(event: any): void {
     const item: outfit = event?.rowData;
