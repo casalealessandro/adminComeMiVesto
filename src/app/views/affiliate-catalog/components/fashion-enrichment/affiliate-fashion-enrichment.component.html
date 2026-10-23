@@ -343,16 +343,33 @@
                 <td>
                   <ng-container *ngIf="row.after as proposed; else visionWaiting">
                     <dl class="fashion-overview__vision-fields">
-                      <dt>Categoria</dt><dd>{{ proposed.category }}</dd>
+                      <dt>Categoria</dt>
+                      <dd>
+                        <select class="form-select form-select-sm"
+                          [(ngModel)]="visionCategoryEdits[row.productId]"
+                          (ngModelChange)="onVisionRowCategoryChanged(row)"
+                          [disabled]="row.status !== 'READY' || !canManageAi"
+                          [attr.aria-label]="'Correggi categoria principale ' + row.name">
+                          <option *ngFor="let category of visionCategories" [value]="category.id">{{ category.categoryName }}</option>
+                        </select>
+                        <small *ngIf="(visionCategoryEdits[row.productId] ?? proposed.category) !== row.before.category"
+                          class="text-primary">Cambio di categoria principale</small>
+                      </dd>
                       <dt>Sottocategoria</dt>
                       <dd>
                         <select class="form-select form-select-sm"
                           [(ngModel)]="visionSubcategoryEdits[row.productId]"
-                          [disabled]="row.status !== 'READY' || !canManageAi"
+                          [disabled]="row.status !== 'READY' || !canManageAi ||
+                            visionLoadingChildren[visionCategoryEdits[row.productId] ?? proposed.category]"
                           [attr.aria-label]="'Correggi sottocategoria ' + row.name">
-                          <option value="">Non assegnata</option>
-                          <option *ngFor="let child of visionSubcategories" [value]="child.id">{{ child.categoryName }}</option>
+                          <option value="">Seleziona sottocategoria</option>
+                          <option *ngFor="let child of visionRowSubcategories(row)" [value]="child.id">{{ child.categoryName }}</option>
                         </select>
+                        <small *ngIf="visionLoadingChildren[visionCategoryEdits[row.productId] ?? proposed.category]"
+                          class="text-muted">Caricamento sottocategorie...</small>
+                        <small *ngIf="visionMissingDestinationChild(row)" class="text-warning d-block">
+                          Per spostare il prodotto devi scegliere una sottocategoria della nuova categoria.
+                        </small>
                         <small *ngIf="row.before.subcategory !== proposed.subcategory" class="text-primary">Modifica suggerita</small>
                       </dd>
                       <dt>Stili</dt>
@@ -399,7 +416,7 @@
                     </dl>
                     <div class="small text-muted mt-2"><strong>Capo:</strong> {{ row.detectedType }}</div>
                     <div class="small" *ngIf="row.insideCategory === false">
-                      <span class="text-warning">Possibile categoria principale errata: da correggere separatamente.</span>
+                      <span class="text-warning">Possibile categoria principale errata: seleziona qui la categoria corretta e la sua sottocategoria prima di approvare.</span>
                     </div>
                     <div class="small mt-1"><strong>Confidenza:</strong> {{ row.confidence }}</div>
                     <div class="small text-muted">{{ row.explanation }}</div>
@@ -410,7 +427,7 @@
                   <span class="badge bg-secondary mb-2">{{ row.status }}</span>
                   <div *ngIf="row.status === 'READY' && canManageAi" class="d-grid gap-1">
                     <button class="btn btn-sm btn-success" type="button"
-                      (click)="reviewVision(row, 'APPROVE')" [disabled]="visionBusy">Approva</button>
+                      (click)="reviewVision(row, 'APPROVE')" [disabled]="visionBusy || visionMissingDestinationChild(row)">Approva</button>
                     <button class="btn btn-sm btn-outline-danger" type="button"
                       (click)="reviewVision(row, 'REJECT')" [disabled]="visionBusy">Rifiuta</button>
                   </div>
@@ -426,7 +443,7 @@
           </table>
         </div>
         <p class="small text-muted mb-0">Le approvazioni vengono registrate singolarmente e solo sui campi modificati
-          (sottocategoria e stili). Gli altri valori sono riportati nello specchio per il confronto,
+          (categoria, sottocategoria, stili e stagioni). Gli altri valori sono riportati nello specchio per il confronto,
           ma non vengono sovrascritti. Le classificazioni approvate vengono protette dai successivi sync.
         </p>
       </article>
