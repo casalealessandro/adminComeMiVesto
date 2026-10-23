@@ -59,6 +59,9 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   visionStyleEdits: Record<string, string[]> = {};
   visionSeasonEdits: Record<string, string[]> = {};
   visionSubcategoryEdits: Record<string, string> = {};
+  visionCategoryEdits: Record<string, string> = {};
+  visionChildrenByCategory: Record<string, Array<{ id: string; categoryName: string }>> = {};
+  visionLoadingChildren: Record<string, boolean> = {};
   readonly visionStyles = [
     'CASUAL', 'BUSINESS', 'SPORTY', 'SMART_CASUAL', 'ELEGANT',
     'ALTERNATIVE', 'FESTIVAL', 'CLASSIC', 'TRENDY', 'STREETWEAR',
@@ -82,6 +85,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       if (this.visionFilter === 'reviewed') return row.status === 'APPROVED' || row.status === 'REJECTED';
       if (this.visionFilter === 'pending') return row.status === 'READY';
       return !!row.after && (
+        row.before.category !== (this.visionCategoryEdits[row.productId] ?? row.after.category) ||
         row.before.subcategory !== (this.visionSubcategoryEdits[row.productId] ?? row.after.subcategory) ||
         JSON.stringify(row.before.styles) !== JSON.stringify(this.visionStyleEdits[row.productId] ?? row.after.styles) ||
         JSON.stringify(row.before.seasons) !== JSON.stringify(this.visionSeasonEdits[row.productId] ?? row.after.seasons)
@@ -108,6 +112,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       this.visionStyleEdits = {};
       this.visionSeasonEdits = {};
       this.visionSubcategoryEdits = {};
+      this.visionCategoryEdits = {};
     }
     this.visionJob = job;
     for (const row of job?.rows || []) {
@@ -115,7 +120,35 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       if (!(row.productId in this.visionStyleEdits)) this.visionStyleEdits[row.productId] = [...row.after.styles];
       if (!(row.productId in this.visionSeasonEdits)) this.visionSeasonEdits[row.productId] = [...row.after.seasons];
       if (!(row.productId in this.visionSubcategoryEdits)) this.visionSubcategoryEdits[row.productId] = row.after.subcategory;
+      if (!(row.productId in this.visionCategoryEdits)) this.visionCategoryEdits[row.productId] = row.after.category;
     }
+  }
+
+  visionRowSubcategories(row: FashionVisionReviewRow): Array<{ id: string; categoryName: string }> {
+    const category = this.visionCategoryEdits[row.productId] ?? row.after?.category ?? row.before.category;
+    return this.visionChildrenByCategory[category] ??
+      (category === this.selectedVisionCategoryId ? this.visionSubcategories : []);
+  }
+
+  onVisionRowCategoryChanged(row: FashionVisionReviewRow): void {
+    const category = this.visionCategoryEdits[row.productId] || row.before.category;
+    // Never carry a child ID from the previous root into a newly selected root.
+    this.visionSubcategoryEdits[row.productId] = '';
+    if (this.visionChildrenByCategory[category] || this.visionLoadingChildren[category]) return;
+    this.visionLoadingChildren[category] = true;
+    this.service.getCurationCategories(category)
+      .pipe(finalize(() => { delete this.visionLoadingChildren[category]; }))
+      .subscribe({
+        next: children => { this.visionChildrenByCategory[category] = children; },
+        error: () => { this.visionError = 'Impossibile caricare le sottocategorie della categoria selezionata.'; },
+      });
+  }
+
+  visionMissingDestinationChild(row: FashionVisionReviewRow): boolean {
+    const category = this.visionCategoryEdits[row.productId] ?? row.after?.category ?? row.before.category;
+    const child = this.visionSubcategoryEdits[row.productId] ?? row.after?.subcategory ?? '';
+    return category !== row.before.category &&
+      (!child || !this.visionRowSubcategories(row).some(option => option.id === child));
   }
 
   onVisionCategoryChanged(): void {
@@ -126,11 +159,19 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.visionStyleEdits = {};
     this.visionSeasonEdits = {};
     this.visionSubcategoryEdits = {};
+    this.visionCategoryEdits = {};
     this.visionSubcategories = [];
+    this.visionChildrenByCategory = {};
+    this.visionLoadingChildren = {};
     const category = this.selectedVisionCategoryId;
     if (!category) return;
     this.service.getCurationCategories(category).subscribe({
-      next: (children) => { if (this.selectedVisionCategoryId === category) this.visionSubcategories = children; },
+      next: children => {
+        if (this.selectedVisionCategoryId === category) {
+          this.visionSubcategories = children;
+          this.visionChildrenByCategory[category] = children;
+        }
+      },
       error: () => { this.visionError = 'Impossibile caricare le sottocategorie disponibili.'; },
     });
     this.refreshVision();
@@ -194,6 +235,10 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   reviewVision(row: FashionVisionReviewRow, action: 'APPROVE' | 'REJECT'): void {
     const job = this.visionJob;
     if (!job || !this.canManageAi || row.status !== 'READY' || this.visionBusy) return;
+    if (action === 'APPROVE' && this.visionMissingDestinationChild(row)) {
+      this.visionError = 'Se cambi categoria principale, seleziona una sottocategoria valida prima di approvare.';
+      return;
+    }
     const submit = () => {
       this.visionBusy = true;
       this.visionError = '';
@@ -202,6 +247,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
         ...(action === 'APPROVE' ? {
           styles: this.visionStyleEdits[row.productId] ?? row.after?.styles ?? [],
           seasons: this.visionSeasonEdits[row.productId] ?? row.after?.seasons ?? [],
+          category: this.visionCategoryEdits[row.productId] ?? row.after?.category ?? row.before.category,
           subcategory: this.visionSubcategoryEdits[row.productId] ?? row.after?.subcategory ?? '',
         } : {}),
       }).pipe(finalize(() => this.visionBusy = false)).subscribe({
@@ -210,7 +256,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       });
     };
     if (action === 'REJECT') { submit(); return; }
-    confirm('Applichi SOLO a questo prodotto la sottocategoria, gli stili e le stagioni selezionati? Le modifiche vengono bloccate rispetto alle successive sincronizzazioni.', 'Approva classificazione', (approved: boolean) => {
+    confirm('Applichi SOLO a questo prodotto la categoria principale, la sottocategoria, gli stili e le stagioni selezionati? Le modifiche vengono bloccate rispetto alle successive sincronizzazioni.', 'Approva classificazione', (approved: boolean) => {
       if (approved) submit();
     });
   }
