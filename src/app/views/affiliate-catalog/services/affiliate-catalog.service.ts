@@ -17,7 +17,7 @@ import {
   FashionEnrichmentStatus,
   FashionOverviewResponse,
   FashionOverviewJob,
-  FashionAiPilotJob, FashionVisionCategoryJob,
+  FashionAiPilotJob, FashionVisionCategoryJob, FashionVisionBulkJob,
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
@@ -88,6 +88,33 @@ export class AffiliateCatalogService {
 
   disableMappingRule(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/mapping-rules/${encodeURIComponent(id)}`);
+  }
+
+  getFashionVisionBulk(categoryId: string): Observable<FashionVisionBulkJob | null> {
+    return this.http.get<AffiliateApiResponse<FashionVisionBulkJob | null>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/bulk',
+    ).pipe(map(response => response.data));
+  }
+
+  prepareFashionVisionBulk(categoryId: string): Observable<FashionVisionBulkJob> {
+    return this.http.post<AffiliateApiResponse<FashionVisionBulkJob>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/bulk/preview',
+      {},
+    ).pipe(map(response => response.data));
+  }
+
+  confirmFashionVisionBulk(categoryId: string, runId: string): Observable<FashionVisionBulkJob> {
+    return this.http.post<AffiliateApiResponse<FashionVisionBulkJob>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/bulk/confirm',
+      { runId, acknowledgedBudgetEur: 10 },
+    ).pipe(map(response => response.data));
+  }
+
+  stopFashionVisionBulk(categoryId: string, runId: string): Observable<FashionVisionBulkJob> {
+    return this.http.post<AffiliateApiResponse<FashionVisionBulkJob>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/bulk/stop',
+      { runId },
+    ).pipe(map(response => response.data));
   }
 
   getFashionVisionCategory(categoryId: string): Observable<FashionVisionCategoryJob | null> {
