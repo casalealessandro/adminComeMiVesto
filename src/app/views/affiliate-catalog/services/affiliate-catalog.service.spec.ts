@@ -573,6 +573,11 @@ describe('AffiliateCatalogService release contract', () => {
     expect(req.request.method).toBe('GET');
     req.flush({ data: null });
 
+    service.getFashionVisionBulkDeferred('M_Maglieria', 'cursor-1').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/deferred?after=cursor-1');
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: { rows: [], nextCursor: null } });
+
     service.prepareFashionVisionBulk('M_Maglieria').subscribe();
     req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/preview');
     expect(req.request.method).toBe('POST');
