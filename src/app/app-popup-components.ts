@@ -7,6 +7,7 @@ import { AffiliateAiCreatorFormHostComponent } from './views/affiliate-catalog/f
 import { NotificationFormHostComponent } from './views/notifications/forms/notification-form-host.component';
 import { StaticPageFormHostComponent } from './views/static-pages/forms/static-page-form-host.component';
 import { OutfitReplacementPickerComponent } from './views/affiliate-catalog/components/outfit-preview/outfit-replacement-picker.component';
+import { FashionVisionImagePreviewComponent } from './views/affiliate-catalog/components/fashion-enrichment/fashion-vision-image-preview.component';
 
 export const comeMiVestoPopupComponents: readonly PopupRegistration[] = [
   { name: 'AffiliateProductFormHostComponent', component: AffiliateProductFormHostComponent },
@@ -17,4 +18,5 @@ export const comeMiVestoPopupComponents: readonly PopupRegistration[] = [
   { name: 'NotificationFormHostComponent', component: NotificationFormHostComponent },
   { name: 'StaticPageFormHostComponent', component: StaticPageFormHostComponent },
   { name: 'OutfitReplacementPickerComponent', component: OutfitReplacementPickerComponent },
+  { name: 'FashionVisionImagePreviewComponent', component: FashionVisionImagePreviewComponent },
 ];

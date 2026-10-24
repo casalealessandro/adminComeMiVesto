@@ -4,6 +4,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { confirm } from '../../../../core/dialogs/ui-dialogs';
+import { PopUpService } from '../../../../core/popup/popup.service';
 import { AuthService } from '../../../../services/auth.service';
 import {
   FashionCatalogOverview, FashionCoverage, FashionCatalogExample, FashionMerchantOverview, FashionOverviewJob,
@@ -21,6 +22,7 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 export class AffiliateFashionEnrichmentComponent implements OnInit {
   private readonly service = inject(AffiliateCatalogService);
   private readonly auth = inject(AuthService);
+  private readonly popupService = inject(PopUpService);
 
   overview: FashionCatalogOverview | null = null;
   job: FashionOverviewJob | null = null;
@@ -92,6 +94,27 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       );
     });
   }
+  /** Keep the desktop merchant link; use the existing Core popup for smartphone image inspection. */
+  openVisionImageOnMobile(event: MouseEvent, row: FashionVisionReviewRow): void {
+    if (typeof window === 'undefined' || !window.matchMedia('(max-width: 767.98px)').matches) return;
+    event.preventDefault();
+    if (!row.image) return;
+
+    this.popupService.setNewPopUp(
+      'fashion-vision-image-preview',
+      'FashionVisionImagePreviewComponent',
+      { image: row.image, name: row.name },
+      900,
+      undefined,
+      undefined,
+      false,
+      true,
+      row.name || 'Fotografia prodotto',
+      'center',
+      true,
+    );
+  }
+
   visionStyleLabel(style: string): string {
     const labels: Record<string, string> = {
       CASUAL: 'Casual', BUSINESS: 'Business', SPORTY: 'Sportivo',
