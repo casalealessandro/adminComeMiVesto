@@ -65,6 +65,12 @@ form label {
   border-radius: var(--cmv-radius-md);
 }
 
+@media (max-width: 767.98px) {
+  .colors {
+    padding: var(--cmv-mobile-content-inset, .75rem);
+  }
+}
+
 @media (max-width: 600px) {
   form > * {
     width: 100%;

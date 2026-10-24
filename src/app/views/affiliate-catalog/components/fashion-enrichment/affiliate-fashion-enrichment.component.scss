@@ -209,6 +209,11 @@
 .fashion-overview__vision-mobile-heading { display: none; }
 
 @media (max-width: 767.98px) {
+  /* Avoid the extra Bootstrap container-fluid gutter inside the shared shell. */
+  .fashion-overview.container-fluid {
+    padding-inline: 0;
+  }
+
   .fashion-overview__vision-grid { overflow-x: visible; }
   .fashion-overview__vision-grid table {
     display: block;

@@ -71,9 +71,9 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
   .mi-container .ana-container {
-    padding-inline: .75rem !important;
+    padding-inline: var(--cmv-mobile-page-gutter, .75rem) !important;
   }
 }
 

@@ -61,7 +61,7 @@
     }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
     ::ng-deep.content-wrap {
         margin: .75rem auto;
 
@@ -70,12 +70,26 @@
             border-radius: .65rem;
         }
 
+        /* Login retains its original form spacing. */
         .anagrafica-row {
             padding: .65rem;
         }
 
         .wrapForm {
             padding: .75rem;
+        }
+    }
+
+    /* Regular admin pages need one inset and one outer border, not nested cards. */
+    ::ng-deep.content-wrap:not(.login-container) {
+        .anagrafica-row {
+            padding: var(--cmv-mobile-content-inset, .75rem);
+        }
+
+        .wrapForm {
+            padding: 0;
+            border: 0;
+            border-radius: 0;
         }
     }
 }

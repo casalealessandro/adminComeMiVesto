@@ -51,6 +51,10 @@
     --cmv-layer-dialog: 3000;
 
     /* Layout */
+    /* Single mobile page-spacing contract; desktop remains unchanged. */
+    --cmv-mobile-page-gutter: .75rem;
+    --cmv-mobile-content-inset: .75rem;
+
     --height_caption: 35px;
     --height_footer: 40px;
     --height_menuFunzioni: 60px;

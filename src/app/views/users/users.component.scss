@@ -154,11 +154,13 @@ dd {
   margin: .75rem 0;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 767.98px) {
   .admin-page {
-    padding: .75rem;
+    padding: var(--cmv-mobile-content-inset, .75rem);
   }
+}
 
+@media (max-width: 700px) {
   .desktop-grid {
     display: none;
   }
