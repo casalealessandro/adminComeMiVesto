@@ -120,6 +120,16 @@ export interface FashionVisionReviewRow {
   status: FashionVisionRowStatus;
   costUsd: number;
 }
+export interface FashionVisionDeferredPage {
+  rows: Array<{
+    productId: string; name: string; image: string; status: 'DEFERRED';
+    decision: { detectedType: string; insideCategory: boolean; subcategoryId: string;
+      styles: string[]; primaryStyle: string; confidence: string; explanation: string };
+    updatedAt: number;
+  }>;
+  nextCursor: string | null;
+}
+
 export interface FashionVisionBulkJob {
   categoryId: string;
   categoryName: string;
