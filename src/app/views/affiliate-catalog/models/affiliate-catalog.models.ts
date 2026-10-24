@@ -120,6 +120,34 @@ export interface FashionVisionReviewRow {
   status: FashionVisionRowStatus;
   costUsd: number;
 }
+export interface FashionVisionBulkJob {
+  categoryId: string;
+  categoryName: string;
+  runId: string;
+  status: 'PREVIEW_READY' | 'QUEUED' | 'RUNNING' | 'STOP_REQUESTED' |
+    'STOPPED' | 'SUCCESS' | 'STOPPED_BUDGET' | 'FAILED';
+  createdAt: number;
+  updatedAt: number;
+  cursor: string | null;
+  maxBudgetEur: number;
+  maxBudgetUsd: number;
+  model: string;
+  priceCheckedAt: string;
+  stylePolicyVersion: string;
+  scanned: number;
+  analyzed: number;
+  autoApproved: number;
+  deferred: number;
+  skipped: number;
+  reused: number;
+  conflicts: number;
+  uncertainCalls: number;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  lastError: string | null;
+}
+
 export interface FashionVisionCategoryJob {
   runId: string;
   categoryId: string;
