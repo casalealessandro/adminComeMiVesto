@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize } from 'rxjs';
 import { confirm } from '../../../../core/dialogs/ui-dialogs';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AuthService } from '../../../../services/auth.service';
@@ -15,7 +14,7 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 @Component({
   selector: 'app-affiliate-fashion-enrichment',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './affiliate-fashion-enrichment.component.html',
   styleUrl: './affiliate-fashion-enrichment.component.scss',
 })
@@ -294,19 +293,10 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.refresh();
+    // Only the visual category review is exposed on this page.
     this.service.getCurationCategories().subscribe({
       next: roots => { this.visionCategories = roots; },
       error: () => { this.visionError = 'Impossibile caricare le categorie principali.'; },
-    });
-    forkJoin({ feeds: this.service.getFeeds(), programs: this.service.getPrograms() }).subscribe({
-      next: ({ feeds, programs }) => {
-        const activePrograms = new Set(programs.filter((p: AffiliateProgram) =>
-          p.enabled === true && p.networkStatus === 'ACTIVE').map((p: AffiliateProgram) => p.id));
-        this.eligibleFeeds = feeds.filter((feed: AffiliateFeed) =>
-          feed.enabled === true && activePrograms.has(feed.affiliateProgramId));
-      },
-      error: () => { this.aiError = 'Impossibile leggere i feed abilitati per il test AI.'; },
     });
   }
 
