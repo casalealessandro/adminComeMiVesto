@@ -325,6 +325,7 @@
                   <div class="fashion-overview__vision-product-layout">
                     <a class="fashion-overview__vision-product-media"
                       [href]="row.image" target="_blank" rel="noopener noreferrer"
+                      (click)="openVisionImageOnMobile($event, row)"
                       [attr.aria-label]="'Ingrandisci foto ' + row.name">
                       <img [src]="row.image" [alt]="row.name" loading="lazy"
                         class="fashion-overview__vision-image"/>
