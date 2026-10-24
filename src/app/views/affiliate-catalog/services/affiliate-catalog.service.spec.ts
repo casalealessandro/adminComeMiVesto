@@ -578,6 +578,17 @@ describe('AffiliateCatalogService release contract', () => {
     expect(req.request.method).toBe('GET');
     req.flush({ data: { rows: [], nextCursor: null } });
 
+    service.getFashionVisionBulkIssues('M_Maglieria', 'cursor-1').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/issues?after=cursor-1');
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: { rows: [], nextCursor: null } });
+
+    service.resumeFashionVisionBulk('M_Maglieria', 'run-123').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/resume');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ runId: 'run-123' });
+    req.flush({ data: { status: 'QUEUED' } });
+
     service.prepareFashionVisionBulk('M_Maglieria').subscribe();
     req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/preview');
     expect(req.request.method).toBe('POST');

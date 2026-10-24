@@ -8,7 +8,7 @@ import { AuthService } from '../../../../services/auth.service';
 import {
   FashionCatalogOverview, FashionCoverage, FashionCatalogExample, FashionMerchantOverview, FashionOverviewJob,
   FashionAiPilotJob, AffiliateFeed, AffiliateProgram, FashionVisionCategoryJob, FashionVisionReviewRow,
-  FashionVisionBulkJob, FashionVisionDeferredPage,
+  FashionVisionBulkJob, FashionVisionDeferredPage, FashionVisionIssuesPage,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -69,6 +69,8 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   visionBulkNotice = '';
   visionBulkDeferred: FashionVisionDeferredPage | null = null;
   visionBulkDeferredBusy = false;
+  visionBulkIssues: FashionVisionIssuesPage | null = null;
+  visionBulkIssuesBusy = false;
   visionCategoryEdits: Record<string, string> = {};
   visionChildrenByCategory: Record<string, Array<{ id: string; categoryName: string }>> = {};
   visionLoadingChildren: Record<string, boolean> = {};
@@ -197,6 +199,49 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       (!child || !this.visionRowSubcategories(row).some(option => option.id === child));
   }
 
+  loadVisionBulkIssues(next = false): void {
+    const category = this.selectedVisionCategoryId;
+    if (!category || this.visionBulkIssuesBusy) return;
+    const after = next ? this.visionBulkIssues?.nextCursor ?? undefined : undefined;
+    if (next && !after) return;
+    this.visionBulkIssuesBusy = true;
+    this.service.getFashionVisionBulkIssues(category, after)
+      .pipe(finalize(() => this.visionBulkIssuesBusy = false)).subscribe({
+        next: page => {
+          if (this.selectedVisionCategoryId !== category) return;
+          this.visionBulkIssues = next && this.visionBulkIssues
+            ? { rows: [...this.visionBulkIssues.rows, ...page.rows], nextCursor: page.nextCursor }
+            : page;
+        },
+        error: () => { this.visionBulkError = 'Non riesco a caricare i prodotti saltati.'; },
+      });
+  }
+
+  resumeVisionBulk(): void {
+    const job = this.visionBulkJob;
+    if (!job || !this.canManageAi || job.status !== 'FAILED' ||
+      !job.lastError?.includes('INVALID_CLASSIFICATION') || this.visionBulkBusy) return;
+    confirm([
+      'Riprendere «' + job.categoryName + '» con il budget già autorizzato?',
+      'Conserviamo i prodotti approvati e ignoriamo quello con risposta AI non valida.',
+      'Nuove chiamate AI saranno fatturate entro la soglia preventiva residua, riservando costi incerti.',
+    ].join('\n'), 'Riprendi analisi completa', (yes: boolean) => {
+      if (!yes || this.visionBulkBusy) return;
+      this.visionBulkBusy = true;
+      this.visionBulkError = '';
+      this.service.resumeFashionVisionBulk(job.categoryId, job.runId)
+        .pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
+          next: updated => {
+            this.visionBulkJob = updated;
+            this.visionBulkNotice = 'Analisi ripresa: i risultati già approvati rimangono invariati.';
+          },
+          error: (error: { error?: { message?: string } }) => {
+            this.visionBulkError = error.error?.message || 'Impossibile riprendere il job.';
+          },
+        });
+    });
+  }
+
   loadVisionBulkDeferred(next = false): void {
     const category = this.selectedVisionCategoryId;
     if (!category || this.visionBulkDeferredBusy) return;
@@ -233,6 +278,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.visionBulkError = '';
     this.visionBulkNotice = '';
     this.visionBulkDeferred = null;
+    this.visionBulkIssues = null;
     this.visionBulkAccepted = false;
     this.service.prepareFashionVisionBulk(category).pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
       next: job => {
@@ -296,6 +342,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.visionBulkJob = null;
     this.visionBulkAccepted = false;
     this.visionBulkDeferred = null;
+    this.visionBulkIssues = null;
     this.visionBulkError = '';
     this.visionBulkNotice = '';
     this.visionAccepted = false;
