@@ -18,6 +18,7 @@ import {
   FashionOverviewResponse,
   FashionOverviewJob,
   FashionAiPilotJob, FashionVisionCategoryJob, FashionVisionBulkJob, FashionVisionDeferredPage,
+  FashionVisionIssuesPage,
 } from '../models/affiliate-catalog.models';
 import {
   AffiliateApiResponse,
@@ -100,6 +101,20 @@ export class AffiliateCatalogService {
     return this.http.get<AffiliateApiResponse<FashionVisionDeferredPage>>(
       this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/bulk/deferred',
       { params: after ? new HttpParams().set('after', after) : undefined },
+    ).pipe(map(response => response.data));
+  }
+
+  getFashionVisionBulkIssues(categoryId: string, after?: string): Observable<FashionVisionIssuesPage> {
+    return this.http.get<AffiliateApiResponse<FashionVisionIssuesPage>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/bulk/issues',
+      { params: after ? new HttpParams().set('after', after) : undefined },
+    ).pipe(map(response => response.data));
+  }
+
+  resumeFashionVisionBulk(categoryId: string, runId: string): Observable<FashionVisionBulkJob> {
+    return this.http.post<AffiliateApiResponse<FashionVisionBulkJob>>(
+      this.baseUrl + '/fashion-ai/categories/' + encodeURIComponent(categoryId) + '/bulk/resume',
+      { runId },
     ).pipe(map(response => response.data));
   }
 
