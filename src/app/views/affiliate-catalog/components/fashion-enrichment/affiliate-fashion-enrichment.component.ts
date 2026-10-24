@@ -8,6 +8,7 @@ import { AuthService } from '../../../../services/auth.service';
 import {
   FashionCatalogOverview, FashionCoverage, FashionCatalogExample, FashionMerchantOverview, FashionOverviewJob,
   FashionAiPilotJob, AffiliateFeed, AffiliateProgram, FashionVisionCategoryJob, FashionVisionReviewRow,
+  FashionVisionBulkJob,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -60,6 +61,12 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   visionStyleEdits: Record<string, string[]> = {};
   visionSeasonEdits: Record<string, string[]> = {};
   visionSubcategoryEdits: Record<string, string> = {};
+  visionBulkEnabled = false;
+  visionBulkJob: FashionVisionBulkJob | null = null;
+  visionBulkAccepted = false;
+  visionBulkBusy = false;
+  visionBulkError = '';
+  visionBulkNotice = '';
   visionCategoryEdits: Record<string, string> = {};
   visionChildrenByCategory: Record<string, Array<{ id: string; categoryName: string }>> = {};
   visionLoadingChildren: Record<string, boolean> = {};
@@ -72,6 +79,21 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     { id: 'AUTUMN', label: 'Autunno' }, { id: 'WINTER', label: 'Inverno' },
   ];
   readonly visionSizes = [5, 10, 20, 50];
+
+  get visionBulkRunning(): boolean {
+    return !!this.visionBulkJob && ['QUEUED', 'RUNNING', 'STOP_REQUESTED'].includes(this.visionBulkJob.status);
+  }
+  get visionBulkPreviewReady(): boolean {
+    return this.visionBulkJob?.status === 'PREVIEW_READY' &&
+      Date.now() - this.visionBulkJob.createdAt <= 15 * 60 * 1000;
+  }
+  visionBulkStatusLabel(status: FashionVisionBulkJob['status']): string {
+    return ({
+      PREVIEW_READY: 'Anteprima pronta', QUEUED: 'In coda', RUNNING: 'In analisi',
+      STOP_REQUESTED: 'Arresto richiesto', STOPPED: 'Arrestata',
+      STOPPED_BUDGET: 'Arrestata per soglia', SUCCESS: 'Completata', FAILED: 'Interrotta',
+    } as const)[status];
+  }
 
   get visionRunning(): boolean {
     return this.visionJob?.status === 'QUEUED' || this.visionJob?.status === 'RUNNING';
@@ -173,8 +195,87 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       (!child || !this.visionRowSubcategories(row).some(option => option.id === child));
   }
 
+  refreshVisionBulk(): void {
+    const category = this.selectedVisionCategoryId;
+    if (!category || this.visionBulkBusy) return;
+    this.visionBulkBusy = true;
+    this.service.getFashionVisionBulk(category).pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
+      next: job => { if (this.selectedVisionCategoryId === category) this.visionBulkJob = job; },
+      error: () => { this.visionBulkError = 'Impossibile caricare lo stato dell\u2019analisi completa.'; },
+    });
+  }
+
+  prepareVisionBulk(): void {
+    const category = this.selectedVisionCategoryId;
+    if (!this.canManageAi || !category || !this.visionBulkEnabled || this.visionBulkBusy ||
+      this.visionBusy || this.visionBulkRunning || this.visionRunning) return;
+    this.visionBulkBusy = true;
+    this.visionBulkError = '';
+    this.visionBulkNotice = '';
+    this.visionBulkAccepted = false;
+    this.service.prepareFashionVisionBulk(category).pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
+      next: job => {
+        if (this.selectedVisionCategoryId !== category) return;
+        this.visionBulkJob = job;
+        this.visionBulkNotice = 'Anteprima gratuita pronta. Nessuna chiamata AI avviata.';
+      },
+      error: (error: { error?: { message?: string } }) => {
+        this.visionBulkError = error.error?.message || 'Non è stato possibile preparare l\u2019analisi completa.';
+      },
+    });
+  }
+
+  confirmVisionBulk(): void {
+    const job = this.visionBulkJob;
+    if (!job || !this.canManageAi || !this.visionBulkAccepted || !this.visionBulkPreviewReady ||
+      this.visionBulkBusy || !this.visionBulkEnabled || this.selectedVisionCategoryId !== job.categoryId) return;
+    confirm([
+      'Avviare la classificazione automatica per tutta la categoria «' + job.categoryName + '»?',
+      'Soglia nominale richiesta: €10; limite operativo conservativo del backend: USD ' +
+        job.maxBudgetUsd.toFixed(2) + '.',
+      'I risultati HIGH conformi saranno APPROVATI AUTOMATICAMENTE e protetti dalla sincronizzazione.',
+      'MEDIUM, LOW e prodotti fuori categoria NON saranno modificati.',
+      'Il provider fattura in USD: cambio, costi Firebase e chiamate senza usage non sono garantiti nel tetto.',
+    ].join('\n'), 'Autorizza analisi completa e approvazione automatica', (yes: boolean) => {
+      if (!yes || this.visionBulkBusy || !this.visionBulkAccepted ||
+        this.selectedVisionCategoryId !== job.categoryId) return;
+      this.visionBulkBusy = true;
+      this.visionBulkError = '';
+      this.service.confirmFashionVisionBulk(job.categoryId, job.runId)
+        .pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
+          next: updated => {
+            this.visionBulkJob = updated;
+            this.visionBulkAccepted = false;
+            this.visionBulkNotice = 'Job asincrono avviato. Aggiorna lo stato per vedere i risultati.';
+          },
+          error: (error: { error?: { message?: string } }) => {
+            this.visionBulkError = error.error?.message || 'Non è stato possibile avviare il lavoro.';
+          },
+        });
+    });
+  }
+
+  stopVisionBulk(): void {
+    const job = this.visionBulkJob;
+    if (!job || !this.canManageAi || !this.visionBulkRunning || this.visionBulkBusy) return;
+    confirm('Arrestare nuove analisi? Una chiamata già avviata potrebbe essere fatturata e completarsi.',
+      'Interrompi analisi completa', (yes: boolean) => {
+        if (!yes || this.visionBulkBusy) return;
+        this.visionBulkBusy = true;
+        this.service.stopFashionVisionBulk(job.categoryId, job.runId)
+          .pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
+            next: updated => { this.visionBulkJob = updated; },
+            error: () => { this.visionBulkError = 'Non è stato possibile richiedere l\u2019arresto.'; },
+          });
+      });
+  }
+
   onVisionCategoryChanged(): void {
     this.visionJob = null;
+    this.visionBulkJob = null;
+    this.visionBulkAccepted = false;
+    this.visionBulkError = '';
+    this.visionBulkNotice = '';
     this.visionAccepted = false;
     this.visionError = '';
     this.visionNotice = '';
@@ -197,6 +298,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       error: () => { this.visionError = 'Impossibile caricare le sottocategorie disponibili.'; },
     });
     this.refreshVision();
+    this.refreshVisionBulk();
   }
 
   refreshVision(): void {
@@ -211,7 +313,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
 
   previewVision(next = false): void {
     const category = this.selectedVisionCategoryId;
-    if (!this.canManageAi || !category || this.visionBusy || this.visionRunning) return;
+    if (!this.canManageAi || !category || this.visionBusy || this.visionRunning || this.visionBulkRunning) return;
     const after = next ? this.visionJob?.nextCursor || undefined : undefined;
     if (next && !after) return;
     this.visionBusy = true;
@@ -235,7 +337,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
 
   confirmVision(): void {
     const job = this.visionJob;
-    if (!job || !this.canManageAi || !this.visionAccepted || !this.visionPreviewReady ||
+    if (!job || !this.canManageAi || !this.visionAccepted || !this.visionPreviewReady || this.visionBulkRunning ||
       !job.rows.length || this.visionBusy || job.categoryId !== this.selectedVisionCategoryId) return;
     confirm([
       'Autorizzi l’analisi delle immagini di ' + job.rows.length + ' prodotti della categoria «' + job.categoryName + '»?',
