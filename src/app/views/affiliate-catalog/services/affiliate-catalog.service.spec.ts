@@ -567,6 +567,36 @@ describe('AffiliateCatalogService release contract', () => {
     req.flush({ data: { runId: 'pilot2', rows: [] } });
   });
 
+  it('bulk mode remains a separate explicit preview, confirm, status and stop workflow', () => {
+    service.getFashionVisionBulk('M_Maglieria').subscribe();
+    let req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk');
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: null });
+
+    service.getFashionVisionBulkDeferred('M_Maglieria', 'cursor-1').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/deferred?after=cursor-1');
+    expect(req.request.method).toBe('GET');
+    req.flush({ data: { rows: [], nextCursor: null } });
+
+    service.prepareFashionVisionBulk('M_Maglieria').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/preview');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({ data: { status: 'PREVIEW_READY' } });
+
+    service.confirmFashionVisionBulk('M_Maglieria', 'run-123').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/confirm');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ runId: 'run-123', acknowledgedBudgetEur: 10 });
+    req.flush({ data: { status: 'QUEUED' } });
+
+    service.stopFashionVisionBulk('M_Maglieria', 'run-123').subscribe();
+    req = http.expectOne(baseUrl + '/fashion-ai/categories/M_Maglieria/bulk/stop');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ runId: 'run-123' });
+    req.flush({ data: { status: 'STOPPED' } });
+  });
+
   it('confirms category AI billing only with runId and the approved budget', () => {
     service.confirmFashionVisionCategory('ABC_Completi', 'run-123', 0.10).subscribe();
     const req = http.expectOne(baseUrl + '/fashion-ai/categories/ABC_Completi/confirm');
