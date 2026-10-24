@@ -13,6 +13,85 @@
   
     <div *ngIf="visionError" class="alert alert-danger small" role="alert">{{ visionError }}</div>
     <div *ngIf="visionNotice" class="alert alert-info small" role="status">{{ visionNotice }}</div>
+
+    <div class="border rounded p-3 mt-3 mb-3" aria-labelledby="fashion-bulk-title">
+      <h3 id="fashion-bulk-title" class="h6">Analisi completa della categoria (asincrona)</h3>
+      <p class="small text-muted">
+        Opzione separata dalla revisione manuale: HIGH validi approvati e bloccati automaticamente,
+        MEDIUM e LOW conservati per un eventuale controllo successivo. I prodotti fuori categoria
+        o con dati cambiati non sono approvati automaticamente.
+      </p>
+      <label class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" [(ngModel)]="visionBulkEnabled"
+          [disabled]="!canManageAi || visionBulkBusy || visionBulkRunning"/>
+        <span class="form-check-label">Esegui analisi completa della categoria selezionata</span>
+      </label>
+      <p class="small mb-2">
+        Soglia nominale: <strong>10 €</strong>.
+        Limite operativo conservativo: <strong>8 USD</strong> di token API.
+        La conversione valutaria, i costi Firebase e le richieste senza usage non possono
+        essere garantiti da un tetto assoluto. Il job si ferma prima di nuove richieste
+        quando esaurisce la riserva preventiva.
+      </p>
+      <div *ngIf="visionBulkError" class="alert alert-danger small" role="alert">{{ visionBulkError }}</div>
+      <div *ngIf="visionBulkNotice" class="alert alert-info small" role="status">{{ visionBulkNotice }}</div>
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-primary btn-sm" type="button"
+          (click)="prepareVisionBulk()"
+          [disabled]="!canManageAi || !selectedVisionCategoryId || !visionBulkEnabled ||
+            visionBulkBusy || visionBusy || visionRunning || visionBulkRunning">
+          Prepara analisi completa (gratis)
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" type="button" (click)="refreshVisionBulk()"
+          [disabled]="!selectedVisionCategoryId || visionBulkBusy">Aggiorna avanzamento</button>
+        <button class="btn btn-outline-danger btn-sm" type="button" *ngIf="visionBulkRunning"
+          (click)="stopVisionBulk()" [disabled]="!canManageAi || visionBulkBusy">Arresta analisi</button>
+      </div>
+      <div *ngIf="visionBulkJob as bulk" class="mt-3" aria-live="polite">
+        <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
+          <strong>{{ bulk.categoryName }} · {{ visionBulkStatusLabel(bulk.status) }}</strong>
+          <span class="badge bg-secondary">{{ bulk.model }}</span>
+          <small class="text-muted">Policy {{ bulk.stylePolicyVersion }}</small>
+        </div>
+        <div class="fashion-overview__ai-stats">
+          <div><span>Esplorati</span><strong>{{ bulk.scanned | number }}</strong></div>
+          <div><span>Analizzati</span><strong>{{ bulk.analyzed | number }}</strong></div>
+          <div><span>Approvati HIGH</span><strong>{{ bulk.autoApproved | number }}</strong></div>
+          <div><span>Da valutare dopo</span><strong>{{ bulk.deferred | number }}</strong></div>
+          <div><span>Già analizzati (cache)</span><strong>{{ bulk.reused | number }}</strong></div>
+          <div><span>Non idonei</span><strong>{{ bulk.skipped | number }}</strong></div>
+          <div><span>Conflitti</span><strong>{{ bulk.conflicts | number }}</strong></div>
+          <div><span>Costo noto</span><strong>{{ bulk.costUsd | currency:'USD':'symbol':'1.4-6' }}</strong></div>
+        </div>
+        <small *ngIf="bulk.uncertainCalls" class="text-danger">
+          Chiamate dal costo incerto: {{ bulk.uncertainCalls }}
+        </small>
+        <p *ngIf="bulk.lastError" class="small text-danger mt-2 mb-1">{{ bulk.lastError }}</p>
+        <div *ngIf="bulk.status === 'PREVIEW_READY'" class="mt-2">
+          <label class="form-check">
+            <input class="form-check-input" type="checkbox" [(ngModel)]="visionBulkAccepted"
+              [disabled]="!visionBulkPreviewReady || !visionBulkEnabled || visionBulkBusy"/>
+            <span class="form-check-label small">
+              Autorizzo esplicitamente la spesa AI e l'approvazione automatica dei HIGH conformi;
+              accetto il limite operativo di {{ bulk.maxBudgetUsd | currency:'USD':'symbol':'1.2-2' }}
+              e che la soglia nominale di 10 € non comprende costi Firebase o addebiti incerti.
+            </span>
+          </label>
+          <button class="btn btn-danger btn-sm mt-2" type="button" (click)="confirmVisionBulk()"
+            [disabled]="!canManageAi || !visionBulkPreviewReady || !visionBulkAccepted ||
+              !visionBulkEnabled || visionBulkBusy">
+            Conferma e avvia classificazione automatica
+          </button>
+          <small class="text-muted d-block mt-1" *ngIf="!visionBulkPreviewReady">
+            Anteprima scaduta: ricreala senza costi AI.
+          </small>
+        </div>
+        <p class="small text-muted mb-0 mt-2">
+          Elaborazione fino al completamento della categoria o all'esaurimento della soglia.
+          Nessun obbligo di analizzare subito i risultati MEDIUM/LOW.
+        </p>
+      </div>
+    </div>
   
     <div class="fashion-overview__ai-controls">
       <div>
