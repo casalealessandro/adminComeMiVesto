@@ -255,7 +255,47 @@
   }
   .fashion-overview__vision-product-id summary { cursor: pointer; }
   .fashion-overview__vision-product-id code { display: block; overflow-wrap: anywhere; }
-  .fashion-overview__vision-image { width: 96px; height: 122px; }
+  /* Align Fashion review cards with the existing compact product cards. */
+  .fashion-overview__section { padding: .75rem; }
+  .fashion-overview__ai-job { padding: .75rem; }
+  .fashion-overview__vision-grid tbody td { padding: .7rem; }
+  .fashion-overview__vision-grid tbody td:first-child > .fashion-overview__vision-mobile-heading {
+    display: none;
+  }
+  .fashion-overview__vision-product-layout {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    align-items: start;
+    gap: .7rem;
+  }
+  .fashion-overview__vision-product-media {
+    display: block;
+    width: 82px;
+    height: 110px;
+    overflow: hidden;
+    border-radius: .6rem;
+    background: var(--bs-tertiary-bg, #f8f9fa);
+  }
+  .fashion-overview__vision-product-media .fashion-overview__vision-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border: 0;
+  }
+  .fashion-overview__vision-product-info { min-width: 0; }
+  .fashion-overview__vision-product-name {
+    margin-top: 0 !important;
+    font-size: .95rem;
+    line-height: 1.35;
+  }
+  .fashion-overview__vision-fields--before {
+    grid-template-columns: minmax(92px, 38%) minmax(0, 1fr);
+    column-gap: .55rem;
+    row-gap: .5rem;
+  }
+  .fashion-overview__vision-fields--before dt { margin-top: 0; }
+  .fashion-overview__vision-fields--before dd { overflow-wrap: anywhere; }
   .fashion-overview__vision-fields { font-size: .9rem; }
   .fashion-overview__vision-fields dt { font-size: .8rem; }
   .fashion-overview__vision-fields select {
@@ -265,4 +305,8 @@
     font-size: 1rem; /* Avoid Safari zooming into small select controls. */
   }
   .fashion-overview__vision-actions .btn { min-height: 44px; }
+  .fashion-overview__vision-actions .d-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .55rem !important;
+  }
 }
