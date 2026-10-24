@@ -196,6 +196,11 @@
 }
 
 @media (max-width: 767.98px) {
+  /* Standalone page: align its content with the shared admin wrapper. */
+  .notifications {
+    padding-inline: var(--cmv-mobile-content-inset, .75rem);
+  }
+
   .notifications__header,
   .notification-recipients__header,
   .notifications__error {

@@ -66,14 +66,13 @@
 }
 
 @media (max-width: 767.98px) {
+  /* The shared page shell owns mobile spacing. */
+  .affiliate-catalog {
+    padding: 0;
+  }
+
   :host ::ng-deep .affiliate-catalog__content .btn {
     min-height: 44px;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .affiliate-catalog {
-    padding: 0.75rem;
   }
 }
 
