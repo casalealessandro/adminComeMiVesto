@@ -130,6 +130,12 @@ export interface FashionVisionDeferredPage {
   nextCursor: string | null;
 }
 
+export interface FashionVisionIssuesPage {
+  rows: Array<{ productId: string; name: string; image: string;
+    error: string; updatedAt: number }>;
+  nextCursor: string | null;
+}
+
 export interface FashionVisionBulkJob {
   categoryId: string;
   categoryName: string;
