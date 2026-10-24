@@ -5,7 +5,8 @@
         <h2 id="fashion-vision-title" class="h4 mb-1">Analisi visiva per categoria</h2>
         <p class="text-muted small mb-0">
           Seleziona una categoria principale, non una sottocategoria. L'AI propone tipo di capo,
-          sottocategoria e stili multipli. Nessun dato del catalogo viene cambiato senza la tua approvazione.
+          sottocategoria e stili multipli. La revisione manuale richiede la tua approvazione;
+          la modalità completa, se autorizzata, approva automaticamente i risultati HIGH conformi.
         </p>
       </div>
       <span class="badge bg-secondary align-self-start">Revisione assistita</span>
@@ -85,6 +86,31 @@
           <small class="text-muted d-block mt-1" *ngIf="!visionBulkPreviewReady">
             Anteprima scaduta: ricreala senza costi AI.
           </small>
+        </div>
+        <div class="mt-2" *ngIf="bulk.deferred > 0">
+          <button type="button" class="btn btn-outline-secondary btn-sm"
+            (click)="loadVisionBulkDeferred()" [disabled]="visionBulkDeferredBusy">
+            Mostra risultati MEDIUM/LOW conservati
+          </button>
+          <div *ngIf="visionBulkDeferred as page" class="mt-2">
+            <div class="small text-muted mb-2">
+              {{ page.rows.length }} risultati visibili. Nessuna nuova chiamata AI.
+            </div>
+            <div *ngFor="let item of page.rows" class="border rounded p-2 mb-2 d-flex align-items-start gap-2">
+              <img *ngIf="item.image" [src]="item.image" [alt]="item.name"
+                loading="lazy" style="width:56px;height:70px;object-fit:cover"/>
+              <div class="small">
+                <strong>{{ item.name }}</strong>
+                <div>{{ item.decision.detectedType }} · {{ item.decision.confidence }}</div>
+                <div>Stili suggeriti: {{ item.decision.styles.join(', ') || 'Nessuno' }}</div>
+                <div class="text-muted">{{ item.decision.explanation }}</div>
+              </div>
+            </div>
+            <button type="button" *ngIf="page.nextCursor" class="btn btn-outline-secondary btn-sm"
+              (click)="loadVisionBulkDeferred(true)" [disabled]="visionBulkDeferredBusy">
+              Carica altri risultati sospesi
+            </button>
+          </div>
         </div>
         <p class="small text-muted mb-0 mt-2">
           Elaborazione fino al completamento della categoria o all'esaurimento della soglia.
