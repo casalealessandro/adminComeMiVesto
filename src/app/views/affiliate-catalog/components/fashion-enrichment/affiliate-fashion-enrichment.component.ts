@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, HostListener, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, interval } from 'rxjs';
 import { confirm } from '../../../../core/dialogs/ui-dialogs';
@@ -12,7 +12,7 @@ import {
   FashionVisionBulkJob, FashionVisionDeferredPage, FashionVisionIssuesPage,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { visionBulkPresentation } from './fashion-vision-bulk-state';
+import { visionBulkPresentation, visionBulkProgressMayBeStale } from './fashion-vision-bulk-state';
 
 @Component({
   selector: 'app-affiliate-fashion-enrichment',
@@ -73,6 +73,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   visionBulkStatusUnavailable = false;
   visionBulkLastCheckedAt: number | null = null;
   readonly visionBulkPresentation = visionBulkPresentation;
+  readonly visionBulkProgressMayBeStale = visionBulkProgressMayBeStale;
   visionBulkDeferred: FashionVisionDeferredPage | null = null;
   visionBulkDeferredBusy = false;
   visionBulkIssues: FashionVisionIssuesPage | null = null;
@@ -499,6 +500,15 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   get aiPreviewReady(): boolean {
     return this.aiJob?.status === 'PREVIEW_READY'
       && Date.now() - this.aiJob.previewAt <= 15 * 60 * 1000;
+  }
+
+  /** Mobile browsers may suspend timers while the backoffice is in the background. */
+  @HostListener('document:visibilitychange')
+  onVisionPageVisibilityChanged(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible' &&
+      this.selectedVisionCategoryId && !this.visionBulkBusy) {
+      this.refreshVisionBulk();
+    }
   }
 
   ngOnInit(): void {
