@@ -48,7 +48,7 @@
         <button class="btn btn-outline-danger btn-sm" type="button" *ngIf="visionBulkRunning"
           (click)="stopVisionBulk()" [disabled]="!canManageAi || visionBulkBusy">Arresta analisi</button>
         <button class="btn btn-outline-primary btn-sm" type="button"
-          *ngIf="visionBulkJob?.status === 'FAILED' && visionBulkJob?.lastError?.includes('INVALID_CLASSIFICATION')"
+          *ngIf="visionBulkCanResume"
           (click)="resumeVisionBulk()" [disabled]="!canManageAi || visionBulkBusy">
           Riprendi analisi (stesso budget)
         </button>
@@ -58,6 +58,18 @@
           <strong>{{ bulk.categoryName }} · {{ visionBulkStatusLabel(bulk.status) }}</strong>
           <span class="badge bg-secondary">{{ bulk.model }}</span>
           <small class="text-muted">Policy {{ bulk.stylePolicyVersion }}</small>
+        </div>
+        <div *ngIf="bulk.status === 'FAILED'" class="alert alert-warning small mb-2" role="status">
+          <strong>Analisi ferma: nessuna elaborazione attiva.</strong>
+          Il processo è stato interrotto per errore.
+          Ultimo aggiornamento: {{ bulk.updatedAt | date:'dd/MM/yyyy HH:mm' }}.
+          <span *ngIf="visionBulkCanResume">Puoi riprendere con il budget originale dal pulsante qui sopra.</span>
+          <span *ngIf="!visionBulkCanResume">La ripresa non è disponibile per questo errore o ha raggiunto il limite di sicurezza.</span>
+        </div>
+        <div *ngIf="visionBulkRunning" class="alert alert-info small mb-2" role="status">
+          Analisi in coda o in elaborazione.
+          Ultimo aggiornamento: {{ bulk.updatedAt | date:'dd/MM/yyyy HH:mm' }}.
+          Premi «Aggiorna avanzamento» per leggere lo stato corrente.
         </div>
         <div class="fashion-overview__ai-stats">
           <div><span>Esplorati</span><strong>{{ bulk.scanned | number }}</strong></div>
