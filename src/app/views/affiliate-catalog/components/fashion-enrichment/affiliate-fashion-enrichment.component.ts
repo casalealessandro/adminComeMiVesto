@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Component, OnInit, inject } from '@angular/core';
-import { finalize } from 'rxjs';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, interval } from 'rxjs';
 import { confirm } from '../../../../core/dialogs/ui-dialogs';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AuthService } from '../../../../services/auth.service';
@@ -11,6 +12,7 @@ import {
   FashionVisionBulkJob, FashionVisionDeferredPage, FashionVisionIssuesPage,
 } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
+import { visionBulkPresentation } from './fashion-vision-bulk-state';
 
 @Component({
   selector: 'app-affiliate-fashion-enrichment',
@@ -23,6 +25,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   private readonly service = inject(AffiliateCatalogService);
   private readonly auth = inject(AuthService);
   private readonly popupService = inject(PopUpService);
+  private readonly destroyRef = inject(DestroyRef);
 
   overview: FashionCatalogOverview | null = null;
   job: FashionOverviewJob | null = null;
@@ -67,6 +70,9 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   visionBulkBusy = false;
   visionBulkError = '';
   visionBulkNotice = '';
+  visionBulkStatusUnavailable = false;
+  visionBulkLastCheckedAt: number | null = null;
+  readonly visionBulkPresentation = visionBulkPresentation;
   visionBulkDeferred: FashionVisionDeferredPage | null = null;
   visionBulkDeferredBusy = false;
   visionBulkIssues: FashionVisionIssuesPage | null = null;
@@ -243,7 +249,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       this.service.resumeFashionVisionBulk(job.categoryId, job.runId)
         .pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
           next: updated => {
-            this.visionBulkJob = updated;
+            this.acceptVisionBulkJob(updated);
             this.visionBulkNotice = 'Analisi ripresa: i risultati già approvati rimangono invariati.';
           },
           error: (error: { error?: { message?: string } }) => {
@@ -271,13 +277,32 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       });
   }
 
+  private acceptVisionBulkJob(job: FashionVisionBulkJob | null): void {
+    const previous = this.visionBulkJob;
+    this.visionBulkJob = job;
+    this.visionBulkStatusUnavailable = false;
+    this.visionBulkLastCheckedAt = Date.now();
+    // Detect a true terminal transition. Do not mistake a budget/error stop for SUCCESS.
+    if (previous?.runId && previous.runId === job?.runId &&
+      previous.status !== 'SUCCESS' && job?.status === 'SUCCESS') {
+      this.visionBulkNotice = 'Analisi completa terminata: consulta il riepilogo qui sotto.';
+    }
+    this.visionBulkError = '';
+  }
+
   refreshVisionBulk(): void {
     const category = this.selectedVisionCategoryId;
     if (!category || this.visionBulkBusy) return;
     this.visionBulkBusy = true;
     this.service.getFashionVisionBulk(category).pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
-      next: job => { if (this.selectedVisionCategoryId === category) this.visionBulkJob = job; },
-      error: () => { this.visionBulkError = 'Impossibile caricare lo stato dell\u2019analisi completa.'; },
+      next: job => {
+        if (this.selectedVisionCategoryId === category) this.acceptVisionBulkJob(job);
+      },
+      error: () => {
+        if (this.selectedVisionCategoryId !== category) return;
+        this.visionBulkStatusUnavailable = true;
+        this.visionBulkError = 'Impossibile verificare lo stato attuale. I dati mostrati potrebbero non essere aggiornati.';
+      },
     });
   }
 
@@ -294,7 +319,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
     this.service.prepareFashionVisionBulk(category).pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
       next: job => {
         if (this.selectedVisionCategoryId !== category) return;
-        this.visionBulkJob = job;
+        this.acceptVisionBulkJob(job);
         this.visionBulkNotice = 'Anteprima gratuita pronta. Nessuna chiamata AI avviata.';
       },
       error: (error: { error?: { message?: string } }) => {
@@ -322,9 +347,9 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       this.service.confirmFashionVisionBulk(job.categoryId, job.runId)
         .pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
           next: updated => {
-            this.visionBulkJob = updated;
+            this.acceptVisionBulkJob(updated);
             this.visionBulkAccepted = false;
-            this.visionBulkNotice = 'Job asincrono avviato. Aggiorna lo stato per vedere i risultati.';
+            this.visionBulkNotice = 'Job asincrono avviato. Lo stato si aggiorna automaticamente ogni 30 secondi finché questa pagina resta aperta.';
           },
           error: (error: { error?: { message?: string } }) => {
             this.visionBulkError = error.error?.message || 'Non è stato possibile avviare il lavoro.';
@@ -342,7 +367,7 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
         this.visionBulkBusy = true;
         this.service.stopFashionVisionBulk(job.categoryId, job.runId)
           .pipe(finalize(() => this.visionBulkBusy = false)).subscribe({
-            next: updated => { this.visionBulkJob = updated; },
+            next: updated => { this.acceptVisionBulkJob(updated); },
             error: () => { this.visionBulkError = 'Non è stato possibile richiedere l\u2019arresto.'; },
           });
       });
@@ -351,6 +376,8 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   onVisionCategoryChanged(): void {
     this.visionJob = null;
     this.visionBulkJob = null;
+    this.visionBulkLastCheckedAt = null;
+    this.visionBulkStatusUnavailable = false;
     this.visionBulkAccepted = false;
     this.visionBulkDeferred = null;
     this.visionBulkIssues = null;
@@ -475,7 +502,13 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Only the visual category review is exposed on this page.
+    // Poll only while a bulk job is running and this page is open.
+    // On reload or category change we also fetch once immediately.
+    interval(30_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.visionBulkRunning && !this.visionBulkBusy && this.selectedVisionCategoryId) {
+        this.refreshVisionBulk();
+      }
+    });
     this.service.getCurationCategories().subscribe({
       next: roots => { this.visionCategories = roots; },
       error: () => { this.visionError = 'Impossibile caricare le categorie principali.'; },
