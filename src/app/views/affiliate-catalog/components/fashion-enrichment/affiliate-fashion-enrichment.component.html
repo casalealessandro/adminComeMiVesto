@@ -80,7 +80,14 @@
               </span>
             </div>
             <div *ngIf="visionBulkRunning" class="mt-1">
-              Lo stato si aggiorna automaticamente ogni 30 secondi mentre questa pagina è aperta.
+              Lo stato si aggiorna automaticamente ogni 30 secondi mentre questa pagina è aperta,
+              e quando torni alla scheda.
+            </div>
+            <div *ngIf="visionBulkProgressMayBeStale(bulk.status, bulk.updatedAt, visionBulkLastCheckedAt || 0)"
+              class="mt-2 text-warning-emphasis">
+              <strong>Attenzione: nessun avanzamento registrato da oltre 15 minuti.</strong>
+              Lo stato salvato risulta ancora attivo, ma non prova che il worker stia lavorando.
+              È necessario verificare il job prima di considerarlo terminato.
             </div>
             <div *ngIf="bulk.status === 'FAILED' && visionBulkCanResume" class="mt-1">
               Puoi riprendere con il budget residuo originale dal pulsante qui sopra.
