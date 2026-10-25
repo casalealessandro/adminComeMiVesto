@@ -63,3 +63,11 @@ export function visionBulkPresentation(status: FashionVisionBulkJob['status']): 
       };
   }
 }
+
+/** A registered RUNNING state is not proof the worker is still making progress. */
+export function visionBulkProgressMayBeStale(
+  status: FashionVisionBulkJob['status'], updatedAt: number, now: number,
+): boolean {
+  return ['QUEUED', 'RUNNING', 'STOP_REQUESTED'].includes(status) &&
+    Number.isFinite(updatedAt) && updatedAt > 0 && now - updatedAt > 15 * 60_000;
+}
