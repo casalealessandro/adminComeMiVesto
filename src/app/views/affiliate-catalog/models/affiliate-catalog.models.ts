@@ -158,6 +158,8 @@ export interface FashionVisionBulkJob {
   reused: number;
   conflicts: number;
   uncertainCalls: number;
+  /** Max one manual restart after non-JSON provider response. Missing on older jobs. */
+  providerJsonResumes?: number;
   inputTokens: number;
   outputTokens: number;
   costUsd: number;
