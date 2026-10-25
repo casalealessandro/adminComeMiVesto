@@ -55,22 +55,48 @@
       </div>
       <div *ngIf="visionBulkJob as bulk" class="mt-3" aria-live="polite">
         <div class="d-flex gap-2 flex-wrap align-items-center mb-2">
-          <strong>{{ bulk.categoryName }} · {{ visionBulkStatusLabel(bulk.status) }}</strong>
+          <strong>{{ bulk.categoryName }} ·
+            {{ visionBulkStatusUnavailable ? 'Stato attuale non verificato' : visionBulkStatusLabel(bulk.status) }}</strong>
           <span class="badge bg-secondary">{{ bulk.model }}</span>
           <small class="text-muted">Policy {{ bulk.stylePolicyVersion }}</small>
         </div>
-        <div *ngIf="bulk.status === 'FAILED'" class="alert alert-warning small mb-2" role="status">
-          <strong>Analisi ferma: nessuna elaborazione attiva.</strong>
-          Il processo è stato interrotto per errore.
-          Ultimo aggiornamento: {{ bulk.updatedAt | date:'dd/MM/yyyy HH:mm' }}.
-          <span *ngIf="visionBulkCanResume">Puoi riprendere con il budget originale dal pulsante qui sopra.</span>
-          <span *ngIf="!visionBulkCanResume">La ripresa non è disponibile per questo errore o ha raggiunto il limite di sicurezza.</span>
+        <div *ngIf="visionBulkStatusUnavailable" class="alert alert-warning small mb-2" role="status">
+          <strong>Stato attuale non verificabile.</strong>
+          Non posso confermare se il job sia ancora attivo o terminato.
+          Ultimo stato conosciuto: {{ visionBulkStatusLabel(bulk.status) }}.
+          <span *ngIf="visionBulkLastCheckedAt">
+            Ultima verifica riuscita: {{ visionBulkLastCheckedAt | date:'dd/MM/yyyy HH:mm:ss' }}.
+          </span>
+          Premi «Aggiorna avanzamento» per riprovare.
         </div>
-        <div *ngIf="visionBulkRunning" class="alert alert-info small mb-2" role="status">
-          Analisi in coda o in elaborazione.
-          Ultimo aggiornamento: {{ bulk.updatedAt | date:'dd/MM/yyyy HH:mm' }}.
-          Premi «Aggiorna avanzamento» per leggere lo stato corrente.
-        </div>
+        <ng-container *ngIf="!visionBulkStatusUnavailable">
+          <div *ngIf="visionBulkPresentation(bulk.status) as state"
+            class="alert small mb-2" [ngClass]="'alert-' + state.alertKind" role="status">
+            <strong>{{ state.title }}.</strong> {{ state.explanation }}
+            <div class="mt-1">
+              Ultimo aggiornamento dal backend: {{ bulk.updatedAt | date:'dd/MM/yyyy HH:mm:ss' }}.
+              <span *ngIf="visionBulkLastCheckedAt">
+                Stato verificato: {{ visionBulkLastCheckedAt | date:'dd/MM/yyyy HH:mm:ss' }}.
+              </span>
+            </div>
+            <div *ngIf="visionBulkRunning" class="mt-1">
+              Lo stato si aggiorna automaticamente ogni 30 secondi mentre questa pagina è aperta,
+              e quando torni alla scheda.
+            </div>
+            <div *ngIf="visionBulkProgressMayBeStale(bulk.status, bulk.updatedAt, visionBulkLastCheckedAt || 0)"
+              class="mt-2 text-warning-emphasis">
+              <strong>Attenzione: nessun avanzamento registrato da oltre 15 minuti.</strong>
+              Lo stato salvato risulta ancora attivo, ma non prova che il worker stia lavorando.
+              È necessario verificare il job prima di considerarlo terminato.
+            </div>
+            <div *ngIf="bulk.status === 'FAILED' && visionBulkCanResume" class="mt-1">
+              Puoi riprendere con il budget residuo originale dal pulsante qui sopra.
+            </div>
+            <div *ngIf="bulk.status === 'FAILED' && !visionBulkCanResume" class="mt-1">
+              La ripresa non è disponibile per questo errore o ha raggiunto il limite di sicurezza.
+            </div>
+          </div>
+        </ng-container>
         <div class="fashion-overview__ai-stats">
           <div><span>Esplorati</span><strong>{{ bulk.scanned | number }}</strong></div>
           <div><span>Analizzati</span><strong>{{ bulk.analyzed | number }}</strong></div>
