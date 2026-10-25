@@ -217,14 +217,25 @@ export class AffiliateFashionEnrichmentComponent implements OnInit {
       });
   }
 
+  get visionBulkCanResume(): boolean {
+    const job = this.visionBulkJob;
+    if (!job || job.status !== 'FAILED') return false;
+    return job.lastError?.includes('INVALID_CLASSIFICATION') === true ||
+      (job.lastError?.includes('INVALID_PROVIDER_JSON') === true &&
+        (job.providerJsonResumes ?? 0) < 1);
+  }
+
   resumeVisionBulk(): void {
     const job = this.visionBulkJob;
-    if (!job || !this.canManageAi || job.status !== 'FAILED' ||
-      !job.lastError?.includes('INVALID_CLASSIFICATION') || this.visionBulkBusy) return;
+    if (!job || !this.canManageAi || !this.visionBulkCanResume || this.visionBulkBusy) return;
+    const isProviderJson = job.lastError?.includes('INVALID_PROVIDER_JSON') === true;
     confirm([
       'Riprendere «' + job.categoryName + '» con il budget già autorizzato?',
-      'Conserviamo i prodotti approvati e ignoriamo quello con risposta AI non valida.',
-      'Nuove chiamate AI saranno fatturate entro la soglia preventiva residua, riservando costi incerti.',
+      'Conserviamo i prodotti già approvati e saltiamo quello con risposta AI non valida, senza ripagarlo.',
+      'Nuove chiamate AI saranno fatturate usando la soglia residua, che considera anche i costi incerti.',
+      ...(isProviderJson ? [
+        'Per un errore INVALID_PROVIDER_JSON è consentita una sola ripresa: se si ripete, il job si fermerà di nuovo.',
+      ] : []),
     ].join('\n'), 'Riprendi analisi completa', (yes: boolean) => {
       if (!yes || this.visionBulkBusy) return;
       this.visionBulkBusy = true;
