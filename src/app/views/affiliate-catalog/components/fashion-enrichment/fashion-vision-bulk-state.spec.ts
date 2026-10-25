@@ -1,4 +1,4 @@
-import { visionBulkPresentation } from './fashion-vision-bulk-state';
+import { visionBulkPresentation, visionBulkProgressMayBeStale } from './fashion-vision-bulk-state';
 
 describe('Fashion Vision full-category status', () => {
   it('marks SUCCESS as finished and clearly completed', () => {
@@ -15,6 +15,14 @@ describe('Fashion Vision full-category status', () => {
       expect(result.alertKind).toBe('warning');
       expect(result.title).not.toBe('Analisi completata');
     }
+  });
+
+  it('warns on old active status without wrongly marking the job complete', () => {
+    const now = 2_000_000;
+    expect(visionBulkProgressMayBeStale('RUNNING', now - 20 * 60_000, now)).toBeTrue();
+    expect(visionBulkProgressMayBeStale('RUNNING', now - 2 * 60_000, now)).toBeFalse();
+    expect(visionBulkProgressMayBeStale('SUCCESS', now - 20 * 60_000, now)).toBeFalse();
+    expect(visionBulkProgressMayBeStale('FAILED', now - 20 * 60_000, now)).toBeFalse();
   });
 
   it('distinguishes running, queued and pending stops from real completion', () => {
