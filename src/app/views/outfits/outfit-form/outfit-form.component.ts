@@ -202,11 +202,13 @@ export class OutfitFormComponent {
     this.saving.set(true);
     this.error.set('');
     try {
+      // Upload inline images before persisting the outfit. Existing Storage URLs are preserved.
+      const safePayload = await this.outFitService.prepareOutfitImagesForSave(payload);
       if (this.outfitId) {
-        await this.outFitService.updateAdminOutfit(this.outfitId, payload);
+        await this.outFitService.updateAdminOutfit(this.outfitId, safePayload);
       } else {
-        if (this.targetUserId) payload.userId = this.targetUserId;
-        await this.outFitService.createAdminOutfit(payload);
+        if (this.targetUserId) safePayload.userId = this.targetUserId;
+        await this.outFitService.createAdminOutfit(safePayload);
       }
       if (replaced && this.outfitId) {
         // Do not send the user to the list: show the manual image action after save.
