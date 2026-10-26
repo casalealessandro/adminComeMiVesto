@@ -5,6 +5,9 @@ import { Observable } from 'rxjs/internal/Observable';
 import { lastValueFrom, map, timeout } from 'rxjs';
 import { UserProfile } from '../interface/app.interface';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getDownloadURL, getStorage, ref, uploadString } from 'firebase/storage';
 
 export interface CatalogAdditionRequest {
   catalogProductId: string;
@@ -153,6 +156,62 @@ export class OutfitsService {
   async getAdminOutfitById(outfitId: string): Promise<outfit[]> {
     const response = await lastValueFrom(this.httpClient.get<any>(`${this.backendBase}/gen/outfits/${encodeURIComponent(outfitId)}`));
     return [response.data || response];
+  }
+
+  /**
+   * Firebase Storage is the source of truth for uploaded image bytes.
+   * Only new data URLs are uploaded; existing HTTP(S) URLs are left intact.
+   * Keep this explicit in the admin save flow to avoid mutating fetched outfits.
+   */
+  async prepareOutfitImagesForSave(data: Partial<outfit>): Promise<Partial<outfit>> {
+    const user = getAuth(getApp()).currentUser;
+    const imageSources = [
+      data.imageUrl,
+      ...(data.tags || []).flatMap(tag => [
+        tag.imageUrl,
+        ...(Array.isArray(tag.images) ? tag.images : []),
+      ]),
+    ];
+    if (!imageSources.some(value => typeof value === 'string' && value.startsWith('data:'))) {
+      return data;
+    }
+    if (!user) throw new Error('Sessione Firebase assente: impossibile caricare le immagini.');
+
+    const storage = getStorage(getApp());
+    const uploaded = new Map<string, string>();
+    const uploadImage = async (source: string | undefined): Promise<string | undefined> => {
+      if (typeof source !== 'string' || !source.startsWith('data:')) return source;
+      const previous = uploaded.get(source);
+      if (previous) return previous;
+      const match = /^data:(image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/=]+)$/.exec(source);
+      if (!match) throw new Error('Formato immagine non valido. Sono accettate immagini PNG, JPEG, WebP o GIF.');
+      const extension = match[1] === 'image/jpeg' ? 'jpg' : match[1].split('/')[1];
+      const filename = `outfits/${user.uid}/admin-${Date.now()}-${crypto.randomUUID()}.${extension}`;
+      const storageRef = ref(storage, filename);
+      await uploadString(storageRef, source, 'data_url', { contentType: match[1] });
+      const url = await getDownloadURL(storageRef);
+      uploaded.set(source, url);
+      return url;
+    };
+
+    const imageUrl = await uploadImage(data.imageUrl);
+    const tags = data.tags ? [] as Tag[] : undefined;
+    if (tags) {
+      for (const tag of data.tags || []) {
+        tags.push({
+          ...tag,
+          imageUrl: await uploadImage(tag.imageUrl),
+          ...(Array.isArray(tag.images)
+            ? { images: await Promise.all(tag.images.map(image => uploadImage(image).then(url => url || ''))) }
+            : {}),
+        });
+      }
+    }
+    return {
+      ...data,
+      ...(imageUrl !== undefined ? { imageUrl } : {}),
+      ...(tags ? { tags } : {}),
+    };
   }
 
   async createAdminOutfit(data: any): Promise<boolean> {
