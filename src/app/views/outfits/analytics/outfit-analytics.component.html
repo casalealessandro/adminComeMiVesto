@@ -1,0 +1,46 @@
+<section class="analytics" aria-label="Analisi outfit pubblicati">
+  <div class="analytics-heading">
+    <div>
+      <h2>Analisi contenuti</h2>
+      <p>Distribuzione degli outfit approvati, su tutto il catalogo.</p>
+    </div>
+    <button type="button" class="btn btn-outline-primary" (click)="reload()" [disabled]="loading">
+      <span class="mdi mdi-refresh" aria-hidden="true"></span> Aggiorna
+    </button>
+  </div>
+  <p *ngIf="loading" role="status">Caricamento analisi…</p>
+  <div *ngIf="error" class="alert alert-danger" role="alert">{{error}}
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="reload()">Riprova</button>
+  </div>
+  <ng-container *ngIf="data as result">
+    <div class="analytics-total">
+      <span>Outfit pubblicati</span><strong>{{result.total}}</strong>
+      <small>Ultimo aggiornamento {{result.generatedAt | date:'dd/MM/yyyy HH:mm'}}</small>
+    </div>
+    <p *ngIf="result.total === 0" class="analytics-empty">Nessun outfit approvato da analizzare.</p>
+    <div *ngIf="result.total > 0" class="analytics-panels">
+      <section class="analytics-panel" *ngFor="let group of [{ title: 'Per genere', values: result.byGender }, { title: 'Per stile', values: result.byStyle }, { title: 'Per occasione', values: result.byOccasion }]">
+        <h3>{{group.title}}</h3>
+        <div *ngFor="let item of entries(group.values)" class="analytics-measure">
+          <div class="analytics-line"><span>{{item.label}}</span><strong>{{item.count}}</strong></div>
+          <div class="analytics-track"><div class="analytics-fill" [style.width.%]="percent(item.count,result.total)"></div></div>
+        </div>
+      </section>
+    </div>
+    <section *ngIf="result.total > 0" class="analytics-panel analytics-matrix">
+      <h3>Copertura per occasione e genere</h3>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead><tr><th scope="col">Occasione</th><th scope="col" *ngFor="let gender of genders(result)">{{gender}}</th><th scope="col">Totale</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of entries(result.byOccasion)">
+              <th scope="row">{{item.label}}</th>
+              <td *ngFor="let gender of genders(result)">{{coverage(result,item.label,gender)}}</td>
+              <td><strong>{{item.count}}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+</section>
