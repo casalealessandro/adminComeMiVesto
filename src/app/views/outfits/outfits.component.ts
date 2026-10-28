@@ -11,6 +11,7 @@ import { FormService } from '../../services/form.service';
 import { alert, confirm } from '../../widgets/ui-dialogs';
 import { OutfitsGridProvider } from './outfits-grid.provider';
 import { ToolbarButton } from '../../core/ui/caption/toolbar-button';
+import { OutfitAnalyticsComponent } from './analytics/outfit-analytics.component';
 
 type Option = { id: string; value: string };
 const statuses: Option[] = [
@@ -30,7 +31,7 @@ const listOptions = (options: Option[]) => ({
 @Component({
   selector: 'app-outfits',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent, AnagraficaWrapperComponent],
+  imports: [CommonModule, FormsModule, DataGridComponent, AnagraficaWrapperComponent, OutfitAnalyticsComponent],
   templateUrl: './outfits.component.html',
   styleUrl: './outfits.component.scss'
 })
@@ -51,6 +52,14 @@ export class OutfitsComponent implements OnDestroy {
     if (!grid) return;
     grid.pageSize = 50;
     queueMicrotask(() => { if (this.grid === grid) void grid.renderGrid(); });
+  }
+
+  activeTab: 'outfits' | 'analytics' = 'outfits';
+  analyticsOpened = false;
+
+  showTab(tab: 'outfits' | 'analytics'): void {
+    this.activeTab = tab;
+    if (tab === 'analytics') this.analyticsOpened = true;
   }
 
   outfits: outfit[] = [];
