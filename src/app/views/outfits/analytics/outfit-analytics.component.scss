@@ -1,0 +1,17 @@
+.analytics { display: grid; gap: 1rem; color: var(--cmv-color-text-strong); }
+.analytics-heading { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.analytics-heading h2 { font-size:1.15rem; font-weight:700; margin:0; }
+.analytics-heading p { color:var(--cmv-color-text-muted); margin:.3rem 0 0; }
+.analytics-total, .analytics-panel { border:1px solid var(--cmv-color-border); border-radius:var(--cmv-radius-md); background:var(--cmv-color-surface); padding:1rem; }
+.analytics-total { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+.analytics-total strong { font-size:1.8rem; }
+.analytics-total small { margin-left:auto; color:var(--cmv-color-text-muted); }
+.analytics-panels { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+.analytics-panel h3 { font-size:1rem; font-weight:700; margin:0 0 1rem; }
+.analytics-measure { margin-bottom:.8rem; }
+.analytics-line { display:flex; justify-content:space-between; gap:.5rem; font-size:.87rem; }
+.analytics-track { height:7px; background:var(--cmv-color-surface-muted); border-radius:1rem; overflow:hidden; margin-top:.35rem; }
+.analytics-fill { height:100%; background:var(--cmv-color-primary, #005477); border-radius:1rem; }
+.analytics-matrix th, .analytics-matrix td { padding:.55rem; }
+.analytics-empty { color:var(--cmv-color-text-muted); }
+@media (max-width:900px) { .analytics-panels { grid-template-columns:1fr; } }
