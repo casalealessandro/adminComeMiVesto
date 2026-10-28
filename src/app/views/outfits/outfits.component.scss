@@ -28,3 +28,35 @@
   .mobile-cards { display: grid; grid-template-columns: 1fr; gap: 1rem; }
   .actions > button { min-height: 44px; flex: 1; }
 }
+
+/* Page-level tabs only; keep DataGrid layout and state untouched. */
+.outfit-tabs {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 1rem;
+  padding: 0 0 .35rem;
+  border-bottom: 1px solid var(--cmv-color-border);
+}
+.outfit-tab {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--cmv-color-text-muted);
+  padding: .65rem 1rem;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 0;
+}
+.outfit-tab:hover, .outfit-tab:focus-visible {
+  color: var(--cmv-color-text-strong);
+}
+.outfit-tab.active {
+  color: var(--cmv-color-primary, #005477);
+  font-weight: 700;
+  border-bottom-color: currentColor;
+}
+.outfit-tab:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+@media (max-width: 700px) {
+  .outfit-tab { flex: 1; min-height: 44px; }
+}
