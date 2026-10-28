@@ -22,7 +22,7 @@ describe('OutfitForm manual published image regeneration', () => {
 
   beforeEach(async () => {
     service = jasmine.createSpyObj('OutfitsService',
-      ['updateAdminOutfit','getAdminOutfitById','regeneratePublishedOutfitImage','createAdminOutfit']);
+      ['updateAdminOutfit','getAdminOutfitById','regeneratePublishedOutfitImage','createAdminOutfit','prepareOutfitImagesForSave']);
     router = jasmine.createSpyObj('Router',['navigate']);
     router.navigate.and.resolveTo(true);
     await TestBed.configureTestingModule({
@@ -40,6 +40,7 @@ describe('OutfitForm manual published image regeneration', () => {
     component.outfitId = 'look1';
     component.outfitData.set(makeOutfit());
     component.imageUrl.set('https://example.test/old.png');
+    service.prepareOutfitImagesForSave.and.callFake(async payload => payload);
     service.updateAdminOutfit.and.resolveTo(true);
     service.getAdminOutfitById.and.resolveTo([makeOutfit()]);
   });
