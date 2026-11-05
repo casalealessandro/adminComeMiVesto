@@ -37,13 +37,13 @@ describe('Affiliate feed form mapping', () => {
     });
   });
 
-  it('omits immutable feed identity fields from update and includes rules configuration', () => {
+  it('allows network feed corrections but omits immutable program identity from update', () => {
     const update = buildAffiliateFeedUpdateInput({
       ...formData,
       adapterType: ' TRADEDOUBLER ',
     }) as Record<string, unknown>;
 
-    expect(update['networkFeedId']).toBeUndefined();
+    expect(update['networkFeedId']).toBe('feed-123');
     expect(update['affiliateProgramId']).toBeUndefined();
     expect(update['name']).toBe('Feed demo');
     expect(update['adapterType']).toBe('TRADEDOUBLER');
