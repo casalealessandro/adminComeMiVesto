@@ -2,6 +2,7 @@ import { Component, EventEmitter, inject, Input, Output, signal, SimpleChanges }
 
 
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { DynamicFormField } from '../../interface/dynamic-form-field';
 import { FORM_DEFINITION_REPOSITORY } from '../../services/form-definition-repository';
 import { alert } from '../../widgets/ui-dialogs';
@@ -51,6 +52,7 @@ export class DynamicFormComponent {
   inEdit: boolean = true
   // Signal per il valore del parent
   parentValues = signal<{ [key: string]: any }>({}); // Mappa per i segnali dei parent
+  private parentControlSubscriptions = new Subscription();
   showPasswordButton: any = {};
   closeButton: string = 'Ritorna';
   submitButton: string = "Salva";
@@ -136,6 +138,20 @@ export class DynamicFormComponent {
     });
 
     this.form = formGroup;
+
+    // A native select updates its FormControl first: propagate parent changes to cascaded fields
+    // independently of the select component's custom valueChange event.
+    this.parentControlSubscriptions.unsubscribe();
+    this.parentControlSubscriptions = new Subscription();
+    Object.keys(this.parentValues()).forEach(parentField => {
+      const parentControl = formGroup.get(parentField);
+      if (!parentControl) return;
+      this.parentControlSubscriptions.add(parentControl.valueChanges.subscribe(value => {
+        if (this.parentValues()[parentField] !== value) {
+          this.parentValues.update(values => ({ ...values, [parentField]: value }));
+        }
+      }));
+    });
 
   }
 
@@ -297,6 +313,10 @@ export class DynamicFormComponent {
     }
 
     this.functionalInputFormEvent.emit(send)
+  }
+
+  ngOnDestroy() {
+    this.parentControlSubscriptions.unsubscribe();
   }
 
   public refresh() {
