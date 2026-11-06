@@ -62,6 +62,36 @@ describe('DynamicSelectBoxComponent characterization', () => {
     expect(labels()).not.toContain('Caricamento in corso...');
   }));
 
+  it('renders a remote array wrapped in a data property', async () => {
+    service.getData.and.resolveTo({ data: options });
+    configure({ remote: true, api: 'outfitCategories' });
+    await component.initializeOptions();
+    fixture.detectChanges();
+
+    expect(component.availableOptions).toEqual(options);
+    expect(component.formGroup.get('choice')?.enabled).toBeTrue();
+    expect(Array.from((fixture.nativeElement.querySelector('select') as HTMLSelectElement).options)
+      .map(option => option.textContent?.trim())).toContain('One');
+  });
+
+  it('does not pass a non-iterable remote response to ngFor', async () => {
+    service.getData.and.resolveTo({ data: { id: 1 } });
+    configure({ remote: true, api: 'outfitCategories' });
+    await component.initializeOptions();
+
+    expect(component.availableOptions).toEqual([]);
+    expect(() => fixture.detectChanges()).not.toThrow();
+    expect(component.formGroup.get('choice')?.enabled).toBeTrue();
+  });
+
+  it('does not pass malformed local options to ngFor', async () => {
+    configure({ options: { id: 1 } });
+    await component.initializeOptions();
+
+    expect(component.availableOptions).toEqual([]);
+    expect(() => fixture.detectChanges()).not.toThrow();
+  });
+
   it('enables the control and stops loading after an empty remote response', async () => {
     service.getData.and.resolveTo([]); configure({ remote: true, api: 'roles' }); await component.initializeOptions();
     expect(component.availableOptions).toEqual([]); expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();

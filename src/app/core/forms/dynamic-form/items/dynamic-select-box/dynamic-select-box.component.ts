@@ -70,6 +70,12 @@ export class DynamicSelectBoxComponent  {
       this.fieldName = this.config.name;
       this.formControlD = this.formGroup.get(this.fieldName) as FormControl;
       this.selectOptions = this.config.selectOptions;
+      if (this.selectOptions.parent && sessionStorage.getItem('forms-cascade-debug') === '1') {
+        console.debug('[forms:cascade] child config', {
+          field: this.fieldName, parentField: this.selectOptions.parent,
+          remote: this.selectOptions.remote, api: this.selectOptions.api
+        });
+      }
       this.displayExp = this.selectOptions.displayExp || 'value';
       this.valueExp = this.selectOptions.valueExp || 'id';
       this.isRemote = this.selectOptions.remote;
@@ -93,7 +99,7 @@ export class DynamicSelectBoxComponent  {
           if (!this.isDestroyed) this.changeDetector.detectChanges();
         }
       }else{
-        this.availableOptions = this.selectOptions.options || [];
+        this.availableOptions = this.normalizeOptions(this.selectOptions.options, 'local');
         this.isLoading = false;
       }
       
@@ -128,7 +134,20 @@ export class DynamicSelectBoxComponent  {
     this.formControlD?.enable();
     
 
-    return res
+    return this.normalizeOptions(res, 'remote');
+  }
+
+  private normalizeOptions(result: any, source: 'local' | 'remote'): any[] {
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result?.data)) return result.data;
+
+    if (result != null && sessionStorage.getItem('forms-cascade-debug') === '1') {
+      console.warn('[forms:cascade] non-array options', {
+        field: this.fieldName, source, api: this.selectOptions?.api,
+        responseType: typeof result, keys: typeof result === 'object' ? Object.keys(result).slice(0, 10) : []
+      });
+    }
+    return [];
   }
 
   
@@ -155,7 +174,8 @@ export class DynamicSelectBoxComponent  {
       this.availableOptions = options;
       if (!this.isDestroyed) this.changeDetector.detectChanges();
     } else if (this.selectOptions && this.selectOptions.parent) {
-      this.availableOptions = (this.selectOptions.options || []).filter((option:any) => option.parent === this.parentValue());
+      this.availableOptions = this.normalizeOptions(this.selectOptions.options, 'local')
+        .filter((option:any) => option.parent === this.parentValue());
     }
   }
 
