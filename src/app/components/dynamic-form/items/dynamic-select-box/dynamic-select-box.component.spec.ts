@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
+import { NgZone } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { DynamicSelectBoxComponent } from './dynamic-select-box.component';
 import { FormService } from '../../../../services/form.service';
@@ -41,6 +42,26 @@ describe('DynamicSelectBoxComponent characterization', () => {
     expect(service.getData).toHaveBeenCalledWith('roles', undefined); resolve(options); await pending;
     expect(component.availableOptions).toEqual(options); expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();
   });
+  it('renders remotely loaded options without requiring an extra host change detection', fakeAsync(() => {
+    let resolve!: (value: any[]) => void;
+    service.getData.and.returnValue(new Promise(r => resolve = r));
+    configure({ remote: true, api: 'outfitCategories' });
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    const labels = () => Array.from(select.options).map(option => option.textContent?.trim());
+    expect(labels()).toContain('Caricamento in corso...');
+
+    TestBed.inject(NgZone).runOutsideAngular(() => resolve(options));
+    flushMicrotasks();
+
+    expect(component.availableOptions).toEqual(options);
+    expect(component.isLoading).toBeFalse();
+    expect(labels()).toContain('One');
+    expect(labels()).toContain('Two');
+    expect(labels()).not.toContain('Caricamento in corso...');
+  }));
+
   it('enables the control and stops loading after an empty remote response', async () => {
     service.getData.and.resolveTo([]); configure({ remote: true, api: 'roles' }); await component.initializeOptions();
     expect(component.availableOptions).toEqual([]); expect(component.isLoading).toBeFalse(); expect(component.formGroup.get('choice')?.enabled).toBeTrue();
