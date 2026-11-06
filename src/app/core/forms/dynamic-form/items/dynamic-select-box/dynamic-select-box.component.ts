@@ -29,6 +29,7 @@ export class DynamicSelectBoxComponent  {
   formService=inject(FORM_OPTIONS_PROVIDER)  
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
+  private isDestroyed = false;
   availableOptions: any = [];
   isLoading:boolean=true
   selectOptions:any
@@ -40,6 +41,7 @@ export class DynamicSelectBoxComponent  {
   multiple: boolean= false;
   
   constructor() {
+    this.destroyRef.onDestroy(() => { this.isDestroyed = true; });
     // Esegui un effetto reattivo per filtrare le opzioni quando il valore del parent cambia
     effect(() => {
       this.parentValue(); // Registra la dipendenza reattiva anche quando il parent viene svuotato
@@ -85,7 +87,7 @@ export class DynamicSelectBoxComponent  {
         } else {
           this.availableOptions = await this.getRemoteOptions(this.selectOptions.api)
           // Keep remote options visible even if the Promise resolves outside Angular change detection.
-          if (!this.destroyRef.destroyed) this.changeDetector.detectChanges();
+          if (!this.isDestroyed) this.changeDetector.detectChanges();
         }
       }else{
         this.availableOptions = this.selectOptions.options || [];
@@ -133,7 +135,7 @@ export class DynamicSelectBoxComponent  {
         return;
       }
       this.availableOptions = options;
-      if (!this.destroyRef.destroyed) this.changeDetector.detectChanges();
+      if (!this.isDestroyed) this.changeDetector.detectChanges();
     } else if (this.selectOptions && this.selectOptions.parent) {
       this.availableOptions = (this.selectOptions.options || []).filter((option:any) => option.parent === this.parentValue());
     }
