@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, input, effect, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, input, effect, signal, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormField } from '../../../../interface/dynamic-form-field';
 import { CommonModule } from '@angular/common';
@@ -27,6 +27,8 @@ export class DynamicSelectBoxComponent  {
   parentValue = input<any>();
   formControlD!:FormControl
   formService=inject(FORM_OPTIONS_PROVIDER)  
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
   availableOptions: any = [];
   isLoading:boolean=true
   selectOptions:any
@@ -82,6 +84,8 @@ export class DynamicSelectBoxComponent  {
           await this.filterOptionsBasedOnParent();
         } else {
           this.availableOptions = await this.getRemoteOptions(this.selectOptions.api)
+          // Keep remote options visible even if the Promise resolves outside Angular change detection.
+          if (!this.destroyRef.destroyed) this.changeDetector.detectChanges();
         }
       }else{
         this.availableOptions = this.selectOptions.options || [];
@@ -129,6 +133,7 @@ export class DynamicSelectBoxComponent  {
         return;
       }
       this.availableOptions = options;
+      if (!this.destroyRef.destroyed) this.changeDetector.detectChanges();
     } else if (this.selectOptions && this.selectOptions.parent) {
       this.availableOptions = (this.selectOptions.options || []).filter((option:any) => option.parent === this.parentValue());
     }
