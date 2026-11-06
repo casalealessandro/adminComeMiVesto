@@ -44,7 +44,10 @@ export class DynamicSelectBoxComponent  {
     this.destroyRef.onDestroy(() => { this.isDestroyed = true; });
     // Esegui un effetto reattivo per filtrare le opzioni quando il valore del parent cambia
     effect(() => {
-      this.parentValue(); // Registra la dipendenza reattiva anche quando il parent viene svuotato
+      const currentParent = this.parentValue(); // Registra la dipendenza reattiva anche quando il parent viene svuotato
+      if (this.selectOptions?.parent && sessionStorage.getItem('forms-cascade-debug') === '1') {
+        console.debug('[forms:cascade] parent input', { field: this.fieldName, parent: currentParent });
+      }
       if (!this.selectOptions || !this.selectOptions.parent) {
         return;
       }
@@ -115,7 +118,11 @@ export class DynamicSelectBoxComponent  {
     try {
       res = await  this.formService.getData(api,queryString);
     } catch (error) {
-      
+      if (this.selectOptions?.parent && sessionStorage.getItem('forms-cascade-debug') === '1') {
+        console.warn('[forms:cascade] remote request failed', {
+          field: this.fieldName, message: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
     this.isLoading=false;
     this.formControlD?.enable();
@@ -130,7 +137,18 @@ export class DynamicSelectBoxComponent  {
 
     if (this.isRemote) {
       const requestedParent = this.parentValue();
+      if (sessionStorage.getItem('forms-cascade-debug') === '1') {
+        console.debug('[forms:cascade] remote request', {
+          field: this.fieldName, api: this.selectOptions.api, parent: requestedParent
+        });
+      }
       const options = await this.getRemoteOptions(this.selectOptions.api, requestedParent);
+      if (sessionStorage.getItem('forms-cascade-debug') === '1') {
+        console.debug('[forms:cascade] remote response', {
+          field: this.fieldName, isArray: Array.isArray(options),
+          count: Array.isArray(options) ? options.length : null
+        });
+      }
       if (!this.hasParentValue() || this.parentValue() !== requestedParent) {
         return;
       }
