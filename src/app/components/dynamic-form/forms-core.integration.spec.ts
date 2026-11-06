@@ -145,4 +145,44 @@ describe('Forms Core v1 integration characterization', () => {
     expect(component.parentValues().region).toBe('');
     expect(component.parentValues().city).toBeNull();
   });
+  it('loads remote subcategories when the category FormControl changes without a custom select event', async () => {
+    const children = [{ id: 'C_Cappotti', categoryName: 'Cappotti e giubbotti' }];
+    const fields: DynamicFormField[] = [
+      {
+        name: 'outfitCategory', type: 'selectBox', typeInput: 'selectBox', label: 'Categoria',
+        selectOptions: {
+          displayExp: 'categoryName', valueExp: 'id', multiple: false, remote: false, parent: null,
+          options: [{ id: 'A_Abbigliamento', categoryName: 'Abbigliamento' }]
+        }
+      },
+      {
+        name: 'outfitSubCategory', type: 'selectBox', typeInput: 'selectBox', label: 'Sotto categoria',
+        selectOptions: {
+          displayExp: 'categoryName', valueExp: 'id', multiple: false, remote: true,
+          api: 'outfitCategories', parent: 'outfitCategory'
+        }
+      }
+    ];
+    service.getFormFields.and.returnValue(of(fields));
+    service.getData.and.resolveTo(children);
+    component.service = 'tagForm';
+    component.editData = {};
+    component.ngOnInit();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(service.getData).not.toHaveBeenCalled();
+    // Angular Reactive Forms may update the control independently of valueChange output.
+    component.form.get('outfitCategory')?.setValue('A_Abbigliamento');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(service.getData).toHaveBeenCalledWith('outfitCategories', '/A_Abbigliamento');
+    const child = fixture.debugElement
+      .queryAll(By.directive(DynamicSelectBoxComponent))
+      .map(debug => debug.componentInstance as DynamicSelectBoxComponent)
+      .find(select => select.config.name === 'outfitSubCategory')!;
+    expect(child.availableOptions).toEqual(children);
+  });
+
 });
