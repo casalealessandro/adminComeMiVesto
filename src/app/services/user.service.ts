@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { EMPTY, expand, map, Observable, reduce } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { UserProfile } from '../interface/app.interface';
 
@@ -36,6 +36,16 @@ export class UserService {
 
   getUsers(limit = 50, pageToken?: string): Observable<UserProfile[]> {
     return this.getUsersPage(limit, pageToken).pipe(map(response => response.data));
+  }
+
+  /** Fetch all backend pages for dropdowns that require every registered user. */
+  getAllUsers(): Observable<UserProfile[]> {
+    return this.getUsersPage(100).pipe(
+      expand(page => page.nextPageToken
+        ? this.getUsersPage(100, page.nextPageToken)
+        : EMPTY),
+      reduce((users, page) => users.concat(page.data), [] as UserProfile[])
+    );
   }
 
   getUserProfile(uid: string): Observable<UserProfile> {

@@ -80,7 +80,7 @@ export class OutfitFormComponent {
 
   ngOnInit(): void {
     this.fetchDataOutfit();
-    this.userService.getUsers(100).subscribe({
+    this.userService.getAllUsers().subscribe({
       next: users => this.targetUsers = this.authService.isAdmin()
         ? users : users.filter(user => user.role === 'creator'),
       error: () => { /* Creator list is optional when editing an existing outfit. */ },

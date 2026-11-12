@@ -31,7 +31,7 @@ describe('OutfitForm manual published image regeneration', () => {
         {provide:OutfitsService,useValue:service},
         {provide:Router,useValue:router},
         {provide:ActivatedRoute,useValue:{paramMap:of(null)}},
-        {provide:UserService,useValue:{getUsers:()=>of([])}},
+        {provide:UserService,useValue:{getAllUsers:()=>of([])}},
         {provide:AuthService,useValue:{isAdmin:()=>true}},
         {provide:FormService,useValue:{getFormFields:()=>of([])}},
       ],
