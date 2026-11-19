@@ -49,6 +49,7 @@ export class AiOutfitDraftEditorComponent {
   addRole = '';
   productCategories: string[] = [];
   loadingCategories = false;
+  categoryWarning = '';
   addingProduct = false;
   // Shared semantics with the backend composition slot roots.
   readonly roleLabel = outfitRoleLabel;
@@ -96,6 +97,7 @@ export class AiOutfitDraftEditorComponent {
     this.selectedReplacements.clear();
     this.addCategory = '';
     this.addRole = '';
+    this.categoryWarning = '';
     this.loadCatalogCategories();
     this.editing = true;
     this.editingChange.emit(true);
@@ -116,8 +118,17 @@ export class AiOutfitDraftEditorComponent {
     this.catalogService.getProductCategories()
       .pipe(finalize(() => this.loadingCategories = false))
       .subscribe({
-        next: categories => this.productCategories = [...categories].sort((a,b)=>a.localeCompare(b)),
-        error: () => this.error = 'Impossibile caricare le categorie del catalogo.',
+        next: categories => {
+          this.productCategories = (Array.isArray(categories) ? [...categories] : [])
+            .sort((a, b) => a.localeCompare(b));
+        },
+        error: () => {
+          // Optional for the add-product selector; do not block draft editing
+          // or replacements when the catalog categories endpoint is unavailable.
+          this.productCategories = [...new Set(Object.values(this.categoriesByRole).flat())]
+            .sort((a, b) => a.localeCompare(b));
+          this.categoryWarning = 'Elenco categorie non disponibile: uso le categorie predefinite per ruolo.';
+        },
       });
   }
 
