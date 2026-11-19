@@ -57,7 +57,7 @@
 
     <div class="draft-editor__products">
       <strong>Prodotti del look</strong>
-      <p>Puoi sostituire ciascun capo con un prodotto della stessa categoria. Il prezzo e i link saranno ricontrollati dal backend.</p>
+      <p>Puoi sostituire ciascun capo con un prodotto di una categoria diversa, mantenendo il ruolo nell'outfit (es. gonna → jeans). Prezzo, disponibilità e link saranno ricontrollati dal backend.</p>
       <div *ngFor="let product of edit.products; let i = index" class="draft-editor__product">
         <img *ngIf="selectedReplacements.get(i)?.images?.[0] || outfit.products[i]?.images?.[0]"
           [src]="selectedReplacements.get(i)?.images?.[0] || outfit.products[i]?.images?.[0]" [alt]="replacementLabel(i)" loading="lazy">
