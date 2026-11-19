@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AiOutfitPreviewOutfit } from '../../models/affiliate-catalog-api.models';
@@ -72,6 +72,18 @@ describe('AI outfit draft replacement via Core popup', () => {
     }));
     expect(component.selectedReplacements.get(0)?.category).toBe('P_Pantaloni');
     expect(component.replacementLabel(0)).toContain('Jeans blu');
+  });
+
+  it('keeps replacements available if the editor category lookup returns 503', () => {
+    const catalog = TestBed.inject(AffiliateCatalogService);
+    spyOn(catalog, 'getProductCategories').and.returnValue(throwError(() => ({ status: 503 })));
+    component.startEditing();
+    expect(component.error).toBe('');
+    expect(component.categoryWarning).toContain('categorie predefinite');
+    expect(component.productCategories).toContain('P_Pantaloni');
+    expect(component.productCategories).toContain('conna');
+    component.showReplacements(0);
+    expect(popup.setNewPopUp).toHaveBeenCalled();
   });
 
   it('rejects incompatible replacement categories before saving the draft', () => {
