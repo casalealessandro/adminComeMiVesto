@@ -39,7 +39,8 @@ describe('AI outfit draft replacement via Core popup', () => {
     component.showReplacements(0);
     expect(popup.setNewPopUp).toHaveBeenCalledWith(
       jasmine.any(String), 'OutfitReplacementPickerComponent',
-      { category: 'P_Pantaloni', gender: 'D', productIdsInOutfit: ['p1', 'p2'] },
+      { category: 'P_Pantaloni', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
+        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
     expect(component.form?.products[0].catalogProductId).toBe('p1');
@@ -50,6 +51,32 @@ describe('AI outfit draft replacement via Core popup', () => {
     expect(component.replacementLabel(0)).toContain('Jeans alternativi');
     expect(component.replacementIndex).toBeNull();
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalled();
+  });
+
+  it('replaces a skirt with jeans while preserving the BOTTOM role', async () => {
+    component.outfit.products[0].category = 'conna';
+    component.outfit.products[0].name = 'Gonna midi';
+    component.showReplacements(0);
+    expect(popup.setNewPopUp).toHaveBeenCalledWith(
+      jasmine.any(String), 'OutfitReplacementPickerComponent',
+      { category: 'conna', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
+        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
+      1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
+    );
+    const jeans = { id: 'jeans-2', category: 'P_Pantaloni', subcategory: 'jeans',
+      brand: 'Brand', name: 'Jeans blu' } as CatalogProduct;
+    resolvePicker({ name: 'selected', product: jeans });
+    await Promise.resolve();
+    expect(component.form?.products[0]).toEqual(jasmine.objectContaining({
+      catalogProductId: 'jeans-2', role: 'BOTTOM',
+    }));
+    expect(component.replacementLabel(0)).toContain('Jeans blu');
+    component.showReplacements(0);
+    expect(popup.setNewPopUp).toHaveBeenCalledWith(
+      jasmine.any(String), 'OutfitReplacementPickerComponent',
+      jasmine.objectContaining({ category: 'P_Pantaloni', role: 'BOTTOM' }),
+      1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
+    );
   });
 
   it('adds a new jacket slot after existing products, without generating an image', async () => {
