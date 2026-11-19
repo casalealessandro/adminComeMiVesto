@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output, ViewChild, inject } from '@angular/core';
-import { firstValueFrom, forkJoin } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of, timeout } from 'rxjs';
 import { ColData, Colonne, DataGridComponent, GridDataProvider, GridLoadRequest } from '../../../../core/public-api';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
+import { isAllowedOutfitRoleProduct } from '../../models/outfit-accessory-roles';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 /** Data passed through the existing Core PopUpService registry. */
@@ -10,6 +11,9 @@ export interface OutfitReplacementPickerContext {
   category: string;
   gender: 'U' | 'D';
   productIdsInOutfit: string[];
+  /** Set only for replacement. Adding a new slot keeps the original fixed-category picker. */
+  allowedCategories?: string[];
+  role?: string;
 }
 
 export interface OutfitReplacementPickerResult {
@@ -74,14 +78,33 @@ export const buildReplacementPickerColumns = (
   imports: [CommonModule, DataGridComponent],
   template: `
     <section class="outfit-product-picker" aria-label="Seleziona un prodotto sostitutivo">
-      <p class="small text-muted">Categoria: <strong>{{ itemData.category }}</strong> ·
-        Genere: <strong>{{ itemData.gender === 'D' ? 'Donna' : 'Uomo' }}</strong>.
-        I prodotti devono essere attivi e visibili nell'app.</p>
+      <div class="outfit-product-picker__category">
+        <label *ngIf="itemData.allowedCategories?.length; else fixedCategory" for="outfit-replacement-category">
+          Categoria
+          <select id="outfit-replacement-category" class="form-select form-select-sm"
+            [value]="selectedCategory" (change)="changeCategory($any($event.target).value)">
+            <option *ngFor="let category of categoryOptions" [value]="category">{{ category }}</option>
+          </select>
+        </label>
+        <ng-template #fixedCategory>
+          <span>Categoria: <strong>{{ selectedCategory }}</strong></span>
+        </ng-template>
+        <span>Genere: <strong>{{ itemData.gender === 'D' ? 'Donna' : 'Uomo' }}</strong></span>
+        <span>I prodotti devono essere attivi e visibili nell'app.</span>
+      </div>
+      <p *ngIf="itemData.allowedCategories?.length" class="small text-muted">
+        Puoi cambiare categoria mantenendo il ruolo del capo. Il cambio azzera
+        sottocategoria, nome, stile, colore e paginazione.
+      </p>
       <p *ngIf="loading" role="status">Caricamento filtri…</p>
       <p *ngIf="error" class="text-danger" role="alert">{{ error }}</p>
+      <p *ngIf="filterWarning" class="small text-muted" role="status">{{ filterWarning }}</p>
+      <!-- ngFor destroys the old Core grid when the category changes, clearing
+           its remote filters, selected row, cursor and pagination. -->
+      <ng-container *ngFor="let activeCategory of [selectedCategory]">
       <app-data-grid *ngIf="!loading && provider"
         #grid
-        [idTable]="'outfit-replacement-picker-grid'"
+        [idTable]="'outfit-replacement-picker-grid-' + activeCategory"
         [colonne]="columns"
         [dataProvider]="provider"
         [remoteOperation]="true"
@@ -97,6 +120,7 @@ export const buildReplacementPickerColumns = (
         [tableHeight]="480"
         (emittendSelectionRow)="selectRow($event)">
       </app-data-grid>
+      </ng-container>
       <div *ngIf="grid as list" class="outfit-product-picker__paging" aria-live="polite">
         <span>{{ list.rowsData().length }} prodotti caricati</span>
         <button *ngIf="list.remoteHasMore" type="button" class="btn btn-sm btn-outline-primary"
@@ -114,6 +138,12 @@ export const buildReplacementPickerColumns = (
     .outfit-product-picker { display: grid; gap: .75rem; padding: .6rem; min-width: 0; }
     .outfit-product-picker p { margin: 0; }
     .outfit-product-picker > button { justify-self: start; }
+    .outfit-product-picker__category {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
+      font-size: .8rem; color: var(--bs-secondary-color, #6c757d);
+    }
+    .outfit-product-picker__category label { display: flex; align-items: center; gap: .5rem; }
+    .outfit-product-picker__category select { width: auto; min-width: 180px; }
     .outfit-product-picker__paging {
       display: flex; flex-wrap: wrap; align-items: center;
       justify-content: space-between; gap: .5rem;
@@ -131,25 +161,50 @@ export class OutfitReplacementPickerComponent implements OnInit {
     this.grid = grid;
     if (grid && this.provider) {
       grid.pageSize = 30;
-      queueMicrotask(() => void grid.renderGrid());
+      queueMicrotask(() => {
+        if (this.grid === grid) void grid.renderGrid();
+      });
     }
   }
 
   columns: Colonne[] = [];
+  selectedCategory = '';
+  categoryOptions: string[] = [];
+  filterWarning = '';
   readonly styles = PICKER_STYLE_OPTIONS;
   provider?: GridDataProvider<OutfitReplacementRow>;
   loading = true;
   error = '';
 
   ngOnInit(): void {
+    this.selectedCategory = this.itemData.category;
+    this.categoryOptions = [...new Set([
+      this.itemData.category,
+      ...(this.itemData.allowedCategories ?? []),
+    ])].sort((a, b) => a.localeCompare(b));
     if (!this.itemData.category || !['D', 'U'].includes(this.itemData.gender)) {
       this.error = 'Categoria o genere del capo originale non validi.';
       this.loading = false;
       return;
     }
+    // No extra product-categories request: the editor already knows which
+    // categories are permitted for this role. Optional metadata must never
+    // block product search when a filter endpoint is temporarily unavailable.
     forkJoin({
-      subcategories: this.catalog.getProductSubcategories(),
-      colors: this.catalog.getOutfitColors(),
+      subcategories: this.catalog.getProductSubcategories().pipe(
+        timeout({ first: 6000 }),
+        catchError(() => {
+          this.filterWarning = 'Filtri opzionali non disponibili: puoi comunque cercare per nome.';
+          return of([] as string[]);
+        }),
+      ),
+      colors: this.catalog.getOutfitColors().pipe(
+        timeout({ first: 6000 }),
+        catchError(() => {
+          this.filterWarning = 'Filtri opzionali non disponibili: puoi comunque cercare per nome.';
+          return of([] as Array<{ id: string; value: string }>);
+        }),
+      ),
     }).subscribe({
       next: ({ subcategories, colors }) => {
         const validSubcategories = [...new Set(subcategories.filter(Boolean))]
@@ -160,8 +215,22 @@ export class OutfitReplacementPickerComponent implements OnInit {
         this.provider = { load: (request) => this.loadPage(request) };
         this.loading = false;
       },
-      error: () => { this.loading = false; this.error = 'Impossibile caricare i filtri del catalogo.'; },
+      error: () => {
+        // Defensive fallback for unexpected metadata errors.
+        this.columns = buildReplacementPickerColumns([], []);
+        this.provider = { load: (request) => this.loadPage(request) };
+        this.filterWarning = 'Filtri opzionali non disponibili: puoi comunque cercare per nome.';
+        this.loading = false;
+      },
     });
+  }
+
+  changeCategory(category: string): void {
+    if (!this.itemData.allowedCategories?.length || !this.categoryOptions.includes(category) ||
+        category === this.selectedCategory) return;
+    this.selectedCategory = category;
+    this.error = '';
+    // The keyed ngFor in the template recreates Core DataGrid from scratch.
   }
 
   /** Explicit pagination also works when excluded in-use products leave a partial page. */
@@ -192,7 +261,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
       return typeof value === 'string' ? value.trim() || undefined : undefined;
     };
 
-    // Category and gender are fixed by the outfit slot, not editable grid filters.
+    // Gender and outfit role are immutable. Category is selected above the grid.
     const nameFilter = filterValue('name');
     const globalQuery = request.search?.value?.trim();
     if (nameFilter && globalQuery && nameFilter !== globalQuery) {
@@ -203,7 +272,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
       limit: request.pageSize,
       ...(typeof request.continuation === 'string' ? { cursor: request.continuation } : {}),
       ...(query ? { q: query } : {}),
-      category: this.itemData.category,
+      category: this.selectedCategory,
       gender: this.itemData.gender,
       visibleInApp: true,
       activeOnly: true,
@@ -213,7 +282,11 @@ export class OutfitReplacementPickerComponent implements OnInit {
     }));
     const used = new Set(this.itemData.productIdsInOutfit);
     const items = page.data
-      .filter(product => !used.has(product.id))
+      .filter(product => !used.has(product.id) &&
+        product.category === this.selectedCategory &&
+        (!this.itemData.role || isAllowedOutfitRoleProduct(
+          this.itemData.role, product.category, product.subcategory ?? '',
+        )))
       .map(product => ({
         ...product,
         genderLabel: product.genderTargets.map(code => code === 'D' ? 'Donna' : code === 'U' ? 'Uomo' : code).join(', '),
@@ -229,7 +302,10 @@ export class OutfitReplacementPickerComponent implements OnInit {
     if (event.name !== 'onRowSelectionChange' || !event.data) return;
     const product = event.data;
     const valid = product.active === true && product.enabledForApp !== false &&
-      product.category === this.itemData.category &&
+      product.category === this.selectedCategory &&
+      (!this.itemData.role || isAllowedOutfitRoleProduct(
+        this.itemData.role, product.category, product.subcategory ?? '',
+      )) &&
       product.genderTargets.includes(this.itemData.gender) &&
       !this.itemData.productIdsInOutfit.includes(product.id);
     if (!valid) {
