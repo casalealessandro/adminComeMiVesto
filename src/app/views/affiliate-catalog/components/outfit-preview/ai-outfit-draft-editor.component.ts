@@ -12,7 +12,7 @@ import {
 } from '../../models/affiliate-catalog-api.models';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, isAllowedOutfitRoleProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 
 @Component({
   selector: 'app-ai-outfit-draft-editor',
@@ -166,11 +166,9 @@ export class AiOutfitDraftEditorComponent {
     const guid = `outfit-product-picker-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     this.popupService.setNewPopUp(
       guid, 'OutfitReplacementPickerComponent', {
-        category: this.selectedReplacements.get(index)?.category ?? original.category,
+        category: original.category,
         gender: this.form.gender,
         productIdsInOutfit: this.form.products.map(product => product.catalogProductId),
-        role: original.role,
-        allowedCategories: this.categoriesByRole[original.role] ?? [original.category],
       },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
@@ -186,12 +184,6 @@ export class AiOutfitDraftEditorComponent {
 
   chooseReplacement(product: CatalogProduct): void {
     if (!this.form || this.replacementIndex === null) return;
-    const role = this.form.products[this.replacementIndex].role;
-    if (!isAllowedOutfitRoleProduct(role, product.category, product.subcategory ?? '')) {
-      this.error = 'Il prodotto selezionato non è compatibile con il ruolo del capo nell’outfit.';
-      this.replacementIndex = null;
-      return;
-    }
     this.form.products[this.replacementIndex] = {
       ...this.form.products[this.replacementIndex],
       catalogProductId: product.id,

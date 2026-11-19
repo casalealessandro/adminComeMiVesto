@@ -22,9 +22,8 @@ describe('OutfitReplacementPickerComponent', () => {
 
   beforeEach(() => {
     service = jasmine.createSpyObj('AffiliateCatalogService',
-      ['getProducts', 'getProductSubcategories', 'getProductCategories', 'getOutfitColors']);
+      ['getProducts', 'getProductSubcategories', 'getOutfitColors']);
     service.getProductSubcategories.and.returnValue(of(['jeans', 'jogger']));
-    service.getProductCategories.and.returnValue(of(['P_Pantaloni', 'conna', 'scarpe']));
     service.getOutfitColors.and.returnValue(of([{ id: 'BN', value: 'Blu navy' }]));
     service.getProducts.and.returnValue(of({
       data: [eligible, { ...eligible, id: 'already-used' }],
@@ -102,50 +101,6 @@ describe('OutfitReplacementPickerComponent', () => {
     await expectAsync(picker.loadPage({
       pageSize: 30, filters: [{ field: 'wrong', operator: 'eq', value: 'x' }],
     })).toBeRejectedWithError(/Filtro della griglia/);
-  });
-
-  it('switches from skirt to jeans category, resets the selection and sends the new remote filter', async () => {
-    picker.itemData = {
-      category: 'conna', gender: 'D', role: 'BOTTOM',
-      allowedCategories: ['conna', 'P_Pantaloni'],
-      productIdsInOutfit: ['already-used'],
-    };
-    picker.ngOnInit();
-    expect(picker.categoryOptions).toEqual(['conna', 'P_Pantaloni']);
-    expect(picker.selectedCategory).toBe('conna');
-    picker.changeCategory('scarpe');
-    expect(picker.selectedCategory).toBe('conna'); // cannot change outfit role
-    picker.changeCategory('P_Pantaloni');
-    expect(picker.selectedCategory).toBe('P_Pantaloni');
-    await picker.loadPage({ pageSize: 30 });
-    expect(service.getProducts).toHaveBeenCalledWith(jasmine.objectContaining({
-      category: 'P_Pantaloni', gender: 'D', activeOnly: true, visibleInApp: true,
-    }));
-    const emitted: unknown[] = [];
-    picker.result.subscribe(result => emitted.push(result));
-    picker.selectRow({ name: 'onRowSelectionChange', data: eligible });
-    expect(emitted).toEqual([{ name: 'selected', product: eligible }]);
-  });
-
-  it('does not offer a garment incompatible with the original outfit role', async () => {
-    picker.itemData = {
-      category: 'ABC_Completi', gender: 'D', role: 'TOP',
-      allowedCategories: ['ABC_Completi', 'camicie'], productIdsInOutfit: [],
-    };
-    picker.ngOnInit();
-    const body = { ...eligible, id: 'body', category: 'ABC_Completi', subcategory: 'body' };
-    const dress = { ...eligible, id: 'dress', category: 'ABC_Completi', subcategory: 'vestito_midi' };
-    service.getProducts.and.returnValue(of({
-      data: [body, dress], pagination: { hasMore: false, nextCursor: null },
-    }));
-    const page = await picker.loadPage({ pageSize: 30 });
-    expect(page.items.map(item => item.id)).toEqual(['body']);
-    const emitted: unknown[] = [];
-    picker.result.subscribe(result => emitted.push(result));
-    picker.selectRow({ name: 'onRowSelectionChange', data: dress });
-    expect(emitted).toEqual([]);
-    picker.selectRow({ name: 'onRowSelectionChange', data: body });
-    expect(emitted).toEqual([{ name: 'selected', product: body }]);
   });
 
   it('loads another page explicitly even if excluded products make current page short', async () => {
