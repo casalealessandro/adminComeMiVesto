@@ -12,6 +12,27 @@ export const isAllowedAccessoryProduct = (role: string, category: string, subcat
   !ACCESSORY_ROLES.some(entry => entry === role) ||
     (category === ACCESSORY_CATEGORY &&
       (ACCESSORY_SUBCATEGORIES[role] ?? []).includes(subcategory));
+/** UI eligibility hint; backend OutfitRoleCategory is authoritative on save.
+ * Keep this mapping aligned with the backend when taxonomy rules change.
+ */
+export const isAllowedOutfitRoleProduct = (role: string, category: string, subcategory: string): boolean => {
+  if (ACCESSORY_ROLES.some(entry => entry === role)) {
+    return isAllowedAccessoryProduct(role, category, subcategory);
+  }
+  if (role === 'SHOES') return category === 'scarpe';
+  if (role === 'BOTTOM') return category === 'P_Pantaloni' || category === 'conna';
+  if (role === 'TOP') return category === 'camicie' ||
+    (category === 'M_Maglieria' && ['tshirt', 'top', 'polo', 'pullover', 'dolcevita', 'felpe'].includes(subcategory)) ||
+    (category === 'ABC_Completi' && subcategory === 'body');
+  if (role === 'DRESS') return (category === 'ABC_Completi' &&
+      ['vestito_corto', 'vestito_midi', 'vestito_helter', 'tutine'].includes(subcategory)) ||
+    (category === 'tute' && subcategory === 'tute_intere');
+  if (role === 'OUTERWEAR') return category === 'cappotti' ||
+    (category === 'ABC_Completi' && subcategory === 'blazer') ||
+    (category === 'M_Maglieria' && subcategory === 'cardigan');
+  return false;
+};
+
 export const accessoryRoleFromTaxonomy = (category: string, subcategory: string): string | null =>
   category === ACCESSORY_CATEGORY
     ? (ACCESSORY_ROLES.find(role => ACCESSORY_SUBCATEGORIES[role].includes(subcategory)) ?? null)
