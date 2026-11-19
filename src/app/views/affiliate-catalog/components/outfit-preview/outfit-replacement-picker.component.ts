@@ -207,9 +207,11 @@ export class OutfitReplacementPickerComponent implements OnInit {
       ),
     }).subscribe({
       next: ({ subcategories, colors }) => {
-        const validSubcategories = [...new Set(subcategories.filter(Boolean))]
-          .sort((a, b) => a.localeCompare(b));
-        const validColors = colors.filter(item => item.id && item.value)
+        const validSubcategories = [...new Set(
+          (Array.isArray(subcategories) ? subcategories : []).filter(Boolean),
+        )].sort((a, b) => a.localeCompare(b));
+        const validColors = (Array.isArray(colors) ? colors : [])
+          .filter(item => item && item.id && item.value)
           .sort((a, b) => a.value.localeCompare(b.value));
         this.columns = buildReplacementPickerColumns(validSubcategories, validColors);
         this.provider = { load: (request) => this.loadPage(request) };
