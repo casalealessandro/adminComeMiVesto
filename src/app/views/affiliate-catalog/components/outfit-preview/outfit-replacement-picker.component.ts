@@ -218,16 +218,16 @@ export class OutfitReplacementPickerComponent implements OnInit {
             this.filterWarning = 'Descrizioni delle sottocategorie non disponibili: uso nomi di riserva.';
           }
           return this.catalog.getProductSubcategories(category).pipe(
-          timeout({ first: 6000 }),
-          map(ids => (Array.isArray(ids) ? ids : []).map(id => ({
-            id, categoryName: readableTaxonomyName(id),
-          }))),
-          catchError(() => {
-            if (loadId === this.filterLoadId) {
-              this.filterWarning = 'Sottocategorie non disponibili. Puoi cercare per nome.';
-            }
-            return of([] as OutfitTaxonomyOption[]);
-          }),
+            timeout({ first: 6000 }),
+            map(ids => (Array.isArray(ids) ? ids : []).map(id => ({
+              id, categoryName: readableTaxonomyName(id),
+            }))),
+            catchError(() => {
+              if (loadId === this.filterLoadId) {
+                this.filterWarning = 'Sottocategorie non disponibili. Puoi cercare per nome.';
+              }
+              return of([] as OutfitTaxonomyOption[]);
+            }),
           );
         }),
       ),
