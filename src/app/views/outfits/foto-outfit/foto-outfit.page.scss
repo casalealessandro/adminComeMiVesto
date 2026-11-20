@@ -61,8 +61,10 @@
   font-size: .72rem;
   font-weight: 800;
   box-shadow: 0 .15rem .55rem rgba(0, 0, 0, .28);
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
 }
+.tag-pin:active { cursor: grabbing; }
 .tag-pin--selected {
   background: var(--bs-warning, #ffc107);
   color: #212529;
