@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
   OutfitReplacementPickerComponent,
@@ -22,8 +22,9 @@ describe('OutfitReplacementPickerComponent', () => {
 
   beforeEach(() => {
     service = jasmine.createSpyObj('AffiliateCatalogService',
-      ['getProducts', 'getProductSubcategories', 'getOutfitColors', 'getProductCategories']);
+      ['getProducts', 'getProductSubcategories', 'getOutfitColors', 'getProductCategories', 'getCurationCategories']);
     service.getProductSubcategories.and.returnValue(of(['jeans', 'jogger']));
+    service.getCurationCategories.and.returnValue(of([{ id: 'jeans', categoryName: 'Jeans' }]));
     service.getOutfitColors.and.returnValue(of([{ id: 'BN', value: 'Blu navy' }]));
     service.getProducts.and.returnValue(of({
       data: [eligible, { ...eligible, id: 'already-used' }],
@@ -118,6 +119,7 @@ describe('OutfitReplacementPickerComponent', () => {
     expect(picker.selectedCategory).toBe('conna');
     picker.changeCategory('P_Pantaloni');
     expect(picker.selectedCategory).toBe('P_Pantaloni');
+    expect(service.getProductSubcategories).toHaveBeenCalledWith('P_Pantaloni');
     const page = await picker.loadPage({ pageSize: 30 });
     expect(service.getProducts).toHaveBeenCalledWith(jasmine.objectContaining({
       category: 'P_Pantaloni', gender: 'D', activeOnly: true, visibleInApp: true,
@@ -136,10 +138,52 @@ describe('OutfitReplacementPickerComponent', () => {
     expect(picker.loading).toBeFalse();
     expect(picker.provider).toBeDefined();
     expect(picker.columns[0].data.map(column => column.dataField)).toContain('name');
-    expect(picker.filterWarning).toContain('Filtri opzionali');
+    expect(picker.filterWarning).toContain('Filtro colori');
+    expect(service.getCurationCategories).toHaveBeenCalledWith('P_Pantaloni');
+    expect(picker.columns[0].data.find(column => column.dataField === 'subcategory')?.lista?.options)
+      .toEqual([{ value: 'jeans', label: 'jeans' }]);
     expect(service.getProductCategories).not.toHaveBeenCalled();
     const page = await picker.loadPage({ pageSize: 30 });
     expect(page.items.map(item => item.id)).toEqual(['new-product']);
+  });
+
+  it('reloads subcategories for each category and removes the previous choices', () => {
+    service.getProductSubcategories.and.callFake((category?: string) => of(
+      category === 'conna' ? ['gonne_midi', 'gonne_corte'] : ['jeans', 'short_donna'],
+    ));
+    picker.itemData = {
+      category: 'conna', gender: 'D', role: 'BOTTOM',
+      allowedCategories: ['conna', 'P_Pantaloni'], productIdsInOutfit: [],
+    };
+    picker.ngOnInit();
+    expect(picker.columns[0].data.find(c => c.dataField === 'subcategory')?.lista?.options)
+      .toEqual([{ value: 'gonne_corte', label: 'gonne_corte' },
+        { value: 'gonne_midi', label: 'gonne_midi' }]);
+    picker.changeCategory('P_Pantaloni');
+    expect(service.getProductSubcategories).toHaveBeenCalledWith('P_Pantaloni');
+    expect(picker.columns[0].data.find(c => c.dataField === 'subcategory')?.lista?.options)
+      .toEqual([{ value: 'jeans', label: 'jeans' },
+        { value: 'short_donna', label: 'short_donna' }]);
+    expect(picker.categoryDisplayName('P_Pantaloni')).toBe('Pantaloni e jeans');
+    expect(picker.categoryDisplayName('conna')).toBe('Gonne');
+  });
+
+  it('ignores an old metadata response when category changes while loading', () => {
+    const delayed = new Subject<string[]>();
+    service.getProductSubcategories.and.callFake((category?: string) =>
+      category === 'conna' ? delayed.asObservable() : of(['jeans']));
+    picker.itemData = {
+      category: 'conna', gender: 'D', role: 'BOTTOM',
+      allowedCategories: ['conna', 'P_Pantaloni'], productIdsInOutfit: [],
+    };
+    picker.ngOnInit();
+    expect(picker.loading).toBeTrue();
+    picker.changeCategory('P_Pantaloni');
+    expect(picker.loading).toBeFalse();
+    delayed.next(['gonne_midi']);
+    delayed.complete();
+    expect(picker.columns[0].data.find(c => c.dataField === 'subcategory')?.lista?.options)
+      .toEqual([{ value: 'jeans', label: 'jeans' }]);
   });
 
   it('excludes a dress from TOP even when it shares the body category', async () => {

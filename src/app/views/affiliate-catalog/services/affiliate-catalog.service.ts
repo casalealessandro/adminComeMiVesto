@@ -479,9 +479,11 @@ export class AffiliateCatalogService {
     ).pipe(map(response => Array.isArray(response) ? response : response.data));
   }
 
-  getProductSubcategories(): Observable<string[]> {
+  getProductSubcategories(category?: string): Observable<string[]> {
     return this.http
-      .get<AffiliateApiResponse<string[]>>(`${this.baseUrl}/product-subcategories`)
+      .get<AffiliateApiResponse<string[]>>(`${this.baseUrl}/product-subcategories`, {
+        params: category ? { category } : {},
+      })
       .pipe(map((response) => response.data));
   }
 
