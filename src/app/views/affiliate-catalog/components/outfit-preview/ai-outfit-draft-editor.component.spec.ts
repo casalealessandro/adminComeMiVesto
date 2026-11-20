@@ -18,7 +18,17 @@ describe('AI outfit draft replacement via Core popup', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AffiliateCatalogService, useValue: {
-          getProductCategories: () => of(['scarpe', 'cappotti', 'ABC_Completi', 'P_Pantaloni', 'M_Maglieria', 'camicie', 'A_Accessori']),
+          getCurationCategories: () => of([
+            { id: 'scarpe', categoryName: 'Calzature' },
+            { id: 'cappotti', categoryName: 'Capispalla' },
+            { id: 'ABC_Completi', categoryName: 'Abiti e completi' },
+            { id: 'P_Pantaloni', categoryName: 'Pantaloni' },
+            { id: 'conna', categoryName: 'Gonne' },
+            { id: 'M_Maglieria', categoryName: 'Maglieria' },
+            { id: 'camicie', categoryName: 'Camicie' },
+            { id: 'A_Accessori', categoryName: 'Accessori' },
+            { id: 'tute', categoryName: 'Tute' },
+          ]),
         } },
         { provide: PopUpService, useValue: popup },
       ],
@@ -35,12 +45,22 @@ describe('AI outfit draft replacement via Core popup', () => {
     component.startEditing();
   });
 
+  it('uses taxonomy categoryName in the add-product category select while preserving ids', () => {
+    component.addRole = 'BOTTOM';
+    expect(component.availableCategories).toEqual(['conna', 'P_Pantaloni']);
+    expect(component.categoryDisplayName('P_Pantaloni')).toBe('Pantaloni');
+    expect(component.categoryDisplayName('conna')).toBe('Gonne');
+    component.addCategory = 'P_Pantaloni';
+    expect(component.addCategory).toBe('P_Pantaloni');
+  });
+
   it('opens the registered Core popup with current category, gender and used ids', async () => {
     component.showReplacements(0);
     expect(popup.setNewPopUp).toHaveBeenCalledWith(
       jasmine.any(String), 'OutfitReplacementPickerComponent',
       { category: 'P_Pantaloni', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
-        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
+        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'],
+        categoryLabels: jasmine.objectContaining({ P_Pantaloni: 'Pantaloni', conna: 'Gonne' }) },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
     expect(component.form?.products[0].catalogProductId).toBe('p1');
@@ -60,7 +80,8 @@ describe('AI outfit draft replacement via Core popup', () => {
     expect(popup.setNewPopUp).toHaveBeenCalledWith(
       jasmine.any(String), 'OutfitReplacementPickerComponent',
       { category: 'conna', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
-        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
+        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'],
+        categoryLabels: jasmine.objectContaining({ P_Pantaloni: 'Pantaloni', conna: 'Gonne' }) },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
     const jeans = { id: 'jeans-2', category: 'P_Pantaloni', subcategory: 'jeans',
@@ -76,10 +97,10 @@ describe('AI outfit draft replacement via Core popup', () => {
 
   it('keeps replacements available if the editor category lookup returns 503', () => {
     const catalog = TestBed.inject(AffiliateCatalogService);
-    spyOn(catalog, 'getProductCategories').and.returnValue(throwError(() => ({ status: 503 })));
+    spyOn(catalog, 'getCurationCategories').and.returnValue(throwError(() => ({ status: 503 })));
     component.startEditing();
     expect(component.error).toBe('');
-    expect(component.categoryWarning).toContain('categorie predefinite');
+    expect(component.categoryWarning).toContain('nomi di riserva');
     expect(component.productCategories).toContain('P_Pantaloni');
     expect(component.productCategories).toContain('conna');
     component.showReplacements(0);
@@ -102,7 +123,8 @@ describe('AI outfit draft replacement via Core popup', () => {
     component.addProduct();
     expect(popup.setNewPopUp).toHaveBeenCalledWith(
       jasmine.any(String), 'OutfitReplacementPickerComponent',
-      { category: 'cappotti', gender: 'D', productIdsInOutfit: ['p1', 'p2'] },
+      { category: 'cappotti', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
+        categoryLabels: jasmine.objectContaining({ cappotti: 'Capispalla' }) },
       1180, undefined, undefined, false, true, 'Aggiungi prodotto', 'center', true,
     );
     const jacket = {
