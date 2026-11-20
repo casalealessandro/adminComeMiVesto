@@ -213,7 +213,11 @@ export class OutfitReplacementPickerComponent implements OnInit {
       // The ids-only affiliate endpoint is a fallback, not the primary source.
       subcategories: this.catalog.getCurationCategories(category).pipe(
         timeout({ first: 6000 }),
-        catchError(() => this.catalog.getProductSubcategories(category).pipe(
+        catchError(() => {
+          if (loadId === this.filterLoadId) {
+            this.filterWarning = 'Descrizioni delle sottocategorie non disponibili: uso nomi di riserva.';
+          }
+          return this.catalog.getProductSubcategories(category).pipe(
           timeout({ first: 6000 }),
           map(ids => (Array.isArray(ids) ? ids : []).map(id => ({
             id, categoryName: readableTaxonomyName(id),
@@ -224,7 +228,8 @@ export class OutfitReplacementPickerComponent implements OnInit {
             }
             return of([] as OutfitTaxonomyOption[]);
           }),
-        )),
+          );
+        }),
       ),
       colors: this.catalog.getOutfitColors().pipe(
         timeout({ first: 6000 }),
