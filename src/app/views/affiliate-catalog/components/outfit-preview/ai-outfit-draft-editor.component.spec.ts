@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { AiOutfitPreviewOutfit } from '../../models/affiliate-catalog-api.models';
@@ -39,7 +39,8 @@ describe('AI outfit draft replacement via Core popup', () => {
     component.showReplacements(0);
     expect(popup.setNewPopUp).toHaveBeenCalledWith(
       jasmine.any(String), 'OutfitReplacementPickerComponent',
-      { category: 'P_Pantaloni', gender: 'D', productIdsInOutfit: ['p1', 'p2'] },
+      { category: 'P_Pantaloni', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
+        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
     expect(component.form?.products[0].catalogProductId).toBe('p1');
@@ -50,6 +51,47 @@ describe('AI outfit draft replacement via Core popup', () => {
     expect(component.replacementLabel(0)).toContain('Jeans alternativi');
     expect(component.replacementIndex).toBeNull();
     expect(popup.destroyCurrentOpenPopUpByGuid).toHaveBeenCalled();
+  });
+
+  it('allows skirt to jeans without changing the BOTTOM slot or requesting another API', async () => {
+    component.outfit.products[0].category = 'conna';
+    component.outfit.products[0].name = 'Gonna midi';
+    component.showReplacements(0);
+    expect(popup.setNewPopUp).toHaveBeenCalledWith(
+      jasmine.any(String), 'OutfitReplacementPickerComponent',
+      { category: 'conna', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
+        role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
+      1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
+    );
+    const jeans = { id: 'jeans-2', category: 'P_Pantaloni', subcategory: 'jeans',
+      brand: 'Brand', name: 'Jeans blu', genderTargets: ['D'] } as CatalogProduct;
+    resolvePicker({ name: 'selected', product: jeans });
+    await Promise.resolve();
+    expect(component.form?.products[0]).toEqual(jasmine.objectContaining({
+      catalogProductId: 'jeans-2', role: 'BOTTOM',
+    }));
+    expect(component.selectedReplacements.get(0)?.category).toBe('P_Pantaloni');
+    expect(component.replacementLabel(0)).toContain('Jeans blu');
+  });
+
+  it('keeps replacements available if the editor category lookup returns 503', () => {
+    const catalog = TestBed.inject(AffiliateCatalogService);
+    spyOn(catalog, 'getProductCategories').and.returnValue(throwError(() => ({ status: 503 })));
+    component.startEditing();
+    expect(component.error).toBe('');
+    expect(component.categoryWarning).toContain('categorie predefinite');
+    expect(component.productCategories).toContain('P_Pantaloni');
+    expect(component.productCategories).toContain('conna');
+    component.showReplacements(0);
+    expect(popup.setNewPopUp).toHaveBeenCalled();
+  });
+
+  it('rejects incompatible replacement categories before saving the draft', () => {
+    component.replacementIndex = 0;
+    component.chooseReplacement({ id: 'shoes-3', category: 'scarpe', subcategory: 'stivali' } as CatalogProduct);
+    expect(component.form?.products[0].catalogProductId).toBe('p1');
+    expect(component.error).toContain('non è compatibile');
+    expect(component.replacementIndex).toBeNull();
   });
 
   it('adds a new jacket slot after existing products, without generating an image', async () => {

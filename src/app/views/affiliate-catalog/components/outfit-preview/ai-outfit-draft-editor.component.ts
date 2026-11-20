@@ -12,7 +12,7 @@ import {
 } from '../../models/affiliate-catalog-api.models';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, isAllowedOutfitRoleProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 
 @Component({
   selector: 'app-ai-outfit-draft-editor',
@@ -49,6 +49,7 @@ export class AiOutfitDraftEditorComponent {
   addRole = '';
   productCategories: string[] = [];
   loadingCategories = false;
+  categoryWarning = '';
   addingProduct = false;
   // Shared semantics with the backend composition slot roots.
   readonly roleLabel = outfitRoleLabel;
@@ -96,6 +97,7 @@ export class AiOutfitDraftEditorComponent {
     this.selectedReplacements.clear();
     this.addCategory = '';
     this.addRole = '';
+    this.categoryWarning = '';
     this.loadCatalogCategories();
     this.editing = true;
     this.editingChange.emit(true);
@@ -116,8 +118,17 @@ export class AiOutfitDraftEditorComponent {
     this.catalogService.getProductCategories()
       .pipe(finalize(() => this.loadingCategories = false))
       .subscribe({
-        next: categories => this.productCategories = [...categories].sort((a,b)=>a.localeCompare(b)),
-        error: () => this.error = 'Impossibile caricare le categorie del catalogo.',
+        next: categories => {
+          this.productCategories = (Array.isArray(categories) ? [...categories] : [])
+            .sort((a, b) => a.localeCompare(b));
+        },
+        error: () => {
+          // Optional for the add-product selector; do not block draft editing
+          // or replacements when the catalog categories endpoint is unavailable.
+          this.productCategories = [...new Set(Object.values(this.categoriesByRole).flat())]
+            .sort((a, b) => a.localeCompare(b));
+          this.categoryWarning = 'Elenco categorie non disponibile: uso le categorie predefinite per ruolo.';
+        },
       });
   }
 
@@ -166,9 +177,11 @@ export class AiOutfitDraftEditorComponent {
     const guid = `outfit-product-picker-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     this.popupService.setNewPopUp(
       guid, 'OutfitReplacementPickerComponent', {
-        category: original.category,
+        category: this.selectedReplacements.get(index)?.category ?? original.category,
         gender: this.form.gender,
         productIdsInOutfit: this.form.products.map(product => product.catalogProductId),
+        role: this.form.products[index].role,
+        allowedCategories: this.categoriesByRole[this.form.products[index].role] ?? [original.category],
       },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
@@ -184,6 +197,12 @@ export class AiOutfitDraftEditorComponent {
 
   chooseReplacement(product: CatalogProduct): void {
     if (!this.form || this.replacementIndex === null) return;
+    const role = this.form.products[this.replacementIndex].role;
+    if (!isAllowedOutfitRoleProduct(role, product.category, product.subcategory ?? '')) {
+      this.error = 'La categoria o sottocategoria non è compatibile con il ruolo del capo.';
+      this.replacementIndex = null;
+      return;
+    }
     this.form.products[this.replacementIndex] = {
       ...this.form.products[this.replacementIndex],
       catalogProductId: product.id,

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import {
   OutfitReplacementPickerComponent,
@@ -22,7 +22,7 @@ describe('OutfitReplacementPickerComponent', () => {
 
   beforeEach(() => {
     service = jasmine.createSpyObj('AffiliateCatalogService',
-      ['getProducts', 'getProductSubcategories', 'getOutfitColors']);
+      ['getProducts', 'getProductSubcategories', 'getOutfitColors', 'getProductCategories']);
     service.getProductSubcategories.and.returnValue(of(['jeans', 'jogger']));
     service.getOutfitColors.and.returnValue(of([{ id: 'BN', value: 'Blu navy' }]));
     service.getProducts.and.returnValue(of({
@@ -101,6 +101,66 @@ describe('OutfitReplacementPickerComponent', () => {
     await expectAsync(picker.loadPage({
       pageSize: 30, filters: [{ field: 'wrong', operator: 'eq', value: 'x' }],
     })).toBeRejectedWithError(/Filtro della griglia/);
+  });
+
+  it('switches skirt to jeans without requesting product categories again', async () => {
+    picker.itemData = {
+      category: 'conna', gender: 'D', role: 'BOTTOM',
+      allowedCategories: ['conna', 'P_Pantaloni'],
+      productIdsInOutfit: ['already-used'],
+    };
+    picker.ngOnInit();
+    expect(picker.selectedCategory).toBe('conna');
+    expect(picker.categoryOptions).toEqual(['conna', 'P_Pantaloni']);
+    expect(service.getProductCategories).not.toHaveBeenCalled();
+
+    picker.changeCategory('scarpe'); // incompatible category must not be selectable
+    expect(picker.selectedCategory).toBe('conna');
+    picker.changeCategory('P_Pantaloni');
+    expect(picker.selectedCategory).toBe('P_Pantaloni');
+    const page = await picker.loadPage({ pageSize: 30 });
+    expect(service.getProducts).toHaveBeenCalledWith(jasmine.objectContaining({
+      category: 'P_Pantaloni', gender: 'D', activeOnly: true, visibleInApp: true,
+    }));
+    expect(page.items.map(item => item.id)).toEqual(['new-product']);
+    const emitted: unknown[] = [];
+    picker.result.subscribe(value => emitted.push(value));
+    picker.selectRow({ name: 'onRowSelectionChange', data: eligible });
+    expect(emitted).toEqual([{ name: 'selected', product: eligible }]);
+  });
+
+  it('keeps the product grid usable when optional filter APIs return 503', async () => {
+    service.getProductSubcategories.and.returnValue(throwError(() => ({ status: 503 })));
+    service.getOutfitColors.and.returnValue(throwError(() => ({ status: 503 })));
+    picker.ngOnInit();
+    expect(picker.loading).toBeFalse();
+    expect(picker.provider).toBeDefined();
+    expect(picker.columns[0].data.map(column => column.dataField)).toContain('name');
+    expect(picker.filterWarning).toContain('Filtri opzionali');
+    expect(service.getProductCategories).not.toHaveBeenCalled();
+    const page = await picker.loadPage({ pageSize: 30 });
+    expect(page.items.map(item => item.id)).toEqual(['new-product']);
+  });
+
+  it('excludes a dress from TOP even when it shares the body category', async () => {
+    picker.itemData = {
+      category: 'ABC_Completi', gender: 'D', role: 'TOP',
+      allowedCategories: ['ABC_Completi', 'camicie'], productIdsInOutfit: [],
+    };
+    picker.ngOnInit();
+    const body = { ...eligible, id: 'body-1', category: 'ABC_Completi', subcategory: 'body' };
+    const dress = { ...eligible, id: 'dress-1', category: 'ABC_Completi', subcategory: 'vestito_midi' };
+    service.getProducts.and.returnValue(of({
+      data: [body, dress], pagination: { hasMore: false, nextCursor: null },
+    }));
+    const page = await picker.loadPage({ pageSize: 30 });
+    expect(page.items.map(item => item.id)).toEqual(['body-1']);
+    const emitted: unknown[] = [];
+    picker.result.subscribe(value => emitted.push(value));
+    picker.selectRow({ name: 'onRowSelectionChange', data: dress });
+    expect(emitted).toEqual([]);
+    picker.selectRow({ name: 'onRowSelectionChange', data: body });
+    expect(emitted).toEqual([{ name: 'selected', product: body }]);
   });
 
   it('loads another page explicitly even if excluded products make current page short', async () => {
