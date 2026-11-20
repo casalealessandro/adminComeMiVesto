@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import {
@@ -125,7 +125,7 @@ export class AiOutfitDraftEditorComponent {
     // Read both the ids and their descriptions from the same canonical taxonomy.
     // Avoid the old ids-only affiliate categories endpoint and an extra lookup.
     this.catalogService.getCurationCategories()
-      .pipe(finalize(() => this.loadingCategories = false))
+      .pipe(timeout({ first: 6000 }), finalize(() => this.loadingCategories = false))
       .subscribe({
         next: categories => {
           const items = (Array.isArray(categories) ? categories : [])
