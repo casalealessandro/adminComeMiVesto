@@ -67,7 +67,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj<AffiliateCatalogService>(
       'AffiliateCatalogService',
-      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators', 'getOutfitStyles', 'getOutfitOccasions', 'updateOutfitDraft', 'regenerateOutfitDraftImage', 'getProducts', 'getProductCategories'],
+      ['generateOutfitPreview', 'getPendingOutfitDrafts', 'publishOutfitPreview', 'discardOutfitDraft', 'getPrograms', 'getFeeds', 'getAiCreators', 'getOutfitStyles', 'getOutfitOccasions', 'updateOutfitDraft', 'regenerateOutfitDraftImage', 'getProducts', 'getCurationCategories'],
     );
     service.getPrograms.and.returnValue(of([{
       id: 'program-a',
@@ -404,7 +404,10 @@ describe('AffiliateOutfitPreviewComponent', () => {
     fixture.detectChanges();
     const editor = fixture.debugElement.query(By.directive(AiOutfitDraftEditorComponent))
       .componentInstance as AiOutfitDraftEditorComponent;
-    service.getProductCategories.and.returnValue(of(['cappotti', 'scarpe']));
+    service.getCurationCategories.and.returnValue(of([
+      { id: 'cappotti', categoryName: 'Capispalla' },
+      { id: 'scarpe', categoryName: 'Calzature' },
+    ]));
     editor.startEditing();
     editor.form!.title = 'Nuovo titolo';
     editor.save();

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 import { PopUpService } from '../../../../core/popup/popup.service';
 import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import {
@@ -11,6 +11,7 @@ import {
   AiOutfitPreviewOutfit,
 } from '../../models/affiliate-catalog-api.models';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
+import { readableTaxonomyName } from '../../models/outfit-taxonomy-labels';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, isAllowedOutfitRoleProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 
@@ -48,7 +49,12 @@ export class AiOutfitDraftEditorComponent {
   addCategory = '';
   addRole = '';
   productCategories: string[] = [];
+  categoryLabels: Record<string, string> = {};
   loadingCategories = false;
+
+  categoryDisplayName(id: string): string {
+    return readableTaxonomyName(id, this.categoryLabels[id]);
+  }
   categoryWarning = '';
   addingProduct = false;
   // Shared semantics with the backend composition slot roots.
@@ -98,6 +104,7 @@ export class AiOutfitDraftEditorComponent {
     this.addCategory = '';
     this.addRole = '';
     this.categoryWarning = '';
+    this.categoryLabels = {};
     this.loadCatalogCategories();
     this.editing = true;
     this.editingChange.emit(true);
@@ -115,21 +122,32 @@ export class AiOutfitDraftEditorComponent {
 
   private loadCatalogCategories(): void {
     this.loadingCategories = true;
-    this.catalogService.getProductCategories()
-      .pipe(finalize(() => this.loadingCategories = false))
+    // Read both the ids and their descriptions from the same canonical taxonomy.
+    // Avoid the old ids-only affiliate categories endpoint and an extra lookup.
+    this.catalogService.getCurationCategories()
+      .pipe(timeout({ first: 6000 }), finalize(() => this.loadingCategories = false))
       .subscribe({
         next: categories => {
-          this.productCategories = (Array.isArray(categories) ? [...categories] : [])
-            .sort((a, b) => a.localeCompare(b));
+          const items = (Array.isArray(categories) ? categories : [])
+            .filter(item => item && typeof item.id === 'string' && !!item.id.trim());
+          if (!items.length) {
+            this.useFallbackCategories();
+            return;
+          }
+          this.categoryLabels = Object.fromEntries(items.map(item => [item.id,
+            readableTaxonomyName(item.id, item.categoryName)]));
+          this.productCategories = [...new Set(items.map(item => item.id))]
+            .sort((a, b) => this.categoryDisplayName(a).localeCompare(this.categoryDisplayName(b), 'it'));
         },
-        error: () => {
-          // Optional for the add-product selector; do not block draft editing
-          // or replacements when the catalog categories endpoint is unavailable.
-          this.productCategories = [...new Set(Object.values(this.categoriesByRole).flat())]
-            .sort((a, b) => a.localeCompare(b));
-          this.categoryWarning = 'Elenco categorie non disponibile: uso le categorie predefinite per ruolo.';
-        },
+        error: () => this.useFallbackCategories(),
       });
+  }
+
+  private useFallbackCategories(): void {
+    // A metadata outage must not block editing or replacing an existing draft.
+    this.productCategories = [...new Set(Object.values(this.categoriesByRole).flat())]
+      .sort((a, b) => this.categoryDisplayName(a).localeCompare(this.categoryDisplayName(b), 'it'));
+    this.categoryWarning = 'Descrizioni delle categorie non disponibili: uso nomi di riserva.';
   }
 
   /** Reuses the remote replacement picker for selecting an additional catalog product. */
@@ -145,6 +163,7 @@ export class AiOutfitDraftEditorComponent {
       category,
       gender: this.form.gender,
       productIdsInOutfit: this.form.products.map(item => item.catalogProductId),
+      categoryLabels: { ...this.categoryLabels },
     }, 1180, undefined, undefined, false, true, 'Aggiungi prodotto', 'center', true);
     void this.popupService.getOutputComponent(guid)
       .then((result: OutfitReplacementPickerResult) => {
@@ -182,6 +201,7 @@ export class AiOutfitDraftEditorComponent {
         productIdsInOutfit: this.form.products.map(product => product.catalogProductId),
         role: this.form.products[index].role,
         allowedCategories: this.categoriesByRole[this.form.products[index].role] ?? [original.category],
+        categoryLabels: { ...this.categoryLabels },
       },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
