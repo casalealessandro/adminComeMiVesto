@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output, ViewChild, inject } from '@angular/core';
-import { catchError, firstValueFrom, forkJoin, of, timeout } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, map, of, timeout } from 'rxjs';
 import { ColData, Colonne, DataGridComponent, GridDataProvider, GridLoadRequest } from '../../../../core/public-api';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
-import { isAllowedOutfitRoleProduct } from '../../models/outfit-accessory-roles';
+import { isAllowedOutfitRoleProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
 /** Data passed through the existing Core PopUpService registry. */
@@ -83,7 +83,7 @@ export const buildReplacementPickerColumns = (
           Categoria
           <select id="outfit-replacement-category" class="form-select form-select-sm"
             [value]="selectedCategory" (change)="changeCategory($any($event.target).value)">
-            <option *ngFor="let category of categoryOptions" [value]="category">{{ category }}</option>
+            <option *ngFor="let category of categoryOptions" [value]="category">{{ categoryDisplayName(category) }}</option>
           </select>
         </label>
         <ng-template #fixedCategory>
@@ -93,8 +93,8 @@ export const buildReplacementPickerColumns = (
         <span>I prodotti devono essere attivi e visibili nell'app.</span>
       </div>
       <p *ngIf="itemData.allowedCategories?.length" class="small text-muted">
-        Puoi cambiare categoria mantenendo il ruolo del capo. Il cambio azzera
-        sottocategoria, nome, stile, colore e paginazione.
+        Mostro solo categorie compatibili con il ruolo {{ roleLabel(itemData.role) }}.
+        Il cambio azzera sottocategoria, nome, stile, colore e paginazione.
       </p>
       <p *ngIf="loading" role="status">Caricamento filtri…</p>
       <p *ngIf="error" class="text-danger" role="alert">{{ error }}</p>
@@ -172,6 +172,23 @@ export class OutfitReplacementPickerComponent implements OnInit {
   categoryOptions: string[] = [];
   filterWarning = '';
   readonly styles = PICKER_STYLE_OPTIONS;
+  readonly roleLabel = outfitRoleLabel;
+  private filterLoadId = 0;
+
+  categoryDisplayName(category: string): string {
+    const labels: Record<string, string> = {
+      P_Pantaloni: 'Pantaloni e jeans',
+      conna: 'Gonne',
+      ABC_Completi: 'Completi e abiti',
+      M_Maglieria: 'Maglieria',
+      A_Accessori: 'Accessori',
+      scarpe: 'Scarpe',
+      camicie: 'Camicie',
+      cappotti: 'Cappotti e giacche',
+      tute: 'Tute',
+    };
+    return labels[category] ?? category;
+  }
   provider?: GridDataProvider<OutfitReplacementRow>;
   loading = true;
   error = '';
@@ -187,28 +204,49 @@ export class OutfitReplacementPickerComponent implements OnInit {
       this.loading = false;
       return;
     }
-    // No extra product-categories request: the editor already knows which
-    // categories are permitted for this role. Optional metadata must never
-    // block product search when a filter endpoint is temporarily unavailable.
+    this.loadCategoryFilters();
+  }
+
+  private loadCategoryFilters(): void {
+    const category = this.selectedCategory;
+    const loadId = ++this.filterLoadId;
+    this.loading = true;
+    this.provider = undefined; // destroys the previous Core grid and its filters
+    this.filterWarning = '';
+
     forkJoin({
-      subcategories: this.catalog.getProductSubcategories().pipe(
+      subcategories: this.catalog.getProductSubcategories(category).pipe(
         timeout({ first: 6000 }),
-        catchError(() => {
-          this.filterWarning = 'Filtri opzionali non disponibili: puoi comunque cercare per nome.';
-          return of([] as string[]);
-        }),
+        // The existing /gen/outfitCategories/:parentCategory is a small taxonomy
+        // lookup and provides a safe fallback if the affiliate metadata route fails.
+        catchError(() => this.catalog.getCurationCategories(category).pipe(
+          timeout({ first: 6000 }),
+          map(items => items.map(item => item.id)),
+          catchError(() => {
+            if (loadId === this.filterLoadId) {
+              this.filterWarning = 'Sottocategorie non disponibili. Puoi cercare per nome.';
+            }
+            return of([] as string[]);
+          }),
+        )),
       ),
       colors: this.catalog.getOutfitColors().pipe(
         timeout({ first: 6000 }),
         catchError(() => {
-          this.filterWarning = 'Filtri opzionali non disponibili: puoi comunque cercare per nome.';
+          if (loadId === this.filterLoadId) {
+            this.filterWarning = this.filterWarning
+              ? this.filterWarning + ' Colori non disponibili.'
+              : 'Filtro colori non disponibile. Puoi cercare per nome.';
+          }
           return of([] as Array<{ id: string; value: string }>);
         }),
       ),
     }).subscribe({
       next: ({ subcategories, colors }) => {
+        if (loadId !== this.filterLoadId) return;
         const validSubcategories = [...new Set(
-          (Array.isArray(subcategories) ? subcategories : []).filter(Boolean),
+          (Array.isArray(subcategories) ? subcategories : [])
+            .filter((value): value is string => typeof value === 'string' && !!value.trim()),
         )].sort((a, b) => a.localeCompare(b));
         const validColors = (Array.isArray(colors) ? colors : [])
           .filter(item => item && item.id && item.value)
@@ -218,10 +256,10 @@ export class OutfitReplacementPickerComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        // Defensive fallback for unexpected metadata errors.
+        if (loadId !== this.filterLoadId) return;
         this.columns = buildReplacementPickerColumns([], []);
         this.provider = { load: (request) => this.loadPage(request) };
-        this.filterWarning = 'Filtri opzionali non disponibili: puoi comunque cercare per nome.';
+        this.filterWarning = 'Filtri non disponibili. Puoi cercare per nome.';
         this.loading = false;
       },
     });
@@ -232,7 +270,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
         category === this.selectedCategory) return;
     this.selectedCategory = category;
     this.error = '';
-    // The keyed ngFor in the template recreates Core DataGrid from scratch.
+    this.loadCategoryFilters();
   }
 
   /** Explicit pagination also works when excluded in-use products leave a partial page. */
