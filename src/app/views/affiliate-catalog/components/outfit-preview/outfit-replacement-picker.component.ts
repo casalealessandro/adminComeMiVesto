@@ -93,7 +93,7 @@ export const buildReplacementPickerColumns = (
         <span>I prodotti devono essere attivi e visibili nell'app.</span>
       </div>
       <p *ngIf="itemData.allowedCategories?.length" class="small text-muted">
-        Mostro solo categorie compatibili con il ruolo {{ roleLabel(itemData.role) }}.
+        Mostro solo categorie compatibili con il ruolo {{ roleLabel(itemData.role ?? '') }}.
         Il cambio azzera sottocategoria, nome, stile, colore e paginazione.
       </p>
       <p *ngIf="loading" role="status">Caricamento filtri…</p>
