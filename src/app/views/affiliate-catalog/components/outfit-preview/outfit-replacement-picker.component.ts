@@ -3,6 +3,7 @@ import { Component, EventEmitter, OnInit, Output, ViewChild, inject } from '@ang
 import { catchError, firstValueFrom, forkJoin, map, of, timeout } from 'rxjs';
 import { ColData, Colonne, DataGridComponent, GridDataProvider, GridLoadRequest } from '../../../../core/public-api';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
+import { OutfitTaxonomyOption, readableTaxonomyName } from '../../models/outfit-taxonomy-labels';
 import { isAllowedOutfitRoleProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
 
@@ -14,6 +15,8 @@ export interface OutfitReplacementPickerContext {
   /** Set only for replacement. Adding a new slot keeps the original fixed-category picker. */
   allowedCategories?: string[];
   role?: string;
+  /** Display names loaded by the editor; the backend still receives category ids. */
+  categoryLabels?: Record<string, string>;
 }
 
 export interface OutfitReplacementPickerResult {
@@ -48,7 +51,7 @@ const listOptions = (options: Array<{ value: string; label: string }>): NonNulla
  * normalized filter fields to the existing paged products API.
  */
 export const buildReplacementPickerColumns = (
-  subcategories: readonly string[],
+  subcategories: readonly OutfitTaxonomyOption[],
   colors: ReadonlyArray<{ id: string; value: string }>,
 ): Colonne[] => [{
   itemType: 'group', groupDataField: '', data: [
@@ -62,7 +65,9 @@ export const buildReplacementPickerColumns = (
     {
       ...column('subcategory', 'Sottocategoria', 175, 'campoLista'),
       allowFiltering: true,
-      lista: listOptions(subcategories.map(value => ({ value, label: value }))),
+      lista: listOptions(subcategories.map(item => ({
+        value: item.id, label: readableTaxonomyName(item.id, item.categoryName),
+      }))),
     },
     {
       ...column('normalizedColor', 'Colore', 135, 'campoLista'),
@@ -87,7 +92,7 @@ export const buildReplacementPickerColumns = (
           </select>
         </label>
         <ng-template #fixedCategory>
-          <span>Categoria: <strong>{{ selectedCategory }}</strong></span>
+          <span>Categoria: <strong>{{ categoryDisplayName(selectedCategory) }}</strong></span>
         </ng-template>
         <span>Genere: <strong>{{ itemData.gender === 'D' ? 'Donna' : 'Uomo' }}</strong></span>
         <span>I prodotti devono essere attivi e visibili nell'app.</span>
@@ -176,18 +181,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
   private filterLoadId = 0;
 
   categoryDisplayName(category: string): string {
-    const labels: Record<string, string> = {
-      P_Pantaloni: 'Pantaloni e jeans',
-      conna: 'Gonne',
-      ABC_Completi: 'Completi e abiti',
-      M_Maglieria: 'Maglieria',
-      A_Accessori: 'Accessori',
-      scarpe: 'Scarpe',
-      camicie: 'Camicie',
-      cappotti: 'Cappotti e giacche',
-      tute: 'Tute',
-    };
-    return labels[category] ?? category;
+    return readableTaxonomyName(category, this.itemData.categoryLabels?.[category]);
   }
   provider?: GridDataProvider<OutfitReplacementRow>;
   loading = true;
@@ -215,18 +209,20 @@ export class OutfitReplacementPickerComponent implements OnInit {
     this.filterWarning = '';
 
     forkJoin({
-      subcategories: this.catalog.getProductSubcategories(category).pipe(
+      // The canonical taxonomy returns both ids and their user-facing descriptions.
+      // The ids-only affiliate endpoint is a fallback, not the primary source.
+      subcategories: this.catalog.getCurationCategories(category).pipe(
         timeout({ first: 6000 }),
-        // The existing /gen/outfitCategories/:parentCategory is a small taxonomy
-        // lookup and provides a safe fallback if the affiliate metadata route fails.
-        catchError(() => this.catalog.getCurationCategories(category).pipe(
+        catchError(() => this.catalog.getProductSubcategories(category).pipe(
           timeout({ first: 6000 }),
-          map(items => items.map(item => item.id)),
+          map(ids => (Array.isArray(ids) ? ids : []).map(id => ({
+            id, categoryName: readableTaxonomyName(id),
+          }))),
           catchError(() => {
             if (loadId === this.filterLoadId) {
               this.filterWarning = 'Sottocategorie non disponibili. Puoi cercare per nome.';
             }
-            return of([] as string[]);
+            return of([] as OutfitTaxonomyOption[]);
           }),
         )),
       ),
@@ -244,10 +240,14 @@ export class OutfitReplacementPickerComponent implements OnInit {
     }).subscribe({
       next: ({ subcategories, colors }) => {
         if (loadId !== this.filterLoadId) return;
-        const validSubcategories = [...new Set(
+        const validSubcategories = [...new Map(
           (Array.isArray(subcategories) ? subcategories : [])
-            .filter((value): value is string => typeof value === 'string' && !!value.trim()),
-        )].sort((a, b) => a.localeCompare(b));
+            .filter((item): item is OutfitTaxonomyOption =>
+              !!item && typeof item.id === 'string' && !!item.id.trim())
+            .map(item => [item.id, item] as const),
+        ).values()].sort((a, b) =>
+          readableTaxonomyName(a.id, a.categoryName)
+            .localeCompare(readableTaxonomyName(b.id, b.categoryName), 'it'));
         const validColors = (Array.isArray(colors) ? colors : [])
           .filter(item => item && item.id && item.value)
           .sort((a, b) => a.value.localeCompare(b.value));
