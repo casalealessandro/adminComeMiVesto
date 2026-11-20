@@ -509,6 +509,36 @@ if (respo.name === 'submitForm') {
     this.selectedTagIndex = index;
   }
 
+  private draggingPin: { index: number; pointerId: number; changed: boolean } | null = null;
+
+  startPinDrag(index: number, event: PointerEvent): void {
+    event.stopPropagation();
+    this.selectTag(index);
+    if (!this.enableSetTagsImage || !this.hasPinPosition(this.tags()[index])) return;
+    this.draggingPin = { index, pointerId: event.pointerId, changed: false };
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  }
+
+  movePin(event: PointerEvent): void {
+    const drag = this.draggingPin;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const rect = this.imageElement?.nativeElement.getBoundingClientRect();
+    if (!rect?.width || !rect?.height) return;
+    const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+    const tag = this.tags()[drag.index];
+    if (!tag || (tag.x === x && tag.y === y)) return;
+    this.tags.update(items => items.map((item, i) => i === drag.index ? { ...item, x, y } : item));
+    drag.changed = true;
+  }
+
+  endPinDrag(event: PointerEvent): void {
+    const drag = this.draggingPin;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    this.draggingPin = null;
+    if (drag.changed) this.eventImageTags.emit({ tags: this.tags() });
+  }
+
   isTagSelected(index: number): boolean {
     return this.selectedTagIndex === index;
   }
