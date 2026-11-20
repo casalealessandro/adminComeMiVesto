@@ -20,6 +20,8 @@
               [attr.aria-label]="'Seleziona pin ' + (i + 1) + ': ' + tag.name"
               [attr.aria-pressed]="isTagSelected(i)"
               [title]="tag.name"
+              (pointerdown)="startPinDrag(i, $event)" (pointermove)="movePin($event)"
+              (pointerup)="endPinDrag($event)" (pointercancel)="endPinDrag($event)"
               (click)="selectTag(i, $event)">{{ i + 1 }}</button>
           </ng-container>
         </ng-container>
@@ -34,7 +36,7 @@
     <div class="photo-actions">
       <button *ngIf="enableNewImagecaptured()" type="button" class="btn btn-sm btn-outline-primary"
         (click)="chooseFile()">Seleziona foto</button>
-      <small *ngIf="enableSetTagsImage && image()">Clicca sulla foto per aggiungere un tag.</small>
+      <small *ngIf="enableSetTagsImage && image()">Clicca sulla foto per aggiungere un tag; trascina un pin per spostarlo.</small>
     </div>
   </div>
 
