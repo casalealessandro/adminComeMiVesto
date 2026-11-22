@@ -203,9 +203,9 @@ export class OutfitReplacementPickerComponent implements OnInit {
   error = '';
 
   ngOnInit(): void {
-    this.selectedCategory = this.itemData.category;
+    this.selectedCategory = this.itemData.category ?? '';
     this.categoryOptions = [...new Set([
-      this.itemData.category,
+      ...(this.itemData.category ? [this.itemData.category] : []),
       ...(this.itemData.allowedCategories ?? []),
     ])].sort((a, b) => a.localeCompare(b));
     if ((!this.itemData.allCategories && !this.itemData.category) || !['D', 'U'].includes(this.itemData.gender)) {
