@@ -109,23 +109,8 @@
         </button>
         <ng-container *ngIf="!genericMode">
         <p class="ai-preview__control-help">Seleziona fino a tre capi reali. Verrà generato un outfit che li comprende obbligatoriamente; gli altri capi saranno scelti dal catalogo.</p>
-        <div class="ai-preview__anchor-options">
-          <label>Ruolo
-            <select name="anchorRole" [(ngModel)]="anchorRole" [disabled]="anchorPickerOpen">
-              <option value="">Seleziona ruolo</option>
-              <option *ngFor="let role of availableAnchorRoles" [value]="role">{{ roleLabel(role) }}</option>
-            </select>
-          </label>
-          <label>Categoria
-            <select name="anchorCategory" [(ngModel)]="anchorCategory"
-              [disabled]="anchorsLoading || anchorPickerOpen">
-              <option value="">Seleziona categoria</option>
-              <option *ngFor="let category of availableAnchorCategories" [value]="category">{{ category }}</option>
-            </select>
-          </label>
-        </div>
         <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addAnchor()"
-          [disabled]="!anchorRole || !anchorCategory || anchorPickerOpen || selectedAnchors.length >= 3">
+          [disabled]="anchorPickerOpen || selectedAnchors.length >= 3">
           {{ anchorPickerOpen ? 'Selezione in corso…' : 'Scegli prodotto dal catalogo' }}
         </button>
         <ul *ngIf="selectedAnchors.length" class="ai-preview__anchors">
