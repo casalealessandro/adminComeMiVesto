@@ -59,7 +59,7 @@ export const buildReplacementPickerColumns = (
     { ...column('name', 'Nome', 270), allowFiltering: true },
     {
       ...column('category', 'Categoria', 175, 'campoLista'),
-      allowFiltering: true,
+      allowFiltering: categories.length > 0,
       lista: listOptions(categories.map(value => ({ value, label: value }))),
     },
     {
@@ -245,7 +245,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
           if (loadId === this.filterLoadId) this.filterWarning = 'Categorie non disponibili. Puoi cercare per nome.';
           return of([] as string[]);
         }),
-      ) : of(this.categoryOptions),
+      ) : of([] as string[]),
       colors: this.catalog.getOutfitColors().pipe(
         timeout({ first: 6000 }),
         catchError(() => {
