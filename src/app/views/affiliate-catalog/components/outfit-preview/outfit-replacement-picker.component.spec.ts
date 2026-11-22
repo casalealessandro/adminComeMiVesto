@@ -42,7 +42,7 @@ describe('OutfitReplacementPickerComponent', () => {
 
   it('uses the Core grid image column and its native list/text filter metadata', () => {
     const columns = buildReplacementPickerColumns(['jeans', 'jogger'],
-      [{ id: 'BN', value: 'Blu navy' }])[0].data;
+      [{ id: 'BN', value: 'Blu navy' }], ['P_Pantaloni'])[0].data;
     expect(columns.map(x => x.colCaption)).toEqual(
       ['Immagine', 'Nome', 'Categoria', 'Stile', 'Sottocategoria', 'Colore'],
     );
