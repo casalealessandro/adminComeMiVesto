@@ -19,7 +19,7 @@ import { PopUpService } from '../../../../core/popup/popup.service';
 import { OutfitReplacementPickerResult } from './outfit-replacement-picker.component';
 import { AiCreator } from '../../models/ai-creator.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, accessoryRoleFromTaxonomy, isAllowedAccessoryProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, accessoryRoleFromTaxonomy, isAllowedOutfitRoleProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 import { AiOutfitCostEstimate, estimateAiOutfitCost } from '../../utils/ai-outfit-cost-estimate';
 import { AiOutfitDraftEditorComponent } from './ai-outfit-draft-editor.component';
 
@@ -93,8 +93,6 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   maxTotalPrice: number | null = null;
 
   anchorMode = false;
-  anchorCategory = '';
-  anchorRole = '';
   anchorCategories: string[] = [];
   anchorsLoading = false;
   anchorPickerOpen = false;
@@ -120,13 +118,6 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     HEADWEAR: [ACCESSORY_CATEGORY],
   };
 
-  get availableAnchorRoles(): string[] {
-    const used = new Set(this.selectedAnchors.map(item => item.role));
-    return this.anchorRoles.filter(role => !used.has(role));
-  }
-  get availableAnchorCategories(): string[] {
-    return this.anchorCategories.filter(x => (this.categoryByRole[this.anchorRole] ?? []).includes(x));
-  }
   toggleAnchorMode(): void {
     if (this.loading) return;
     this.anchorMode = !this.anchorMode;
@@ -135,8 +126,6 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
     delete this.request.anchorConstraints;
     delete this.request.anchorProducts;
     this.selectedAnchors.splice(0);
-    this.anchorRole = '';
-    this.anchorCategory = '';
     if (this.anchorMode) {
       this.outfitCount = 1;
       this.anchorsLoading = true;
@@ -220,31 +209,32 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
   }
 
   addAnchor(): void {
-    if (!this.anchorMode || this.loading || this.anchorPickerOpen ||
-        this.selectedAnchors.length >= 3 || !this.availableAnchorRoles.includes(this.anchorRole) ||
-        !this.availableAnchorCategories.includes(this.anchorCategory)) return;
-    const category = this.anchorCategory;
-    const role = this.anchorRole;
+    if (!this.anchorMode || this.genericMode || this.loading || this.anchorPickerOpen ||
+        this.selectedAnchors.length >= 3) return;
     const guid = `outfit-generator-anchor-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    const gender = this.request.gender === 'WOMAN' ? 'D' : 'U';
     this.anchorPickerOpen = true;
     this.popupService.setNewPopUp(guid, 'OutfitReplacementPickerComponent', {
-      category, gender: this.request.gender === 'WOMAN' ? 'D' : 'U',
+      allCategories: true, gender,
       productIdsInOutfit: this.selectedAnchors.map(item => item.product.id),
     }, 1180, undefined, undefined, false, true, 'Scegli capo base', 'center', true);
     void this.popupService.getOutputComponent(guid)
       .then((result: OutfitReplacementPickerResult) => {
         this.popupService.destroyCurrentOpenPopUpByGuid(guid);
-        if (result?.name !== 'selected' || !result.product || !this.anchorMode) return;
-        if (result.product.category !== category ||
-            !result.product.genderTargets?.includes(this.request.gender === 'WOMAN' ? 'D' : 'U')) return;
-        if (!isAllowedAccessoryProduct(role, result.product.category, result.product.subcategory ?? '')) {
-          this.error = 'Sottocategoria incompatibile con il ruolo scelto.';
+        if (result?.name !== 'selected' || !result.product || !this.anchorMode || this.genericMode) return;
+        const product = result.product;
+        if (!product.genderTargets?.includes(gender) || product.active !== true ||
+            product.enabledForApp === false ||
+            this.selectedAnchors.some(item => item.product.id === product.id)) return;
+        const role = this.anchorRoles.find(value =>
+          !this.selectedAnchors.some(item => item.role === value) &&
+          isAllowedOutfitRoleProduct(value, product.category, product.subcategory ?? ''));
+        if (!role) {
+          this.error = 'Questo capo non ha un ruolo compatibile disponibile nell’outfit.';
           return;
         }
-        if (this.selectedAnchors.some(a => a.role === role || a.product.id === result.product!.id)) return;
-        this.selectedAnchors.push({product:result.product,role});
-        this.anchorRole = '';
-        this.anchorCategory = '';
+        this.selectedAnchors.push({ product, role });
+        this.error = '';
       })
       .catch(() => this.error = 'Errore durante la scelta del capo base.')
       .finally(() => this.anchorPickerOpen = false);
