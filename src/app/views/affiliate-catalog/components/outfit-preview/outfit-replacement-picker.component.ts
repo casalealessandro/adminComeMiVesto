@@ -8,7 +8,9 @@ import { AffiliateCatalogService } from '../../services/affiliate-catalog.servic
 
 /** Data passed through the existing Core PopUpService registry. */
 export interface OutfitReplacementPickerContext {
-  category: string;
+  category?: string;
+  /** Select across all categories when true; preserves fixed-category replacement flows. */
+  allCategories?: boolean;
   gender: 'U' | 'D';
   productIdsInOutfit: string[];
   /** Set only for replacement. Adding a new slot keeps the original fixed-category picker. */
@@ -50,10 +52,16 @@ const listOptions = (options: Array<{ value: string; label: string }>): NonNulla
 export const buildReplacementPickerColumns = (
   subcategories: readonly string[],
   colors: ReadonlyArray<{ id: string; value: string }>,
+  categories: readonly string[] = [],
 ): Colonne[] => [{
   itemType: 'group', groupDataField: '', data: [
     { ...column('imagePreview', 'Immagine', 84, 'campoImg'), search: false },
     { ...column('name', 'Nome', 270), allowFiltering: true },
+    {
+      ...column('category', 'Categoria', 175, 'campoLista'),
+      allowFiltering: true,
+      lista: listOptions(categories.map(value => ({ value, label: value }))),
+    },
     {
       ...column('styleLabel', 'Stile', 170, 'campoLista'),
       allowFiltering: true,
@@ -79,7 +87,7 @@ export const buildReplacementPickerColumns = (
   template: `
     <section class="outfit-product-picker" aria-label="Seleziona un prodotto sostitutivo">
       <div class="outfit-product-picker__category">
-        <label *ngIf="itemData.allowedCategories?.length; else fixedCategory" for="outfit-replacement-category">
+        <label *ngIf="!itemData.allCategories && itemData.allowedCategories?.length; else fixedCategory" for="outfit-replacement-category">
           Categoria
           <select id="outfit-replacement-category" class="form-select form-select-sm"
             [value]="selectedCategory" (change)="changeCategory($any($event.target).value)">
@@ -87,12 +95,13 @@ export const buildReplacementPickerColumns = (
           </select>
         </label>
         <ng-template #fixedCategory>
-          <span>Categoria: <strong>{{ selectedCategory }}</strong></span>
+          <span *ngIf="!itemData.allCategories">Categoria: <strong>{{ selectedCategory }}</strong></span>
+          <span *ngIf="itemData.allCategories">Tutte le categorie</span>
         </ng-template>
         <span>Genere: <strong>{{ itemData.gender === 'D' ? 'Donna' : 'Uomo' }}</strong></span>
         <span>I prodotti devono essere attivi e visibili nell'app.</span>
       </div>
-      <p *ngIf="itemData.allowedCategories?.length" class="small text-muted">
+      <p *ngIf="!itemData.allCategories && itemData.allowedCategories?.length" class="small text-muted">
         Mostro solo categorie compatibili con il ruolo {{ roleLabel(itemData.role ?? '') }}.
         Il cambio azzera sottocategoria, nome, stile, colore e paginazione.
       </p>
@@ -199,7 +208,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
       this.itemData.category,
       ...(this.itemData.allowedCategories ?? []),
     ])].sort((a, b) => a.localeCompare(b));
-    if (!this.itemData.category || !['D', 'U'].includes(this.itemData.gender)) {
+    if ((!this.itemData.allCategories && !this.itemData.category) || !['D', 'U'].includes(this.itemData.gender)) {
       this.error = 'Categoria o genere del capo originale non validi.';
       this.loading = false;
       return;
@@ -215,11 +224,11 @@ export class OutfitReplacementPickerComponent implements OnInit {
     this.filterWarning = '';
 
     forkJoin({
-      subcategories: this.catalog.getProductSubcategories(category).pipe(
+      subcategories: this.catalog.getProductSubcategories(this.itemData.allCategories ? undefined : category).pipe(
         timeout({ first: 6000 }),
         // The existing /gen/outfitCategories/:parentCategory is a small taxonomy
         // lookup and provides a safe fallback if the affiliate metadata route fails.
-        catchError(() => this.catalog.getCurationCategories(category).pipe(
+        catchError(() => this.itemData.allCategories ? of([] as string[]) : this.catalog.getCurationCategories(category).pipe(
           timeout({ first: 6000 }),
           map(items => items.map(item => item.id)),
           catchError(() => {
@@ -230,6 +239,13 @@ export class OutfitReplacementPickerComponent implements OnInit {
           }),
         )),
       ),
+      categories: this.itemData.allCategories ? this.catalog.getProductCategories().pipe(
+        timeout({ first: 6000 }),
+        catchError(() => {
+          if (loadId === this.filterLoadId) this.filterWarning = 'Categorie non disponibili. Puoi cercare per nome.';
+          return of([] as string[]);
+        }),
+      ) : of(this.categoryOptions),
       colors: this.catalog.getOutfitColors().pipe(
         timeout({ first: 6000 }),
         catchError(() => {
@@ -242,7 +258,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
         }),
       ),
     }).subscribe({
-      next: ({ subcategories, colors }) => {
+      next: ({ subcategories, colors, categories }) => {
         if (loadId !== this.filterLoadId) return;
         const validSubcategories = [...new Set(
           (Array.isArray(subcategories) ? subcategories : [])
@@ -251,7 +267,8 @@ export class OutfitReplacementPickerComponent implements OnInit {
         const validColors = (Array.isArray(colors) ? colors : [])
           .filter(item => item && item.id && item.value)
           .sort((a, b) => a.value.localeCompare(b.value));
-        this.columns = buildReplacementPickerColumns(validSubcategories, validColors);
+        this.columns = buildReplacementPickerColumns(validSubcategories, validColors,
+          [...new Set(categories)].sort((a, b) => a.localeCompare(b)));
         this.provider = { load: (request) => this.loadPage(request) };
         this.loading = false;
       },
@@ -288,7 +305,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
     }
 
     const permittedFilters: Record<string, string> = {
-      name: 'contains', styleLabel: 'eq',
+      name: 'contains', category: 'eq', styleLabel: 'eq',
       subcategory: 'eq', normalizedColor: 'eq',
     };
     const filters = request.filters ?? [];
@@ -301,7 +318,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
       return typeof value === 'string' ? value.trim() || undefined : undefined;
     };
 
-    // Gender and outfit role are immutable. Category is selected above the grid.
+    // Gender and any replacement role are immutable. Generator mode filters category in the grid.
     const nameFilter = filterValue('name');
     const globalQuery = request.search?.value?.trim();
     if (nameFilter && globalQuery && nameFilter !== globalQuery) {
@@ -312,7 +329,9 @@ export class OutfitReplacementPickerComponent implements OnInit {
       limit: request.pageSize,
       ...(typeof request.continuation === 'string' ? { cursor: request.continuation } : {}),
       ...(query ? { q: query } : {}),
-      category: this.selectedCategory,
+      ...(this.itemData.allCategories
+        ? (filterValue('category') ? { category: filterValue('category') } : {})
+        : { category: this.selectedCategory }),
       gender: this.itemData.gender,
       visibleInApp: true,
       activeOnly: true,
@@ -323,7 +342,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
     const used = new Set(this.itemData.productIdsInOutfit);
     const items = page.data
       .filter(product => !used.has(product.id) &&
-        product.category === this.selectedCategory &&
+        (this.itemData.allCategories || product.category === this.selectedCategory) &&
         (!this.itemData.role || isAllowedOutfitRoleProduct(
           this.itemData.role, product.category, product.subcategory ?? '',
         )))
@@ -342,14 +361,14 @@ export class OutfitReplacementPickerComponent implements OnInit {
     if (event.name !== 'onRowSelectionChange' || !event.data) return;
     const product = event.data;
     const valid = product.active === true && product.enabledForApp !== false &&
-      product.category === this.selectedCategory &&
+      (this.itemData.allCategories || product.category === this.selectedCategory) &&
       (!this.itemData.role || isAllowedOutfitRoleProduct(
         this.itemData.role, product.category, product.subcategory ?? '',
       )) &&
       product.genderTargets.includes(this.itemData.gender) &&
       !this.itemData.productIdsInOutfit.includes(product.id);
     if (!valid) {
-      this.error = 'Questo prodotto non è disponibile o non è compatibile con il capo da sostituire.';
+      this.error = 'Questo prodotto non è disponibile o non è compatibile con la selezione.';
       return;
     }
     this.result.emit({ name: 'selected', product });
