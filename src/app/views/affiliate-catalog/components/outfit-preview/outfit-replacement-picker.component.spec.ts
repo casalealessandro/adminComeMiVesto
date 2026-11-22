@@ -44,7 +44,7 @@ describe('OutfitReplacementPickerComponent', () => {
     const columns = buildReplacementPickerColumns(['jeans', 'jogger'],
       [{ id: 'BN', value: 'Blu navy' }])[0].data;
     expect(columns.map(x => x.colCaption)).toEqual(
-      ['Immagine', 'Nome', 'Stile', 'Sottocategoria', 'Colore'],
+      ['Immagine', 'Nome', 'Categoria', 'Stile', 'Sottocategoria', 'Colore'],
     );
     expect(columns[0].type).toBe('campoImg');
     expect(columns[0].allowFiltering).toBeFalse();
@@ -56,6 +56,8 @@ describe('OutfitReplacementPickerComponent', () => {
     }
     const style = columns.find(x => x.dataField === 'styleLabel');
     const color = columns.find(x => x.dataField === 'normalizedColor');
+    const category = columns.find(x => x.dataField === 'category');
+    expect(category?.allowFiltering).toBeTrue();
     expect(style?.lista?.options).toContain(jasmine.objectContaining({ value: 'SMART_CASUAL', label: 'Smart Casual' }));
     expect(color?.lista?.options).toEqual([{ value: 'BN', label: 'Blu navy' }]);
     expect(picker.columns[0].data.map(x => x.dataField)).toEqual(columns.map(x => x.dataField));
@@ -102,6 +104,30 @@ describe('OutfitReplacementPickerComponent', () => {
     await expectAsync(picker.loadPage({
       pageSize: 30, filters: [{ field: 'wrong', operator: 'eq', value: 'x' }],
     })).toBeRejectedWithError(/Filtro della griglia/);
+  });
+
+  it('opens the generator picker without a category and filters category directly in the grid', async () => {
+    service.getProductCategories.and.returnValue(of(['P_Pantaloni', 'ABC_Completi']));
+    picker.itemData = { allCategories: true, gender: 'D', productIdsInOutfit: [] };
+    picker.ngOnInit();
+    expect(picker.error).toBe('');
+    expect(service.getProductSubcategories).toHaveBeenCalledWith(undefined);
+    const categoryColumn = picker.columns[0].data.find(col => col.dataField === 'category');
+    expect(categoryColumn?.lista?.options).toEqual([
+      { value: 'ABC_Completi', label: 'ABC_Completi' },
+      { value: 'P_Pantaloni', label: 'P_Pantaloni' },
+    ]);
+    const page = await picker.loadPage({
+      pageSize: 30, filters: [{ field: 'category', operator: 'eq', value: 'P_Pantaloni' }],
+    });
+    expect(service.getProducts).toHaveBeenCalledWith(jasmine.objectContaining({
+      category: 'P_Pantaloni', gender: 'D', activeOnly: true, visibleInApp: true,
+    }));
+    expect(page.items.map(item => item.id)).toEqual(['new-product', 'already-used']);
+    service.getProducts.calls.reset();
+    await picker.loadPage({ pageSize: 30 });
+    const query = service.getProducts.calls.mostRecent().args[0];
+    expect(query?.category).toBeUndefined();
   });
 
   it('switches skirt to jeans without requesting product categories again', async () => {
