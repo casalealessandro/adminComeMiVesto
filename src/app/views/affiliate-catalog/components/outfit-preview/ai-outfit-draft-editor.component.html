@@ -86,7 +86,7 @@
           <select name="additionalProductCategory" [(ngModel)]="addCategory"
             [disabled]="saving || addingProduct || loadingCategories">
             <option value="">Seleziona categoria</option>
-            <option *ngFor="let category of availableCategories" [value]="category">{{ category }}</option>
+            <option *ngFor="let category of availableCategories" [value]="category">{{ categoryDisplayName(category) }}</option>
           </select>
         </label>
       </div>
