@@ -310,7 +310,8 @@ export class OutfitReplacementPickerComponent implements OnInit {
     };
     const filters = request.filters ?? [];
     if (filters.some(filter => permittedFilters[filter.field] !== filter.operator ||
-      typeof filter.value !== 'string')) {
+      typeof filter.value !== 'string' ||
+      (!this.itemData.allCategories && filter.field === 'category'))) {
       throw new Error('Filtro della griglia non supportato dal catalogo prodotti.');
     }
     const filterValue = (field: string): string | undefined => {
