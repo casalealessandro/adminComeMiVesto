@@ -265,8 +265,13 @@ export class AiOutfitDraftEditorComponent {
     this.restoring = restorePrevious;
     this.regenerationError = '';
     this.editingChange.emit(true);
-    this.catalogService.regenerateOutfitDraftImage(id, this.draft?.revision ?? 0, instructions, restorePrevious)
-      .pipe(finalize(() => {
+    const revision = this.draft?.revision ?? 0;
+    const request = restorePrevious
+      ? this.catalogService.regenerateOutfitDraftImage(id, revision, undefined, true)
+      : instructions
+        ? this.catalogService.regenerateOutfitDraftImage(id, revision, instructions)
+        : this.catalogService.regenerateOutfitDraftImage(id, revision);
+    request.pipe(finalize(() => {
         this.regenerating = false;
         this.restoring = false;
         this.editingChange.emit(false);
