@@ -303,11 +303,11 @@ export class AffiliateCatalogService {
       .pipe(map((response) => response.data));
   }
 
-  regenerateOutfitDraftImage(id: string, expectedRevision: number): Observable<AiOutfitDraft> {
+  regenerateOutfitDraftImage(id: string, expectedRevision: number, instructions?: string, restorePrevious = false): Observable<AiOutfitDraft> {
     return this.http
       .post<AffiliateApiResponse<AiOutfitDraft>>(
         `${this.baseUrl}/outfit-generator/drafts/${encodeURIComponent(id)}/regenerate-image`,
-        { expectedRevision },
+        { expectedRevision, ...(instructions ? { instructions } : {}), ...(restorePrevious ? { restorePrevious: true } : {}) },
       )
       .pipe(map((response) => response.data));
   }

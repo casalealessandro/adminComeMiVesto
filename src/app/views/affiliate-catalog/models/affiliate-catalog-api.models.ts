@@ -297,6 +297,7 @@ export interface AiOutfitDraft {
   imageNeedsRegeneration?: boolean;
   imageRegenerating?: boolean;
   imageRegenerationCount?: number;
+  previousPreviewImageUrl?: string | null;
   lastImageRegenerationUsage?: AiOutfitTokenUsage;
 }
 

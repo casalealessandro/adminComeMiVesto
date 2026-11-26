@@ -27,6 +27,7 @@ export class AiOutfitDraftEditorComponent {
 
   @Input({ required: true }) outfit!: AiOutfitPreviewOutfit;
   @Input() draft?: AiOutfitDraft;
+  @Input() busy = false;
   @Input() occasion: AiOutfitPreviewOccasion = 'EVERYDAY';
   @Input() styleOptions: Array<{ value: string; label: string }> = [];
   @Input() occasionOptions: Array<{ value: AiOutfitPreviewOccasion; label: string }> = [];
@@ -43,6 +44,8 @@ export class AiOutfitDraftEditorComponent {
   regenerating = false;
   error = '';
   regenerationError = '';
+  imageInstructions = '';
+  restoring = false;
   form: AiOutfitDraftEditRequest | null = null;
   replacementIndex: number | null = null;
   addCategory = '';
@@ -76,7 +79,7 @@ export class AiOutfitDraftEditorComponent {
   readonly selectedReplacements = new Map<number, CatalogProduct>();
 
   startEditing(): void {
-    if (!this.outfit.draftId || this.saving || this.regenerating) return;
+    if (!this.outfit.draftId || this.saving || this.regenerating || this.busy) return;
     this.form = {
       expectedRevision: this.draft?.revision ?? 0,
       title: this.outfit.title,
@@ -248,22 +251,35 @@ export class AiOutfitDraftEditorComponent {
       });
   }
 
-  regenerateImage(): void {
+  regenerateImage(correct = false, restorePrevious = false): void {
     const id = this.outfit.draftId;
-    if (!id || this.editing || this.regenerating || this.draft?.imageRegenerating) return;
-    if (typeof window !== 'undefined' && !window.confirm(
-      'Rigenerare solo l’immagine di questo look? L’operazione usa il modello AI e può avere un costo.',
+    if (!id || this.busy || this.editing || this.regenerating || this.draft?.imageRegenerating) return;
+    const instructions = correct ? this.imageInstructions.trim() : undefined;
+    if (correct && (!instructions || this.imageInstructions.length > 500 || this.draft?.imageNeedsRegeneration)) return;
+    if (restorePrevious && (!this.draft?.previousPreviewImageUrl || this.draft?.imageNeedsRegeneration)) return;
+    if (typeof window !== 'undefined' && !window.confirm(restorePrevious
+      ? 'Ripristinare l’immagine precedente? La correzione attuale verrà scartata.'
+      : 'Rigenerare solo l’immagine di questo look? L’operazione usa il modello AI e può avere un costo.',
     )) return;
     this.regenerating = true;
+    this.restoring = restorePrevious;
     this.regenerationError = '';
-    this.catalogService.regenerateOutfitDraftImage(id, this.draft?.revision ?? 0)
-      .pipe(finalize(() => this.regenerating = false))
+    this.editingChange.emit(true);
+    this.catalogService.regenerateOutfitDraftImage(id, this.draft?.revision ?? 0, instructions, restorePrevious)
+      .pipe(finalize(() => {
+        this.regenerating = false;
+        this.restoring = false;
+        this.editingChange.emit(false);
+      }))
       .subscribe({
-        next: (updated) => this.draftUpdated.emit(updated),
+        next: (updated) => {
+          this.imageInstructions = '';
+          this.draftUpdated.emit(updated);
+        },
         error: (error) => {
           this.regenerationError = error?.status === 409
-            ? 'La bozza è cambiata. Ricarica i dati prima di rigenerare.'
-            : (error?.error?.message || 'Rigenerazione immagine non riuscita.');
+            ? 'La bozza è cambiata. Ricarica i dati prima di riprovare.'
+            : (error?.error?.message || 'Impossibile aggiornare l’immagine.');
         },
       });
   }
