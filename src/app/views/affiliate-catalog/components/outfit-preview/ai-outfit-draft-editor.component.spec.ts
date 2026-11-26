@@ -86,11 +86,13 @@ describe('AI outfit draft replacement via Core popup', () => {
     expect(popup.setNewPopUp).toHaveBeenCalled();
   });
 
-  it('rejects incompatible replacement categories before saving the draft', () => {
+  it('allows manual replacement across categories while preserving the draft slot', () => {
     component.replacementIndex = 0;
     component.chooseReplacement({ id: 'shoes-3', category: 'scarpe', subcategory: 'stivali' } as CatalogProduct);
-    expect(component.form?.products[0].catalogProductId).toBe('p1');
-    expect(component.error).toContain('non è compatibile');
+    expect(component.form?.products[0]).toEqual(jasmine.objectContaining({
+      catalogProductId: 'shoes-3', role: 'BOTTOM',
+    }));
+    expect(component.error).toBe('');
     expect(component.replacementIndex).toBeNull();
   });
 

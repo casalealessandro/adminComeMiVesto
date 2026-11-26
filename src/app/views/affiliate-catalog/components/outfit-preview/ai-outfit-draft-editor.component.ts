@@ -12,7 +12,7 @@ import {
 } from '../../models/affiliate-catalog-api.models';
 import { CatalogProduct } from '../../models/affiliate-catalog.models';
 import { AffiliateCatalogService } from '../../services/affiliate-catalog.service';
-import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, isAllowedOutfitRoleProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
+import { ACCESSORY_CATEGORY, ACCESSORY_ROLES, isAllowedAccessoryProduct, outfitRoleLabel } from '../../models/outfit-accessory-roles';
 
 @Component({
   selector: 'app-ai-outfit-draft-editor',
@@ -200,12 +200,6 @@ export class AiOutfitDraftEditorComponent {
 
   chooseReplacement(product: CatalogProduct): void {
     if (!this.form || this.replacementIndex === null) return;
-    const role = this.form.products[this.replacementIndex].role;
-    if (!isAllowedOutfitRoleProduct(role, product.category, product.subcategory ?? '')) {
-      this.error = 'La categoria o sottocategoria non è compatibile con il ruolo del capo.';
-      this.replacementIndex = null;
-      return;
-    }
     this.form.products[this.replacementIndex] = {
       ...this.form.products[this.replacementIndex],
       catalogProductId: product.id,

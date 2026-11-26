@@ -130,7 +130,7 @@ describe('OutfitReplacementPickerComponent', () => {
     expect(query?.category).toBeUndefined();
   });
 
-  it('opens replacement without hiding incompatible rows, but validates selection', async () => {
+  it('opens replacement without category restrictions on rows or selection', async () => {
     service.getProductCategories.and.returnValue(of(['P_Pantaloni', 'conna', 'scarpe']));
     picker.itemData = {
       allCategories: true, gender: 'D', role: 'BOTTOM',
@@ -154,7 +154,7 @@ describe('OutfitReplacementPickerComponent', () => {
     picker.result.subscribe(value => emitted.push(value));
     picker.selectRow({ name: 'onRowSelectionChange', data: shoes });
     picker.selectRow({ name: 'onRowSelectionChange', data: skirt });
-    expect(emitted).toEqual([{ name: 'selected', product: skirt }]);
+    expect(emitted).toEqual([{ name: 'selected', product: shoes }, { name: 'selected', product: skirt }]);
   });
 
   it('switches skirt to jeans without requesting product categories again', async () => {

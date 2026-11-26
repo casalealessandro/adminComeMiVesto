@@ -363,7 +363,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
     const product = event.data;
     const valid = product.active === true && product.enabledForApp !== false &&
       (this.itemData.allCategories || product.category === this.selectedCategory) &&
-      (!this.itemData.role || isAllowedOutfitRoleProduct(
+      (this.itemData.allCategories || !this.itemData.role || isAllowedOutfitRoleProduct(
         this.itemData.role, product.category, product.subcategory ?? '',
       )) &&
       product.genderTargets.includes(this.itemData.gender) &&
