@@ -130,7 +130,7 @@ describe('OutfitReplacementPickerComponent', () => {
     expect(query?.category).toBeUndefined();
   });
 
-  it('opens replacement without a category filter while keeping compatible products only', async () => {
+  it('opens replacement without hiding incompatible rows, but validates selection', async () => {
     service.getProductCategories.and.returnValue(of(['P_Pantaloni', 'conna', 'scarpe']));
     picker.itemData = {
       allCategories: true, gender: 'D', role: 'BOTTOM',
@@ -147,7 +147,7 @@ describe('OutfitReplacementPickerComponent', () => {
     }));
     const page = await picker.loadPage({ pageSize: 30 });
     expect(service.getProducts.calls.mostRecent().args[0]?.category).toBeUndefined();
-    expect(page.items.map(item => item.id)).toEqual(['new-product', 'skirt']);
+    expect(page.items.map(item => item.id)).toEqual(['new-product', 'skirt', 'shoes']);
     await picker.loadPage({ pageSize: 30, filters: [{ field: 'category', operator: 'eq', value: 'conna' }] });
     expect(service.getProducts.calls.mostRecent().args[0]?.category).toBe('conna');
     const emitted: unknown[] = [];

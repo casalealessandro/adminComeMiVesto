@@ -344,7 +344,7 @@ export class OutfitReplacementPickerComponent implements OnInit {
     const items = page.data
       .filter(product => !used.has(product.id) &&
         (this.itemData.allCategories || product.category === this.selectedCategory) &&
-        (!this.itemData.role || isAllowedOutfitRoleProduct(
+        (this.itemData.allCategories || !this.itemData.role || isAllowedOutfitRoleProduct(
           this.itemData.role, product.category, product.subcategory ?? '',
         )))
       .map(product => ({
