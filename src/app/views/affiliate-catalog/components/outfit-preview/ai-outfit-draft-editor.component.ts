@@ -180,7 +180,7 @@ export class AiOutfitDraftEditorComponent {
     const guid = `outfit-product-picker-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     this.popupService.setNewPopUp(
       guid, 'OutfitReplacementPickerComponent', {
-        category: this.selectedReplacements.get(index)?.category ?? original.category,
+        allCategories: true,
         gender: this.form.gender,
         productIdsInOutfit: this.form.products.map(product => product.catalogProductId),
         role: this.form.products[index].role,

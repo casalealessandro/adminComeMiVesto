@@ -35,11 +35,11 @@ describe('AI outfit draft replacement via Core popup', () => {
     component.startEditing();
   });
 
-  it('opens the registered Core popup with current category, gender and used ids', async () => {
+  it('opens the registered Core popup without a preselected category, preserving gender and used ids', async () => {
     component.showReplacements(0);
     expect(popup.setNewPopUp).toHaveBeenCalledWith(
       jasmine.any(String), 'OutfitReplacementPickerComponent',
-      { category: 'P_Pantaloni', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
+      { allCategories: true, gender: 'D', productIdsInOutfit: ['p1', 'p2'],
         role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );
@@ -59,7 +59,7 @@ describe('AI outfit draft replacement via Core popup', () => {
     component.showReplacements(0);
     expect(popup.setNewPopUp).toHaveBeenCalledWith(
       jasmine.any(String), 'OutfitReplacementPickerComponent',
-      { category: 'conna', gender: 'D', productIdsInOutfit: ['p1', 'p2'],
+      { allCategories: true, gender: 'D', productIdsInOutfit: ['p1', 'p2'],
         role: 'BOTTOM', allowedCategories: ['P_Pantaloni', 'conna'] },
       1180, undefined, undefined, false, true, 'Sostituisci prodotto', 'center', true,
     );

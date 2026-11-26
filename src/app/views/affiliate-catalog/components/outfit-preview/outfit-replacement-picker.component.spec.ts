@@ -130,6 +130,33 @@ describe('OutfitReplacementPickerComponent', () => {
     expect(query?.category).toBeUndefined();
   });
 
+  it('opens replacement without a category filter while keeping compatible products only', async () => {
+    service.getProductCategories.and.returnValue(of(['P_Pantaloni', 'conna', 'scarpe']));
+    picker.itemData = {
+      allCategories: true, gender: 'D', role: 'BOTTOM',
+      allowedCategories: ['P_Pantaloni', 'conna'], productIdsInOutfit: ['already-used'],
+    };
+    picker.ngOnInit();
+    expect(picker.selectedCategory).toBe('');
+    expect(picker.columns[0].data.find(col => col.dataField === 'category')?.allowFiltering).toBeTrue();
+    const skirt = { ...eligible, id: 'skirt', category: 'conna', subcategory: 'gonne_midi' };
+    const shoes = { ...eligible, id: 'shoes', category: 'scarpe', subcategory: 'stivali' };
+    service.getProducts.and.returnValue(of({
+      data: [eligible, skirt, shoes, { ...eligible, id: 'already-used' }],
+      pagination: { hasMore: false, nextCursor: null },
+    }));
+    const page = await picker.loadPage({ pageSize: 30 });
+    expect(service.getProducts.calls.mostRecent().args[0]?.category).toBeUndefined();
+    expect(page.items.map(item => item.id)).toEqual(['new-product', 'skirt']);
+    await picker.loadPage({ pageSize: 30, filters: [{ field: 'category', operator: 'eq', value: 'conna' }] });
+    expect(service.getProducts.calls.mostRecent().args[0]?.category).toBe('conna');
+    const emitted: unknown[] = [];
+    picker.result.subscribe(value => emitted.push(value));
+    picker.selectRow({ name: 'onRowSelectionChange', data: shoes });
+    picker.selectRow({ name: 'onRowSelectionChange', data: skirt });
+    expect(emitted).toEqual([{ name: 'selected', product: skirt }]);
+  });
+
   it('switches skirt to jeans without requesting product categories again', async () => {
     picker.itemData = {
       category: 'conna', gender: 'D', role: 'BOTTOM',
