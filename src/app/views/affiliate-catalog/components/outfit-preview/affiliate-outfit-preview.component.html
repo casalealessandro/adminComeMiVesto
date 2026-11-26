@@ -229,7 +229,7 @@
             <span class="mdi mdi-eye-outline" aria-hidden="true"></span>
             Apri e approva
           </button>
-          <button type="button" class="btn btn-outline-danger" (click)="discardDraft(draft)" [disabled]="discarding.has(draft.id) || publishing.has(draft.id)">Scarta</button>
+          <button type="button" class="btn btn-outline-danger" (click)="discardDraft(draft)" [disabled]="discarding.has(draft.id) || publishing.has(draft.id) || editingDraftIds.has(draft.id)">Scarta</button>
           </div>
           <small role="alert" class="text-danger" *ngIf="discardErrors.get(draft.id) as message">{{ message }}</small>
         </div>
@@ -383,6 +383,7 @@
             *ngIf="outfit.draftId && !publishedId(outfit)"
             [outfit]="outfit"
             [draft]="draftFor(outfit)"
+            [busy]="isPublishing(outfit) || isDiscarding(outfit)"
             [occasion]="preview.request.occasion"
             [occasionOptions]="occasionOptions"
             [styleOptions]="styleOptions"
@@ -404,7 +405,7 @@
               <span class="mdi" [class.mdi-loading]="isPublishing(outfit)" [class.mdi-spin]="isPublishing(outfit)" [class.mdi-check-circle-outline]="!isPublishing(outfit)" aria-hidden="true"></span>
               {{ publishedId(outfit) ? 'Outfit salvato' : (isPublishing(outfit) ? 'Salvataggio…' : 'Approva e salva') }}
             </button>
-            <button type="button" class="btn btn-outline-danger" *ngIf="!publishedId(outfit) && outfit.draftId" (click)="discard(outfit)" [disabled]="isPublishing(outfit) || isDiscarding(outfit)">Scarta outfit</button>
+            <button type="button" class="btn btn-outline-danger" *ngIf="!publishedId(outfit) && outfit.draftId" (click)="discard(outfit)" [disabled]="isPublishing(outfit) || isDiscarding(outfit) || editingDraftIds.has(outfitKey(outfit))">Scarta outfit</button>
             <div class="outfit-card__publish-error" *ngIf="discardError(outfit) as message" role="alert">{{ message }}</div>
             <div class="outfit-card__published" *ngIf="publishedId(outfit) as outfitId" role="status">
               <span class="mdi mdi-check-circle" aria-hidden="true"></span>

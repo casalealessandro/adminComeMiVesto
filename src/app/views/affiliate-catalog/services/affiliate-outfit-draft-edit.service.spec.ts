@@ -48,4 +48,18 @@ describe('AffiliateCatalogService AI outfit draft editing', () => {
     request.flush({ data: updated });
     expect(result).toEqual(updated);
   });
+  it('sends visual corrections without changing the draft products or public description', () => {
+    service.regenerateOutfitDraftImage('draft-1', 1, 'Aggiungi calze velate').subscribe();
+    const request = http.expectOne(`${base}/draft-1/regenerate-image`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ expectedRevision: 1, instructions: 'Aggiungi calze velate' });
+    request.flush({ data: { id: 'draft-1', revision: 2 } });
+  });
+
+  it('restores the preceding image using the existing endpoint', () => {
+    service.regenerateOutfitDraftImage('draft-1', 2, undefined, true).subscribe();
+    const request = http.expectOne(`${base}/draft-1/regenerate-image`);
+    expect(request.request.body).toEqual({ expectedRevision: 2, restorePrevious: true });
+    request.flush({ data: { id: 'draft-1', revision: 3 } });
+  });
 });

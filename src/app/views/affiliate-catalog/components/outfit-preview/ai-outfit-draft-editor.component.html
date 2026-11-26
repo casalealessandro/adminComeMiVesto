@@ -1,6 +1,6 @@
 <section class="draft-editor" *ngIf="outfit.draftId" aria-label="Modifica bozza AI">
   <button *ngIf="!editing" type="button" class="btn btn-sm btn-outline-primary"
-    (click)="startEditing()" [disabled]="regenerating || draft?.imageRegenerating">
+    (click)="startEditing()" [disabled]="busy || regenerating || !!draft?.imageRegenerating">
     <span class="mdi mdi-pencil-outline" aria-hidden="true"></span> Modifica outfit
   </button>
 
@@ -8,10 +8,36 @@
     <strong>Immagine da aggiornare</strong>
     <p>Hai sostituito un prodotto del look. Rigenera l'immagine prima della pubblicazione; le modifiche editoriali non richiedono una nuova immagine.</p>
     <button *ngIf="!editing" type="button" class="btn btn-sm btn-outline-primary"
-      (click)="regenerateImage()" [disabled]="regenerating || draft?.imageRegenerating">
+      (click)="regenerateImage()" [disabled]="busy || regenerating || !!draft?.imageRegenerating">
       <span class="mdi" [class.mdi-loading]="regenerating" [class.mdi-spin]="regenerating" [class.mdi-image-sync-outline]="!regenerating" aria-hidden="true"></span>
       {{ regenerating || draft?.imageRegenerating ? 'Rigenerazione in corso…' : 'Rigenera solo questa immagine (AI a pagamento)' }}
     </button>
+  </div>
+  <div *ngIf="!editing && !draft?.imageNeedsRegeneration" class="draft-editor__form">
+    <h4>Correggi immagine AI</h4>
+    <p class="draft-editor__hint">Descrivi cosa vuoi correggere, mantenendo i prodotti selezionati. Le correzioni non modificano i link affiliati.</p>
+    <label>
+      Correzioni richieste
+      <textarea class="form-control" rows="3" maxlength="500" [(ngModel)]="imageInstructions"
+        placeholder="Es. La gonna non ha tasche. Lascia le mani fuori e aggiungi calze nere velate."
+        [disabled]="busy || regenerating || !!draft?.imageRegenerating"></textarea>
+    </label>
+    <small class="draft-editor__hint">{{ imageInstructions.length }}/500 caratteri · AI a pagamento</small>
+    <button type="button" class="btn btn-sm btn-outline-primary" (click)="regenerateImage(true)"
+      [disabled]="busy || regenerating || !!draft?.imageRegenerating || !imageInstructions.trim() || imageInstructions.length > 500">
+      <span class="mdi" [class.mdi-loading]="regenerating && !restoring" [class.mdi-spin]="regenerating && !restoring"
+        [class.mdi-auto-fix]="!regenerating" aria-hidden="true"></span>
+      {{ regenerating && !restoring ? 'Correzione in corso…' : 'Applica correzioni' }}
+    </button>
+    <ng-container *ngIf="draft?.previousPreviewImageUrl as previousImage">
+      <small class="draft-editor__hint">Immagine precedente</small>
+      <img [src]="previousImage" alt="Immagine precedente del look" class="img-fluid rounded" style="max-height: 220px; object-fit: contain;">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="regenerateImage(false, true)"
+        [disabled]="busy || regenerating || !!draft?.imageRegenerating">
+        {{ restoring ? 'Ripristino in corso…' : 'Ripristina immagine precedente' }}
+      </button>
+      <small class="draft-editor__hint">Controlla la posizione dei pin prima di approvare il look.</small>
+    </ng-container>
   </div>
   <small *ngIf="draft?.imageRegenerating && !draft?.imageNeedsRegeneration" class="draft-editor__hint" role="status">
     Rigenerazione dell'immagine in corso…

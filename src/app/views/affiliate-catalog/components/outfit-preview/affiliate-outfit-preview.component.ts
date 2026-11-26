@@ -334,7 +334,7 @@ export class AffiliateOutfitPreviewComponent implements OnInit {
 
   discard(outfit: AiOutfitPreviewOutfit): void {
     const id = outfit.draftId;
-    if (!id || this.discarding.has(id) || this.publishing.has(id) || this.published.has(id)) return;
+    if (!id || this.discarding.has(id) || this.publishing.has(id) || this.published.has(id) || this.editingDraftIds.has(id)) return;
     if (typeof window !== 'undefined' && !window.confirm('Scartare definitivamente questo outfit AI?')) return;
     this.discarding.add(id);
     this.discardErrors.delete(id);
