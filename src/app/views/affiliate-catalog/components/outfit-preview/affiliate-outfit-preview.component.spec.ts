@@ -347,9 +347,7 @@ describe('AffiliateOutfitPreviewComponent', () => {
     expect(component.genericRole('A_Accessori', 'Borse_tracolla')).toBe('BAG');
     expect(component.genericRole('A_Accessori', 'cappelli')).toBe('HEADWEAR');
     expect(component.genericRole('A_Accessori', 'unknown')).toBeNull();
-    component.anchorRole = 'BAG';
-    component.anchorCategories = ['A_Accessori', 'scarpe'];
-    expect(component.availableAnchorCategories).toEqual(['A_Accessori']);
+    expect(component.categoryByRole['BAG']).toEqual(['A_Accessori']);
   });
 
   it('keeps the safe backend message when editorial codes are missing or unknown', () => {
